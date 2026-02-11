@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": "2695104345",
+    "title": "vrchat",
+    "duration": "00:00:50",
+    "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/1633e99235dbdbeb2f14_softu1_317193512796_1770834228//thumb/thumb0-640x360.jpg",
+    "youtube": [
+      {
+        "id": "RKqHbVlgzHI",
+        "type": "vod",
+        "duration": 50,
+        "part": 1,
+        "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/1633e99235dbdbeb2f14_softu1_317193512796_1770834228//thumb/thumb0-640x360.jpg"
+      }
+    ],
+    "stream_id": "317193512796",
+    "drive": [],
+    "platform": "twitch",
+    "chapters": [
+      {
+        "gameId": "499003",
+        "start": 0,
+        "end": 50,
+        "name": "VRChat",
+        "image": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-40x53.jpg"
+      }
+    ],
+    "games": [],
+    "createdAt": "2026-02-11T18:23:53Z",
+    "updatedAt": "2026-02-11T18:27:25.156Z"
+  }
+]
