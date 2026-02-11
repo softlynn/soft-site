@@ -1,7 +1,7 @@
 const ADMIN_API_BASE = (process.env.REACT_APP_ADMIN_API_BASE || "http://localhost:49721").replace(/\/+$/, "");
 const ADMIN_API_FALLBACK_BASES = Array.from(
   new Set(
-    [ADMIN_API_BASE, "http://localhost:49721", "http://127.0.0.1:49721"]
+    [ADMIN_API_BASE, "http://localhost:49721"]
       .map((value) => String(value || "").replace(/\/+$/, ""))
       .filter(Boolean)
   )
