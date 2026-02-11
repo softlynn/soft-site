@@ -19,6 +19,7 @@ const config = {
   host: process.env.ADMIN_API_HOST || "localhost",
   port: Number(process.env.ADMIN_API_PORT || "49721"),
   archiveSiteUrl: cleanUrl(process.env.ARCHIVE_SITE_URL || ""),
+  adminAllowedOrigins: String(process.env.ADMIN_ALLOWED_ORIGINS || ""),
   adminPassword: String(process.env.ADMIN_PANEL_PASSWORD || ""),
   autoGitPush: (process.env.AUTO_GIT_PUSH || "true").toLowerCase() === "true",
   vodsDataPath: process.env.ARCHIVE_VODS_PATH || path.join(repoRoot, "public", "data", "vods.json"),
@@ -87,20 +88,27 @@ const writeJsonFile = async (filePath, payload) => {
 };
 
 const getAllowedOrigins = () => {
-  const defaults = new Set(["http://localhost:3000"]);
+  const defaults = new Set(["http://localhost:3000", "https://softlynn.github.io"]);
   try {
-    defaults.add(new URL(config.archiveSiteUrl).origin);
+    if (config.archiveSiteUrl) defaults.add(new URL(config.archiveSiteUrl).origin);
   } catch {
     // ignored
+  }
+  if (config.adminAllowedOrigins) {
+    for (const value of config.adminAllowedOrigins.split(",")) {
+      const trimmed = value.trim();
+      if (trimmed) defaults.add(trimmed);
+    }
   }
   return defaults;
 };
 
 const allowedOrigins = getAllowedOrigins();
+const isGithubPagesOrigin = (origin) => /^https:\/\/[a-z0-9-]+\.github\.io$/i.test(origin);
 
 const setCorsHeaders = (req, res) => {
   const origin = String(req.headers.origin || "");
-  if (allowedOrigins.has(origin)) {
+  if (allowedOrigins.has(origin) || isGithubPagesOrigin(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin, Access-Control-Request-Private-Network");
   }

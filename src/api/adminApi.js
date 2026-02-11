@@ -1,7 +1,14 @@
 const ADMIN_API_BASE = (process.env.REACT_APP_ADMIN_API_BASE || "http://localhost:49721").replace(/\/+$/, "");
+const ADMIN_API_FALLBACK_BASES = Array.from(
+  new Set(
+    [ADMIN_API_BASE, "http://localhost:49721", "http://127.0.0.1:49721"]
+      .map((value) => String(value || "").replace(/\/+$/, ""))
+      .filter(Boolean)
+  )
+);
 const ADMIN_TOKEN_KEY = "soft_admin_token";
 
-const buildUrl = (path) => `${ADMIN_API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+const buildUrl = (base, path) => `${base}${path.startsWith("/") ? path : `/${path}`}`;
 
 const readAdminToken = () => {
   try {
@@ -22,21 +29,32 @@ export const clearAdminToken = () => {
 export const getAdminToken = () => readAdminToken();
 
 const request = async (path, { method = "GET", body, token } = {}) => {
-  const response = await fetch(buildUrl(path), {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
+  let lastError = null;
 
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const message = payload?.error || `Admin API request failed (${response.status})`;
-    throw new Error(message);
+  for (const base of ADMIN_API_FALLBACK_BASES) {
+    try {
+      const response = await fetch(buildUrl(base, path), {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = payload?.error || `Admin API request failed (${response.status})`;
+        throw new Error(message);
+      }
+      return payload;
+    } catch (error) {
+      lastError = error;
+    }
   }
-  return payload;
+
+  const message = lastError?.message || "Failed to reach local admin API";
+  throw new Error(`${message}. Ensure local admin API is running on port 49721.`);
 };
 
 export const authenticateAdmin = async (password) => {

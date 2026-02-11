@@ -115,6 +115,7 @@ Each upload now sets and syncs:
 The admin password is never committed to GitHub; it is read from local `.env.local`.
 If a Twitch user token is missing when you unpublish, the admin API now starts an automatic one-time Twitch OAuth browser flow and stores the token locally.
 Optional advanced fallback: set `TWITCH_USER_ACCESS_TOKEN` / `TWITCH_USER_REFRESH_TOKEN` in `.env.local` to seed the token file automatically.
+If admin login from GitHub Pages is blocked by CORS on your machine, add your site origin to `ADMIN_ALLOWED_ORIGINS` in `.env.local` (comma-separated).
 
 ## Deploy
 
