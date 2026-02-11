@@ -2,10 +2,19 @@ import { USE_STATIC_ARCHIVE, VODS_API_BASE } from "../config/site";
 
 const STATIC_DATA_PATH = `${process.env.PUBLIC_URL || ""}/data/vods.json`;
 const STATIC_COMMENTS_BASE = `${process.env.PUBLIC_URL || ""}/data/comments`;
+const STATIC_EMOTES_BASE = `${process.env.PUBLIC_URL || ""}/data/emotes`;
 const STATIC_COMMENTS_PAGE_SIZE = 600;
 
 let staticVodsCache = null;
 const staticCommentsCache = new Map();
+const staticEmotesCache = new Map();
+
+const DEFAULT_EMOTES = {
+  ffz_emotes: [],
+  bttv_emotes: [],
+  "7tv_emotes": [],
+  embedded_emotes: [],
+};
 
 const isEmptyObject = (value) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0;
 
@@ -69,6 +78,42 @@ const loadStaticComments = async (vodId) => {
   }
 };
 
+const normalizeEmotesPayload = (payload) => ({
+  ...DEFAULT_EMOTES,
+  ...(payload || {}),
+  ffz_emotes: Array.isArray(payload?.ffz_emotes) ? payload.ffz_emotes : [],
+  bttv_emotes: Array.isArray(payload?.bttv_emotes) ? payload.bttv_emotes : [],
+  "7tv_emotes": Array.isArray(payload?.["7tv_emotes"]) ? payload["7tv_emotes"] : [],
+  embedded_emotes: Array.isArray(payload?.embedded_emotes) ? payload.embedded_emotes : [],
+});
+
+const loadStaticEmotes = async (vodId) => {
+  const key = String(vodId);
+  if (staticEmotesCache.has(key)) return staticEmotesCache.get(key);
+
+  try {
+    const response = await fetch(`${STATIC_EMOTES_BASE}/${encodeURIComponent(key)}.json`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      staticEmotesCache.set(key, DEFAULT_EMOTES);
+      return DEFAULT_EMOTES;
+    }
+
+    const data = await response.json();
+    const payload = Array.isArray(data?.data) ? data.data[0] : data;
+    const normalized = normalizeEmotesPayload(payload);
+    staticEmotesCache.set(key, normalized);
+    return normalized;
+  } catch {
+    staticEmotesCache.set(key, DEFAULT_EMOTES);
+    return DEFAULT_EMOTES;
+  }
+};
+
 export const getVodById = async (vodId) => {
   if (USE_STATIC_ARCHIVE) {
     const vods = await loadStaticVods();
@@ -96,7 +141,8 @@ export const getBadges = async () => {
 
 export const getEmotes = async (vodId) => {
   if (USE_STATIC_ARCHIVE) {
-    return { data: [{ ffz_emotes: [], bttv_emotes: [], "7tv_emotes": [] }] };
+    const emotes = await loadStaticEmotes(vodId);
+    return { data: [emotes] };
   }
 
   const response = await fetch(`${VODS_API_BASE}/emotes?vod_id=${vodId}`, {

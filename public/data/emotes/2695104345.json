@@ -1,0 +1,837 @@
+{
+  "source": "local-archive-pipeline",
+  "twitchVodId": "2695104345",
+  "generatedAt": "2026-02-11T18:47:21.203Z",
+  "ffz_emotes": [
+    {
+      "id": "128054",
+      "code": "OMEGALUL",
+      "name": "OMEGALUL"
+    },
+    {
+      "id": "210748",
+      "code": "Pog",
+      "name": "Pog"
+    },
+    {
+      "id": "214681",
+      "code": "monkaW",
+      "name": "monkaW"
+    },
+    {
+      "id": "218860",
+      "code": "Kapp",
+      "name": "Kapp"
+    },
+    {
+      "id": "239504",
+      "code": "5Head",
+      "name": "5Head"
+    },
+    {
+      "id": "243789",
+      "code": "Pepega",
+      "name": "Pepega"
+    },
+    {
+      "id": "270930",
+      "code": "widepeepoHappy",
+      "name": "widepeepoHappy"
+    },
+    {
+      "id": "303899",
+      "code": "widepeepoSad",
+      "name": "widepeepoSad"
+    },
+    {
+      "id": "274406",
+      "code": "3Head",
+      "name": "3Head"
+    },
+    {
+      "id": "341166",
+      "code": "LULW",
+      "name": "LULW"
+    },
+    {
+      "id": "64210",
+      "code": "FeelsStrongMan",
+      "name": "FeelsStrongMan"
+    },
+    {
+      "id": "425196",
+      "code": "Sadge",
+      "name": "Sadge"
+    },
+    {
+      "id": "230082",
+      "code": "peepoSad",
+      "name": "peepoSad"
+    },
+    {
+      "id": "249060",
+      "code": "forsenCD",
+      "name": "forsenCD"
+    },
+    {
+      "id": "465811",
+      "code": "Catge",
+      "name": "Catge"
+    },
+    {
+      "id": "229544",
+      "code": "ppL",
+      "name": "ppL"
+    },
+    {
+      "id": "64785",
+      "code": "PepeLaugh",
+      "name": "PepeLaugh"
+    },
+    {
+      "id": "410314",
+      "code": "Okayge",
+      "name": "Okayge"
+    },
+    {
+      "id": "262149",
+      "code": "FeelsDonkMan",
+      "name": "FeelsDonkMan"
+    },
+    {
+      "id": "457124",
+      "code": "WICKED",
+      "name": "WICKED"
+    },
+    {
+      "id": "565612",
+      "code": "Hmm",
+      "name": "Hmm"
+    },
+    {
+      "id": "517647",
+      "code": "PagMan",
+      "name": "PagMan"
+    },
+    {
+      "id": "600212",
+      "code": "Wokege",
+      "name": "Wokege"
+    },
+    {
+      "id": "185890",
+      "code": "EZY",
+      "name": "EZY"
+    },
+    {
+      "id": "590443",
+      "code": "Bedge",
+      "name": "Bedge"
+    }
+  ],
+  "bttv_emotes": [
+    {
+      "id": "54fa8f1401e468494b85b537",
+      "code": ":tf:",
+      "name": ":tf:"
+    },
+    {
+      "id": "54fa8fce01e468494b85b53c",
+      "code": "CiGrip",
+      "name": "CiGrip"
+    },
+    {
+      "id": "54fa903b01e468494b85b53f",
+      "code": "DatSauce",
+      "name": "DatSauce"
+    },
+    {
+      "id": "54fa909b01e468494b85b542",
+      "code": "ForeverAlone",
+      "name": "ForeverAlone"
+    },
+    {
+      "id": "54fa90ba01e468494b85b543",
+      "code": "GabeN",
+      "name": "GabeN"
+    },
+    {
+      "id": "54fa90f201e468494b85b545",
+      "code": "HailHelix",
+      "name": "HailHelix"
+    },
+    {
+      "id": "54fa932201e468494b85b555",
+      "code": "ShoopDaWhoop",
+      "name": "ShoopDaWhoop"
+    },
+    {
+      "id": "54fab45f633595ca4c713abc",
+      "code": "M&Mjc",
+      "name": "M&Mjc"
+    },
+    {
+      "id": "54fab7d2633595ca4c713abf",
+      "code": "bttvNice",
+      "name": "bttvNice"
+    },
+    {
+      "id": "54fa935601e468494b85b557",
+      "code": "TwaT",
+      "name": "TwaT"
+    },
+    {
+      "id": "54fa99b601e468494b85b55d",
+      "code": "WatChuSay",
+      "name": "WatChuSay"
+    },
+    {
+      "id": "566ca11a65dbbdab32ec0558",
+      "code": "tehPoleCat",
+      "name": "tehPoleCat"
+    },
+    {
+      "id": "566ca1a365dbbdab32ec055b",
+      "code": "AngelThump",
+      "name": "AngelThump"
+    },
+    {
+      "id": "54fbefeb01abde735115de5b",
+      "code": "TaxiBro",
+      "name": "TaxiBro"
+    },
+    {
+      "id": "54fbf00a01abde735115de5c",
+      "code": "BroBalt",
+      "name": "BroBalt"
+    },
+    {
+      "id": "54fbf09c01abde735115de61",
+      "code": "CandianRage",
+      "name": "CandianRage"
+    },
+    {
+      "id": "55028cd2135896936880fdd7",
+      "code": "D:",
+      "name": "D:"
+    },
+    {
+      "id": "550352766f86a5b26c281ba2",
+      "code": "VisLaud",
+      "name": "VisLaud"
+    },
+    {
+      "id": "550b344bff8ecee922d2a3c1",
+      "code": "KaRappa",
+      "name": "KaRappa"
+    },
+    {
+      "id": "566ca00f65dbbdab32ec0544",
+      "code": "FishMoley",
+      "name": "FishMoley"
+    },
+    {
+      "id": "566ca02865dbbdab32ec0547",
+      "code": "Hhhehehe",
+      "name": "Hhhehehe"
+    },
+    {
+      "id": "566ca04265dbbdab32ec054a",
+      "code": "KKona",
+      "name": "KKona"
+    },
+    {
+      "id": "566ca09365dbbdab32ec0555",
+      "code": "PoleDoge",
+      "name": "PoleDoge"
+    },
+    {
+      "id": "553b48a21f145f087fc15ca6",
+      "code": "sosGame",
+      "name": "sosGame"
+    },
+    {
+      "id": "55471c2789d53f2d12781713",
+      "code": "CruW",
+      "name": "CruW"
+    },
+    {
+      "id": "555015b77676617e17dd2e8e",
+      "code": "RarePepe",
+      "name": "RarePepe"
+    },
+    {
+      "id": "555981336ba1901877765555",
+      "code": "haHAA",
+      "name": "haHAA"
+    },
+    {
+      "id": "55b6524154eefd53777b2580",
+      "code": "FeelsBirthdayMan",
+      "name": "FeelsBirthdayMan"
+    },
+    {
+      "id": "55f324c47f08be9f0a63cce0",
+      "code": "RonSmug",
+      "name": "RonSmug"
+    },
+    {
+      "id": "560577560874de34757d2dc0",
+      "code": "KappaCool",
+      "name": "KappaCool"
+    },
+    {
+      "id": "566c9fc265dbbdab32ec053b",
+      "code": "FeelsBadMan",
+      "name": "FeelsBadMan"
+    },
+    {
+      "id": "566c9f3b65dbbdab32ec052e",
+      "code": "bUrself",
+      "name": "bUrself"
+    },
+    {
+      "id": "566c9f6365dbbdab32ec0532",
+      "code": "ConcernDoge",
+      "name": "ConcernDoge"
+    },
+    {
+      "id": "566c9fde65dbbdab32ec053e",
+      "code": "FeelsGoodMan",
+      "name": "FeelsGoodMan"
+    },
+    {
+      "id": "566c9ff365dbbdab32ec0541",
+      "code": "FireSpeed",
+      "name": "FireSpeed"
+    },
+    {
+      "id": "566ca06065dbbdab32ec054e",
+      "code": "NaM",
+      "name": "NaM"
+    },
+    {
+      "id": "566ca38765dbbdab32ec0560",
+      "code": "SourPls",
+      "name": "SourPls"
+    },
+    {
+      "id": "566dde0e65dbbdab32ec068f",
+      "code": "FeelsSnowMan",
+      "name": "FeelsSnowMan"
+    },
+    {
+      "id": "566decae65dbbdab32ec0699",
+      "code": "FeelsSnowyMan",
+      "name": "FeelsSnowyMan"
+    },
+    {
+      "id": "567b00c61ddbe1786688a633",
+      "code": "LuL",
+      "name": "LuL"
+    },
+    {
+      "id": "56901914991f200c34ffa656",
+      "code": "SaltyCorn",
+      "name": "SaltyCorn"
+    },
+    {
+      "id": "56e9f494fff3cc5c35e5287e",
+      "code": "monkaS",
+      "name": "monkaS"
+    },
+    {
+      "id": "56f5be00d48006ba34f530a4",
+      "code": "VapeNation",
+      "name": "VapeNation"
+    },
+    {
+      "id": "56fa09f18eff3b595e93ac26",
+      "code": "ariW",
+      "name": "ariW"
+    },
+    {
+      "id": "5709ab688eff3b595e93c595",
+      "code": "notsquishY",
+      "name": "notsquishY"
+    },
+    {
+      "id": "5733ff12e72c3c0814233e20",
+      "code": "FeelsAmazingMan",
+      "name": "FeelsAmazingMan"
+    },
+    {
+      "id": "573d38b50ffbf6cc5cc38dc9",
+      "code": "DuckerZ",
+      "name": "DuckerZ"
+    },
+    {
+      "id": "580e438942170bfd57189866",
+      "code": "FeelsPumpkinMan",
+      "name": "FeelsPumpkinMan"
+    },
+    {
+      "id": "59cf182fcbe2693d59d7bf46",
+      "code": "SqShy",
+      "name": "SqShy"
+    },
+    {
+      "id": "58d2e73058d8950a875ad027",
+      "code": "Wowee",
+      "name": "Wowee"
+    },
+    {
+      "id": "5dc36a8db537d747e37ac187",
+      "code": "WubTF",
+      "name": "WubTF"
+    },
+    {
+      "id": "5e76d2ab8c0f5c3723a9a87d",
+      "code": "cvR",
+      "name": "cvR"
+    },
+    {
+      "id": "5e76d2d2d112fc372574d222",
+      "code": "cvL",
+      "name": "cvL"
+    },
+    {
+      "id": "5e76d338d6581c3724c0f0b2",
+      "code": "cvHazmat",
+      "name": "cvHazmat"
+    },
+    {
+      "id": "5e76d399d6581c3724c0f0b8",
+      "code": "cvMask",
+      "name": "cvMask"
+    },
+    {
+      "id": "5ffdf28dc96152314ad63960",
+      "code": "DogChamp",
+      "name": "DogChamp"
+    },
+    {
+      "id": "6468f7acaee1f7f47567708e",
+      "code": "c!",
+      "name": "c!"
+    },
+    {
+      "id": "6468f845aee1f7f47567709b",
+      "code": "h!",
+      "name": "h!"
+    },
+    {
+      "id": "6468f869aee1f7f4756770a8",
+      "code": "l!",
+      "name": "l!"
+    },
+    {
+      "id": "6468f883aee1f7f4756770b5",
+      "code": "r!",
+      "name": "r!"
+    },
+    {
+      "id": "6468f89caee1f7f4756770c2",
+      "code": "v!",
+      "name": "v!"
+    },
+    {
+      "id": "6468f8d1aee1f7f4756770cf",
+      "code": "z!",
+      "name": "z!"
+    },
+    {
+      "id": "64e3b31920cb0d25d950a9f9",
+      "code": "w!",
+      "name": "w!"
+    },
+    {
+      "id": "65cbe7dbaed093b2eaf87c65",
+      "code": "p!",
+      "name": "p!"
+    },
+    {
+      "id": "662953eeea369c0ece39eb93",
+      "code": "s!",
+      "name": "s!"
+    },
+    {
+      "id": "600349f35303dc315cbc9d52",
+      "code": "catPog",
+      "name": "catPog"
+    },
+    {
+      "id": "60034b9a3928fb3152de3ac6",
+      "code": "CATS",
+      "name": "CATS"
+    },
+    {
+      "id": "55b6f480e66682f576dd94f5",
+      "code": "Clap",
+      "name": "Clap"
+    },
+    {
+      "id": "59143b496996b360ff9b807c",
+      "code": "gachiHYPER",
+      "name": "gachiHYPER"
+    },
+    {
+      "id": "5b3e953a2c8a38720760c7f7",
+      "code": "ppOverheat",
+      "name": "ppOverheat"
+    },
+    {
+      "id": "5a9578d6dcf3205f57ba294f",
+      "code": "ppHop",
+      "name": "ppHop"
+    },
+    {
+      "id": "5ad22a7096065b6c6bddf7f3",
+      "code": "WAYTOODANK",
+      "name": "WAYTOODANK"
+    },
+    {
+      "id": "5ba84271c9f0f66a9efc1c86",
+      "code": "pepeMeltdown",
+      "name": "pepeMeltdown"
+    },
+    {
+      "id": "5f1b0186cf6d2144653d2970",
+      "code": "catJAM",
+      "name": "catJAM"
+    },
+    {
+      "id": "5efcd82551e3910deed68751",
+      "code": "DonoWall",
+      "name": "DonoWall"
+    },
+    {
+      "id": "5b4d2e45b7b52c3958c8f5cf",
+      "code": "PianoTime",
+      "name": "PianoTime"
+    },
+    {
+      "id": "5f898862473f4802fe4703a6",
+      "code": "DinkDonk",
+      "name": "DinkDonk"
+    },
+    {
+      "id": "5f71b705c2f3a70b1ae58709",
+      "code": "peepoTalk",
+      "name": "peepoTalk"
+    },
+    {
+      "id": "5edcd164924aa35e32a73456",
+      "code": "DonkPls",
+      "name": "DonkPls"
+    },
+    {
+      "id": "5b7e01fbe429f82909e0013a",
+      "code": "xar2EDM",
+      "name": "xar2EDM"
+    }
+  ],
+  "7tv_emotes": [
+    {
+      "id": "01EZPGMA6G00047EF100A1SBTF",
+      "code": "TrollDespair",
+      "name": "TrollDespair"
+    },
+    {
+      "id": "01EZPK39HG00077NX500A43YDD",
+      "code": "HALT",
+      "name": "HALT"
+    },
+    {
+      "id": "01F00NKCPR0008KDG4006HKYXV",
+      "code": "DonkChat",
+      "name": "DonkChat"
+    },
+    {
+      "id": "01F4Q03FS80009XV5MKRH4FNKS",
+      "code": "CatSpin",
+      "name": "CatSpin"
+    },
+    {
+      "id": "01F5PA9D3000034VRANA2SYVDP",
+      "code": "kanyePls",
+      "name": "kanyePls"
+    },
+    {
+      "id": "01F5PXJWVG00034VRANA2V6JJ5",
+      "code": "WatchingStream",
+      "name": "WatchingStream"
+    },
+    {
+      "id": "01F5VW2TKR0003RCV2Z6JBHCST",
+      "code": "catKISS",
+      "name": "catKISS"
+    },
+    {
+      "id": "01F6FTE8B80008E39HFFQJ7MWS",
+      "code": "modCheck",
+      "name": "modCheck"
+    },
+    {
+      "id": "01F6M5ZD3R0002B6P5MWZDK80C",
+      "code": "AlienPls3",
+      "name": "AlienPls3"
+    },
+    {
+      "id": "01F6MDM7380000WDA7ERT6VTFQ",
+      "code": "GuitarTime",
+      "name": "GuitarTime"
+    },
+    {
+      "id": "01F6ME7ADR0000WDA7ERT9H30R",
+      "code": "COPIUM",
+      "name": "COPIUM"
+    },
+    {
+      "id": "01F6MKTFTG0009C9ZSNZTFV2ZF",
+      "code": "NOOOO",
+      "name": "NOOOO"
+    },
+    {
+      "id": "01F6MYGA9R000F76KNAAV8Z5SG",
+      "code": "FeelsLagMan",
+      "name": "FeelsLagMan"
+    },
+    {
+      "id": "01F6N14GMG000AR0YATR3RKYTC",
+      "code": "spongePls",
+      "name": "spongePls"
+    },
+    {
+      "id": "01F6N31ETR0004P7N4A9PKS5X9",
+      "code": "BOOBA",
+      "name": "BOOBA"
+    },
+    {
+      "id": "01F6Q1RDFR000A6S4F82DCS05E",
+      "code": "peepoLurk",
+      "name": "peepoLurk"
+    },
+    {
+      "id": "01F6T6GJB0000DDVB8PWZQ53NQ",
+      "code": "PogTasty",
+      "name": "PogTasty"
+    },
+    {
+      "id": "01F6T8NM9R0007M5BTFWSP1YSJ",
+      "code": "Clueless",
+      "name": "Clueless"
+    },
+    {
+      "id": "01F6WEQZ60000936K341FZTHF0",
+      "code": "monkaGIGAftRobertDowneyJr",
+      "name": "monkaGIGAftRobertDowneyJr"
+    },
+    {
+      "id": "01F863GH30000CDTTQC9V7MWXB",
+      "code": "DogLookingSussyAndCute",
+      "name": "DogLookingSussyAndCute"
+    },
+    {
+      "id": "01F8BHX740000F84FWMEXHMPKJ",
+      "code": "whitepeopleHappy",
+      "name": "whitepeopleHappy"
+    },
+    {
+      "id": "01F8NJN8B00007VEPC1DYNRF3D",
+      "code": "lebronJAM",
+      "name": "lebronJAM"
+    },
+    {
+      "id": "01F9DGR2YG000E7SC8F959BREV",
+      "code": "RIPBOZO",
+      "name": "RIPBOZO"
+    },
+    {
+      "id": "01FDXS7XZ000039GFMPVJEXR3M",
+      "code": "KanyeStare",
+      "name": "KanyeStare"
+    },
+    {
+      "id": "01FE9ZEQ3R000518RJG2G6XK2G",
+      "code": "INSANECAT",
+      "name": "INSANECAT"
+    },
+    {
+      "id": "01FFWH9WV80000JT8GHDKHJNZC",
+      "code": "Aware",
+      "name": "Aware"
+    },
+    {
+      "id": "01F6X1FPK00000374S98X97XKC",
+      "code": "CatAHomie",
+      "name": "CatAHomie"
+    },
+    {
+      "id": "01FFTC64FG0009CAK0J1469R1Q",
+      "code": "spongeBop",
+      "name": "spongeBop"
+    },
+    {
+      "id": "01GQQVG4G0000CTR8XP5RQPGGF",
+      "code": "plonk",
+      "name": "plonk"
+    },
+    {
+      "id": "01FSJ0HVKG0001Z3WXBKV36R0Z",
+      "code": "poroPls",
+      "name": "poroPls"
+    },
+    {
+      "id": "01FP3T5KZG0001BCZZ99DVJX2C",
+      "code": "spoingus",
+      "name": "spoingus"
+    },
+    {
+      "id": "01FJ38BN0G0004EJWVFDCT7219",
+      "code": "Corn",
+      "name": "Corn"
+    },
+    {
+      "id": "01FH0W6HH800096T3FQZKZQWTD",
+      "code": "gettingSturdy",
+      "name": "gettingSturdy"
+    },
+    {
+      "id": "01F6MZGCNG000255K4X1K7NTHR",
+      "code": "GIGACHAD",
+      "name": "GIGACHAD"
+    },
+    {
+      "id": "01F6MQ33FG000FFJ97ZB8MWV52",
+      "code": "catJAM",
+      "name": "catJAM"
+    },
+    {
+      "id": "01F63B8GJR000AE7CZT484KXF9",
+      "code": "muted",
+      "name": "muted"
+    },
+    {
+      "id": "01GQ3WPTDR000300KQF1J7PFF8",
+      "code": "NOWAYING",
+      "name": "NOWAYING"
+    },
+    {
+      "id": "01GBFAYKGR000FWWN7MDZZ8XQN",
+      "code": "RAGEY",
+      "name": "RAGEY"
+    },
+    {
+      "id": "01GDDQVMH000038Q48APH8VE3Q",
+      "code": "AINTNOWAY",
+      "name": "AINTNOWAY"
+    },
+    {
+      "id": "01GMAH9MB000066S7TTNVB1TGD",
+      "code": "veryCat",
+      "name": "veryCat"
+    },
+    {
+      "id": "01GA1CXH28000636ETDFC5H16P",
+      "code": "ThugShaker",
+      "name": "ThugShaker"
+    },
+    {
+      "id": "01GV56F8QR0006FW5TVZVMFVWE",
+      "code": "wuh",
+      "name": "wuh"
+    },
+    {
+      "id": "01GRKSG9E000091TEC1A28HSM5",
+      "code": "NAILS",
+      "name": "NAILS"
+    },
+    {
+      "id": "01FJCDJ580000FZHS49NWQRVQR",
+      "code": "android",
+      "name": "android"
+    },
+    {
+      "id": "01F5PFXKP80004R630K8ESP57S",
+      "code": "Drake",
+      "name": "Drake"
+    },
+    {
+      "id": "01FET023A8000C9XXF2H0G0AQF",
+      "code": "om",
+      "name": "om"
+    },
+    {
+      "id": "01H588WGW00001KZFCFR2TS170",
+      "code": "dobro",
+      "name": "dobro"
+    },
+    {
+      "id": "01F7M225F8000AWSXNQ65M4PKG",
+      "code": "SNIFFA",
+      "name": "SNIFFA"
+    },
+    {
+      "id": "01H0405680000AJFXTYVX2PNJ7",
+      "code": "uuh",
+      "name": "uuh"
+    },
+    {
+      "id": "01F6NCKMP000052X5637DW2XDY",
+      "code": "meow",
+      "name": "meow"
+    },
+    {
+      "id": "01F6NE9AER000CKKT9BSDYGT0J",
+      "code": "Clap",
+      "name": "Clap"
+    },
+    {
+      "id": "01FCX95ZG80009QXBMY7YYTVBJ",
+      "code": "DIESOFCRINGE",
+      "name": "DIESOFCRINGE"
+    },
+    {
+      "id": "01F6NPHCN0000BEKN8ZXWQNSDC",
+      "code": "monkaW",
+      "name": "monkaW"
+    },
+    {
+      "id": "01FZ975PV8000B4AWRZNMVNEXN",
+      "code": "LOL",
+      "name": "LOL"
+    },
+    {
+      "id": "01F6N0NRYR000AR0YATR3Q3CPR",
+      "code": "PagMan",
+      "name": "PagMan"
+    },
+    {
+      "id": "01G8P6GH2R000BK3R7HJ544BJ1",
+      "code": "Sneak",
+      "name": "Sneak"
+    },
+    {
+      "id": "01GWBD2YR00002CCPRV6KPX758",
+      "code": "mhm",
+      "name": "mhm"
+    },
+    {
+      "id": "01G4ZTECKR0002P97QQ94BDSP4",
+      "code": "WHAT",
+      "name": "WHAT"
+    },
+    {
+      "id": "01FA0PBXM8000AD7Y8T9ZMTFZ5",
+      "code": "ICANT",
+      "name": "ICANT"
+    },
+    {
+      "id": "01HMBMJPV0000D32KQCYBK4S1D",
+      "code": "aga",
+      "name": "aga"
+    }
+  ],
+  "embedded_emotes": []
+}

@@ -8,8 +8,8 @@ This repo now includes a **local Windows automation pipeline** for:
 1. detecting finished OBS recordings,
 2. matching them to Twitch VODs,
 3. uploading the recording to YouTube,
-4. exporting Twitch chat replay,
-5. updating `public/data/vods.json` and `public/data/comments/*.json`,
+4. exporting Twitch chat replay and static emote data (7TV/BTTV/FFZ + embedded third-party emotes),
+5. updating `public/data/vods.json`, `public/data/comments/*.json`, and `public/data/emotes/*.json`,
 6. pushing updates to `main` for GitHub Pages deployment.
 
 ## Current configured accounts
@@ -61,7 +61,18 @@ npm run archive:run
 
 - VOD index: `public/data/vods.json`
 - Chat replay per VOD: `public/data/comments/<twitchVodId>.json`
+- Emotes per VOD: `public/data/emotes/<twitchVodId>.json`
 - Pipeline state: `scripts/.state/pipeline-state.json`
+
+## YouTube metadata template
+
+Each upload now sets and syncs:
+
+1. title format: `<stream title> - <YYYY-MM-DD> - Part X` (part suffix only when multiple parts exist),
+2. clickable `Chat Replay` link to the GitHub Pages VOD route,
+3. clickable `Original VOD` Twitch link,
+4. category via `YOUTUBE_CATEGORY_ID` (default `20`, Gaming),
+5. part links in description when a VOD has multiple YouTube parts.
 
 ## Frontend mode
 

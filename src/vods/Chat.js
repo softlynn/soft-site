@@ -295,6 +295,35 @@ export default function Chat(props) {
             const SEVENTV_EMOTES = emotes.current["7tv_emotes"];
             const BTTV_EMOTES = emotes.current["bttv_emotes"];
             const FFZ_EMOTES = emotes.current["ffz_emotes"];
+            const EMBEDDED_EMOTES = emotes.current["embedded_emotes"];
+
+            if (EMBEDDED_EMOTES) {
+              const emote = EMBEDDED_EMOTES.find((EMBEDDED_EMOTE) => EMBEDDED_EMOTE.name === text || EMBEDDED_EMOTE.code === text);
+              if (emote) {
+                const embeddedSrc = emote.data ? `data:image/webp;base64,${emote.data}` : `${BASE_7TV_EMOTE_CDN}/${emote.id}/4x.webp`;
+                const embeddedSrcSmall = emote.data ? `data:image/webp;base64,${emote.data}` : `${BASE_7TV_EMOTE_CDN}/${emote.id}/1x.webp`;
+
+                textFragments.push(
+                  <MessageTooltip
+                    key={messageCount++}
+                    title={
+                      <Box sx={{ maxWidth: "30rem", textAlign: "center" }}>
+                        <img crossOrigin="anonymous" style={{ marginBottom: "0.3rem", border: "none", maxWidth: "100%", verticalAlign: "top" }} src={embeddedSrc} alt="" />
+                        <Typography display="block" variant="caption">{`Emote: ${emote.name || emote.code}`}</Typography>
+                        <Typography display="block" variant="caption">
+                          Third-Party Emotes
+                        </Typography>
+                      </Box>
+                    }
+                  >
+                    <Box sx={{ display: "inline" }}>
+                      <img crossOrigin="anonymous" style={{ verticalAlign: "middle", border: "none", maxWidth: "100%" }} src={embeddedSrcSmall} alt={text} />{" "}
+                    </Box>
+                  </MessageTooltip>
+                );
+                continue;
+              }
+            }
 
             if (SEVENTV_EMOTES) {
               const emote = SEVENTV_EMOTES.find((SEVENTV_EMOTE) => SEVENTV_EMOTE.name === text || SEVENTV_EMOTE.code === text);
