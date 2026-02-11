@@ -14,8 +14,9 @@ dotenv.config({ path: path.join(repoRoot, ".env.local") });
 const config = {
   twitchClientId: process.env.TWITCH_CLIENT_ID || "",
   twitchClientSecret: process.env.TWITCH_CLIENT_SECRET || "",
-  twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "softu1",
+  twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "",
   twitchUserTokenPath: process.env.TWITCH_USER_TOKEN_PATH || path.join(repoRoot, "secrets", "twitch_user_token.json"),
+  redirectHost: process.env.TWITCH_AUTH_REDIRECT_HOST || "localhost",
   redirectPort: Number(process.env.TWITCH_AUTH_REDIRECT_PORT || "49724"),
   redirectPath: "/twitch/callback",
   scopes: ["channel:manage:videos"],
@@ -79,7 +80,7 @@ const ensureConfig = () => {
 
 ensureConfig();
 
-const redirectUri = `http://127.0.0.1:${config.redirectPort}${config.redirectPath}`;
+const redirectUri = `http://${config.redirectHost}:${config.redirectPort}${config.redirectPath}`;
 const authUrl = new URL("https://id.twitch.tv/oauth2/authorize");
 authUrl.searchParams.set("client_id", config.twitchClientId);
 authUrl.searchParams.set("redirect_uri", redirectUri);
@@ -111,7 +112,7 @@ const htmlError = (message) => `
 
 const server = http.createServer(async (req, res) => {
   try {
-    const requestUrl = new URL(req.url || "/", `http://127.0.0.1:${config.redirectPort}`);
+    const requestUrl = new URL(req.url || "/", `http://${config.redirectHost}:${config.redirectPort}`);
     if (requestUrl.pathname !== config.redirectPath) {
       res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
       res.end("Not found");
@@ -176,8 +177,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(config.redirectPort, "127.0.0.1", () => {
+server.listen(config.redirectPort, config.redirectHost, () => {
   console.log(`Authorize Twitch at:\n${authUrl.toString()}`);
   openUrl(authUrl.toString());
 });
-

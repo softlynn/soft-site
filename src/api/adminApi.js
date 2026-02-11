@@ -1,4 +1,4 @@
-const ADMIN_API_BASE = (process.env.REACT_APP_ADMIN_API_BASE || "http://127.0.0.1:49721").replace(/\/+$/, "");
+const ADMIN_API_BASE = (process.env.REACT_APP_ADMIN_API_BASE || "http://localhost:49721").replace(/\/+$/, "");
 const ADMIN_TOKEN_KEY = "soft_admin_token";
 
 const buildUrl = (path) => `${ADMIN_API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
@@ -109,4 +109,3 @@ export const promptAndLoginAdmin = async () => {
   await authenticateAdmin(password);
   return true;
 };
-

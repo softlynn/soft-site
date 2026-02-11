@@ -17,16 +17,16 @@ const METADATA_TEMPLATE_VERSION = 1;
 const cleanUrl = (value) => String(value || "").replace(/\/+$/, "");
 
 const config = {
-  recordingsDir: process.env.LOCAL_RECORDINGS_DIR || "Z:/Stream Archives",
-  twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "softu1",
+  recordingsDir: process.env.LOCAL_RECORDINGS_DIR || path.join(repoRoot, "recordings"),
+  twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "",
   twitchClientId: process.env.TWITCH_CLIENT_ID || "",
   twitchClientSecret: process.env.TWITCH_CLIENT_SECRET || "",
-  youtubeClientSecretPath: process.env.YOUTUBE_CLIENT_SECRET_PATH || "C:/Users/Alex2/Documents/youtube_client_secret.json",
+  youtubeClientSecretPath: process.env.YOUTUBE_CLIENT_SECRET_PATH || path.join(repoRoot, "secrets", "youtube_client_secret.json"),
   youtubeTokenPath: process.env.YOUTUBE_TOKEN_PATH || path.join(repoRoot, "secrets", "youtube_token.json"),
   youtubePrivacyStatus: process.env.YOUTUBE_PRIVACY_STATUS || "private",
   youtubeCategoryId: process.env.YOUTUBE_CATEGORY_ID || "20",
   youtubeCategoryRegionCode: process.env.YOUTUBE_CATEGORY_REGION_CODE || "US",
-  archiveSiteUrl: cleanUrl(process.env.ARCHIVE_SITE_URL || "https://softlynn.github.io/soft-site"),
+  archiveSiteUrl: cleanUrl(process.env.ARCHIVE_SITE_URL || ""),
   vodsDataPath: process.env.ARCHIVE_VODS_PATH || path.join(repoRoot, "public", "data", "vods.json"),
   commentsDir: process.env.ARCHIVE_COMMENTS_DIR || path.join(repoRoot, "public", "data", "comments"),
   emotesDir: process.env.ARCHIVE_EMOTES_DIR || path.join(repoRoot, "public", "data", "emotes"),

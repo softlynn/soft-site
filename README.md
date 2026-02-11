@@ -19,14 +19,6 @@ It also includes a **local admin bridge** for:
 3. toggling per-VOD Spotify muted notice,
 4. toggling per-VOD chat replay availability.
 
-## Current configured accounts
-
-- GitHub repo: `https://github.com/softlynn/soft-site`
-- Twitch channel: `softu1`
-- YouTube channel link: `https://www.youtube.com/channel/UCSbqIDbEWTHlD0xVuRJk_QA`
-- Twitter/X: `https://x.com/lx_hyze`
-- Discord: `https://discord.com/invite/33JbkQ5R`
-
 ## One-time setup
 
 1. Install dependencies:
@@ -45,7 +37,7 @@ npm run youtube:auth
 ```
 
 Token is saved to:
-`C:/Users/Alex2/Documents/soft-site/secrets/youtube_token.json`
+`./secrets/youtube_token.json`
 
 4. Generate Twitch user OAuth token (opens browser once):
 
@@ -54,7 +46,7 @@ npm run twitch:auth
 ```
 
 Token is saved to:
-`C:/Users/Alex2/Documents/soft-site/secrets/twitch_user_token.json`
+`./secrets/twitch_user_token.json`
 
 5. Set admin password locally in `.env.local` (gitignored):
 
@@ -62,13 +54,15 @@ Token is saved to:
 ADMIN_PANEL_PASSWORD=<your-private-admin-password>
 ```
 
-6. Install local pipeline scheduled task (every 15 minutes):
+6. Configure your local `.env.local` values (`TWITCH_CHANNEL_LOGIN`, paths, site URL, etc.).
+
+7. Install local pipeline scheduled task (every 15 minutes):
 
 ```bash
 npm run archive:task:install
 ```
 
-7. Install local admin API task (starts at login and immediately):
+8. Install local admin API task (starts at login and immediately):
 
 ```bash
 npm run admin:task:install
@@ -119,6 +113,8 @@ Each upload now sets and syncs:
    - toggle chat replay availability.
 
 The admin password is never committed to GitHub; it is read from local `.env.local`.
+If a Twitch user token is missing when you unpublish, the admin API now starts an automatic one-time Twitch OAuth browser flow and stores the token locally.
+Optional advanced fallback: set `TWITCH_USER_ACCESS_TOKEN` / `TWITCH_USER_REFRESH_TOKEN` in `.env.local` to seed the token file automatically.
 
 ## Deploy
 

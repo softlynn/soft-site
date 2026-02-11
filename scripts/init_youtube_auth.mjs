@@ -10,7 +10,7 @@ const repoRoot = path.resolve(__dirname, "..");
 
 dotenv.config({ path: path.join(repoRoot, ".env.local") });
 
-const clientSecretPath = process.env.YOUTUBE_CLIENT_SECRET_PATH || "C:/Users/Alex2/Documents/youtube_client_secret.json";
+const clientSecretPath = process.env.YOUTUBE_CLIENT_SECRET_PATH || path.join(repoRoot, "secrets", "youtube_client_secret.json");
 const tokenPath = process.env.YOUTUBE_TOKEN_PATH || path.join(repoRoot, "secrets", "youtube_token.json");
 
 const scopes = ["https://www.googleapis.com/auth/youtube", "https://www.googleapis.com/auth/youtube.upload"];

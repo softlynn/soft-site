@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import dotenv from "dotenv";
 import { google } from "googleapis";
 
@@ -16,24 +16,30 @@ dotenv.config({ path: path.join(repoRoot, ".env.local") });
 const cleanUrl = (value) => String(value || "").replace(/\/+$/, "");
 
 const config = {
-  host: process.env.ADMIN_API_HOST || "127.0.0.1",
+  host: process.env.ADMIN_API_HOST || "localhost",
   port: Number(process.env.ADMIN_API_PORT || "49721"),
-  archiveSiteUrl: cleanUrl(process.env.ARCHIVE_SITE_URL || "https://softlynn.github.io/soft-site"),
+  archiveSiteUrl: cleanUrl(process.env.ARCHIVE_SITE_URL || ""),
   adminPassword: String(process.env.ADMIN_PANEL_PASSWORD || ""),
   autoGitPush: (process.env.AUTO_GIT_PUSH || "true").toLowerCase() === "true",
   vodsDataPath: process.env.ARCHIVE_VODS_PATH || path.join(repoRoot, "public", "data", "vods.json"),
-  twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "softu1",
+  twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "",
   twitchClientId: process.env.TWITCH_CLIENT_ID || "",
   twitchClientSecret: process.env.TWITCH_CLIENT_SECRET || "",
   twitchUserTokenPath: process.env.TWITCH_USER_TOKEN_PATH || path.join(repoRoot, "secrets", "twitch_user_token.json"),
-  youtubeClientSecretPath: process.env.YOUTUBE_CLIENT_SECRET_PATH || "C:/Users/Alex2/Documents/youtube_client_secret.json",
+  youtubeClientSecretPath: process.env.YOUTUBE_CLIENT_SECRET_PATH || path.join(repoRoot, "secrets", "youtube_client_secret.json"),
   youtubeTokenPath: process.env.YOUTUBE_TOKEN_PATH || path.join(repoRoot, "secrets", "youtube_token.json"),
+  twitchAuthRedirectHost: process.env.TWITCH_AUTH_REDIRECT_HOST || "localhost",
+  twitchAuthRedirectPort: Number(process.env.TWITCH_AUTH_REDIRECT_PORT || "49724"),
+  twitchAuthTimeoutSeconds: Number(process.env.TWITCH_AUTH_TIMEOUT_SECONDS || "180"),
   spotifyNoticeText: process.env.ADMIN_SPOTIFY_NOTICE_TEXT || "Spotify audio is muted on this VOD.",
 };
 
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 const MAX_BODY_BYTES = 128 * 1024;
 const sessions = new Map();
+let twitchBootstrapPromise = null;
+const TWITCH_AUTH_CALLBACK_PATH = "/twitch/callback";
+const TWITCH_AUTH_SCOPES = ["channel:manage:videos"];
 
 const log = (message) => {
   console.log(`[${new Date().toISOString()}] ${message}`);
@@ -41,6 +47,19 @@ const log = (message) => {
 
 const fail = (message) => {
   throw new Error(message);
+};
+
+const openUrl = (url) => {
+  if (!url) return;
+  if (process.platform === "win32") {
+    spawn("cmd", ["/c", "start", "", url], { detached: true, stdio: "ignore" }).unref();
+    return;
+  }
+  if (process.platform === "darwin") {
+    spawn("open", [url], { detached: true, stdio: "ignore" }).unref();
+    return;
+  }
+  spawn("xdg-open", [url], { detached: true, stdio: "ignore" }).unref();
 };
 
 const ensureDirectory = async (dirPath) => {
@@ -68,11 +87,7 @@ const writeJsonFile = async (filePath, payload) => {
 };
 
 const getAllowedOrigins = () => {
-  const defaults = new Set([
-    "https://softlynn.github.io",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-  ]);
+  const defaults = new Set(["http://localhost:3000"]);
   try {
     defaults.add(new URL(config.archiveSiteUrl).origin);
   } catch {
@@ -255,13 +270,6 @@ const setYouTubeVideoPrivate = async (youtube, videoId) => {
   return { id: videoId, privacyStatus: "private", changed: true };
 };
 
-const loadTwitchTokenRecord = async () => {
-  if (!(await fileExists(config.twitchUserTokenPath))) {
-    fail(`Missing Twitch user token at ${config.twitchUserTokenPath}. Run: npm run twitch:auth`);
-  }
-  return readJsonFile(config.twitchUserTokenPath, {});
-};
-
 const saveTwitchTokenRecord = async (tokenRecord) => {
   await writeJsonFile(config.twitchUserTokenPath, tokenRecord);
 };
@@ -304,58 +312,226 @@ const validateTwitchToken = async (accessToken) => {
   return response.json();
 };
 
+const ensureTwitchLoginMatches = (login) => {
+  if (!config.twitchChannelLogin) return;
+  if (!login) return;
+  if (String(login).toLowerCase() !== String(config.twitchChannelLogin).toLowerCase()) {
+    fail(`Twitch token login "${login}" does not match TWITCH_CHANNEL_LOGIN "${config.twitchChannelLogin}"`);
+  }
+};
+
+const persistValidatedTwitchToken = async (tokenPayload, existingRecord = {}) => {
+  const accessToken = tokenPayload?.access_token || existingRecord?.access_token;
+  if (!accessToken) fail("Twitch OAuth payload missing access_token");
+
+  const validated = await validateTwitchToken(accessToken);
+  ensureTwitchLoginMatches(validated.login);
+
+  const expiresInSeconds = Number(tokenPayload?.expires_in || 0);
+  const expiresAtMs =
+    expiresInSeconds > 0
+      ? Date.now() + expiresInSeconds * 1000
+      : Number(existingRecord.expires_at_ms || 0) || Date.now() + 3600 * 1000;
+
+  const record = {
+    ...existingRecord,
+    ...tokenPayload,
+    access_token: accessToken,
+    refresh_token: tokenPayload?.refresh_token || existingRecord?.refresh_token || "",
+    expires_at_ms: expiresAtMs,
+    obtained_at: new Date().toISOString(),
+    user_id: validated.user_id,
+    user_login: validated.login,
+    scopes: validated.scopes || tokenPayload?.scope || existingRecord?.scopes || [],
+  };
+
+  await saveTwitchTokenRecord(record);
+  return record;
+};
+
+const exchangeTwitchCodeForToken = async (code, redirectUri) => {
+  const params = new URLSearchParams({
+    client_id: config.twitchClientId,
+    client_secret: config.twitchClientSecret,
+    code,
+    grant_type: "authorization_code",
+    redirect_uri: redirectUri,
+  });
+
+  const response = await fetch("https://id.twitch.tv/oauth2/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params.toString(),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    fail(`Twitch OAuth token exchange failed (${response.status}): ${body}`);
+  }
+
+  return response.json();
+};
+
+const runInteractiveTwitchAuth = async () =>
+  new Promise((resolve, reject) => {
+    const state = crypto.randomUUID();
+    const redirectUri = `http://${config.twitchAuthRedirectHost}:${config.twitchAuthRedirectPort}${TWITCH_AUTH_CALLBACK_PATH}`;
+    const authUrl = new URL("https://id.twitch.tv/oauth2/authorize");
+    authUrl.searchParams.set("client_id", config.twitchClientId);
+    authUrl.searchParams.set("redirect_uri", redirectUri);
+    authUrl.searchParams.set("response_type", "code");
+    authUrl.searchParams.set("scope", TWITCH_AUTH_SCOPES.join(" "));
+    authUrl.searchParams.set("force_verify", "true");
+    authUrl.searchParams.set("state", state);
+
+    let finished = false;
+    const finish = (error, value) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timeout);
+      server.close(() => {
+        if (error) reject(error);
+        else resolve(value);
+      });
+    };
+
+    const server = http.createServer(async (req, res) => {
+      try {
+        const requestUrl = new URL(req.url || "/", `http://${config.twitchAuthRedirectHost}:${config.twitchAuthRedirectPort}`);
+        if (requestUrl.pathname !== TWITCH_AUTH_CALLBACK_PATH) {
+          res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+          res.end("Not found");
+          return;
+        }
+
+        const oauthError = requestUrl.searchParams.get("error");
+        const oauthDescription = requestUrl.searchParams.get("error_description");
+        if (oauthError) {
+          res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+          res.end("Twitch authorization failed. You can close this tab.");
+          finish(new Error(`Twitch OAuth error: ${oauthError}${oauthDescription ? ` (${oauthDescription})` : ""}`));
+          return;
+        }
+
+        const returnedState = requestUrl.searchParams.get("state");
+        const code = requestUrl.searchParams.get("code");
+        if (!returnedState || returnedState !== state) {
+          res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+          res.end("Invalid Twitch authorization state.");
+          finish(new Error("Twitch OAuth state mismatch"));
+          return;
+        }
+        if (!code) {
+          res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+          res.end("Missing Twitch authorization code.");
+          finish(new Error("Twitch OAuth callback missing code"));
+          return;
+        }
+
+        const tokenPayload = await exchangeTwitchCodeForToken(code, redirectUri);
+        const saved = await persistValidatedTwitchToken(tokenPayload, {});
+        res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+        res.end("Twitch authorization completed. You can close this tab.");
+        finish(null, saved);
+      } catch (error) {
+        res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
+        res.end("Twitch authorization failed.");
+        finish(error);
+      }
+    });
+
+    const timeout = setTimeout(() => {
+      finish(new Error("Timed out waiting for Twitch authorization. Please retry."));
+    }, Math.max(30, config.twitchAuthTimeoutSeconds) * 1000);
+
+    server.listen(config.twitchAuthRedirectPort, config.twitchAuthRedirectHost, () => {
+      log(`Starting Twitch OAuth in browser for ${config.twitchChannelLogin || "configured channel"}...`);
+      openUrl(authUrl.toString());
+    });
+  });
+
+const seedTwitchTokenFromEnv = async () => {
+  const accessToken = String(process.env.TWITCH_USER_ACCESS_TOKEN || "").trim();
+  if (!accessToken) return null;
+
+  const seeded = {
+    access_token: accessToken,
+    refresh_token: String(process.env.TWITCH_USER_REFRESH_TOKEN || "").trim(),
+    expires_in: Number(process.env.TWITCH_USER_EXPIRES_IN || 0),
+  };
+
+  log("Seeding Twitch user token from environment variables.");
+  return persistValidatedTwitchToken(seeded, {});
+};
+
+const bootstrapTwitchUserToken = async () => {
+  if (twitchBootstrapPromise) return twitchBootstrapPromise;
+  twitchBootstrapPromise = (async () => {
+    const fromEnv = await seedTwitchTokenFromEnv();
+    if (fromEnv) return fromEnv;
+
+    log("No stored Twitch user token found. Starting one-time interactive Twitch authorization.");
+    return runInteractiveTwitchAuth();
+  })();
+
+  try {
+    return await twitchBootstrapPromise;
+  } finally {
+    twitchBootstrapPromise = null;
+  }
+};
+
+const loadTwitchTokenRecord = async () => {
+  if (await fileExists(config.twitchUserTokenPath)) {
+    return readJsonFile(config.twitchUserTokenPath, {});
+  }
+  return bootstrapTwitchUserToken();
+};
+
+const refreshAndPersistTwitchToken = async (tokenRecord) => {
+  const refreshToken = tokenRecord?.refresh_token || "";
+  if (!refreshToken) return null;
+
+  const refreshed = await refreshTwitchUserToken(refreshToken);
+  return persistValidatedTwitchToken(
+    {
+      ...refreshed,
+      refresh_token: refreshed.refresh_token || refreshToken,
+    },
+    tokenRecord
+  );
+};
+
 const getValidTwitchToken = async () => {
   if (!config.twitchClientId || !config.twitchClientSecret) {
     fail("TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET must be set");
   }
 
-  const tokenRecord = await loadTwitchTokenRecord();
+  let tokenRecord = await loadTwitchTokenRecord();
   let accessToken = tokenRecord.access_token || "";
-  let refreshToken = tokenRecord.refresh_token || "";
   const expiresAt = Number(tokenRecord.expires_at_ms || 0);
   const isExpired = !accessToken || !expiresAt || Date.now() >= expiresAt - 60 * 1000;
 
   if (isExpired) {
-    if (!refreshToken) fail("Twitch user token is expired and missing refresh_token. Run: npm run twitch:auth");
-    const refreshed = await refreshTwitchUserToken(refreshToken);
-    accessToken = refreshed.access_token;
-    refreshToken = refreshed.refresh_token || refreshToken;
-    const refreshedExpiresAt = Date.now() + Number(refreshed.expires_in || 0) * 1000;
-    const validated = await validateTwitchToken(accessToken);
-    if (
-      config.twitchChannelLogin &&
-      validated.login &&
-      validated.login.toLowerCase() !== config.twitchChannelLogin.toLowerCase()
-    ) {
-      fail(`Twitch token login "${validated.login}" does not match TWITCH_CHANNEL_LOGIN "${config.twitchChannelLogin}"`);
-    }
+    const refreshed = await refreshAndPersistTwitchToken(tokenRecord);
+    tokenRecord = refreshed || (await bootstrapTwitchUserToken());
+    accessToken = tokenRecord.access_token || "";
+  }
 
-    const nextRecord = {
+  try {
+    const validated = await validateTwitchToken(accessToken);
+    ensureTwitchLoginMatches(validated.login);
+    return {
       ...tokenRecord,
-      ...refreshed,
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      expires_at_ms: refreshedExpiresAt,
-      obtained_at: new Date().toISOString(),
       user_id: validated.user_id,
       user_login: validated.login,
-      scopes: validated.scopes || refreshed.scope || [],
+      scopes: validated.scopes || tokenRecord.scopes || [],
     };
-    await saveTwitchTokenRecord(nextRecord);
-    return nextRecord;
+  } catch {
+    const refreshed = await refreshAndPersistTwitchToken(tokenRecord);
+    tokenRecord = refreshed || (await bootstrapTwitchUserToken());
+    return tokenRecord;
   }
-
-  const validated = await validateTwitchToken(accessToken);
-  if (validated.login && config.twitchChannelLogin && validated.login.toLowerCase() !== config.twitchChannelLogin.toLowerCase()) {
-    fail(`Twitch token login "${validated.login}" does not match TWITCH_CHANNEL_LOGIN "${config.twitchChannelLogin}"`);
-  }
-
-  return {
-    ...tokenRecord,
-    user_id: validated.user_id,
-    user_login: validated.login,
-    scopes: validated.scopes || tokenRecord.scopes || [],
-  };
 };
 
 const deleteTwitchVod = async (vodId) => {
