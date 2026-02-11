@@ -1,0 +1,380 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2693715902",
+  "generatedAt": "2026-02-11T19:30:51.764Z",
+  "comments": [
+    {
+      "id": "59d533d7-7d97-49cd-b4d0-9149ddcb2ed6",
+      "created_at": "2026-02-10T01:51:49.625Z",
+      "content_offset_seconds": 1031,
+      "display_name": "vrchatavatarcreatorlowkey",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "can I join",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "61d9bae1-f651-4dbf-8735-d2920dc25b65",
+      "created_at": "2026-02-10T01:51:50.876Z",
+      "content_offset_seconds": 1033,
+      "display_name": "vrchatavatarcreatorlowkey",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8e1f121a-f0c3-4cef-995d-c84843a235e5",
+      "created_at": "2026-02-10T01:58:31.686Z",
+      "content_offset_seconds": 1433,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "lirikCozysip",
+          "emote": {
+            "emoteID": "emotesv2_33e4c19c71dd40e7b3e8220aa6bdb4ba"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_33e4c19c71dd40e7b3e8220aa6bdb4ba"
+          }
+        }
+      ]
+    },
+    {
+      "id": "7fee4c12-b0cb-4ea7-96e1-f540e3f8d7b8",
+      "created_at": "2026-02-10T01:58:48.382Z",
+      "content_offset_seconds": 1450,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "ello ello",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a2986078-48f3-4866-95c3-143b63eb2e7e",
+      "created_at": "2026-02-10T01:58:50.572Z",
+      "content_offset_seconds": 1452,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "okie",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d09414a8-4ad9-425f-a55c-a993928a8f3b",
+      "created_at": "2026-02-10T02:00:21.212Z",
+      "content_offset_seconds": 1543,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "thats completely your choice to make",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "19a3daa0-4e10-4ef1-826b-a62f0a2e530a",
+      "created_at": "2026-02-10T02:01:30.695Z",
+      "content_offset_seconds": 1612,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "i mean its smooth my end",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "308739eb-5e06-4b2e-9b51-1b9eb499348c",
+      "created_at": "2026-02-10T02:02:45.135Z",
+      "content_offset_seconds": 1687,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "dear lord i spent way too long in this world",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "2b80f973-07a5-42de-baf8-294fceda47e4",
+      "created_at": "2026-02-10T02:03:12.743Z",
+      "content_offset_seconds": 1715,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "LUL",
+          "emote": {
+            "emoteID": "425618"
+          },
+          "emoticon": {
+            "emoticon_id": "425618"
+          }
+        },
+        {
+          "text": " you are fine",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "761c7568-ab95-4163-902e-ffc0aa28ba68",
+      "created_at": "2026-02-10T02:03:38.488Z",
+      "content_offset_seconds": 1740,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "Oh hahah i see",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ec047b81-9772-42d0-9d51-d4ddade4779e",
+      "created_at": "2026-02-10T02:05:13.193Z",
+      "content_offset_seconds": 1835,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "200 iq play",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "726b57d8-26e8-4276-b9d8-10cb00615ddd",
+      "created_at": "2026-02-10T02:07:31.08Z",
+      "content_offset_seconds": 1973,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "bloody hell",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f3fa6c71-dbcb-4542-9260-b6c50bc9b850",
+      "created_at": "2026-02-10T02:07:49.999Z",
+      "content_offset_seconds": 1992,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "i can imagine",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "04316178-2c3c-4f2e-8a93-d458df8f0778",
+      "created_at": "2026-02-10T02:08:05.095Z",
+      "content_offset_seconds": 2007,
+      "display_name": "supportingevacuationsn",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Viewers streamboo .com  @DO8GQ1Ez",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "55398b14-da1c-4102-82f6-a0834fc1ab79",
+      "created_at": "2026-02-10T02:08:28.347Z",
+      "content_offset_seconds": 2030,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "LUL",
+          "emote": {
+            "emoteID": "425618"
+          },
+          "emoticon": {
+            "emoticon_id": "425618"
+          }
+        },
+        {
+          "text": " its fine",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a45a4532-cc21-4de3-8ab3-2b4f1c7cdb3f",
+      "created_at": "2026-02-10T02:09:23.558Z",
+      "content_offset_seconds": 2085,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "its questing time",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7ee64ab9-ff19-42ee-8413-06025a3fcb38",
+      "created_at": "2026-02-10T02:11:58.361Z",
+      "content_offset_seconds": 2240,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "oh nice",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b6f992ad-45c8-453f-85b2-7ad71e264a7d",
+      "created_at": "2026-02-10T02:12:04.561Z",
+      "content_offset_seconds": 2246,
+      "display_name": "GoodGameSteve",
+      "user_badges": [
+        {
+          "_id": "arc-raiders-launch-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#2E8B57",
+      "message": [
+        {
+          "text": "vive trackers ?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e281c0fe-d9f4-4bd4-89dc-bfdb4bc9a6e5",
+      "created_at": "2026-02-10T02:34:04.307Z",
+      "content_offset_seconds": 3566,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#27FFD7",
+      "message": [
+        {
+          "text": "@GoodGameSteve yess",
+          "emoticon": null
+        }
+      ]
+    }
+  ]
+}
