@@ -22,7 +22,7 @@ let messageCount = 0;
 let badgesCount = 0;
 
 export default function Chat(props) {
-  const { isPortrait, vodId, playerRef, playing, userChatDelay, delay, youtube, part, games } = props;
+  const { isPortrait, vodId, playerRef, playing, userChatDelay, delay, youtube, part, games, chatReplayAvailable = true } = props;
   const [showChat, setShowChat] = useState(true);
   const [shownMessages, setShownMessages] = useState([]);
   const comments = useRef([]);
@@ -54,6 +54,8 @@ export default function Chat(props) {
   });
 
   useEffect(() => {
+    if (!chatReplayAvailable) return;
+
     const loadBadges = () => {
       getBadges()
         .then((data) => {
@@ -95,7 +97,7 @@ export default function Chat(props) {
 
     loadEmotes();
     loadBadges();
-  }, [vodId]);
+  }, [vodId, chatReplayAvailable]);
 
   const getCurrentTime = useCallback(() => {
     if (!playerRef.current) return 0;
@@ -119,6 +121,7 @@ export default function Chat(props) {
   }, [playerRef, youtube, delay, part, userChatDelay, games]);
 
   const buildComments = useCallback(() => {
+    if (!chatReplayAvailable) return;
     if (!playerRef.current || !comments.current || comments.current.length === 0 || stoppedAtIndex.current === null) return;
     if (youtube || games ? playerRef.current.getPlayerState() !== 1 : playerRef.current.paused()) return;
 
@@ -475,7 +478,7 @@ export default function Chat(props) {
     });
     stoppedAtIndex.current = lastIndex;
     if (comments.current.length - 1 === lastIndex) fetchNextComments();
-  }, [getCurrentTime, playerRef, vodId, youtube, games, showTimestamp]);
+  }, [chatReplayAvailable, getCurrentTime, playerRef, vodId, youtube, games, showTimestamp]);
 
   const loop = useCallback(() => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
@@ -484,6 +487,8 @@ export default function Chat(props) {
   }, [buildComments]);
 
   useEffect(() => {
+    if (!chatReplayAvailable) return;
+
     if (!playing.playing || stoppedAtIndex.current === undefined) return;
     const fetchComments = (offset = 0) => {
       getVodComments(vodId, { contentOffsetSeconds: offset })
@@ -524,10 +529,12 @@ export default function Chat(props) {
     return () => {
       stopLoop();
     };
-  }, [playing, vodId, getCurrentTime, loop]);
+  }, [playing, vodId, getCurrentTime, loop, chatReplayAvailable]);
 
   // Add an effect to re-sync chat after the video has been set to the saved time
   useEffect(() => {
+    if (!chatReplayAvailable) return;
+
     const syncChat = () => {
       if (playerRef.current && typeof playerRef.current.currentTime === 'function') {
         const videoTime = playerRef.current.currentTime();
@@ -549,7 +556,7 @@ export default function Chat(props) {
     // Delay a bit so that the player’s time is updated after loadedmetadata
     const timer = setTimeout(syncChat, 500);
     return () => clearTimeout(timer);
-  }, [vodId, playerRef, getCurrentTime, loop]);
+  }, [vodId, playerRef, getCurrentTime, loop, chatReplayAvailable]);
 
   const stopLoop = () => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
@@ -594,15 +601,23 @@ export default function Chat(props) {
             <Box sx={{ justifySelf: "center", gridColumnStart: 1, gridRowStart: 1 }}>
               <Typography variant="body1">Chat Replay</Typography>
             </Box>
-            <Box sx={{ justifySelf: "end", gridColumnStart: 1, gridRowStart: 1 }}>
-              <IconButton title="Settings" onClick={() => setShowModal(true)} color="primary">
-                <SettingsIcon />
-              </IconButton>
-            </Box>
+            {chatReplayAvailable && (
+              <Box sx={{ justifySelf: "end", gridColumnStart: 1, gridRowStart: 1 }}>
+                <IconButton title="Settings" onClick={() => setShowModal(true)} color="primary">
+                  <SettingsIcon />
+                </IconButton>
+              </Box>
+            )}
           </Box>
           <Divider />
           <CustomCollapse in={showChat} timeout="auto" unmountOnExit sx={{ minWidth: "340px" }}>
-            {comments.length === 0 ? (
+            {!chatReplayAvailable ? (
+              <Box sx={{ p: 2 }}>
+                <Typography variant="body2" color="textSecondary">
+                  Chat replay is unavailable for this VOD.
+                </Typography>
+              </Box>
+            ) : comments.length === 0 ? (
               <Loading />
             ) : (
               <>
@@ -635,14 +650,16 @@ export default function Chat(props) {
           </Box>
         )
       )}
-      <Settings
-        userChatDelay={userChatDelay}
-        setUserChatDelay={props.setUserChatDelay}
-        showModal={showModal}
-        setShowModal={setShowModal}
-        showTimestamp={showTimestamp}
-        setShowTimestamp={setShowTimestamp}
-      />
+      {chatReplayAvailable && (
+        <Settings
+          userChatDelay={userChatDelay}
+          setUserChatDelay={props.setUserChatDelay}
+          showModal={showModal}
+          setShowModal={setShowModal}
+          showTimestamp={showTimestamp}
+          setShowTimestamp={setShowTimestamp}
+        />
+      )}
     </Box>
   );
 }

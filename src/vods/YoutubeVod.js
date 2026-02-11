@@ -141,9 +141,16 @@ export default function Vod(props) {
           <Collapse in={showMenu} timeout="auto" unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
             <Box sx={{ display: "flex", p: 1, alignItems: "center" }}>
               {chapter && <Chapters chapters={vod.chapters} chapter={chapter} setPart={setPart} youtube={youtube} setChapter={setChapter} />}
-              <CustomToolTip title={vod.title}>
-                <Typography fontWeight={550} variant="body1" noWrap={true}>{`${vod.title}`}</Typography>
-              </CustomToolTip>
+              <Box sx={{ minWidth: 0 }}>
+                <CustomToolTip title={vod.title}>
+                  <Typography fontWeight={550} variant="body1" noWrap={true}>{`${vod.title}`}</Typography>
+                </CustomToolTip>
+                {vod.vodNotice && (
+                  <Typography variant="caption" color="warning.main">
+                    {vod.vodNotice}
+                  </Typography>
+                )}
+              </Box>
               <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
                 <Box sx={{ ml: 0.5 }}>
                   <FormControl variant="outlined">
@@ -183,6 +190,7 @@ export default function Vod(props) {
         <Chat
           isPortrait={isPortrait}
           vodId={vodId}
+          chatReplayAvailable={vod.chatReplayAvailable !== false}
           playerRef={playerRef}
           playing={playing}
           delay={delay}
