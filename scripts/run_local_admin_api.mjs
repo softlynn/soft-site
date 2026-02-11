@@ -505,7 +505,7 @@ const bootstrapTwitchUserToken = async () => {
 
   throw createApiError(
     409,
-    "Twitch authorization required. Complete authorization in the opened browser tab, then click Unpublish again.",
+    `Twitch authorization required. Open this URL, complete authorization, then click Unpublish again: ${twitchBootstrapState.authUrl}`,
     {
       code: "TWITCH_AUTH_REQUIRED",
       authUrl: twitchBootstrapState.authUrl,
