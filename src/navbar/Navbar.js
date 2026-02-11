@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useRef } from "react";
 import { AppBar, Toolbar, Typography, useMediaQuery, Box, Divider } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import CustomLink from "../utils/CustomLink";
 import TwitterIcon from "@mui/icons-material/Twitter";
@@ -10,6 +11,7 @@ import Drawer from "./Drawer";
 import OndemandVideoIcon from "@mui/icons-material/OndemandVideo";
 import ReportIcon from "@mui/icons-material/Report";
 import { GITHUB_ISSUES_URL, SITE_TITLE, SOCIAL_LINKS } from "../config/site";
+import { promptAndLoginAdmin } from "../api/adminApi";
 
 const socials = [
   { path: SOCIAL_LINKS.reddit, icon: <RedditIcon color="primary" /> },
@@ -38,6 +40,38 @@ const socials = [
 
 export default function Navbar() {
   const isMobile = useMediaQuery("(max-width: 900px)");
+  const navigate = useNavigate();
+  const titleTapState = useRef({ count: 0, timer: null, active: false });
+
+  const handleSiteTitleClick = async (event) => {
+    const tapState = titleTapState.current;
+    if (tapState.active) return;
+
+    tapState.count += 1;
+    if (tapState.timer) clearTimeout(tapState.timer);
+    tapState.timer = setTimeout(() => {
+      tapState.count = 0;
+    }, 1200);
+
+    if (tapState.count < 3) return;
+
+    tapState.count = 0;
+    if (tapState.timer) {
+      clearTimeout(tapState.timer);
+      tapState.timer = null;
+    }
+
+    event.preventDefault();
+    tapState.active = true;
+    try {
+      const authenticated = await promptAndLoginAdmin();
+      if (authenticated) navigate("/admin");
+    } catch (error) {
+      window.alert(`Admin login failed: ${error.message}`);
+    } finally {
+      tapState.active = false;
+    }
+  };
 
   return (
     <Box sx={{ flex: 1 }}>
@@ -53,7 +87,7 @@ export default function Navbar() {
             </Box>
 
             <Typography variant="h6" component="div">
-              <CustomLink color="inherit" href="/">
+              <CustomLink color="inherit" href="/" onClick={handleSiteTitleClick}>
                 <Typography color="primary" variant="h6">
                   {SITE_TITLE}
                 </Typography>

@@ -44,9 +44,13 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "youtube:auth": "node scripts/init_youtube_auth.mjs",
+    "twitch:auth": "node scripts/init_twitch_user_auth.mjs",
     "archive:run": "node scripts/run_local_archive_pipeline.mjs",
+    "admin:api:start": "node scripts/run_local_admin_api.mjs",
     "archive:task:install": "powershell -ExecutionPolicy Bypass -File scripts/install_local_archive_task.ps1",
     "archive:task:remove": "powershell -ExecutionPolicy Bypass -File scripts/remove_local_archive_task.ps1",
+    "admin:task:install": "powershell -ExecutionPolicy Bypass -File scripts/install_local_admin_api_task.ps1",
+    "admin:task:remove": "powershell -ExecutionPolicy Bypass -File scripts/remove_local_admin_api_task.ps1",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

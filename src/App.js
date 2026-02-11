@@ -12,6 +12,7 @@ const CustomVod = lazy(() => import("./vods/CustomVod"));
 const Games = lazy(() => import("./games/Games"));
 const Navbar = lazy(() => import("./navbar/Navbar"));
 const NotFound = lazy(() => import("./utils/NotFound"));
+const AdminPage = lazy(() => import("./admin/AdminPage"));
 
 export default function App() {
   let darkTheme = createTheme({
@@ -73,6 +74,16 @@ export default function App() {
                 <Route exact path="/youtube/:vodId" element={<YoutubeVod />} />
                 <Route exact path="/cdn/:vodId" element={<CustomVod type="cdn" />} />
                 <Route exact path="/games/:vodId" element={<Games />} />
+                <Route
+                  exact
+                  path="/admin"
+                  element={
+                    <>
+                      <Navbar />
+                      <AdminPage />
+                    </>
+                  }
+                />
               </Routes>
             </Suspense>
           </Parent>

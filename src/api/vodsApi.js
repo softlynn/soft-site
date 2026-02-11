@@ -37,6 +37,7 @@ const normalizeVod = (vod) => ({
   games: [],
   youtube: [],
   platform: "twitch",
+  unpublished: false,
   ...vod,
 });
 
@@ -118,6 +119,7 @@ export const getVodById = async (vodId) => {
   if (USE_STATIC_ARCHIVE) {
     const vods = await loadStaticVods();
     const match = vods.find((vod) => String(vod.id) === String(vodId));
+    if (match?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
     if (!match) throw new Error(`VOD ${vodId} not found in static data`);
     return match;
   }
@@ -195,7 +197,7 @@ export const getVodComments = async (vodId, { cursor, contentOffsetSeconds } = {
 
 export const findVodsStatic = async (query = {}) => {
   const vods = await loadStaticVods();
-  let filtered = [...vods];
+  let filtered = vods.filter((vod) => !vod.unpublished);
 
   if (Array.isArray(query.$and)) {
     for (const condition of query.$and) {

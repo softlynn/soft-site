@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, InputLabel, Select, IconButton, Collapse, Divider } from "@mui/material";
+import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, InputLabel, Select, IconButton, Collapse, Divider, Button } from "@mui/material";
 import Loading from "../utils/Loading";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import YoutubePlayer from "./YoutubePlayer";
 import DownloadIcon from "@mui/icons-material/Download";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -12,11 +12,13 @@ import ExpandMore from "../utils/CustomExpandMore";
 import CustomToolTip from "../utils/CustomToolTip";
 import { toHMS, convertTimestamp, toSeconds } from "../utils/helpers";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import HomeIcon from "@mui/icons-material/Home";
 import { BRAND_NAME, DEFAULT_DELAY } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 
 export default function Vod(props) {
   const location = useLocation();
+  const navigate = useNavigate();
   const isPortrait = useMediaQuery("(orientation: portrait)");
   const { vodId } = useParams();
   const { type } = props;
@@ -151,6 +153,15 @@ export default function Vod(props) {
                   </Typography>
                 )}
               </Box>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<HomeIcon />}
+                onClick={() => navigate("/vods")}
+                sx={{ ml: 1, whiteSpace: "nowrap" }}
+              >
+                Home
+              </Button>
               <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
                 <Box sx={{ ml: 0.5 }}>
                   <FormControl variant="outlined">

@@ -12,6 +12,13 @@ This repo now includes a **local Windows automation pipeline** for:
 5. updating `public/data/vods.json`, `public/data/comments/*.json`, and `public/data/emotes/*.json`,
 6. pushing updates to `main` for GitHub Pages deployment.
 
+It also includes a **local admin bridge** for:
+
+1. hidden admin panel unlock from the site (triple-click `soft Archive` + password prompt),
+2. unpublishing a VOD on YouTube + Twitch,
+3. toggling per-VOD Spotify muted notice,
+4. toggling per-VOD chat replay availability.
+
 ## Current configured accounts
 
 - GitHub repo: `https://github.com/softlynn/soft-site`
@@ -40,10 +47,31 @@ npm run youtube:auth
 Token is saved to:
 `C:/Users/Alex2/Documents/soft-site/secrets/youtube_token.json`
 
-4. Install local scheduled task (every 15 minutes):
+4. Generate Twitch user OAuth token (opens browser once):
+
+```bash
+npm run twitch:auth
+```
+
+Token is saved to:
+`C:/Users/Alex2/Documents/soft-site/secrets/twitch_user_token.json`
+
+5. Set admin password locally in `.env.local` (gitignored):
+
+```ini
+ADMIN_PANEL_PASSWORD=<your-private-admin-password>
+```
+
+6. Install local pipeline scheduled task (every 15 minutes):
 
 ```bash
 npm run archive:task:install
+```
+
+7. Install local admin API task (starts at login and immediately):
+
+```bash
+npm run admin:task:install
 ```
 
 ## Manual run (for testing)
@@ -56,6 +84,8 @@ npm run archive:run
 
 - Install: `npm run archive:task:install`
 - Remove: `npm run archive:task:remove`
+- Admin API install: `npm run admin:task:install`
+- Admin API remove: `npm run admin:task:remove`
 
 ## Files produced by automation
 
@@ -77,6 +107,18 @@ Each upload now sets and syncs:
 ## Frontend mode
 
 `REACT_APP_USE_STATIC_ARCHIVE=true` is enabled, so the site serves archive data from `public/data/*` and does not require a custom API endpoint.
+
+## Hidden admin panel use
+
+1. Open the site and click `soft Archive` **3 times** quickly.
+2. Enter the admin password in the prompt.
+3. After unlock, `/admin` lets you:
+   - unpublish a VOD on YouTube and Twitch,
+   - hide the VOD from archive listings,
+   - toggle Spotify-muted notice,
+   - toggle chat replay availability.
+
+The admin password is never committed to GitHub; it is read from local `.env.local`.
 
 ## Deploy
 
