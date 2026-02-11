@@ -53,7 +53,7 @@ const fail = (message) => {
 const openUrl = (url) => {
   if (!url) return;
   if (process.platform === "win32") {
-    spawn("cmd", ["/c", "start", "", url], { detached: true, stdio: "ignore" }).unref();
+    spawn("explorer.exe", [url], { detached: true, stdio: "ignore" }).unref();
     return;
   }
   if (process.platform === "darwin") {
