@@ -16,6 +16,7 @@ $taskCommand = "cmd /c cd /d `"$workingDir`" && node `"$scriptPath`" >> `"$logPa
 
 $startupDir = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Startup"
 $startupCmdPath = Join-Path $startupDir "soft-admin-api.cmd"
+$watchdogCmdPath = Join-Path $PSScriptRoot "start_admin_api_watchdog.cmd"
 $usedScheduledTask = $false
 
 schtasks /Create /TN $TaskName /TR $taskCommand /SC ONLOGON /F | Out-Null
@@ -26,7 +27,21 @@ if ($LASTEXITCODE -eq 0) {
   if (!(Test-Path $startupDir)) {
     New-Item -ItemType Directory -Path $startupDir -Force | Out-Null
   }
-  "@echo off`r`ncd /d `"$workingDir`"`r`nnode `"$scriptPath`" >> `"$logPath`" 2>&1`r`n" | Set-Content -Path $startupCmdPath -Encoding ascii
+
+  @"
+@echo off
+setlocal
+cd /d "$workingDir"
+:loop
+node "$scriptPath" >> "$logPath" 2>&1
+timeout /t 5 /nobreak >nul
+goto loop
+"@ | Set-Content -Path $watchdogCmdPath -Encoding ascii
+
+  @"
+@echo off
+start "" /min cmd /c "$watchdogCmdPath"
+"@ | Set-Content -Path $startupCmdPath -Encoding ascii
 }
 
 if ($usedScheduledTask) {
