@@ -16,9 +16,10 @@ const config = {
   twitchClientSecret: process.env.TWITCH_CLIENT_SECRET || "",
   twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "",
   twitchUserTokenPath: process.env.TWITCH_USER_TOKEN_PATH || path.join(repoRoot, "secrets", "twitch_user_token.json"),
+  redirectUri: String(process.env.TWITCH_AUTH_REDIRECT_URI || "").trim(),
   redirectHost: process.env.TWITCH_AUTH_REDIRECT_HOST || "localhost",
-  redirectPort: Number(process.env.TWITCH_AUTH_REDIRECT_PORT || "49724"),
-  redirectPath: "/twitch/callback",
+  redirectPort: Number(process.env.TWITCH_AUTH_REDIRECT_PORT || "3000"),
+  redirectPath: process.env.TWITCH_AUTH_REDIRECT_PATH || "/",
   scopes: ["channel:manage:videos"],
 };
 
@@ -28,7 +29,7 @@ const fail = (message) => {
 
 const openUrl = (url) => {
   if (process.platform === "win32") {
-    spawn("explorer.exe", [url], { detached: true, stdio: "ignore" }).unref();
+    spawn("rundll32.exe", ["url.dll,FileProtocolHandler", url], { detached: true, stdio: "ignore" }).unref();
     return;
   }
   if (process.platform === "darwin") {
@@ -84,7 +85,22 @@ const ensureConfig = () => {
 
 ensureConfig();
 
-const redirectUri = `http://${config.redirectHost}:${config.redirectPort}${config.redirectPath}`;
+const normalizePathname = (value) => {
+  const pathValue = String(value || "").trim();
+  if (!pathValue) return "/";
+  return pathValue.startsWith("/") ? pathValue : `/${pathValue}`;
+};
+
+const redirectUri = config.redirectUri || `http://${config.redirectHost}:${config.redirectPort}${normalizePathname(config.redirectPath)}`;
+let redirectUrl = null;
+try {
+  redirectUrl = new URL(redirectUri);
+} catch {
+  fail(`Invalid Twitch redirect URI: ${redirectUri}`);
+}
+const redirectHost = redirectUrl.hostname;
+const redirectPort = Number(redirectUrl.port || (redirectUrl.protocol === "https:" ? 443 : 80));
+const redirectPath = normalizePathname(redirectUrl.pathname || "/");
 const authUrl = new URL("https://id.twitch.tv/oauth2/authorize");
 authUrl.searchParams.set("client_id", config.twitchClientId);
 authUrl.searchParams.set("redirect_uri", redirectUri);
@@ -116,8 +132,8 @@ const htmlError = (message) => `
 
 const server = http.createServer(async (req, res) => {
   try {
-    const requestUrl = new URL(req.url || "/", `http://${config.redirectHost}:${config.redirectPort}`);
-    if (requestUrl.pathname !== config.redirectPath) {
+    const requestUrl = new URL(req.url || "/", redirectUrl.origin);
+    if (requestUrl.pathname !== redirectPath) {
       res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
       res.end("Not found");
       return;
@@ -181,7 +197,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(config.redirectPort, config.redirectHost, () => {
+server.listen(redirectPort, redirectHost, () => {
   console.log(`Authorize Twitch at:\n${authUrl.toString()}`);
   openUrl(authUrl.toString());
 });

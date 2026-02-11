@@ -29,8 +29,10 @@ const config = {
   twitchUserTokenPath: process.env.TWITCH_USER_TOKEN_PATH || path.join(repoRoot, "secrets", "twitch_user_token.json"),
   youtubeClientSecretPath: process.env.YOUTUBE_CLIENT_SECRET_PATH || path.join(repoRoot, "secrets", "youtube_client_secret.json"),
   youtubeTokenPath: process.env.YOUTUBE_TOKEN_PATH || path.join(repoRoot, "secrets", "youtube_token.json"),
+  twitchAuthRedirectUri: String(process.env.TWITCH_AUTH_REDIRECT_URI || "").trim(),
   twitchAuthRedirectHost: process.env.TWITCH_AUTH_REDIRECT_HOST || "localhost",
-  twitchAuthRedirectPort: Number(process.env.TWITCH_AUTH_REDIRECT_PORT || "49724"),
+  twitchAuthRedirectPort: Number(process.env.TWITCH_AUTH_REDIRECT_PORT || "3000"),
+  twitchAuthRedirectPath: process.env.TWITCH_AUTH_REDIRECT_PATH || "/",
   twitchAuthTimeoutSeconds: Number(process.env.TWITCH_AUTH_TIMEOUT_SECONDS || "180"),
   spotifyNoticeText: process.env.ADMIN_SPOTIFY_NOTICE_TEXT || "Spotify audio is muted on this VOD.",
 };
@@ -39,7 +41,6 @@ const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 const MAX_BODY_BYTES = 128 * 1024;
 const sessions = new Map();
 let twitchBootstrapState = null;
-const TWITCH_AUTH_CALLBACK_PATH = "/twitch/callback";
 const TWITCH_AUTH_SCOPES = ["channel:manage:videos"];
 
 const log = (message) => {
@@ -55,7 +56,7 @@ const createApiError = (status, message, details = {}) => Object.assign(new Erro
 const openUrl = (url) => {
   if (!url) return;
   if (process.platform === "win32") {
-    spawn("explorer.exe", [url], { detached: true, stdio: "ignore" }).unref();
+    spawn("rundll32.exe", ["url.dll,FileProtocolHandler", url], { detached: true, stdio: "ignore" }).unref();
     return;
   }
   if (process.platform === "darwin") {
@@ -64,6 +65,29 @@ const openUrl = (url) => {
   }
   spawn("xdg-open", [url], { detached: true, stdio: "ignore" }).unref();
 };
+
+const normalizePathname = (value) => {
+  const pathValue = String(value || "").trim();
+  if (!pathValue) return "/";
+  return pathValue.startsWith("/") ? pathValue : `/${pathValue}`;
+};
+
+const buildTwitchRedirectUri = () => {
+  if (config.twitchAuthRedirectUri) return config.twitchAuthRedirectUri;
+  const pathname = normalizePathname(config.twitchAuthRedirectPath);
+  return `http://${config.twitchAuthRedirectHost}:${config.twitchAuthRedirectPort}${pathname}`;
+};
+
+const twitchRedirectUri = buildTwitchRedirectUri();
+let twitchRedirectUrl = null;
+try {
+  twitchRedirectUrl = new URL(twitchRedirectUri);
+} catch {
+  fail(`Invalid TWITCH_AUTH_REDIRECT_URI: ${twitchRedirectUri}`);
+}
+const twitchRedirectHost = twitchRedirectUrl.hostname;
+const twitchRedirectPort = Number(twitchRedirectUrl.port || (twitchRedirectUrl.protocol === "https:" ? 443 : 80));
+const twitchRedirectPath = normalizePathname(twitchRedirectUrl.pathname || "/");
 
 const ensureDirectory = async (dirPath) => {
   await fs.mkdir(dirPath, { recursive: true });
@@ -384,7 +408,7 @@ const exchangeTwitchCodeForToken = async (code, redirectUri) => {
 
 const startInteractiveTwitchAuth = () => {
   const state = crypto.randomUUID();
-  const redirectUri = `http://${config.twitchAuthRedirectHost}:${config.twitchAuthRedirectPort}${TWITCH_AUTH_CALLBACK_PATH}`;
+  const redirectUri = twitchRedirectUrl.toString();
   const authUrl = new URL("https://id.twitch.tv/oauth2/authorize");
   authUrl.searchParams.set("client_id", config.twitchClientId);
   authUrl.searchParams.set("redirect_uri", redirectUri);
@@ -419,8 +443,8 @@ const startInteractiveTwitchAuth = () => {
 
     const server = http.createServer(async (req, res) => {
       try {
-        const requestUrl = new URL(req.url || "/", `http://${config.twitchAuthRedirectHost}:${config.twitchAuthRedirectPort}`);
-        if (requestUrl.pathname !== TWITCH_AUTH_CALLBACK_PATH) {
+        const requestUrl = new URL(req.url || "/", twitchRedirectUrl.origin);
+        if (requestUrl.pathname !== twitchRedirectPath) {
           res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
           res.end("Not found");
           return;
@@ -466,7 +490,7 @@ const startInteractiveTwitchAuth = () => {
       finish(new Error("Timed out waiting for Twitch authorization. Please retry unpublish."));
     }, Math.max(30, config.twitchAuthTimeoutSeconds) * 1000);
 
-    server.listen(config.twitchAuthRedirectPort, config.twitchAuthRedirectHost, () => {
+    server.listen(twitchRedirectPort, twitchRedirectHost, () => {
       log(`Starting Twitch OAuth in browser for ${config.twitchChannelLogin || "configured channel"}...`);
       log(`If the browser did not open, use this URL manually: ${bootstrap.authUrl}`);
       openUrl(bootstrap.authUrl);
