@@ -1,9 +1,10 @@
 import { styled, Typography } from "@mui/material";
 import CustomLink from "./CustomLink";
 import Logo from "../assets/logo.png";
+import { BRAND_NAME } from "../config/site";
 
 const NotFound = styled((props) => {
-  document.title = "Not Found - xQc";
+  document.title = `Not Found - ${BRAND_NAME}`;
   return (
     <div {...props}>
       <img src={Logo} alt="" style={{ height: "auto", maxWidth: "200px" }} />

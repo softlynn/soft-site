@@ -9,14 +9,14 @@ import Settings from "./Settings";
 import { toHHMMSS } from "../utils/helpers";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MessageTooltip from "./MessageTooltip";
+import { BTTV_EMOTE_CDN } from "../config/site";
+import { getBadges, getEmotes, getVodComments } from "../api/vodsApi";
 
 const SEVENTV_API = "https://7tv.io/v3";
 const BASE_TWITCH_CDN = "https://static-cdn.jtvnw.net";
 const BASE_FFZ_EMOTE_CDN = "https://cdn.frankerfacez.com/emote";
-//Needs CORS for mobile devices.
-const BASE_BTTV_EMOTE_CDN = "https://bttv.xqc.wtf";
+const BASE_BTTV_EMOTE_CDN = BTTV_EMOTE_CDN;
 const BASE_7TV_EMOTE_CDN = "https://cdn.7tv.app/emote";
-const API_BASE = process.env.REACT_APP_VODS_API_BASE;
 
 let messageCount = 0;
 let badgesCount = 0;
@@ -55,13 +55,7 @@ export default function Chat(props) {
 
   useEffect(() => {
     const loadBadges = () => {
-      fetch(`${API_BASE}/v2/badges`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
+      getBadges()
         .then((data) => {
           if (data.error) return;
           badges.current = data;
@@ -88,13 +82,7 @@ export default function Chat(props) {
     };
 
     const loadEmotes = async () => {
-      await fetch(`${API_BASE}/emotes?vod_id=${vodId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
+      await getEmotes(vodId)
         .then((data) => {
           if (data.error) return;
           emotes.current = data.data[0];
@@ -131,7 +119,7 @@ export default function Chat(props) {
   }, [playerRef, youtube, delay, part, userChatDelay, games]);
 
   const buildComments = useCallback(() => {
-    if (!playerRef.current || !comments.current || comments.current.length === 0 || !cursor.current || stoppedAtIndex.current === null) return;
+    if (!playerRef.current || !comments.current || comments.current.length === 0 || stoppedAtIndex.current === null) return;
     if (youtube || games ? playerRef.current.getPlayerState() !== 1 : playerRef.current.paused()) return;
 
     const time = getCurrentTime();
@@ -146,13 +134,8 @@ export default function Chat(props) {
     if (stoppedAtIndex.current === lastIndex && stoppedAtIndex.current !== 0) return;
 
     const fetchNextComments = () => {
-      fetch(`${API_BASE}/v1/vods/${vodId}/comments?cursor=${cursor.current}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
+      if (!cursor.current) return;
+      getVodComments(vodId, { cursor: cursor.current })
         .then((response) => {
           stoppedAtIndex.current = 0;
           comments.current = response.comments;
@@ -474,13 +457,7 @@ export default function Chat(props) {
   useEffect(() => {
     if (!playing.playing || stoppedAtIndex.current === undefined) return;
     const fetchComments = (offset = 0) => {
-      fetch(`${API_BASE}/v1/vods/${vodId}/comments?content_offset_seconds=${offset}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
+      getVodComments(vodId, { contentOffsetSeconds: offset })
         .then((response) => {
           comments.current = response.comments;
           cursor.current = response.cursor;
@@ -531,17 +508,13 @@ export default function Chat(props) {
         stoppedAtIndex.current = 0;
         setShownMessages([]);
         // Re-fetch chat comments using the current video time:
-        fetch(`${API_BASE}/v1/vods/${vodId}/comments?content_offset_seconds=${videoTime}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        })
-          .then(response => response.json())
-          .then(data => {
+        getVodComments(vodId, { contentOffsetSeconds: videoTime })
+          .then((data) => {
             comments.current = data.comments;
             cursor.current = data.cursor;
-            loop();  // restart the chat updating loop
+            loop(); // restart the chat updating loop
           })
-          .catch(e => console.error(e));
+          .catch((e) => console.error(e));
       }
     };
     // Delay a bit so that the player’s time is updated after loadedmetadata

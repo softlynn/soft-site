@@ -9,10 +9,11 @@ import Chat from "./Chat";
 import Chapters from "./VodChapters";
 import ExpandMore from "../utils/CustomExpandMore";
 import CustomWidthTooltip from "../utils/CustomToolTip";
+import NotFound from "../utils/NotFound";
 import { toHMS, convertTimestamp } from "../utils/helpers";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-
-const API_BASE = process.env.REACT_APP_VODS_API_BASE;
+import { BRAND_NAME } from "../config/site";
+import { getVodById } from "../api/vodsApi";
 
 export default function Vod(props) {
   const location = useLocation();
@@ -33,19 +34,14 @@ export default function Vod(props) {
 
   useEffect(() => {
     const fetchVod = async () => {
-      await fetch(`${API_BASE}/vods/${vodId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
+      await getVodById(vodId)
         .then((response) => {
           setVod(response);
-          document.title = `${response.id} - xQc`;
+          document.title = `${response.id} - ${BRAND_NAME}`;
         })
         .catch((e) => {
           console.error(e);
+          setVod(null);
         });
     };
     fetchVod();
@@ -91,10 +87,11 @@ export default function Vod(props) {
   }, [timestamp, playerRef]);
 
   const copyTimestamp = () => {
-    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?t=${toHMS(currentTime)}`);
+    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#${location.pathname}?t=${toHMS(currentTime)}`);
   };
 
   if (vod === undefined || drive === undefined) return <Loading />;
+  if (vod === null) return <NotFound />;
 
   return (
     <Box sx={{ height: "100%", width: "100%" }}>

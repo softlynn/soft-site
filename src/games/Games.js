@@ -9,9 +9,10 @@ import NotFound from "../utils/NotFound";
 import Chat from "../vods/Chat";
 import ExpandMore from "../utils/CustomExpandMore";
 import CustomToolTip from "../utils/CustomToolTip";
+import { BRAND_NAME } from "../config/site";
+import { getVodById } from "../api/vodsApi";
 
 const delay = 0;
-const API_BASE = process.env.REACT_APP_VODS_API_BASE;
 
 export default function Games(props) {
   const location = useLocation();
@@ -28,19 +29,14 @@ export default function Games(props) {
 
   useEffect(() => {
     const fetchVod = async () => {
-      await fetch(`${API_BASE}/vods/${vodId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
+      await getVodById(vodId)
         .then((response) => {
           setVod(response);
-          document.title = `${response.id} - xQc`;
+          document.title = `${response.id} - ${BRAND_NAME}`;
         })
         .catch((e) => {
           console.error(e);
+          setVod(null);
         });
     };
     fetchVod();
@@ -72,6 +68,7 @@ export default function Games(props) {
   }, [userChatDelay]);
 
   if (vod === undefined || drive === undefined || part === undefined || delay === undefined) return <Loading />;
+  if (vod === null) return <NotFound />;
 
   if (games.length === 0) return <NotFound />;
 

@@ -13,10 +13,10 @@ import debounce from "lodash.debounce";
 import vodsClient from "./client";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { ADSENSE_CLIENT, ADSENSE_SLOT, CDN_BASE, ENABLE_ADSENSE, START_DATE } from "../config/site";
 
 const FILTERS = ["Default", "Date", "Title", "Game"];
 const PLATFORMS = ["All", "Twitch", "Kick"];
-const START_DATE = process.env.REACT_APP_START_DATE;
 
 export default function Vods() {
   const navigate = useNavigate();
@@ -147,19 +147,21 @@ export default function Vods() {
     [setFilterGame]
   );
 
-  const totalPages = Math.ceil(totalVods / limit);
-  const isCdnAvailable = true;
+  const totalPages = Math.max(1, Math.ceil((totalVods || 0) / limit));
+  const isCdnAvailable = Boolean(CDN_BASE);
 
   return (
     <SimpleBar style={{ minHeight: 0, height: "100%" }}>
       <Box sx={{ padding: 2 }}>
-        <Box sx={{ mt: 1, textAlign: "center" }}>
-          <ErrorBoundary>
-            <AdSense.Google client="ca-pub-8093490837210586" slot="3667265818" style={{ display: "block" }} format="auto" responsive="true" layoutKey="-gw-1+2a-9x+5c" />
-          </ErrorBoundary>
-        </Box>
+        {ENABLE_ADSENSE && ADSENSE_CLIENT && ADSENSE_SLOT && (
+          <Box sx={{ mt: 1, textAlign: "center" }}>
+            <ErrorBoundary>
+              <AdSense.Google client={ADSENSE_CLIENT} slot={ADSENSE_SLOT} style={{ display: "block" }} format="auto" responsive="true" layoutKey="-gw-1+2a-9x+5c" />
+            </ErrorBoundary>
+          </Box>
+        )}
         <Box sx={{ display: "flex", justifyContent: "center", mt: 2, flexDirection: "column", alignItems: "center" }}>
-          {totalVods && (
+          {totalVods !== null && (
             <Typography variant="h4" color="primary" sx={{ textTransform: "uppercase", fontWeight: "550" }}>
               {`${totalVods} Vods`}
             </Typography>
@@ -225,11 +227,19 @@ export default function Vods() {
           </FormControl>
         </Box>
         {vods ? (
-          <Grid container spacing={2} sx={{ mt: 1, justifyContent: "center" }}>
-            {vods.map((vod, _) => (
-              <Vod gridSize={2.1} key={vod.id} vod={vod} isMobile={isMobile} isCdnAvailable={isCdnAvailable} />
-            ))}
-          </Grid>
+          vods.length > 0 ? (
+            <Grid container spacing={2} sx={{ mt: 1, justifyContent: "center" }}>
+              {vods.map((vod, _) => (
+                <Vod gridSize={2.1} key={vod.id} vod={vod} isMobile={isMobile} isCdnAvailable={isCdnAvailable} />
+              ))}
+            </Grid>
+          ) : (
+            <Box sx={{ mt: 3, textAlign: "center" }}>
+              <Typography variant="body1" color="textSecondary">
+                No VODs found yet. Upload to YouTube and the archive will sync automatically.
+              </Typography>
+            </Box>
+          )
         ) : (
           <Loading />
         )}

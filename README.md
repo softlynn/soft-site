@@ -1,76 +1,81 @@
-# Getting Started with Create React App
+# soft Archive Site
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Archive frontend rebranded for `soft`, based on OP Archives.
 
-## Available Scripts
+The frontend behavior and VOD/chat model are kept compatible with the original OP archive design.  
+This repo now includes a **local Windows automation pipeline** for:
 
-In the project directory, you can run:
+1. detecting finished OBS recordings,
+2. matching them to Twitch VODs,
+3. uploading the recording to YouTube,
+4. exporting Twitch chat replay,
+5. updating `public/data/vods.json` and `public/data/comments/*.json`,
+6. pushing updates to `main` for GitHub Pages deployment.
 
-### `npm start`
+## Current configured accounts
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- GitHub repo: `https://github.com/softlynn/soft-site`
+- Twitch channel: `softu1`
+- YouTube channel link: `https://www.youtube.com/channel/UCSbqIDbEWTHlD0xVuRJk_QA`
+- Twitter/X: `https://x.com/lx_hyze`
+- Discord: `https://discord.com/invite/33JbkQ5R`
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## One-time setup
 
-### `npm test`
+1. Install dependencies:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+npm ci --include=dev
+```
 
-### `npm run build`
+2. Ensure local automation config exists at `.env.local` (gitignored).  
+   Start from `.env.local.example` if needed.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. Generate YouTube OAuth token (opens browser once):
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+npm run youtube:auth
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Token is saved to:
+`C:/Users/Alex2/Documents/soft-site/secrets/youtube_token.json`
 
-### `npm run eject`
+4. Install local scheduled task (every 15 minutes):
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```bash
+npm run archive:task:install
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Manual run (for testing)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```bash
+npm run archive:run
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Scheduled task commands
 
-## Learn More
+- Install: `npm run archive:task:install`
+- Remove: `npm run archive:task:remove`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Files produced by automation
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- VOD index: `public/data/vods.json`
+- Chat replay per VOD: `public/data/comments/<twitchVodId>.json`
+- Pipeline state: `scripts/.state/pipeline-state.json`
 
-### Code Splitting
+## Frontend mode
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+`REACT_APP_USE_STATIC_ARCHIVE=true` is enabled, so the site serves archive data from `public/data/*` and does not require a custom API endpoint.
 
-### Analyzing the Bundle Size
+## Deploy
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+GitHub Pages deploy workflow:
+`.github/workflows/deploy-pages.yml`
 
-### Making a Progressive Web App
+In GitHub repo settings:
+`Settings -> Pages -> Source: GitHub Actions`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Important policy note
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
-### Twemoji
-
-[Twemoji graphics made by Twitter and other contributors](https://twemoji.twitter.com)
-
-[Licensed under CC-BY 4.0](https://creativecommons.org/licenses/by/4.0)
+This setup can upload your local recording audio to YouTube, but it does not bypass copyright rules.  
+If uploaded audio includes content you do not have rights to publish (for example Spotify tracks), YouTube can still claim, block, or strike videos.

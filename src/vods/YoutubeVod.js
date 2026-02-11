@@ -12,8 +12,8 @@ import ExpandMore from "../utils/CustomExpandMore";
 import CustomToolTip from "../utils/CustomToolTip";
 import { toHMS, convertTimestamp, toSeconds } from "../utils/helpers";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-
-const API_BASE = "https://api.xqc.wtf";
+import { BRAND_NAME, DEFAULT_DELAY } from "../config/site";
+import { getVodById } from "../api/vodsApi";
 
 export default function Vod(props) {
   const location = useLocation();
@@ -34,19 +34,14 @@ export default function Vod(props) {
 
   useEffect(() => {
     const fetchVod = async () => {
-      await fetch(`${API_BASE}/vods/${vodId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
+      await getVodById(vodId)
         .then((response) => {
           setVod(response);
-          document.title = `${response.id} - xQc`;
+          document.title = `${response.id} - ${BRAND_NAME}`;
         })
         .catch((e) => {
           console.error(e);
+          setVod(null);
         });
     };
     fetchVod();
@@ -97,7 +92,7 @@ export default function Vod(props) {
     let totalYoutubeDuration = 0;
     for (let data of youtube) {
       if (!data.duration) {
-        totalYoutubeDuration += process.env.REACT_APP_DEFAULT_DELAY;
+        totalYoutubeDuration += DEFAULT_DELAY;
         continue;
       }
       totalYoutubeDuration += data.duration;
@@ -123,10 +118,11 @@ export default function Vod(props) {
   }, [userChatDelay, delay]);
 
   const copyTimestamp = () => {
-    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?t=${toHMS(currentTime)}`);
+    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#${location.pathname}?t=${toHMS(currentTime)}`);
   };
 
   if (vod === undefined || drive === undefined || part === undefined || delay === undefined) return <Loading />;
+  if (vod === null) return <NotFound />;
 
   if (youtube.length === 0) return <NotFound />;
 

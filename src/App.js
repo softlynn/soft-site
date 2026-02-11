@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import { createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
 import { CssBaseline, styled } from "@mui/material";
 import Loading from "./utils/Loading";
@@ -44,7 +44,7 @@ export default function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <BrowserRouter>
+      <HashRouter>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Parent>
             <Suspense fallback={<Loading />}>
@@ -77,7 +77,7 @@ export default function App() {
             </Suspense>
           </Parent>
         </LocalizationProvider>
-      </BrowserRouter>
+      </HashRouter>
     </ThemeProvider>
   );
 }

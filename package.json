@@ -1,7 +1,8 @@
 {
-  "name": "xqc",
+  "name": "soft-archive-site",
   "version": "1.0.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -23,20 +24,29 @@
     "react": "^19.2.1",
     "react-adsense": "^0.1.0",
     "react-dom": "^19.2.1",
+    "react-git-info": "^2.0.1",
     "react-router-dom": "^7.10.1",
     "react-scripts": "5.0.1",
     "react-twemoji": "^0.6.0",
     "react-youtube": "^10.1.0",
     "simplebar-react": "^3.3.2",
+    "dotenv": "^16.6.1",
+    "googleapis": "^156.0.0",
+    "@google-cloud/local-auth": "^3.0.1",
     "tinyduration": "^3.4.1",
     "video.js": "^8.23.4",
     "videojs-hotkeys": "^0.2.30",
-    "web-vitals": "^5.1.0"
+    "web-vitals": "^5.1.0",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   },
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "cross-env react-app-rewired build && rm -rf prod/ && mv build/ prod/",
-    "test": "react-app-rewired test",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "youtube:auth": "node scripts/init_youtube_auth.mjs",
+    "archive:run": "node scripts/run_local_archive_pipeline.mjs",
+    "archive:task:install": "powershell -ExecutionPolicy Bypass -File scripts/install_local_archive_task.ps1",
+    "archive:task:remove": "powershell -ExecutionPolicy Bypass -File scripts/remove_local_archive_task.ps1",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -61,12 +71,5 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "babel-plugin-import": "^1.13.8",
-    "cross-env": "^10.1.0",
-    "customize-cra": "^1.0.0",
-    "react-app-rewired": "^2.2.1",
-    "react-git-info": "^2.0.1"
-  }
+  "devDependencies": {}
 }

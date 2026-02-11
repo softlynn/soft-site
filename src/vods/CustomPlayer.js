@@ -4,8 +4,9 @@ import { Button, Box, Alert, Paper } from "@mui/material";
 import VideoJS from "./VideoJS";
 import "videojs-hotkeys";
 import { toSeconds } from "../utils/helpers";
+import { CDN_BASE as CDN_BASE_URL } from "../config/site";
 
-const CDN_BASE = "https://cdn.xqc.wtf";
+const CDN_BASE = CDN_BASE_URL;
 
 export default function Player(props) {
   const { playerRef, setCurrentTime, setPlaying, type, vod, timestamp, delay, setDelay } = props;
