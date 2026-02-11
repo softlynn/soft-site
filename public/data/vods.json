@@ -11,13 +11,6 @@
         "duration": 50,
         "part": 1,
         "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/1633e99235dbdbeb2f14_softu1_317193512796_1770834228//thumb/thumb0-640x360.jpg"
-      },
-      {
-        "id": "FiHn8BM0Enw",
-        "type": "vod",
-        "duration": 0,
-        "part": 2,
-        "thumbnail_url": "https://i.ytimg.com/vi/FiHn8BM0Enw/mqdefault.jpg"
       }
     ],
     "stream_id": "317193512796",
@@ -34,6 +27,36 @@
     ],
     "games": [],
     "createdAt": "2026-02-11T18:23:53Z",
-    "updatedAt": "2026-02-11T21:23:47.303Z"
+    "updatedAt": "2026-02-11T18:27:25.156Z"
+  },
+  {
+    "id": "2693715902",
+    "title": "woah",
+    "duration": "02:37:20",
+    "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/a315b3742295e1aa417c_softu1_317168183644_1770687271//thumb/thumb0-640x360.jpg",
+    "youtube": [
+      {
+        "id": "ZOepfUChTLk",
+        "type": "vod",
+        "duration": 0,
+        "part": 1,
+        "thumbnail_url": "https://i.ytimg.com/vi/ZOepfUChTLk/mqdefault.jpg"
+      }
+    ],
+    "stream_id": "317168183644",
+    "drive": [],
+    "platform": "twitch",
+    "chapters": [
+      {
+        "gameId": "499003",
+        "start": 0,
+        "end": 9440,
+        "name": "VRChat",
+        "image": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-40x53.jpg"
+      }
+    ],
+    "games": [],
+    "createdAt": "2026-02-10T01:34:36Z",
+    "updatedAt": "2026-02-11T21:21:15.806Z"
   }
 ]
