@@ -139,6 +139,18 @@ export default function AdminPage() {
         text: `Unpublished ${selectedVod.id}. YouTube parts affected: ${youtubeCount}.`,
       });
     } catch (error) {
+      if (error?.code === "TWITCH_AUTH_REQUIRED" && error?.authUrl) {
+        try {
+          window.open(error.authUrl, "_blank", "noopener,noreferrer");
+        } catch {
+          // no-op
+        }
+        setMessage({
+          type: "warning",
+          text: `Twitch authorization is required. If no browser tab opened, open this URL manually: ${error.authUrl}`,
+        });
+        return;
+      }
       setMessage({ type: "error", text: error.message });
     } finally {
       setLoading(false);

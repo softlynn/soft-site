@@ -38,7 +38,7 @@ const config = {
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 const MAX_BODY_BYTES = 128 * 1024;
 const sessions = new Map();
-let twitchBootstrapPromise = null;
+let twitchBootstrapState = null;
 const TWITCH_AUTH_CALLBACK_PATH = "/twitch/callback";
 const TWITCH_AUTH_SCOPES = ["channel:manage:videos"];
 
@@ -49,6 +49,8 @@ const log = (message) => {
 const fail = (message) => {
   throw new Error(message);
 };
+
+const createApiError = (status, message, details = {}) => Object.assign(new Error(message), { status, ...details });
 
 const openUrl = (url) => {
   if (!url) return;
@@ -380,23 +382,35 @@ const exchangeTwitchCodeForToken = async (code, redirectUri) => {
   return response.json();
 };
 
-const runInteractiveTwitchAuth = async () =>
-  new Promise((resolve, reject) => {
-    const state = crypto.randomUUID();
-    const redirectUri = `http://${config.twitchAuthRedirectHost}:${config.twitchAuthRedirectPort}${TWITCH_AUTH_CALLBACK_PATH}`;
-    const authUrl = new URL("https://id.twitch.tv/oauth2/authorize");
-    authUrl.searchParams.set("client_id", config.twitchClientId);
-    authUrl.searchParams.set("redirect_uri", redirectUri);
-    authUrl.searchParams.set("response_type", "code");
-    authUrl.searchParams.set("scope", TWITCH_AUTH_SCOPES.join(" "));
-    authUrl.searchParams.set("force_verify", "true");
-    authUrl.searchParams.set("state", state);
+const startInteractiveTwitchAuth = () => {
+  const state = crypto.randomUUID();
+  const redirectUri = `http://${config.twitchAuthRedirectHost}:${config.twitchAuthRedirectPort}${TWITCH_AUTH_CALLBACK_PATH}`;
+  const authUrl = new URL("https://id.twitch.tv/oauth2/authorize");
+  authUrl.searchParams.set("client_id", config.twitchClientId);
+  authUrl.searchParams.set("redirect_uri", redirectUri);
+  authUrl.searchParams.set("response_type", "code");
+  authUrl.searchParams.set("scope", TWITCH_AUTH_SCOPES.join(" "));
+  authUrl.searchParams.set("force_verify", "true");
+  authUrl.searchParams.set("state", state);
 
+  const bootstrap = {
+    authUrl: authUrl.toString(),
+    done: false,
+    error: null,
+    startedAt: Date.now(),
+    promise: null,
+  };
+
+  bootstrap.promise = new Promise((resolve, reject) => {
     let finished = false;
+    let timeoutRef = null;
+
     const finish = (error, value) => {
       if (finished) return;
       finished = true;
-      clearTimeout(timeout);
+      bootstrap.done = true;
+      bootstrap.error = error ? error.message : null;
+      if (timeoutRef) clearTimeout(timeoutRef);
       server.close(() => {
         if (error) reject(error);
         else resolve(value);
@@ -448,15 +462,19 @@ const runInteractiveTwitchAuth = async () =>
       }
     });
 
-    const timeout = setTimeout(() => {
-      finish(new Error("Timed out waiting for Twitch authorization. Please retry."));
+    timeoutRef = setTimeout(() => {
+      finish(new Error("Timed out waiting for Twitch authorization. Please retry unpublish."));
     }, Math.max(30, config.twitchAuthTimeoutSeconds) * 1000);
 
     server.listen(config.twitchAuthRedirectPort, config.twitchAuthRedirectHost, () => {
       log(`Starting Twitch OAuth in browser for ${config.twitchChannelLogin || "configured channel"}...`);
-      openUrl(authUrl.toString());
+      log(`If the browser did not open, use this URL manually: ${bootstrap.authUrl}`);
+      openUrl(bootstrap.authUrl);
     });
   });
+
+  return bootstrap;
+};
 
 const seedTwitchTokenFromEnv = async () => {
   const accessToken = String(process.env.TWITCH_USER_ACCESS_TOKEN || "").trim();
@@ -473,20 +491,26 @@ const seedTwitchTokenFromEnv = async () => {
 };
 
 const bootstrapTwitchUserToken = async () => {
-  if (twitchBootstrapPromise) return twitchBootstrapPromise;
-  twitchBootstrapPromise = (async () => {
-    const fromEnv = await seedTwitchTokenFromEnv();
-    if (fromEnv) return fromEnv;
+  const fromEnv = await seedTwitchTokenFromEnv();
+  if (fromEnv) return fromEnv;
 
+  if (!twitchBootstrapState || (twitchBootstrapState.done && twitchBootstrapState.error)) {
     log("No stored Twitch user token found. Starting one-time interactive Twitch authorization.");
-    return runInteractiveTwitchAuth();
-  })();
-
-  try {
-    return await twitchBootstrapPromise;
-  } finally {
-    twitchBootstrapPromise = null;
+    twitchBootstrapState = startInteractiveTwitchAuth();
   }
+
+  if (twitchBootstrapState.done && !twitchBootstrapState.error) {
+    return twitchBootstrapState.promise;
+  }
+
+  throw createApiError(
+    409,
+    "Twitch authorization required. Complete authorization in the opened browser tab, then click Unpublish again.",
+    {
+      code: "TWITCH_AUTH_REQUIRED",
+      authUrl: twitchBootstrapState.authUrl,
+    }
+  );
 };
 
 const loadTwitchTokenRecord = async () => {
@@ -542,8 +566,8 @@ const getValidTwitchToken = async () => {
   }
 };
 
-const deleteTwitchVod = async (vodId) => {
-  const tokenRecord = await getValidTwitchToken();
+const deleteTwitchVod = async (vodId, tokenRecordInput) => {
+  const tokenRecord = tokenRecordInput || (await getValidTwitchToken());
   const accessToken = tokenRecord.access_token;
   const request = async (token) =>
     fetch(`https://api.twitch.tv/helix/videos?id=${encodeURIComponent(String(vodId))}`, {
@@ -677,6 +701,7 @@ const handleRequest = async (req, res) => {
       const vod = vods.find((entry) => String(entry.id) === String(vodRoute.vodId));
       if (!vod) fail(`VOD ${vodRoute.vodId} not found`);
 
+      const twitchToken = await getValidTwitchToken();
       const youtubeIds = (Array.isArray(vod.youtube) ? vod.youtube : []).map((entry) => entry?.id).filter(Boolean);
       const youtube = await loadYoutubeClient();
       const youtubeResults = [];
@@ -684,7 +709,7 @@ const handleRequest = async (req, res) => {
         youtubeResults.push(await setYouTubeVideoPrivate(youtube, videoId));
       }
 
-      const twitchResult = await deleteTwitchVod(vodRoute.vodId);
+      const twitchResult = await deleteTwitchVod(vodRoute.vodId, twitchToken);
 
       const updatedVod = await updateVod(
         vodRoute.vodId,
@@ -714,7 +739,11 @@ await validateConfig();
 const server = http.createServer((req, res) => {
   handleRequest(req, res).catch((error) => {
     log(`Request failed: ${error.message}`);
-    sendJson(req, res, 500, { error: error.message });
+    const status = Number(error?.status) || 500;
+    const payload = { error: error?.message || "Request failed" };
+    if (error?.code) payload.code = error.code;
+    if (error?.authUrl) payload.authUrl = error.authUrl;
+    sendJson(req, res, status, payload);
   });
 });
 

@@ -45,7 +45,10 @@ const request = async (path, { method = "GET", body, token } = {}) => {
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
         const message = payload?.error || `Admin API request failed (${response.status})`;
-        throw new Error(message);
+        const error = new Error(message);
+        if (payload?.code) error.code = payload.code;
+        if (payload?.authUrl) error.authUrl = payload.authUrl;
+        throw error;
       }
       return payload;
     } catch (error) {
