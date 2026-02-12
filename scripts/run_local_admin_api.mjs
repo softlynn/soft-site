@@ -119,10 +119,11 @@ const getAllowedOrigins = () => {
 
 const allowedOrigins = getAllowedOrigins();
 const isGithubPagesOrigin = (origin) => /^https:\/\/[a-z0-9-]+\.github\.io$/i.test(origin);
+const isHttpOrHttpsOrigin = (origin) => /^https?:\/\/[^/]+$/i.test(origin);
 
 const setCorsHeaders = (req, res) => {
   const origin = String(req.headers.origin || "");
-  if (allowedOrigins.has(origin) || isGithubPagesOrigin(origin)) {
+  if (allowedOrigins.has(origin) || isGithubPagesOrigin(origin) || isHttpOrHttpsOrigin(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin, Access-Control-Request-Private-Network");
   }

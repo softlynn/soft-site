@@ -237,8 +237,9 @@ export const unpublishVod = async (vodId) => {
 export const promptAndLoginAdmin = async () => {
   const password = window.prompt("Enter admin password");
   if (password == null) return false;
-  if (!String(password).trim()) throw new Error("Admin password cannot be empty.");
+  const normalizedPassword = String(password).trim();
+  if (!normalizedPassword) throw new Error("Admin password cannot be empty.");
   await ensureAdminApiAvailable({ useGestureWake: true, timeoutMs: 5000 });
-  await authenticateAdmin(password);
+  await authenticateAdmin(normalizedPassword);
   return true;
 };
