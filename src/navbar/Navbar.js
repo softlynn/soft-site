@@ -13,6 +13,8 @@ import ReportIcon from "@mui/icons-material/Report";
 import { GITHUB_ISSUES_URL, SITE_TITLE, SOCIAL_LINKS } from "../config/site";
 import { promptAndLoginAdmin } from "../api/adminApi";
 
+const titleTapStateStore = { count: 0, timer: null, active: false };
+
 const socials = [
   { path: SOCIAL_LINKS.reddit, icon: <RedditIcon color="primary" /> },
   { path: SOCIAL_LINKS.youtube, icon: <YouTubeIcon color="primary" /> },
@@ -41,7 +43,7 @@ const socials = [
 export default function Navbar() {
   const isMobile = useMediaQuery("(max-width: 900px)");
   const navigate = useNavigate();
-  const titleTapState = useRef({ count: 0, timer: null, active: false });
+  const titleTapState = useRef(titleTapStateStore);
 
   const handleSiteTitleClick = async (event) => {
     const tapState = titleTapState.current;
@@ -51,6 +53,7 @@ export default function Navbar() {
     if (tapState.timer) clearTimeout(tapState.timer);
     tapState.timer = setTimeout(() => {
       tapState.count = 0;
+      tapState.timer = null;
     }, 1200);
 
     if (tapState.count < 3) return;
