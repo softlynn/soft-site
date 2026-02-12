@@ -65,7 +65,19 @@ export default function Navbar() {
     tapState.active = true;
     try {
       const authenticated = await promptAndLoginAdmin();
-      if (authenticated) navigate("/admin");
+      if (!authenticated) {
+        window.alert("Admin login canceled.");
+        return;
+      }
+
+      navigate("/admin");
+
+      // Fallback for rare router no-op cases on title link clicks.
+      window.setTimeout(() => {
+        if (window.location.hash !== "#/admin") {
+          window.location.hash = "/admin";
+        }
+      }, 50);
     } catch (error) {
       window.alert(`Admin login failed: ${error.message}`);
     } finally {

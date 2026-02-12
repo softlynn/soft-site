@@ -13,6 +13,7 @@ const ADMIN_API_FALLBACK_BASES = Array.from(
   )
 );
 const ADMIN_TOKEN_KEY = "soft_admin_token";
+let runtimeAdminToken = "";
 const ADMIN_API_STARTUP_RETRY_MS = 12000;
 const ADMIN_API_STARTUP_RETRY_DELAY_MS = 1200;
 const ADMIN_API_WAKE_PROTOCOL = "soft-archive-admin://wake";
@@ -50,14 +51,28 @@ const tryWakeAdminApi = () => {
 };
 
 const readAdminToken = () => {
+  if (runtimeAdminToken) return runtimeAdminToken;
   try {
-    return sessionStorage.getItem(ADMIN_TOKEN_KEY) || "";
+    const stored = sessionStorage.getItem(ADMIN_TOKEN_KEY) || "";
+    if (stored) runtimeAdminToken = stored;
+    return stored;
   } catch {
     return "";
   }
 };
 
+const writeAdminToken = (token) => {
+  runtimeAdminToken = String(token || "");
+  if (!runtimeAdminToken) return;
+  try {
+    sessionStorage.setItem(ADMIN_TOKEN_KEY, runtimeAdminToken);
+  } catch {
+    // Keep runtime fallback when storage is unavailable.
+  }
+};
+
 export const clearAdminToken = () => {
+  runtimeAdminToken = "";
   try {
     sessionStorage.removeItem(ADMIN_TOKEN_KEY);
   } catch {
@@ -117,12 +132,7 @@ export const authenticateAdmin = async (password) => {
     body: { password },
   });
   if (!payload?.token) throw new Error("Admin API did not return a session token");
-
-  try {
-    sessionStorage.setItem(ADMIN_TOKEN_KEY, payload.token);
-  } catch {
-    // no-op
-  }
+  writeAdminToken(payload.token);
 
   return payload.token;
 };
@@ -177,7 +187,8 @@ export const unpublishVod = async (vodId) => {
 
 export const promptAndLoginAdmin = async () => {
   const password = window.prompt("Enter admin password");
-  if (!password) return false;
+  if (password == null) return false;
+  if (!String(password).trim()) throw new Error("Admin password cannot be empty.");
   await authenticateAdmin(password);
   return true;
 };
