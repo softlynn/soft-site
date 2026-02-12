@@ -15,6 +15,22 @@ import {
 } from "../api/adminApi";
 
 const SORT_DESC = (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+const INIT_TIMEOUT_MS = 15000;
+const withTimeout = async (promise, label) => {
+  let timeoutId;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error(`${label} timed out. Please click Unlock Admin.`));
+        }, INIT_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
 
 export default function AdminPage() {
   const [ready, setReady] = useState(false);
@@ -51,30 +67,36 @@ export default function AdminPage() {
 
   useEffect(() => {
     const init = async () => {
-      const valid = await verifyAdminSession();
-      let isAuthorized = valid;
-      if (!isAuthorized) {
-        const pendingPassword = consumePendingAdminPassword();
-        if (pendingPassword) {
+      try {
+        const valid = await withTimeout(verifyAdminSession(), "Admin session check");
+        let isAuthorized = valid;
+        if (!isAuthorized) {
+          const pendingPassword = consumePendingAdminPassword();
+          if (pendingPassword) {
+            try {
+              await withTimeout(authenticateAdmin(pendingPassword), "Admin login");
+              isAuthorized = true;
+            } catch (error) {
+              setMessage({ type: "error", text: error.message });
+            }
+          }
+        }
+
+        setAuthorized(isAuthorized);
+        if (isAuthorized) {
           try {
-            await authenticateAdmin(pendingPassword);
-            isAuthorized = true;
+            await withTimeout(hydrateVods(), "Admin VOD sync");
+            setMessage({ type: "success", text: "Admin panel unlocked." });
           } catch (error) {
             setMessage({ type: "error", text: error.message });
           }
         }
+      } catch (error) {
+        setAuthorized(false);
+        setMessage({ type: "error", text: error.message });
+      } finally {
+        setReady(true);
       }
-
-      setAuthorized(isAuthorized);
-      if (isAuthorized) {
-        try {
-          await hydrateVods();
-          setMessage({ type: "success", text: "Admin panel unlocked." });
-        } catch (error) {
-          setMessage({ type: "error", text: error.message });
-        }
-      }
-      setReady(true);
     };
     init();
   }, [hydrateVods]);
