@@ -15,7 +15,7 @@ import {
 } from "../api/adminApi";
 
 const SORT_DESC = (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-const INIT_TIMEOUT_MS = 15000;
+const INIT_TIMEOUT_MS = 8000;
 const withTimeout = async (promise, label) => {
   let timeoutId;
   try {

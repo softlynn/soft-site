@@ -16,8 +16,8 @@ const ADMIN_TOKEN_KEY = "soft_admin_token";
 const ADMIN_TOKEN_HANDOFF_KEY = "soft_admin_token_handoff";
 const ADMIN_PENDING_PASSWORD_KEY = "soft_admin_pending_password";
 let runtimeAdminToken = "";
-const ADMIN_API_STARTUP_RETRY_MS = 12000;
-const ADMIN_API_STARTUP_RETRY_DELAY_MS = 1200;
+const ADMIN_API_STARTUP_RETRY_MS = 7000;
+const ADMIN_API_STARTUP_RETRY_DELAY_MS = 800;
 const ADMIN_API_WAKE_PROTOCOL = "soft-archive-admin://wake";
 const ADMIN_API_HEALTH_PATH = "/health";
 
@@ -306,11 +306,14 @@ export const unpublishVod = async (vodId) => {
 };
 
 export const promptAndLoginAdmin = async () => {
+  // Trigger protocol wake while this call is still directly tied to user interaction.
+  tryWakeAdminApiFromGesture();
+
   const password = window.prompt("Enter admin password");
   if (password == null) return false;
   const normalizedPassword = String(password).trim();
   if (!normalizedPassword) throw new Error("Admin password cannot be empty.");
-  await ensureAdminApiAvailable({ useGestureWake: true, timeoutMs: 5000 });
+  await ensureAdminApiAvailable({ useGestureWake: false, timeoutMs: ADMIN_API_STARTUP_RETRY_MS });
   await authenticateAdmin(normalizedPassword);
   return true;
 };
