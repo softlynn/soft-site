@@ -49,6 +49,8 @@
     "admin:api:start": "node scripts/run_local_admin_api.mjs",
     "admin:api:wake": "powershell -ExecutionPolicy Bypass -File scripts/start_admin_api_once.ps1",
     "admin:api:stop": "powershell -ExecutionPolicy Bypass -File scripts/stop_admin_api.ps1",
+    "admin:protocol:install": "powershell -ExecutionPolicy Bypass -File scripts/install_admin_protocol_handler.ps1",
+    "admin:protocol:remove": "powershell -ExecutionPolicy Bypass -File scripts/remove_admin_protocol_handler.ps1",
     "archive:task:install": "powershell -ExecutionPolicy Bypass -File scripts/install_local_archive_task.ps1",
     "archive:task:remove": "powershell -ExecutionPolicy Bypass -File scripts/remove_local_archive_task.ps1",
     "admin:task:install": "powershell -ExecutionPolicy Bypass -File scripts/install_local_admin_api_task.ps1",

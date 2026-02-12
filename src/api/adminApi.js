@@ -15,6 +15,7 @@ const ADMIN_API_FALLBACK_BASES = Array.from(
 const ADMIN_TOKEN_KEY = "soft_admin_token";
 const ADMIN_API_STARTUP_RETRY_MS = 12000;
 const ADMIN_API_STARTUP_RETRY_DELAY_MS = 1200;
+const ADMIN_API_WAKE_PROTOCOL = "soft-archive-admin://wake";
 
 const buildUrl = (base, path) => `${base}${path.startsWith("/") ? path : `/${path}`}`;
 const sleep = (ms) =>
@@ -26,6 +27,26 @@ const isNetworkStartupError = (error) => {
   const message = String(error?.message || "").toLowerCase();
   if (!message) return false;
   return message.includes("failed to fetch") || message.includes("networkerror");
+};
+
+const tryWakeAdminApi = () => {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+
+  try {
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = ADMIN_API_WAKE_PROTOCOL;
+    document.body.appendChild(iframe);
+    window.setTimeout(() => {
+      try {
+        iframe.remove();
+      } catch {
+        // no-op
+      }
+    }, 1500);
+  } catch {
+    // no-op
+  }
 };
 
 const readAdminToken = () => {
@@ -49,6 +70,7 @@ export const getAdminToken = () => readAdminToken();
 const request = async (path, { method = "GET", body, token } = {}) => {
   let lastError = null;
   const deadline = Date.now() + ADMIN_API_STARTUP_RETRY_MS;
+  let wakeAttempted = false;
 
   while (true) {
     for (const base of ADMIN_API_FALLBACK_BASES) {
@@ -78,11 +100,15 @@ const request = async (path, { method = "GET", body, token } = {}) => {
     }
 
     if (!isNetworkStartupError(lastError) || Date.now() >= deadline) break;
+    if (!wakeAttempted) {
+      wakeAttempted = true;
+      tryWakeAdminApi();
+    }
     await sleep(ADMIN_API_STARTUP_RETRY_DELAY_MS);
   }
 
   const message = lastError?.message || "Failed to reach local admin API";
-  throw new Error(`${message}. Start it on demand with 'npm run admin:api:wake' (or double-click start-admin-api.cmd), then retry.`);
+  throw new Error(`${message}. If needed, start it with 'npm run admin:api:wake' (or start-admin-api.cmd), then retry.`);
 };
 
 export const authenticateAdmin = async (password) => {

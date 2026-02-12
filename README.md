@@ -87,6 +87,18 @@ npm run admin:api:wake
 npm run admin:api:stop
 ```
 
+Enable auto-wake from the admin page (recommended on Windows, one-time):
+
+```bash
+npm run admin:protocol:install
+```
+
+Remove the protocol handler:
+
+```bash
+npm run admin:protocol:remove
+```
+
 You can also double-click:
 
 - `start-admin-api.cmd`
@@ -136,6 +148,7 @@ Optional advanced fallback: set `TWITCH_USER_ACCESS_TOKEN` / `TWITCH_USER_REFRES
 No Twitch redirect URI setup is required for this flow.
 The local admin API process is no longer watchdog-managed; it starts via a one-shot launcher and can auto-stop after inactivity (`ADMIN_API_IDLE_TIMEOUT_MINUTES` in `.env.local`, default `30`).
 Default local admin API port is `49731` (`ADMIN_API_PORT` in `.env.local`).
+When `soft-archive-admin://` protocol is installed, the admin page can wake the local API automatically if it is not running.
 If admin login from GitHub Pages is blocked by CORS on your machine, add your site origin to `ADMIN_ALLOWED_ORIGINS` in `.env.local` (comma-separated).
 
 ## Deploy
