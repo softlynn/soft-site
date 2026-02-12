@@ -11,6 +11,7 @@ import Drawer from "./Drawer";
 import OndemandVideoIcon from "@mui/icons-material/OndemandVideo";
 import ReportIcon from "@mui/icons-material/Report";
 import { GITHUB_ISSUES_URL, SITE_TITLE, SOCIAL_LINKS } from "../config/site";
+import { promptAndLoginAdmin } from "../api/adminApi";
 
 const ADMIN_TAP_WINDOW_MS = 3500;
 const HOME_NAV_DELAY_MS = 450;
@@ -46,7 +47,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const titleTapState = useRef(titleTapStateStore);
 
-  const handleSiteTitleClick = (event) => {
+  const handleSiteTitleClick = async (event) => {
     event.preventDefault();
     event.stopPropagation();
     const tapState = titleTapState.current;
@@ -79,8 +80,19 @@ export default function Navbar() {
     tapState.homeNavTimer = null;
 
     tapState.active = true;
-    const adminUrl = `${window.location.pathname}${window.location.search}#/admin?unlock=1`;
-    window.location.replace(adminUrl);
+    try {
+      const authenticated = await promptAndLoginAdmin();
+      if (!authenticated) {
+        window.alert("Admin login canceled.");
+        return;
+      }
+      const adminUrl = `${window.location.pathname}${window.location.search}#/admin`;
+      window.location.replace(adminUrl);
+    } catch (error) {
+      window.alert(`Admin login failed: ${error.message}`);
+    } finally {
+      tapState.active = false;
+    }
   };
 
   return (
