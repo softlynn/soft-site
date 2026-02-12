@@ -145,9 +145,10 @@ export default function AdminPage() {
         } catch {
           // no-op
         }
+        const codeHint = error?.userCode ? ` Use code ${error.userCode} if prompted.` : "";
         setMessage({
           type: "warning",
-          text: `Twitch authorization is required. If no browser tab opened, open this URL manually: ${error.authUrl}`,
+          text: `Twitch authorization is required.${codeHint} If no browser tab opened, open this URL manually: ${error.authUrl}`,
         });
         return;
       }

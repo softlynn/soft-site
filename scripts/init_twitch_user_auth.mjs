@@ -1,4 +1,3 @@
-import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,12 +15,9 @@ const config = {
   twitchClientSecret: process.env.TWITCH_CLIENT_SECRET || "",
   twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "",
   twitchUserTokenPath: process.env.TWITCH_USER_TOKEN_PATH || path.join(repoRoot, "secrets", "twitch_user_token.json"),
-  redirectUri: String(process.env.TWITCH_AUTH_REDIRECT_URI || "").trim(),
-  redirectHost: process.env.TWITCH_AUTH_REDIRECT_HOST || "localhost",
-  redirectPort: Number(process.env.TWITCH_AUTH_REDIRECT_PORT || "3000"),
-  redirectPath: process.env.TWITCH_AUTH_REDIRECT_PATH || "/",
   scopes: ["channel:manage:videos"],
 };
+const TWITCH_DEVICE_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code";
 
 const fail = (message) => {
   throw new Error(message);
@@ -37,29 +33,6 @@ const openUrl = (url) => {
     return;
   }
   spawn("xdg-open", [url], { detached: true, stdio: "ignore" }).unref();
-};
-
-const exchangeCodeForToken = async (code, redirectUri) => {
-  const params = new URLSearchParams({
-    client_id: config.twitchClientId,
-    client_secret: config.twitchClientSecret,
-    code,
-    grant_type: "authorization_code",
-    redirect_uri: redirectUri,
-  });
-
-  const response = await fetch("https://id.twitch.tv/oauth2/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params.toString(),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    fail(`Twitch OAuth token exchange failed (${response.status}): ${text}`);
-  }
-
-  return response.json();
 };
 
 const validateToken = async (accessToken) => {
@@ -85,84 +58,96 @@ const ensureConfig = () => {
 
 ensureConfig();
 
-const normalizePathname = (value) => {
-  const pathValue = String(value || "").trim();
-  if (!pathValue) return "/";
-  return pathValue.startsWith("/") ? pathValue : `/${pathValue}`;
+const requestDeviceCode = async () => {
+  const params = new URLSearchParams({
+    client_id: config.twitchClientId,
+    scopes: config.scopes.join(" "),
+  });
+
+  const response = await fetch("https://id.twitch.tv/oauth2/device", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params.toString(),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    fail(`Twitch device code request failed (${response.status}): ${text}`);
+  }
+
+  return response.json();
 };
 
-const redirectUri = config.redirectUri || `http://${config.redirectHost}:${config.redirectPort}${normalizePathname(config.redirectPath)}`;
-let redirectUrl = null;
-try {
-  redirectUrl = new URL(redirectUri);
-} catch {
-  fail(`Invalid Twitch redirect URI: ${redirectUri}`);
-}
-const redirectHost = redirectUrl.hostname;
-const redirectPort = Number(redirectUrl.port || (redirectUrl.protocol === "https:" ? 443 : 80));
-const redirectPath = normalizePathname(redirectUrl.pathname || "/");
-const authUrl = new URL("https://id.twitch.tv/oauth2/authorize");
-authUrl.searchParams.set("client_id", config.twitchClientId);
-authUrl.searchParams.set("redirect_uri", redirectUri);
-authUrl.searchParams.set("response_type", "code");
-authUrl.searchParams.set("scope", config.scopes.join(" "));
-authUrl.searchParams.set("force_verify", "true");
+const pollDeviceToken = async (deviceCode) => {
+  const params = new URLSearchParams({
+    client_id: config.twitchClientId,
+    client_secret: config.twitchClientSecret,
+    grant_type: TWITCH_DEVICE_GRANT_TYPE,
+    device_code: String(deviceCode || ""),
+  });
 
-const htmlSuccess = `
-<!doctype html>
-<html>
-  <head><meta charset="utf-8"><title>Twitch Auth Complete</title></head>
-  <body style="font-family: sans-serif; background: #111; color: #fff; padding: 2rem;">
-    <h2>soft archive Twitch auth complete.</h2>
-    <p>You can close this window.</p>
-  </body>
-</html>
-`;
+  const response = await fetch("https://id.twitch.tv/oauth2/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params.toString(),
+  });
 
-const htmlError = (message) => `
-<!doctype html>
-<html>
-  <head><meta charset="utf-8"><title>Twitch Auth Failed</title></head>
-  <body style="font-family: sans-serif; background: #111; color: #fff; padding: 2rem;">
-    <h2>Twitch auth failed.</h2>
-    <p>${message}</p>
-  </body>
-</html>
-`;
+  if (response.ok) {
+    return { status: "success", payload: await response.json() };
+  }
 
-const server = http.createServer(async (req, res) => {
+  const text = await response.text();
+  let message = "";
   try {
-    const requestUrl = new URL(req.url || "/", redirectUrl.origin);
-    if (requestUrl.pathname !== redirectPath) {
-      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-      res.end("Not found");
-      return;
+    const parsed = JSON.parse(text);
+    message = String(parsed?.message || parsed?.error || "");
+  } catch {
+    message = String(text || "");
+  }
+
+  const normalized = message.trim().toLowerCase().replace(/\s+/g, "_");
+  if (normalized === "authorization_pending") return { status: "pending" };
+  if (normalized === "slow_down") return { status: "slow_down" };
+  if (normalized === "access_denied") return { status: "denied" };
+  if (normalized === "expired_token" || normalized === "invalid_device_code") return { status: "expired" };
+
+  return { status: "error", error: `Twitch device token poll failed (${response.status}): ${text}` };
+};
+
+const sleep = (ms) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+const run = async () => {
+  const device = await requestDeviceCode();
+  const authUrl = String(device?.verification_uri || "");
+  const userCode = String(device?.user_code || "");
+  if (!device?.device_code) fail("Twitch device authorization did not return device_code");
+  if (!authUrl) fail("Twitch device authorization did not return verification_uri");
+
+  console.log(`Authorize Twitch at:\n${authUrl}`);
+  if (userCode) console.log(`Use code: ${userCode}`);
+  openUrl(authUrl);
+
+  const expiresAtMs = Date.now() + Math.max(30, Number(device?.expires_in || 1800)) * 1000;
+  let pollIntervalSeconds = Math.max(1, Number(device?.interval || 5));
+
+  while (Date.now() < expiresAtMs) {
+    await sleep(pollIntervalSeconds * 1000);
+    const polled = await pollDeviceToken(device.device_code);
+    if (polled.status === "pending") continue;
+    if (polled.status === "slow_down") {
+      pollIntervalSeconds = Math.min(pollIntervalSeconds + 5, 30);
+      continue;
     }
+    if (polled.status === "denied") fail("Twitch authorization was denied.");
+    if (polled.status === "expired") fail("Twitch authorization expired. Run the command again.");
+    if (polled.status === "error") fail(polled.error);
 
-    const code = requestUrl.searchParams.get("code");
-    const oauthError = requestUrl.searchParams.get("error");
-    const oauthDescription = requestUrl.searchParams.get("error_description");
-
-    if (oauthError) {
-      res.writeHead(400, { "Content-Type": "text/html; charset=utf-8" });
-      res.end(htmlError(`${oauthError}: ${oauthDescription || "Unknown OAuth error"}`));
-      console.error(`Twitch OAuth error: ${oauthError} ${oauthDescription || ""}`.trim());
-      process.exitCode = 1;
-      setTimeout(() => server.close(), 300);
-      return;
-    }
-
-    if (!code) {
-      res.writeHead(400, { "Content-Type": "text/html; charset=utf-8" });
-      res.end(htmlError("Missing authorization code"));
-      process.exitCode = 1;
-      setTimeout(() => server.close(), 300);
-      return;
-    }
-
-    const tokenPayload = await exchangeCodeForToken(code, redirectUri);
+    const tokenPayload = polled.payload;
     const validation = await validateToken(tokenPayload.access_token);
-    const expiresAtMs = Date.now() + Number(tokenPayload.expires_in || 0) * 1000;
+    const expiresAtTokenMs = Date.now() + Number(tokenPayload.expires_in || 0) * 1000;
 
     if (
       config.twitchChannelLogin &&
@@ -178,26 +163,19 @@ const server = http.createServer(async (req, res) => {
       user_id: validation.user_id,
       user_login: validation.login,
       obtained_at: new Date().toISOString(),
-      expires_at_ms: expiresAtMs,
+      expires_at_ms: expiresAtTokenMs,
     };
 
     await fs.mkdir(path.dirname(config.twitchUserTokenPath), { recursive: true });
     await fs.writeFile(config.twitchUserTokenPath, `${JSON.stringify(tokenRecord, null, 2)}\n`, "utf8");
-
-    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-    res.end(htmlSuccess);
     console.log(`Twitch OAuth token saved to ${config.twitchUserTokenPath}`);
-    setTimeout(() => server.close(), 300);
-  } catch (error) {
-    res.writeHead(500, { "Content-Type": "text/html; charset=utf-8" });
-    res.end(htmlError(error.message));
-    console.error(error.message);
-    process.exitCode = 1;
-    setTimeout(() => server.close(), 300);
+    return;
   }
-});
 
-server.listen(redirectPort, redirectHost, () => {
-  console.log(`Authorize Twitch at:\n${authUrl.toString()}`);
-  openUrl(authUrl.toString());
+  fail("Timed out waiting for Twitch authorization.");
+};
+
+run().catch((error) => {
+  console.error(error.message || String(error));
+  process.exitCode = 1;
 });

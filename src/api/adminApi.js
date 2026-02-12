@@ -48,6 +48,7 @@ const request = async (path, { method = "GET", body, token } = {}) => {
         const error = new Error(message);
         if (payload?.code) error.code = payload.code;
         if (payload?.authUrl) error.authUrl = payload.authUrl;
+        if (payload?.userCode) error.userCode = payload.userCode;
         throw error;
       }
       return payload;

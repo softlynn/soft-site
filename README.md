@@ -113,9 +113,9 @@ Each upload now sets and syncs:
    - toggle chat replay availability.
 
 The admin password is never committed to GitHub; it is read from local `.env.local`.
-If a Twitch user token is missing when you unpublish, the admin API now starts an automatic one-time Twitch OAuth browser flow and stores the token locally.
+If a Twitch user token is missing when you unpublish, the admin API now starts an automatic one-time Twitch device authorization flow and stores the token locally.
 Optional advanced fallback: set `TWITCH_USER_ACCESS_TOKEN` / `TWITCH_USER_REFRESH_TOKEN` in `.env.local` to seed the token file automatically.
-If Twitch returns `redirect_mismatch`, set `TWITCH_AUTH_REDIRECT_URI` in `.env.local` to one of the exact redirect URLs registered in your Twitch app.
+No Twitch redirect URI setup is required for this flow.
 If admin login from GitHub Pages is blocked by CORS on your machine, add your site origin to `ADMIN_ALLOWED_ORIGINS` in `.env.local` (comma-separated).
 
 ## Deploy
