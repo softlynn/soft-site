@@ -13,7 +13,8 @@ import ReportIcon from "@mui/icons-material/Report";
 import { GITHUB_ISSUES_URL, SITE_TITLE, SOCIAL_LINKS } from "../config/site";
 import { promptAndLoginAdmin } from "../api/adminApi";
 
-const titleTapStateStore = { count: 0, timer: null, active: false };
+const ADMIN_TAP_WINDOW_MS = 3500;
+const titleTapStateStore = { count: 0, lastTapMs: 0, active: false };
 
 const socials = [
   { path: SOCIAL_LINKS.reddit, icon: <RedditIcon color="primary" /> },
@@ -49,20 +50,17 @@ export default function Navbar() {
     const tapState = titleTapState.current;
     if (tapState.active) return;
 
-    tapState.count += 1;
-    if (tapState.timer) clearTimeout(tapState.timer);
-    tapState.timer = setTimeout(() => {
+    const now = Date.now();
+    if (!tapState.lastTapMs || now - tapState.lastTapMs > ADMIN_TAP_WINDOW_MS) {
       tapState.count = 0;
-      tapState.timer = null;
-    }, 1200);
+    }
+    tapState.lastTapMs = now;
+    tapState.count += 1;
 
     if (tapState.count < 3) return;
 
     tapState.count = 0;
-    if (tapState.timer) {
-      clearTimeout(tapState.timer);
-      tapState.timer = null;
-    }
+    tapState.lastTapMs = 0;
 
     event.preventDefault();
     tapState.active = true;
