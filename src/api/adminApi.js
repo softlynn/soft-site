@@ -14,6 +14,7 @@ const ADMIN_API_FALLBACK_BASES = Array.from(
 );
 const ADMIN_TOKEN_KEY = "soft_admin_token";
 const ADMIN_TOKEN_HANDOFF_KEY = "soft_admin_token_handoff";
+const ADMIN_PENDING_PASSWORD_KEY = "soft_admin_pending_password";
 let runtimeAdminToken = "";
 const ADMIN_API_STARTUP_RETRY_MS = 12000;
 const ADMIN_API_STARTUP_RETRY_DELAY_MS = 1200;
@@ -155,6 +156,48 @@ export const clearAdminToken = () => {
   } catch {
     // no-op
   }
+};
+
+export const setPendingAdminPassword = (password) => {
+  const normalized = String(password || "").trim();
+  if (!normalized) return;
+  try {
+    sessionStorage.setItem(ADMIN_PENDING_PASSWORD_KEY, normalized);
+  } catch {
+    // no-op
+  }
+  try {
+    localStorage.setItem(ADMIN_PENDING_PASSWORD_KEY, normalized);
+  } catch {
+    // no-op
+  }
+};
+
+export const consumePendingAdminPassword = () => {
+  let password = "";
+  try {
+    password = sessionStorage.getItem(ADMIN_PENDING_PASSWORD_KEY) || "";
+  } catch {
+    // no-op
+  }
+  if (!password) {
+    try {
+      password = localStorage.getItem(ADMIN_PENDING_PASSWORD_KEY) || "";
+    } catch {
+      // no-op
+    }
+  }
+  try {
+    sessionStorage.removeItem(ADMIN_PENDING_PASSWORD_KEY);
+  } catch {
+    // no-op
+  }
+  try {
+    localStorage.removeItem(ADMIN_PENDING_PASSWORD_KEY);
+  } catch {
+    // no-op
+  }
+  return String(password || "").trim();
 };
 
 export const getAdminToken = () => readAdminToken();

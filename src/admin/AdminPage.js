@@ -3,6 +3,8 @@ import { Alert, Box, Button, CircularProgress, FormControlLabel, MenuItem, Selec
 import SimpleBar from "simplebar-react";
 import Footer from "../utils/Footer";
 import {
+  authenticateAdmin,
+  consumePendingAdminPassword,
   clearAdminToken,
   getAdminVods,
   promptAndLoginAdmin,
@@ -50,8 +52,21 @@ export default function AdminPage() {
   useEffect(() => {
     const init = async () => {
       const valid = await verifyAdminSession();
-      setAuthorized(valid);
-      if (valid) {
+      let isAuthorized = valid;
+      if (!isAuthorized) {
+        const pendingPassword = consumePendingAdminPassword();
+        if (pendingPassword) {
+          try {
+            await authenticateAdmin(pendingPassword);
+            isAuthorized = true;
+          } catch (error) {
+            setMessage({ type: "error", text: error.message });
+          }
+        }
+      }
+
+      setAuthorized(isAuthorized);
+      if (isAuthorized) {
         try {
           await hydrateVods();
           setMessage({ type: "success", text: "Admin panel unlocked." });

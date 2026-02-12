@@ -11,7 +11,7 @@ import Drawer from "./Drawer";
 import OndemandVideoIcon from "@mui/icons-material/OndemandVideo";
 import ReportIcon from "@mui/icons-material/Report";
 import { GITHUB_ISSUES_URL, SITE_TITLE, SOCIAL_LINKS } from "../config/site";
-import { promptAndLoginAdmin } from "../api/adminApi";
+import { setPendingAdminPassword } from "../api/adminApi";
 
 const ADMIN_TAP_WINDOW_MS = 3500;
 const HOME_NAV_DELAY_MS = 900;
@@ -84,11 +84,17 @@ export default function Navbar() {
 
     tapState.active = true;
     try {
-      const authenticated = await promptAndLoginAdmin();
-      if (!authenticated) {
+      const password = window.prompt("Enter admin password");
+      if (password == null) {
         window.alert("Admin login canceled.");
         return;
       }
+      const normalizedPassword = String(password).trim();
+      if (!normalizedPassword) {
+        window.alert("Admin login failed: Admin password cannot be empty.");
+        return;
+      }
+      setPendingAdminPassword(normalizedPassword);
       const adminUrl = `${window.location.pathname}${window.location.search}#/admin`;
       window.location.assign(adminUrl);
     } catch (error) {
