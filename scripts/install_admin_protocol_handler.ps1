@@ -4,14 +4,14 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$starterScriptPath = Join-Path $PSScriptRoot "start_admin_api_once.ps1"
-if (!(Test-Path $starterScriptPath)) {
-  throw "Missing starter script at '$starterScriptPath'."
+$launcherVbsPath = Join-Path $PSScriptRoot "wake_admin_api.vbs"
+if (!(Test-Path $launcherVbsPath)) {
+  throw "Missing launcher script at '$launcherVbsPath'."
 }
 
 $protocolRoot = "HKCU:\Software\Classes\$ProtocolName"
 $commandKey = Join-Path $protocolRoot "shell\open\command"
-$command = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$starterScriptPath`""
+$command = "wscript.exe //B //Nologo `"$launcherVbsPath`""
 
 New-Item -Path $protocolRoot -Force | Out-Null
 Set-Item -Path $protocolRoot -Value "URL:Soft Archive Admin Protocol" | Out-Null
