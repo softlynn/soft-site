@@ -14,7 +14,8 @@ import { GITHUB_ISSUES_URL, SITE_TITLE, SOCIAL_LINKS } from "../config/site";
 import { promptAndLoginAdmin } from "../api/adminApi";
 
 const ADMIN_TAP_WINDOW_MS = 3500;
-const titleTapStateStore = { count: 0, lastTapMs: 0, active: false };
+const HOME_NAV_DELAY_MS = 450;
+const titleTapStateStore = { count: 0, lastTapMs: 0, active: false, homeNavTimer: null };
 
 const socials = [
   { path: SOCIAL_LINKS.reddit, icon: <RedditIcon color="primary" /> },
@@ -47,11 +48,15 @@ export default function Navbar() {
   const titleTapState = useRef(titleTapStateStore);
 
   const handleSiteTitleClick = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     const tapState = titleTapState.current;
     if (tapState.active) return;
 
-    event.preventDefault();
-    event.stopPropagation();
+    if (tapState.homeNavTimer) {
+      clearTimeout(tapState.homeNavTimer);
+      tapState.homeNavTimer = null;
+    }
 
     const now = Date.now();
     if (!tapState.lastTapMs || now - tapState.lastTapMs > ADMIN_TAP_WINDOW_MS) {
@@ -61,12 +66,18 @@ export default function Navbar() {
     tapState.count += 1;
 
     if (tapState.count < 3) {
-      navigate("/");
+      tapState.homeNavTimer = window.setTimeout(() => {
+        tapState.count = 0;
+        tapState.lastTapMs = 0;
+        tapState.homeNavTimer = null;
+        navigate("/");
+      }, HOME_NAV_DELAY_MS);
       return;
     }
 
     tapState.count = 0;
     tapState.lastTapMs = 0;
+    tapState.homeNavTimer = null;
 
     tapState.active = true;
     try {
@@ -81,11 +92,10 @@ export default function Navbar() {
       } catch {
         // no-op
       }
-      if (window.location.hash !== "#/admin") {
-        window.location.hash = "/admin";
-      }
+      const adminHashPath = "#/admin";
+      if (window.location.hash !== adminHashPath) window.location.hash = "/admin";
       window.setTimeout(() => {
-        if (window.location.hash !== "#/admin") {
+        if (window.location.hash !== adminHashPath) {
           window.location.assign(`${window.location.pathname}${window.location.search}#/admin`);
         }
       }, 120);
