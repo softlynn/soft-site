@@ -17,7 +17,7 @@ const cleanUrl = (value) => String(value || "").replace(/\/+$/, "");
 
 const config = {
   host: process.env.ADMIN_API_HOST || "localhost",
-  port: Number(process.env.ADMIN_API_PORT || "49721"),
+  port: Number(process.env.ADMIN_API_PORT || "49731"),
   archiveSiteUrl: cleanUrl(process.env.ARCHIVE_SITE_URL || ""),
   adminAllowedOrigins: String(process.env.ADMIN_ALLOWED_ORIGINS || ""),
   adminPassword: String(process.env.ADMIN_PANEL_PASSWORD || ""),
@@ -30,6 +30,7 @@ const config = {
   youtubeClientSecretPath: process.env.YOUTUBE_CLIENT_SECRET_PATH || path.join(repoRoot, "secrets", "youtube_client_secret.json"),
   youtubeTokenPath: process.env.YOUTUBE_TOKEN_PATH || path.join(repoRoot, "secrets", "youtube_token.json"),
   twitchAuthTimeoutSeconds: Number(process.env.TWITCH_AUTH_TIMEOUT_SECONDS || "180"),
+  adminIdleTimeoutMinutes: Number(process.env.ADMIN_API_IDLE_TIMEOUT_MINUTES || "30"),
   spotifyNoticeText: process.env.ADMIN_SPOTIFY_NOTICE_TEXT || "Spotify audio is muted on this VOD.",
 };
 
@@ -39,6 +40,8 @@ const sessions = new Map();
 let twitchBootstrapState = null;
 const TWITCH_AUTH_SCOPES = ["channel:manage:videos"];
 const TWITCH_DEVICE_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code";
+let lastActivityAt = Date.now();
+let shuttingDownForIdle = false;
 
 const log = (message) => {
   console.log(`[${new Date().toISOString()}] ${message}`);
@@ -61,6 +64,10 @@ const openUrl = (url) => {
     return;
   }
   spawn("xdg-open", [url], { detached: true, stdio: "ignore" }).unref();
+};
+
+const markActivity = () => {
+  lastActivityAt = Date.now();
 };
 
 const ensureDirectory = async (dirPath) => {
@@ -456,6 +463,7 @@ const startInteractiveTwitchAuth = async () => {
     openUrl(authUrl);
 
     while (Date.now() < expiresAtMs) {
+      markActivity();
       await sleep(pollIntervalSeconds * 1000);
       const polled = await pollTwitchDeviceToken(device.device_code);
       if (polled.status === "pending") continue;
@@ -474,6 +482,7 @@ const startInteractiveTwitchAuth = async () => {
       }
 
       const saved = await persistValidatedTwitchToken(polled.payload, {});
+      markActivity();
       return saved;
     }
 
@@ -645,6 +654,7 @@ const sortVodsDesc = (vods) =>
   [...vods].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
 
 const handleRequest = async (req, res) => {
+  markActivity();
   const method = req.method || "GET";
   const requestUrl = new URL(req.url || "/", `http://${config.host}:${config.port}`);
   const pathname = requestUrl.pathname;
@@ -762,6 +772,7 @@ await validateConfig();
 
 const server = http.createServer((req, res) => {
   handleRequest(req, res).catch((error) => {
+    markActivity();
     log(`Request failed: ${error.message}`);
     const status = Number(error?.status) || 500;
     const payload = { error: error?.message || "Request failed" };
@@ -773,7 +784,24 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(config.port, config.host, () => {
+  markActivity();
   log(`Soft admin API listening on http://${config.host}:${config.port}`);
 });
 
 setInterval(pruneSessions, 60 * 1000).unref();
+
+if (Number.isFinite(config.adminIdleTimeoutMinutes) && config.adminIdleTimeoutMinutes > 0) {
+  const idleTimeoutMs = config.adminIdleTimeoutMinutes * 60 * 1000;
+  const checkEveryMs = Math.min(60 * 1000, Math.max(15 * 1000, Math.floor(idleTimeoutMs / 4)));
+
+  setInterval(() => {
+    if (shuttingDownForIdle) return;
+    if (Date.now() - lastActivityAt < idleTimeoutMs) return;
+
+    shuttingDownForIdle = true;
+    log(`No admin API activity for ${config.adminIdleTimeoutMinutes} minutes. Shutting down.`);
+    server.close(() => {
+      process.exit(0);
+    });
+  }, checkEveryMs).unref();
+}

@@ -7,20 +7,20 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
   $PSNativeCommandUseErrorActionPreference = $false
 }
 
+$legacyTaskNames = @("SoftArchiveAdminApiStarter")
+$starterPsPath = Join-Path $PSScriptRoot "start_admin_api_once.ps1"
 $watchdogPsPath = Join-Path $PSScriptRoot "start_admin_api_watchdog.ps1"
 $adminApiScriptPath = Join-Path $PSScriptRoot "run_local_admin_api.mjs"
 $startupCmdPath = Join-Path (Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Startup") "soft-admin-api.cmd"
 $startupVbsPath = Join-Path (Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Startup") "soft-admin-api.vbs"
-$watchdogCmdPath = Join-Path $PSScriptRoot "start_admin_api_watchdog.cmd"
-$taskRemoved = $false
 
+$allTaskNames = @($TaskName) + $legacyTaskNames | Select-Object -Unique
 $previousErrorActionPreference = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
-schtasks /Delete /TN $TaskName /F 2>$null | Out-Null
-$ErrorActionPreference = $previousErrorActionPreference
-if ($LASTEXITCODE -eq 0) {
-  $taskRemoved = $true
+foreach ($name in $allTaskNames) {
+  schtasks /Delete /TN $name /F 2>$null | Out-Null
 }
+$ErrorActionPreference = $previousErrorActionPreference
 
 if (Test-Path $startupCmdPath) {
   Remove-Item -Path $startupCmdPath -Force
@@ -32,30 +32,20 @@ if (Test-Path $startupVbsPath) {
   Write-Host "Removed Startup launcher '$startupVbsPath'."
 }
 
-if (Test-Path $watchdogCmdPath) {
-  Remove-Item -Path $watchdogCmdPath -Force
-  Write-Host "Removed watchdog launcher '$watchdogCmdPath'."
-}
-
-if ($taskRemoved) {
-  Write-Host "Removed scheduled task '$TaskName'."
-} else {
-  Write-Host "Scheduled task '$TaskName' was not found."
-}
-
+$starterRegex = [Regex]::Escape($starterPsPath)
 $watchdogRegex = [Regex]::Escape($watchdogPsPath)
 $adminApiRegex = [Regex]::Escape($adminApiScriptPath)
 
-$watchdogs = Get-CimInstance Win32_Process |
-  Where-Object { $_.Name -ieq "powershell.exe" -and $_.CommandLine -match $watchdogRegex }
-foreach ($proc in $watchdogs) {
+$powershellProcesses = Get-CimInstance Win32_Process |
+  Where-Object { $_.Name -ieq "powershell.exe" -and ($_.CommandLine -match $starterRegex -or $_.CommandLine -match $watchdogRegex -or $_.CommandLine -match $adminApiRegex) }
+foreach ($proc in $powershellProcesses) {
   Stop-Process -Id $proc.ProcessId -Force -ErrorAction SilentlyContinue
 }
 
-$adminApis = Get-CimInstance Win32_Process |
+$adminApiProcesses = Get-CimInstance Win32_Process |
   Where-Object { $_.Name -ieq "node.exe" -and $_.CommandLine -match $adminApiRegex }
-foreach ($proc in $adminApis) {
+foreach ($proc in $adminApiProcesses) {
   Stop-Process -Id $proc.ProcessId -Force -ErrorAction SilentlyContinue
 }
 
-Write-Host "Stopped local admin API watchdog/admin processes."
+Write-Host "Removed local admin API auto-start hooks and stopped related processes."

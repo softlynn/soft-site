@@ -62,7 +62,7 @@ ADMIN_PANEL_PASSWORD=<your-private-admin-password>
 npm run archive:task:install
 ```
 
-8. Install local admin API task (starts at login and immediately):
+8. Install local admin API auto-start hook (one-shot starter at login and immediate start now):
 
 ```bash
 npm run admin:task:install
@@ -116,6 +116,8 @@ The admin password is never committed to GitHub; it is read from local `.env.loc
 If a Twitch user token is missing when you unpublish, the admin API now starts an automatic one-time Twitch device authorization flow and stores the token locally.
 Optional advanced fallback: set `TWITCH_USER_ACCESS_TOKEN` / `TWITCH_USER_REFRESH_TOKEN` in `.env.local` to seed the token file automatically.
 No Twitch redirect URI setup is required for this flow.
+The local admin API process is no longer watchdog-managed; it starts via a one-shot launcher and can auto-stop after inactivity (`ADMIN_API_IDLE_TIMEOUT_MINUTES` in `.env.local`, default `30`).
+Default local admin API port is `49731` (`ADMIN_API_PORT` in `.env.local`).
 If admin login from GitHub Pages is blocked by CORS on your machine, add your site origin to `ADMIN_ALLOWED_ORIGINS` in `.env.local` (comma-separated).
 
 ## Deploy

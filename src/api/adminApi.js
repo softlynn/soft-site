@@ -1,14 +1,32 @@
-const ADMIN_API_BASE = (process.env.REACT_APP_ADMIN_API_BASE || "http://localhost:49721").replace(/\/+$/, "");
+const ADMIN_API_BASE = (process.env.REACT_APP_ADMIN_API_BASE || "http://localhost:49731").replace(/\/+$/, "");
 const ADMIN_API_FALLBACK_BASES = Array.from(
   new Set(
-    [ADMIN_API_BASE, "http://localhost:49721"]
+    [
+      ADMIN_API_BASE,
+      "http://localhost:49731",
+      "http://127.0.0.1:49731",
+      "http://localhost:49721",
+      "http://127.0.0.1:49721",
+    ]
       .map((value) => String(value || "").replace(/\/+$/, ""))
       .filter(Boolean)
   )
 );
 const ADMIN_TOKEN_KEY = "soft_admin_token";
+const ADMIN_API_STARTUP_RETRY_MS = 12000;
+const ADMIN_API_STARTUP_RETRY_DELAY_MS = 1200;
 
 const buildUrl = (base, path) => `${base}${path.startsWith("/") ? path : `/${path}`}`;
+const sleep = (ms) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+const isNetworkStartupError = (error) => {
+  const message = String(error?.message || "").toLowerCase();
+  if (!message) return false;
+  return message.includes("failed to fetch") || message.includes("networkerror");
+};
 
 const readAdminToken = () => {
   try {
@@ -30,35 +48,41 @@ export const getAdminToken = () => readAdminToken();
 
 const request = async (path, { method = "GET", body, token } = {}) => {
   let lastError = null;
+  const deadline = Date.now() + ADMIN_API_STARTUP_RETRY_MS;
 
-  for (const base of ADMIN_API_FALLBACK_BASES) {
-    try {
-      const response = await fetch(buildUrl(base, path), {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-      });
+  while (true) {
+    for (const base of ADMIN_API_FALLBACK_BASES) {
+      try {
+        const response = await fetch(buildUrl(base, path), {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+        });
 
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        const message = payload?.error || `Admin API request failed (${response.status})`;
-        const error = new Error(message);
-        if (payload?.code) error.code = payload.code;
-        if (payload?.authUrl) error.authUrl = payload.authUrl;
-        if (payload?.userCode) error.userCode = payload.userCode;
-        throw error;
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const message = payload?.error || `Admin API request failed (${response.status})`;
+          const error = new Error(message);
+          if (payload?.code) error.code = payload.code;
+          if (payload?.authUrl) error.authUrl = payload.authUrl;
+          if (payload?.userCode) error.userCode = payload.userCode;
+          throw error;
+        }
+        return payload;
+      } catch (error) {
+        lastError = error;
       }
-      return payload;
-    } catch (error) {
-      lastError = error;
     }
+
+    if (!isNetworkStartupError(lastError) || Date.now() >= deadline) break;
+    await sleep(ADMIN_API_STARTUP_RETRY_DELAY_MS);
   }
 
   const message = lastError?.message || "Failed to reach local admin API";
-  throw new Error(`${message}. Ensure local admin API is running on port 49721.`);
+  throw new Error(`${message}. Ensure local admin API is running on localhost.`);
 };
 
 export const authenticateAdmin = async (password) => {
