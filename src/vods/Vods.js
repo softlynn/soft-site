@@ -43,7 +43,13 @@ export default function Vods() {
         $sort: {
           createdAt: -1,
         },
-        $and: [],
+        $and: [
+          {
+            unpublished: {
+              $ne: true,
+            },
+          },
+        ],
       };
       if (platform !== PLATFORMS[0]) {
         query.$and.push({ platform: platform.toLowerCase() });
@@ -99,8 +105,14 @@ export default function Vods() {
           query: query,
         })
         .then((response) => {
-          setVods(response.data);
-          setTotalVods(response.total);
+          const visibleVods = Array.isArray(response.data) ? response.data.filter((vod) => !vod?.unpublished) : [];
+          setVods(visibleVods);
+          if (typeof response.total === "number") {
+            const hiddenOnPage = (Array.isArray(response.data) ? response.data.length : 0) - visibleVods.length;
+            setTotalVods(Math.max(0, response.total - Math.max(0, hiddenOnPage)));
+            return;
+          }
+          setTotalVods(visibleVods.length);
         })
         .catch((e) => {
           console.error(e);

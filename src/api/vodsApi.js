@@ -42,15 +42,20 @@ const normalizeVod = (vod) => ({
 });
 
 const loadStaticVods = async () => {
-  if (staticVodsCache) return staticVodsCache;
-  const response = await fetch(STATIC_DATA_PATH, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-    cache: "no-store",
-  });
-  const data = await response.json();
-  staticVodsCache = Array.isArray(data) ? data.map(normalizeVod) : [];
-  return staticVodsCache;
+  try {
+    const response = await fetch(STATIC_DATA_PATH, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+    if (!response.ok) throw new Error(`Failed to load static VOD data (${response.status})`);
+    const data = await response.json();
+    staticVodsCache = Array.isArray(data) ? data.map(normalizeVod) : [];
+    return staticVodsCache;
+  } catch (error) {
+    if (staticVodsCache) return staticVodsCache;
+    throw error;
+  }
 };
 
 const loadStaticComments = async (vodId) => {
@@ -128,7 +133,9 @@ export const getVodById = async (vodId) => {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
-  return response.json();
+  const payload = await response.json();
+  if (payload?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
+  return payload;
 };
 
 export const getBadges = async () => {
