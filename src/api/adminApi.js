@@ -13,6 +13,7 @@ const ADMIN_API_FALLBACK_BASES = Array.from(
   )
 );
 const ADMIN_TOKEN_KEY = "soft_admin_token";
+const ADMIN_TOKEN_HANDOFF_KEY = "soft_admin_token_handoff";
 let runtimeAdminToken = "";
 const ADMIN_API_STARTUP_RETRY_MS = 12000;
 const ADMIN_API_STARTUP_RETRY_DELAY_MS = 1200;
@@ -103,8 +104,25 @@ const readAdminToken = () => {
   if (runtimeAdminToken) return runtimeAdminToken;
   try {
     const stored = sessionStorage.getItem(ADMIN_TOKEN_KEY) || "";
-    if (stored) runtimeAdminToken = stored;
-    return stored;
+    if (stored) {
+      runtimeAdminToken = stored;
+      return stored;
+    }
+  } catch {
+    // ignore
+  }
+
+  try {
+    const handoff = localStorage.getItem(ADMIN_TOKEN_HANDOFF_KEY) || "";
+    if (!handoff) return "";
+    runtimeAdminToken = handoff;
+    try {
+      sessionStorage.setItem(ADMIN_TOKEN_KEY, handoff);
+    } catch {
+      // no-op
+    }
+    localStorage.removeItem(ADMIN_TOKEN_HANDOFF_KEY);
+    return handoff;
   } catch {
     return "";
   }
@@ -118,12 +136,22 @@ const writeAdminToken = (token) => {
   } catch {
     // Keep runtime fallback when storage is unavailable.
   }
+  try {
+    localStorage.setItem(ADMIN_TOKEN_HANDOFF_KEY, runtimeAdminToken);
+  } catch {
+    // Keep runtime fallback when storage is unavailable.
+  }
 };
 
 export const clearAdminToken = () => {
   runtimeAdminToken = "";
   try {
     sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+  } catch {
+    // no-op
+  }
+  try {
+    localStorage.removeItem(ADMIN_TOKEN_HANDOFF_KEY);
   } catch {
     // no-op
   }

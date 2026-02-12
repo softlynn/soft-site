@@ -89,14 +89,8 @@ export default function Navbar() {
         window.alert("Admin login canceled.");
         return;
       }
-      try {
-        navigate("/admin");
-      } catch {
-        // no-op
-      }
-      if (window.location.hash !== "#/admin") {
-        window.location.hash = "/admin";
-      }
+      const adminUrl = `${window.location.pathname}${window.location.search}#/admin`;
+      window.location.assign(adminUrl);
     } catch (error) {
       window.alert(`Admin login failed: ${error.message}`);
     } finally {
