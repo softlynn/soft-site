@@ -14,7 +14,7 @@ import { GITHUB_ISSUES_URL, SITE_TITLE, SOCIAL_LINKS } from "../config/site";
 import { promptAndLoginAdmin } from "../api/adminApi";
 
 const ADMIN_TAP_WINDOW_MS = 3500;
-const HOME_NAV_DELAY_MS = 450;
+const HOME_NAV_DELAY_MS = 900;
 const titleTapStateStore = { count: 0, lastTapMs: 0, active: false, homeNavTimer: null };
 
 const socials = [
@@ -66,6 +66,9 @@ export default function Navbar() {
     tapState.count += 1;
 
     if (tapState.count < 3) {
+      const hash = String(window.location.hash || "");
+      const isAlreadyHome = hash === "" || hash === "#" || hash === "#/";
+      if (isAlreadyHome) return;
       tapState.homeNavTimer = window.setTimeout(() => {
         tapState.count = 0;
         tapState.lastTapMs = 0;
@@ -86,8 +89,14 @@ export default function Navbar() {
         window.alert("Admin login canceled.");
         return;
       }
-      const adminUrl = `${window.location.pathname}${window.location.search}#/admin`;
-      window.location.replace(adminUrl);
+      try {
+        navigate("/admin");
+      } catch {
+        // no-op
+      }
+      if (window.location.hash !== "#/admin") {
+        window.location.hash = "/admin";
+      }
     } catch (error) {
       window.alert(`Admin login failed: ${error.message}`);
     } finally {
