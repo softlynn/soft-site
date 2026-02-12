@@ -71,6 +71,10 @@ const tryWakeAdminApiFromGesture = () => {
   tryWakeAdminApi();
 };
 
+export const primeAdminWake = () => {
+  tryWakeAdminApiFromGesture();
+};
+
 const pingAdminApi = async () => {
   for (const base of ADMIN_API_FALLBACK_BASES) {
     try {
@@ -306,9 +310,6 @@ export const unpublishVod = async (vodId) => {
 };
 
 export const promptAndLoginAdmin = async () => {
-  // Trigger protocol wake while this call is still directly tied to user interaction.
-  tryWakeAdminApiFromGesture();
-
   const password = window.prompt("Enter admin password");
   if (password == null) return false;
   const normalizedPassword = String(password).trim();

@@ -7,6 +7,7 @@ import {
   consumePendingAdminPassword,
   clearAdminToken,
   getAdminVods,
+  primeAdminWake,
   promptAndLoginAdmin,
   setVodChatReplay,
   setVodNotice,
@@ -219,7 +220,7 @@ export default function AdminPage() {
 
         <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
           {!authorized ? (
-            <Button variant="contained" onClick={handleUnlock} disabled={loading}>
+            <Button variant="contained" onMouseDown={primeAdminWake} onTouchStart={primeAdminWake} onClick={handleUnlock} disabled={loading}>
               Unlock Admin
             </Button>
           ) : (
