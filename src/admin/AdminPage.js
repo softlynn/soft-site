@@ -9,8 +9,8 @@ import {
   getAdminVods,
   primeAdminWake,
   promptAndLoginAdmin,
-  setVodChatReplay,
-  setVodNotice,
+  republishVod,
+  setVodFlags,
   unpublishVod,
   verifyAdminSession,
 } from "../api/adminApi";
@@ -148,8 +148,7 @@ export default function AdminPage() {
 
     setLoading(true);
     try {
-      await setVodNotice(selectedVod.id, noticeEnabled);
-      await setVodChatReplay(selectedVod.id, chatReplayAvailable);
+      await setVodFlags(selectedVod.id, { noticeEnabled, chatReplayAvailable });
       await hydrateVods();
       setMessage({ type: "success", text: `Updated VOD ${selectedVod.id}.` });
     } catch (error) {
@@ -163,7 +162,7 @@ export default function AdminPage() {
     if (!selectedVod) return;
 
     const accepted = window.confirm(
-      `Unpublish VOD ${selectedVod.id} on YouTube and Twitch?\n\nThis also hides it on the archive site.`
+      `Unpublish VOD ${selectedVod.id} on YouTube and archive?\n\nTwitch VOD will be kept (no delete).`
     );
     if (!accepted) return;
 
@@ -172,9 +171,10 @@ export default function AdminPage() {
       const payload = await unpublishVod(selectedVod.id);
       await hydrateVods();
       const youtubeCount = Array.isArray(payload?.result?.youtube) ? payload.result.youtube.length : 0;
+      const twitchReason = payload?.result?.twitch?.reason ? ` ${payload.result.twitch.reason}` : "";
       setMessage({
         type: "success",
-        text: `Unpublished ${selectedVod.id}. YouTube parts affected: ${youtubeCount}.`,
+        text: `Unpublished ${selectedVod.id}. YouTube parts affected: ${youtubeCount}.${twitchReason}`,
       });
     } catch (error) {
       if (error?.code === "TWITCH_AUTH_REQUIRED" && error?.authUrl) {
@@ -196,6 +196,33 @@ export default function AdminPage() {
     }
   };
 
+  const handleRepublish = async () => {
+    if (!selectedVod) return;
+
+    const accepted = window.confirm(
+      `Republish VOD ${selectedVod.id} on YouTube and make it visible on the archive site?`
+    );
+    if (!accepted) return;
+
+    setLoading(true);
+    try {
+      const payload = await republishVod(selectedVod.id);
+      await hydrateVods();
+      const youtubeResults = Array.isArray(payload?.result?.youtube) ? payload.result.youtube : [];
+      const youtubeChanged = youtubeResults.filter((entry) => entry?.changed).length;
+      const twitchReason = payload?.result?.twitch?.reason ? ` Twitch: ${payload.result.twitch.reason}` : "";
+      const twitchRepublished = payload?.result?.twitch?.republished !== false;
+      setMessage({
+        type: twitchRepublished ? "success" : "warning",
+        text: `Republished ${selectedVod.id}. YouTube parts changed: ${youtubeChanged}/${youtubeResults.length}.${twitchReason}`,
+      });
+    } catch (error) {
+      setMessage({ type: "error", text: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!ready) {
     return (
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
@@ -211,7 +238,7 @@ export default function AdminPage() {
           Admin
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Hidden controls for VOD unpublish and manual notice flags. This panel talks to your local admin bridge.
+          Hidden controls for VOD publish state and manual notice flags. This panel talks to your local admin bridge.
         </Typography>
 
         <Alert severity={message.type} sx={{ mb: 2 }}>
@@ -271,7 +298,10 @@ export default function AdminPage() {
                 Save VOD Flags
               </Button>
               <Button variant="contained" color="error" onClick={handleUnpublish} disabled={loading || !selectedVod || selectedVod.unpublished}>
-                Unpublish on Twitch + YouTube
+                Unpublish (Keep Twitch VOD)
+              </Button>
+              <Button variant="contained" color="success" onClick={handleRepublish} disabled={loading || !selectedVod || !selectedVod.unpublished}>
+                Republish (YouTube + Archive)
               </Button>
             </Stack>
           </Box>

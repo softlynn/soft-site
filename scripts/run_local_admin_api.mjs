@@ -267,7 +267,10 @@ const loadYoutubeClient = async () => {
   return google.youtube({ version: "v3", auth: authClient });
 };
 
-const setYouTubeVideoPrivate = async (youtube, videoId) => {
+const setYouTubeVideoPrivacy = async (youtube, videoId, privacyStatus) => {
+  const normalizedPrivacy = String(privacyStatus || "").trim().toLowerCase();
+  if (!normalizedPrivacy) fail("YouTube privacy status is required");
+
   const response = await youtube.videos.list({
     part: ["status"],
     id: [videoId],
@@ -276,14 +279,16 @@ const setYouTubeVideoPrivate = async (youtube, videoId) => {
   if (!item) fail(`YouTube video not found: ${videoId}`);
 
   const currentPrivacy = item.status?.privacyStatus || "unknown";
-  if (currentPrivacy === "private") return { id: videoId, privacyStatus: "private", changed: false };
+  if (currentPrivacy === normalizedPrivacy) {
+    return { id: videoId, privacyStatus: normalizedPrivacy, changed: false };
+  }
 
   await youtube.videos.update({
     part: ["status"],
     requestBody: {
       id: videoId,
       status: {
-        privacyStatus: "private",
+        privacyStatus: normalizedPrivacy,
         ...(item.status?.selfDeclaredMadeForKids !== undefined
           ? { selfDeclaredMadeForKids: item.status.selfDeclaredMadeForKids }
           : {}),
@@ -291,7 +296,7 @@ const setYouTubeVideoPrivate = async (youtube, videoId) => {
     },
   });
 
-  return { id: videoId, privacyStatus: "private", changed: true };
+  return { id: videoId, privacyStatus: normalizedPrivacy, changed: true };
 };
 
 const saveTwitchTokenRecord = async (tokenRecord) => {
@@ -608,19 +613,18 @@ const getValidTwitchToken = async () => {
   }
 };
 
-const deleteTwitchVod = async (vodId, tokenRecordInput) => {
+const requestTwitchVodApi = async (vodId, method, tokenRecordInput) => {
   const tokenRecord = tokenRecordInput || (await getValidTwitchToken());
-  const accessToken = tokenRecord.access_token;
   const request = async (token) =>
     fetch(`https://api.twitch.tv/helix/videos?id=${encodeURIComponent(String(vodId))}`, {
-      method: "DELETE",
+      method,
       headers: {
         "Client-Id": config.twitchClientId,
         Authorization: `Bearer ${token}`,
       },
     });
 
-  let response = await request(accessToken);
+  let response = await request(tokenRecord.access_token);
   if (response.status === 401 && tokenRecord.refresh_token) {
     const refreshed = await refreshTwitchUserToken(tokenRecord.refresh_token);
     const refreshedExpiresAt = Date.now() + Number(refreshed.expires_in || 0) * 1000;
@@ -636,12 +640,33 @@ const deleteTwitchVod = async (vodId, tokenRecordInput) => {
     response = await request(nextRecord.access_token);
   }
 
+  return response;
+};
+
+const getTwitchVodStatus = async (vodId, tokenRecordInput) => {
+  const response = await requestTwitchVodApi(vodId, "GET", tokenRecordInput);
   if (!response.ok) {
     const body = await response.text();
-    fail(`Twitch VOD delete failed (${response.status}): ${body}`);
+    fail(`Twitch VOD lookup failed (${response.status}): ${body}`);
   }
 
-  return { id: String(vodId), deleted: true };
+  const payload = await response.json().catch(() => ({}));
+  const item = Array.isArray(payload?.data) ? payload.data[0] : null;
+  if (!item) {
+    return {
+      id: String(vodId),
+      exists: false,
+      republished: false,
+      reason: "Twitch VOD is no longer available and cannot be restored automatically.",
+    };
+  }
+
+  return {
+    id: String(vodId),
+    exists: true,
+    republished: true,
+    reason: "Twitch VOD already exists.",
+  };
 };
 
 const parseVodRoute = (pathname) => {
@@ -724,6 +749,24 @@ const handleRequest = async (req, res) => {
       return;
     }
 
+    if (vodRoute.action === "flags") {
+      const body = await readBodyJson(req);
+      const noticeEnabled = Boolean(body.noticeEnabled);
+      const chatReplayAvailable = Boolean(body.chatReplayAvailable);
+      const updatedVod = await updateVod(
+        vodRoute.vodId,
+        (vod) => {
+          if (noticeEnabled) vod.vodNotice = config.spotifyNoticeText;
+          else delete vod.vodNotice;
+          vod.chatReplayAvailable = chatReplayAvailable;
+          return vod;
+        },
+        `chore: update admin flags for vod ${vodRoute.vodId}`
+      );
+      sendJson(req, res, 200, { vod: updatedVod });
+      return;
+    }
+
     if (vodRoute.action === "chat-replay") {
       const body = await readBodyJson(req);
       const available = Boolean(body.available);
@@ -749,10 +792,19 @@ const handleRequest = async (req, res) => {
       const youtube = await loadYoutubeClient();
       const youtubeResults = [];
       for (const videoId of youtubeIds) {
-        youtubeResults.push(await setYouTubeVideoPrivate(youtube, videoId));
+        youtubeResults.push(await setYouTubeVideoPrivacy(youtube, videoId, "private"));
       }
 
-      const twitchResult = await deleteTwitchVod(vodRoute.vodId, twitchToken);
+      const twitchStatus = await getTwitchVodStatus(vodRoute.vodId, twitchToken);
+      const twitchResult = {
+        id: String(vodRoute.vodId),
+        deleted: false,
+        changed: false,
+        exists: twitchStatus.exists,
+        reason: twitchStatus.exists
+          ? "Skipped Twitch deletion to preserve the VOD. Twitch Helix has no official unpublish endpoint."
+          : "Twitch VOD not found. No deletion was performed.",
+      };
 
       const updatedVod = await updateVod(
         vodRoute.vodId,
@@ -761,6 +813,40 @@ const handleRequest = async (req, res) => {
           unpublished: true,
         }),
         `chore: unpublish vod ${vodRoute.vodId}`
+      );
+
+      sendJson(req, res, 200, {
+        vod: updatedVod,
+        result: {
+          youtube: youtubeResults,
+          twitch: twitchResult,
+        },
+      });
+      return;
+    }
+
+    if (vodRoute.action === "republish") {
+      const vods = await loadVods();
+      const vod = vods.find((entry) => String(entry.id) === String(vodRoute.vodId));
+      if (!vod) fail(`VOD ${vodRoute.vodId} not found`);
+
+      const twitchToken = await getValidTwitchToken();
+      const youtubeIds = (Array.isArray(vod.youtube) ? vod.youtube : []).map((entry) => entry?.id).filter(Boolean);
+      const youtube = await loadYoutubeClient();
+      const youtubeResults = [];
+      for (const videoId of youtubeIds) {
+        youtubeResults.push(await setYouTubeVideoPrivacy(youtube, videoId, "public"));
+      }
+
+      const twitchResult = await getTwitchVodStatus(vodRoute.vodId, twitchToken);
+
+      const updatedVod = await updateVod(
+        vodRoute.vodId,
+        (entry) => ({
+          ...entry,
+          unpublished: false,
+        }),
+        `chore: republish vod ${vodRoute.vodId}`
       );
 
       sendJson(req, res, 200, {

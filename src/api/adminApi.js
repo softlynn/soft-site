@@ -300,10 +300,32 @@ export const setVodChatReplay = async (vodId, available) => {
   });
 };
 
+export const setVodFlags = async (vodId, { noticeEnabled, chatReplayAvailable }) => {
+  const token = readAdminToken();
+  if (!token) throw new Error("Admin session is missing");
+  return request(`/vods/${encodeURIComponent(String(vodId))}/flags`, {
+    method: "POST",
+    token,
+    body: {
+      noticeEnabled: Boolean(noticeEnabled),
+      chatReplayAvailable: Boolean(chatReplayAvailable),
+    },
+  });
+};
+
 export const unpublishVod = async (vodId) => {
   const token = readAdminToken();
   if (!token) throw new Error("Admin session is missing");
   return request(`/vods/${encodeURIComponent(String(vodId))}/unpublish`, {
+    method: "POST",
+    token,
+  });
+};
+
+export const republishVod = async (vodId) => {
+  const token = readAdminToken();
+  if (!token) throw new Error("Admin session is missing");
+  return request(`/vods/${encodeURIComponent(String(vodId))}/republish`, {
     method: "POST",
     token,
   });

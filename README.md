@@ -137,10 +137,13 @@ Each upload now sets and syncs:
 1. Open the site and click `soft Archive` **3 times** quickly.
 2. Enter the admin password in the prompt.
 3. After unlock, `/admin` lets you:
-   - unpublish a VOD on YouTube and Twitch,
+   - unpublish a VOD on YouTube + archive listing (Twitch VOD is preserved),
+   - republish an unpublished VOD on YouTube and the archive site,
    - hide the VOD from archive listings,
    - toggle Spotify-muted notice,
    - toggle chat replay availability.
+
+Twitch note: Helix provides delete/list operations for videos, but no official per-VOD unpublish toggle. This admin flow does not delete Twitch VODs.
 
 The admin password is never committed to GitHub; it is read from local `.env.local`.
 If a Twitch user token is missing when you unpublish, the admin API now starts an automatic one-time Twitch device authorization flow and stores the token locally.
