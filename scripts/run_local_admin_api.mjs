@@ -5,7 +5,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn, spawnSync } from "node:child_process";
 import dotenv from "dotenv";
-import { google } from "googleapis";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,6 +41,7 @@ const TWITCH_AUTH_SCOPES = ["channel:manage:videos"];
 const TWITCH_DEVICE_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code";
 let lastActivityAt = Date.now();
 let shuttingDownForIdle = false;
+let googleApis = null;
 
 const log = (message) => {
   console.log(`[${new Date().toISOString()}] ${message}`);
@@ -68,6 +68,13 @@ const openUrl = (url) => {
 
 const markActivity = () => {
   lastActivityAt = Date.now();
+};
+
+const getGoogleApis = async () => {
+  if (googleApis) return googleApis;
+  const module = await import("googleapis");
+  googleApis = module.google;
+  return googleApis;
 };
 
 const ensureDirectory = async (dirPath) => {
@@ -252,6 +259,7 @@ const loadYoutubeClient = async () => {
     fail("Invalid YouTube OAuth client secret JSON");
   }
 
+  const google = await getGoogleApis();
   const token = JSON.parse(await fs.readFile(config.youtubeTokenPath, "utf8"));
   const authClient = new google.auth.OAuth2(details.client_id, details.client_secret, details.redirect_uris[0]);
   authClient.setCredentials(token);
