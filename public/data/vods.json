@@ -34,7 +34,7 @@
   {
     "id": "2693715902",
     "title": "woah",
-    "chatReplayAvailable": false,
+    "chatReplayAvailable": true,
     "duration": "02:37:20",
     "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/a315b3742295e1aa417c_softu1_317168183644_1770687271//thumb/thumb0-640x360.jpg",
     "youtube": [
@@ -60,6 +60,7 @@
     ],
     "games": [],
     "createdAt": "2026-02-10T01:34:36Z",
-    "updatedAt": "2026-02-12T07:01:17.516Z"
+    "updatedAt": "2026-02-12T07:01:33.843Z",
+    "vodNotice": "Spotify audio is muted on this VOD."
   }
 ]
