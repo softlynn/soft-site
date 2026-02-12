@@ -82,7 +82,7 @@ const request = async (path, { method = "GET", body, token } = {}) => {
   }
 
   const message = lastError?.message || "Failed to reach local admin API";
-  throw new Error(`${message}. Ensure local admin API is running on localhost.`);
+  throw new Error(`${message}. Start it on demand with 'npm run admin:api:wake' (or double-click start-admin-api.cmd), then retry.`);
 };
 
 export const authenticateAdmin = async (password) => {

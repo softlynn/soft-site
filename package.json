@@ -47,6 +47,8 @@
     "twitch:auth": "node scripts/init_twitch_user_auth.mjs",
     "archive:run": "node scripts/run_local_archive_pipeline.mjs",
     "admin:api:start": "node scripts/run_local_admin_api.mjs",
+    "admin:api:wake": "powershell -ExecutionPolicy Bypass -File scripts/start_admin_api_once.ps1",
+    "admin:api:stop": "powershell -ExecutionPolicy Bypass -File scripts/stop_admin_api.ps1",
     "archive:task:install": "powershell -ExecutionPolicy Bypass -File scripts/install_local_archive_task.ps1",
     "archive:task:remove": "powershell -ExecutionPolicy Bypass -File scripts/remove_local_archive_task.ps1",
     "admin:task:install": "powershell -ExecutionPolicy Bypass -File scripts/install_local_admin_api_task.ps1",

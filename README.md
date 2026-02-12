@@ -62,10 +62,16 @@ ADMIN_PANEL_PASSWORD=<your-private-admin-password>
 npm run archive:task:install
 ```
 
-8. Install local admin API auto-start hook (one-shot starter at login and immediate start now):
+8. Optional: install local admin API auto-start hook at login:
 
 ```bash
 npm run admin:task:install
+```
+
+If you prefer on-demand only (no login auto-start), remove the hook:
+
+```bash
+npm run admin:task:remove
 ```
 
 ## Manual run (for testing)
@@ -73,6 +79,18 @@ npm run admin:task:install
 ```bash
 npm run archive:run
 ```
+
+Start/stop local admin API on demand:
+
+```bash
+npm run admin:api:wake
+npm run admin:api:stop
+```
+
+You can also double-click:
+
+- `start-admin-api.cmd`
+- `stop-admin-api.cmd`
 
 ## Scheduled task commands
 
