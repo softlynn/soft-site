@@ -50,6 +50,9 @@ export default function Navbar() {
     const tapState = titleTapState.current;
     if (tapState.active) return;
 
+    event.preventDefault();
+    event.stopPropagation();
+
     const now = Date.now();
     if (!tapState.lastTapMs || now - tapState.lastTapMs > ADMIN_TAP_WINDOW_MS) {
       tapState.count = 0;
@@ -57,13 +60,14 @@ export default function Navbar() {
     tapState.lastTapMs = now;
     tapState.count += 1;
 
-    if (tapState.count < 3) return;
+    if (tapState.count < 3) {
+      navigate("/");
+      return;
+    }
 
     tapState.count = 0;
     tapState.lastTapMs = 0;
 
-    event.preventDefault();
-    event.stopPropagation();
     tapState.active = true;
     try {
       const authenticated = await promptAndLoginAdmin();
@@ -80,6 +84,11 @@ export default function Navbar() {
       if (window.location.hash !== "#/admin") {
         window.location.hash = "/admin";
       }
+      window.setTimeout(() => {
+        if (window.location.hash !== "#/admin") {
+          window.location.assign(`${window.location.pathname}${window.location.search}#/admin`);
+        }
+      }, 120);
     } catch (error) {
       window.alert(`Admin login failed: ${error.message}`);
     } finally {
