@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Box, Button, CircularProgress, FormControlLabel, MenuItem, Select, Stack, Switch, Typography } from "@mui/material";
 import SimpleBar from "simplebar-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Footer from "../utils/Footer";
 import {
   clearAdminToken,
@@ -15,6 +16,9 @@ import {
 const SORT_DESC = (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
 
 export default function AdminPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const attemptedAutoUnlockRef = useRef(false);
   const [ready, setReady] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -68,7 +72,7 @@ export default function AdminPage() {
     syncFlagsFromVod(selectedVod);
   }, [selectedVodId, selectedVod]);
 
-  const handleUnlock = async () => {
+  const handleUnlock = useCallback(async () => {
     setLoading(true);
     try {
       const didLogin = await promptAndLoginAdmin();
@@ -85,7 +89,18 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [hydrateVods]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const shouldAutoUnlock = params.get("unlock") === "1";
+    if (!ready || authorized || !shouldAutoUnlock || attemptedAutoUnlockRef.current) return;
+
+    attemptedAutoUnlockRef.current = true;
+    handleUnlock().finally(() => {
+      navigate("/admin", { replace: true });
+    });
+  }, [authorized, handleUnlock, location.search, navigate, ready]);
 
   const handleLock = () => {
     clearAdminToken();
