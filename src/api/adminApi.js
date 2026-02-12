@@ -17,6 +17,7 @@ let runtimeAdminToken = "";
 const ADMIN_API_STARTUP_RETRY_MS = 12000;
 const ADMIN_API_STARTUP_RETRY_DELAY_MS = 1200;
 const ADMIN_API_WAKE_PROTOCOL = "soft-archive-admin://wake";
+const ADMIN_API_HEALTH_PATH = "/health";
 
 const buildUrl = (base, path) => `${base}${path.startsWith("/") ? path : `/${path}`}`;
 const sleep = (ms) =>
@@ -48,6 +49,54 @@ const tryWakeAdminApi = () => {
   } catch {
     // no-op
   }
+};
+
+const tryWakeAdminApiFromGesture = () => {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+
+  try {
+    const link = document.createElement("a");
+    link.href = ADMIN_API_WAKE_PROTOCOL;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return;
+  } catch {
+    // Fall back to iframe launch below.
+  }
+
+  tryWakeAdminApi();
+};
+
+const pingAdminApi = async () => {
+  for (const base of ADMIN_API_FALLBACK_BASES) {
+    try {
+      const response = await fetch(buildUrl(base, ADMIN_API_HEALTH_PATH), {
+        method: "GET",
+      });
+      if (response.ok) return true;
+    } catch {
+      // try next base
+    }
+  }
+  return false;
+};
+
+const ensureAdminApiAvailable = async ({ useGestureWake = false, timeoutMs = ADMIN_API_STARTUP_RETRY_MS } = {}) => {
+  if (await pingAdminApi()) return true;
+  if (useGestureWake) {
+    tryWakeAdminApiFromGesture();
+  } else {
+    tryWakeAdminApi();
+  }
+
+  const deadline = Date.now() + Math.max(0, Number(timeoutMs) || 0);
+  while (Date.now() < deadline) {
+    await sleep(450);
+    if (await pingAdminApi()) return true;
+  }
+  return false;
 };
 
 const readAdminToken = () => {
@@ -189,6 +238,7 @@ export const promptAndLoginAdmin = async () => {
   const password = window.prompt("Enter admin password");
   if (password == null) return false;
   if (!String(password).trim()) throw new Error("Admin password cannot be empty.");
+  await ensureAdminApiAvailable({ useGestureWake: true, timeoutMs: 5000 });
   await authenticateAdmin(password);
   return true;
 };
