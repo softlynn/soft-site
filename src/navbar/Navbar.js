@@ -63,6 +63,7 @@ export default function Navbar() {
     tapState.lastTapMs = 0;
 
     event.preventDefault();
+    event.stopPropagation();
     tapState.active = true;
     try {
       const authenticated = await promptAndLoginAdmin();
@@ -71,14 +72,14 @@ export default function Navbar() {
         return;
       }
 
-      navigate("/admin");
-
-      // Fallback for rare router no-op cases on title link clicks.
-      window.setTimeout(() => {
-        if (window.location.hash !== "#/admin") {
-          window.location.hash = "/admin";
-        }
-      }, 50);
+      try {
+        navigate("/admin");
+      } catch {
+        // no-op
+      }
+      if (window.location.hash !== "#/admin") {
+        window.location.hash = "/admin";
+      }
     } catch (error) {
       window.alert(`Admin login failed: ${error.message}`);
     } finally {
