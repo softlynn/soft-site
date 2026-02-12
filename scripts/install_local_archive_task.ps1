@@ -4,16 +4,17 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-
-$scriptPath = Join-Path $PSScriptRoot "run_local_archive_pipeline.mjs"
-$workingDir = Split-Path -Parent $PSScriptRoot
-$logPath = Join-Path $PSScriptRoot ".state\archive-task.log"
-
-if (!(Test-Path (Split-Path -Parent $logPath))) {
-  New-Item -ItemType Directory -Path (Split-Path -Parent $logPath) -Force | Out-Null
+if ($PSVersionTable.PSVersion.Major -ge 7) {
+  $PSNativeCommandUseErrorActionPreference = $false
 }
 
-$taskCommand = "cmd /c cd /d `"$workingDir`" && node `"$scriptPath`" >> `"$logPath`" 2>&1"
+$runnerPath = Join-Path $PSScriptRoot "run_local_archive_task_once.ps1"
+
+if (!(Test-Path $runnerPath)) {
+  throw "Missing archive task runner at '$runnerPath'."
+}
+
+$taskCommand = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$runnerPath`""
 
 schtasks /Create /TN $TaskName /TR $taskCommand /SC MINUTE /MO $EveryMinutes /F | Out-Null
 if ($LASTEXITCODE -ne 0) {

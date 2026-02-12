@@ -7,22 +7,39 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
   $PSNativeCommandUseErrorActionPreference = $false
 }
 
-$scriptPath = Join-Path $PSScriptRoot "run_local_admin_api.mjs"
-$workingDir = Split-Path -Parent $PSScriptRoot
-$logPath = Join-Path $PSScriptRoot ".state\admin-api.log"
 $watchdogPsPath = Join-Path $PSScriptRoot "start_admin_api_watchdog.ps1"
+$adminApiScriptPath = Join-Path $PSScriptRoot "run_local_admin_api.mjs"
 
-if (!(Test-Path (Split-Path -Parent $logPath))) {
-  New-Item -ItemType Directory -Path (Split-Path -Parent $logPath) -Force | Out-Null
+if (!(Test-Path $watchdogPsPath)) {
+  throw "Missing watchdog script at '$watchdogPsPath'."
 }
 
-$taskCommand = "cmd /c cd /d `"$workingDir`" && node `"$scriptPath`" >> `"$logPath`" 2>&1"
+$taskCommand = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$watchdogPsPath`""
 
 $startupDir = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Startup"
 $startupCmdPath = Join-Path $startupDir "soft-admin-api.cmd"
 $startupVbsPath = Join-Path $startupDir "soft-admin-api.vbs"
 $watchdogCmdPath = Join-Path $PSScriptRoot "start_admin_api_watchdog.cmd"
 $usedScheduledTask = $false
+
+$stopExistingInstances = {
+  $watchdogRegex = [Regex]::Escape($watchdogPsPath)
+  $adminApiRegex = [Regex]::Escape($adminApiScriptPath)
+
+  $watchdogs = Get-CimInstance Win32_Process |
+    Where-Object { $_.Name -ieq "powershell.exe" -and $_.CommandLine -match $watchdogRegex }
+  foreach ($proc in $watchdogs) {
+    Stop-Process -Id $proc.ProcessId -Force -ErrorAction SilentlyContinue
+  }
+
+  $adminApis = Get-CimInstance Win32_Process |
+    Where-Object { $_.Name -ieq "node.exe" -and $_.CommandLine -match $adminApiRegex }
+  foreach ($proc in $adminApis) {
+    Stop-Process -Id $proc.ProcessId -Force -ErrorAction SilentlyContinue
+  }
+}
+
+& $stopExistingInstances
 
 $previousErrorActionPreference = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
@@ -51,6 +68,16 @@ WShell.Run cmd, 0, False
 }
 
 if ($usedScheduledTask) {
+  if (Test-Path $startupCmdPath) {
+    Remove-Item -Path $startupCmdPath -Force
+  }
+  if (Test-Path $startupVbsPath) {
+    Remove-Item -Path $startupVbsPath -Force
+  }
+  if (Test-Path $watchdogCmdPath) {
+    Remove-Item -Path $watchdogCmdPath -Force
+  }
+
   schtasks /Run /TN $TaskName | Out-Null
   if ($LASTEXITCODE -ne 0) {
     throw "Failed to start scheduled task '$TaskName'."
