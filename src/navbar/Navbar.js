@@ -87,18 +87,8 @@ export default function Navbar() {
         return;
       }
 
-      try {
-        navigate("/admin");
-      } catch {
-        // no-op
-      }
-      const adminHashPath = "#/admin";
-      if (window.location.hash !== adminHashPath) window.location.hash = "/admin";
-      window.setTimeout(() => {
-        if (window.location.hash !== adminHashPath) {
-          window.location.assign(`${window.location.pathname}${window.location.search}#/admin`);
-        }
-      }, 120);
+      const adminUrl = `${window.location.pathname}${window.location.search}#/admin`;
+      window.location.replace(adminUrl);
     } catch (error) {
       window.alert(`Admin login failed: ${error.message}`);
     } finally {
@@ -120,11 +110,24 @@ export default function Navbar() {
             </Box>
 
             <Typography variant="h6" component="div">
-              <CustomLink color="inherit" href="/" onClick={handleSiteTitleClick}>
-                <Typography color="primary" variant="h6">
-                  {SITE_TITLE}
-                </Typography>
-              </CustomLink>
+              <Typography
+                color="primary"
+                variant="h6"
+                component="button"
+                onClick={handleSiteTitleClick}
+                sx={{
+                  border: 0,
+                  background: "transparent",
+                  color: "inherit",
+                  cursor: "pointer",
+                  p: 0,
+                  m: 0,
+                  font: "inherit",
+                  "&:hover": { opacity: 0.5 },
+                }}
+              >
+                {SITE_TITLE}
+              </Typography>
             </Typography>
 
             {!isMobile && socials.length > 0 && (
