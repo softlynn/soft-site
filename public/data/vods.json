@@ -3,7 +3,7 @@
     "id": "2696216401",
     "title": "vrchat",
     "duration": "00:38:30",
-    "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/aab67eac01dd1b811f80_softu1_317340456800_1770940947//thumb/thumb0-640x360.jpg",
+    "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/aab67eac01dd1b811f80_softu1_317340456800_1770940947//thumb/thumb2-640x360.jpg",
     "youtube": [
       {
         "id": "AR4Gyz-DG4g",
@@ -11,6 +11,13 @@
         "duration": 0,
         "part": 1,
         "thumbnail_url": "https://i.ytimg.com/vi/AR4Gyz-DG4g/mqdefault.jpg"
+      },
+      {
+        "id": "kdbzbUFuDVo",
+        "type": "vod",
+        "duration": 0,
+        "part": 2,
+        "thumbnail_url": "https://i.ytimg.com/vi/kdbzbUFuDVo/mqdefault.jpg"
       }
     ],
     "stream_id": "317340456800",
@@ -27,7 +34,7 @@
     ],
     "games": [],
     "createdAt": "2026-02-13T00:02:31Z",
-    "updatedAt": "2026-02-13T01:01:29.471Z"
+    "updatedAt": "2026-02-13T03:23:33.003Z"
   },
   {
     "id": "2695104345",
