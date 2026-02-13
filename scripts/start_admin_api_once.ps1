@@ -10,6 +10,39 @@ $logDir = Join-Path $scriptDir ".state"
 $stdoutLog = Join-Path $logDir "admin-api-stdout.log"
 $stderrLog = Join-Path $logDir "admin-api-stderr.log"
 $port = 49731
+$host = "127.0.0.1"
+$fallbackPort = 49721
+
+function Test-AdminApiHealth {
+  param(
+    [string]$ApiHost,
+    [int]$ApiPort
+  )
+
+  try {
+    $response = Invoke-WebRequest -UseBasicParsing -Uri ("http://{0}:{1}/health" -f $ApiHost, $ApiPort) -TimeoutSec 2
+    if ($response.StatusCode -ne 200) { return $false }
+    $payload = $null
+    try {
+      $payload = $response.Content | ConvertFrom-Json
+    } catch {
+      return $false
+    }
+    return ($payload -and $payload.ok -eq $true -and [string]$payload.service -eq "soft-admin-api")
+  } catch {
+    return $false
+  }
+}
+
+function Test-PortListening {
+  param([int]$ApiPort)
+  try {
+    $listener = Get-NetTCPConnection -State Listen -LocalPort $ApiPort -ErrorAction Stop | Select-Object -First 1
+    return $null -ne $listener
+  } catch {
+    return $false
+  }
+}
 
 if (!(Test-Path $adminApiScript)) {
   exit 0
@@ -31,23 +64,37 @@ if (Test-Path $envFilePath) {
         }
         break
       }
+      if ($line -match '^\s*ADMIN_API_HOST\s*=\s*(.+)\s*$') {
+        $parsedHost = [string](($matches[1] -replace '\s+', '').Trim('"').Trim("'"))
+        if ($parsedHost) {
+          $host = $parsedHost
+        }
+      }
     }
   } catch {
     # Continue with default fallback.
   }
 }
 
-$isListening = $false
-try {
-  $listener = Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction Stop | Select-Object -First 1
-  if ($listener) {
-    $isListening = $true
-  }
-} catch {
-  $isListening = $false
+if (Test-AdminApiHealth -ApiHost $host -ApiPort $port) {
+  exit 0
+}
+if ($fallbackPort -ne $port -and (Test-AdminApiHealth -ApiHost $host -ApiPort $fallbackPort)) {
+  exit 0
 }
 
-if ($isListening) {
+$candidatePorts = @($port, $fallbackPort) | Select-Object -Unique
+$launchPort = $null
+foreach ($candidatePort in $candidatePorts) {
+  if (!(Test-PortListening -ApiPort $candidatePort)) {
+    $launchPort = [int]$candidatePort
+    break
+  }
+}
+
+if ($null -eq $launchPort) {
+  $timestamp = Get-Date -Format o
+  "[$timestamp] Failed to launch local admin API: no free candidate port ($($candidatePorts -join ', '))." | Out-File -FilePath $stderrLog -Append -Encoding utf8
   exit 0
 }
 
@@ -59,6 +106,8 @@ foreach ($proc in $staleNodeProcesses) {
 }
 
 try {
+  $previousAdminApiPort = $env:ADMIN_API_PORT
+  $env:ADMIN_API_PORT = [string]$launchPort
   Start-Process -FilePath "node" `
     -ArgumentList @($adminApiScript) `
     -WorkingDirectory $repoRoot `
@@ -68,4 +117,10 @@ try {
 } catch {
   $timestamp = Get-Date -Format o
   "[$timestamp] Failed to launch local admin API: $($_.Exception.Message)" | Out-File -FilePath $stderrLog -Append -Encoding utf8
+} finally {
+  if ($null -eq $previousAdminApiPort) {
+    Remove-Item Env:\ADMIN_API_PORT -ErrorAction SilentlyContinue
+  } else {
+    $env:ADMIN_API_PORT = $previousAdminApiPort
+  }
 }
