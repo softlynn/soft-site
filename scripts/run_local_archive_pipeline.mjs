@@ -12,9 +12,77 @@ const repoRoot = path.resolve(__dirname, "..");
 
 dotenv.config({ path: path.join(repoRoot, ".env.local") });
 
-const METADATA_TEMPLATE_VERSION = 1;
+const METADATA_TEMPLATE_VERSION = 2;
 
 const cleanUrl = (value) => String(value || "").replace(/\/+$/, "");
+
+const parseGithubRepo = (value) => {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+
+  const sshMatch = raw.match(/^git@github\.com:([^/]+)\/(.+?)(?:\.git)?$/i);
+  if (sshMatch) {
+    return {
+      owner: sshMatch[1],
+      repo: sshMatch[2],
+    };
+  }
+
+  let normalized = raw;
+  if (!/^https?:\/\//i.test(normalized)) {
+    normalized = normalized.replace(/^github\.com[/:]/i, "https://github.com/");
+    if (!/^https?:\/\//i.test(normalized)) {
+      normalized = `https://${normalized.replace(/^\/+/, "")}`;
+    }
+  }
+
+  try {
+    const parsed = new URL(normalized);
+    if (!/github\.com$/i.test(parsed.hostname)) return null;
+    const parts = parsed.pathname
+      .replace(/^\/+/, "")
+      .replace(/\/+$/, "")
+      .replace(/\.git$/i, "")
+      .split("/")
+      .filter(Boolean);
+    if (parts.length < 2) return null;
+    return {
+      owner: parts[0],
+      repo: parts[1],
+    };
+  } catch {
+    return null;
+  }
+};
+
+const inferArchiveSiteUrl = () => {
+  const configured = cleanUrl(process.env.ARCHIVE_SITE_URL || "");
+  if (configured) return configured;
+
+  const candidates = [];
+  if (process.env.REACT_APP_GITHUB) candidates.push(process.env.REACT_APP_GITHUB);
+  if (process.env.GITHUB_REPOSITORY) candidates.push(`https://github.com/${process.env.GITHUB_REPOSITORY}`);
+
+  try {
+    const origin = spawnSync("git", ["remote", "get-url", "origin"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    });
+    if (origin.status === 0 && origin.stdout?.trim()) {
+      candidates.push(origin.stdout.trim());
+    }
+  } catch {
+    // no-op
+  }
+
+  for (const candidate of candidates) {
+    const parsed = parseGithubRepo(candidate);
+    if (!parsed) continue;
+    return `https://${parsed.owner}.github.io/${parsed.repo}`;
+  }
+
+  return "";
+};
 
 const config = {
   recordingsDir: process.env.LOCAL_RECORDINGS_DIR || path.join(repoRoot, "recordings"),
@@ -26,7 +94,7 @@ const config = {
   youtubePrivacyStatus: process.env.YOUTUBE_PRIVACY_STATUS || "private",
   youtubeCategoryId: process.env.YOUTUBE_CATEGORY_ID || "20",
   youtubeCategoryRegionCode: process.env.YOUTUBE_CATEGORY_REGION_CODE || "US",
-  archiveSiteUrl: cleanUrl(process.env.ARCHIVE_SITE_URL || ""),
+  archiveSiteUrl: inferArchiveSiteUrl(),
   vodsDataPath: process.env.ARCHIVE_VODS_PATH || path.join(repoRoot, "public", "data", "vods.json"),
   commentsDir: process.env.ARCHIVE_COMMENTS_DIR || path.join(repoRoot, "public", "data", "comments"),
   emotesDir: process.env.ARCHIVE_EMOTES_DIR || path.join(repoRoot, "public", "data", "emotes"),
@@ -170,11 +238,13 @@ const buildYouTubeTitle = ({ streamTitle, streamDate, partNumber, totalParts }) 
   return truncateYouTubeTitle(`${safeTitle} - ${dateLabel}`);
 };
 
-const buildArchiveVodUrl = (vodId) => `${config.archiveSiteUrl}/#/youtube/${vodId}`;
+const buildArchiveVodUrl = (vodId) =>
+  config.archiveSiteUrl ? `${config.archiveSiteUrl}/#/youtube/${encodeURIComponent(String(vodId))}` : "";
 
 const buildYouTubeDescription = ({ twitchVodId, streamTitle, streamDate, partNumber, totalParts, youtubeParts = [] }) => {
+  const archiveVodUrl = buildArchiveVodUrl(twitchVodId);
   const lines = [
-    `Chat Replay: ${buildArchiveVodUrl(twitchVodId)}`,
+    archiveVodUrl ? `Chat Replay: ${archiveVodUrl}` : "Chat Replay: unavailable",
     `Original VOD: https://www.twitch.tv/videos/${twitchVodId}`,
     `Stream Title: ${sanitizeTitle(streamTitle) || `Twitch VOD ${twitchVodId}`}`,
     `Stream Date: ${formatDateDescription(streamDate)}`,
