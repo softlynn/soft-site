@@ -18,6 +18,18 @@ const NotFound = lazy(() => import("./utils/NotFound"));
 const AdminPage = lazy(() => import("./admin/AdminPage"));
 
 const THEME_STORAGE_KEY = "softu-theme-mode";
+const isViewerPath = (path) =>
+  String(path || "").startsWith("/youtube/") || String(path || "").startsWith("/cdn/") || String(path || "").startsWith("/games/");
+
+const getHashPath = () => {
+  if (typeof window === "undefined") return "/";
+  const rawHash = String(window.location.hash || "");
+  if (!rawHash || rawHash === "#") return "/";
+  const hashWithoutPrefix = rawHash.startsWith("#") ? rawHash.slice(1) : rawHash;
+  const pathOnly = hashWithoutPrefix.split("?")[0];
+  if (!pathOnly || pathOnly === "/") return "/";
+  return pathOnly.startsWith("/") ? pathOnly : `/${pathOnly}`;
+};
 
 const getInitialThemeMode = () => {
   if (typeof window === "undefined") return "light";
@@ -220,20 +232,34 @@ const buildTheme = (mode) => {
 };
 
 export default function App() {
-  const [themeMode, setThemeMode] = useState(getInitialThemeMode);
-  const theme = useMemo(() => buildTheme(themeMode), [themeMode]);
+  const [preferredThemeMode, setPreferredThemeMode] = useState(getInitialThemeMode);
+  const [hashPath, setHashPath] = useState(getHashPath);
+  const effectiveThemeMode = isViewerPath(hashPath) ? "dark" : preferredThemeMode;
+  const theme = useMemo(() => buildTheme(effectiveThemeMode), [effectiveThemeMode]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const syncHashPath = () => setHashPath(getHashPath());
+    syncHashPath();
+    window.addEventListener("hashchange", syncHashPath);
+    return () => window.removeEventListener("hashchange", syncHashPath);
+  }, []);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.documentElement.setAttribute("data-soft-theme", themeMode);
-    document.body.setAttribute("data-soft-theme", themeMode);
-    window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
-  }, [themeMode]);
+    document.documentElement.setAttribute("data-soft-theme", effectiveThemeMode);
+    document.body.setAttribute("data-soft-theme", effectiveThemeMode);
+  }, [effectiveThemeMode]);
 
-  const toggleThemeMode = () => setThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(THEME_STORAGE_KEY, preferredThemeMode);
+  }, [preferredThemeMode]);
+
+  const toggleThemeMode = () => setPreferredThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
 
   return (
-    <ThemeModeContext.Provider value={{ themeMode, toggleThemeMode }}>
+    <ThemeModeContext.Provider value={{ themeMode: effectiveThemeMode, toggleThemeMode }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <HashRouter>

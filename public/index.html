@@ -10,6 +10,10 @@
         try {
           var saved = localStorage.getItem("softu-theme-mode");
           var mode = saved === "light" || saved === "dark" ? saved : "light";
+          var hash = String(window.location.hash || "");
+          var hashPath = hash ? hash.replace(/^#/, "").split("?")[0] : "/";
+          var isViewer = /^\/(youtube|cdn|games)\//.test(hashPath || "/");
+          if (isViewer) mode = "dark";
           document.documentElement.setAttribute("data-soft-theme", mode);
           document.documentElement.style.backgroundColor = mode === "dark" ? "#0f172a" : "#e2e9f3";
         } catch (e) {}
