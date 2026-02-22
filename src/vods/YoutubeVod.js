@@ -19,7 +19,9 @@ import { getVodById } from "../api/vodsApi";
 const getOriginalTwitchVodUrl = (vod) => {
   if (!vod || String(vod.platform || "").toLowerCase() !== "twitch") return "";
   if (vod.unpublished) return "";
+  if (vod.twitchPublished === false) return "";
   if (vod.twitchExists === false || vod.twitchDeleted === true || vod.twitchUnavailable === true) return "";
+  if (vod.twitch && typeof vod.twitch === "object" && vod.twitch.published === false) return "";
   if (typeof vod.twitchStatus === "string" && ["deleted", "unpublished", "private", "missing"].includes(vod.twitchStatus.toLowerCase())) return "";
   if (vod.twitch && typeof vod.twitch === "object" && vod.twitch.exists === false) return "";
   const id = String(vod.id || "").trim();
@@ -158,7 +160,17 @@ export default function Vod(props) {
             p: 0.6,
           }}
         >
-          <Box sx={{ width: "100%", height: "100%", borderRadius: "16px", overflow: "hidden", background: "#000", minHeight: 0 }}>
+          <Box
+            sx={{
+              width: "100%",
+              height: "100%",
+              borderRadius: "16px",
+              overflow: "hidden",
+              background:
+                "linear-gradient(180deg, rgba(18,27,44,0.06), rgba(18,27,44,0.10))",
+              minHeight: 0,
+            }}
+          >
             <YoutubePlayer playerRef={playerRef} part={part} youtube={youtube} setCurrentTime={setCurrentTime} setPart={setPart} setPlaying={setPlaying} delay={delay} />
           </Box>
           <Box sx={{ position: "absolute", bottom: 0, left: "50%" }}>

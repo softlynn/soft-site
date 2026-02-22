@@ -1,9 +1,9 @@
 import { Box } from "@mui/material";
 import { useEffect, useRef } from "react";
 
-const STAR_COUNT = 22;
+const STAR_COUNT = 16;
 const POINTER_DEFAULT = { x: 0.52, y: 0.44 };
-const TARGET_FPS = 30;
+const TARGET_FPS = 24;
 const FRAME_MS = 1000 / TARGET_FPS;
 
 const random = (min, max) => Math.random() * (max - min) + min;
@@ -176,8 +176,8 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
     const rect = canvas.getBoundingClientRect();
     const width = Math.max(1, Math.floor(rect.width));
     const height = Math.max(1, Math.floor(rect.height));
-    const dpr = Math.max(1, Math.min(1.35, window.devicePixelRatio || 1));
-    const renderScale = 0.62;
+    const dpr = Math.max(1, Math.min(1.25, window.devicePixelRatio || 1));
+    const renderScale = 0.56;
     const nextWidth = Math.max(1, Math.floor(width * dpr * renderScale));
     const nextHeight = Math.max(1, Math.floor(height * dpr * renderScale));
     if (canvas.width !== nextWidth) canvas.width = nextWidth;
@@ -191,11 +191,11 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
   window.addEventListener("resize", configureCanvas);
   sharedStateRef.current.gpuActive = true;
 
-  const render = (time) => {
-    if (document.hidden) {
-      rafId = window.requestAnimationFrame(render);
-      return;
-    }
+    const render = (time) => {
+      if (document.hidden) {
+        rafId = window.requestAnimationFrame(render);
+        return;
+      }
     if (lastFrameMs && time - lastFrameMs < FRAME_MS) {
       rafId = window.requestAnimationFrame(render);
       return;
@@ -302,8 +302,8 @@ export default function LiquidBackdrop() {
       const { width, height, stars } = state;
       if (!width || !height) return;
 
-      state.pointerX += (state.targetPointerX - state.pointerX) * 0.09;
-      state.pointerY += (state.targetPointerY - state.pointerY) * 0.09;
+      state.pointerX += (state.targetPointerX - state.pointerX) * 0.065;
+      state.pointerY += (state.targetPointerY - state.pointerY) * 0.065;
       const pointerX = state.pointerX;
       const pointerY = state.pointerY;
       syncPointerCssVars(pointerX, pointerY);
@@ -327,7 +327,7 @@ export default function LiquidBackdrop() {
       const px = pointerX * width;
       const py = pointerY * height;
 
-      // Soft cursor lens (cleaner than the previous multi-element follow).
+      // Ambient lens (autonomous motion; no cursor tracking for performance/cleanliness).
       ctx.save();
       const lens = ctx.createRadialGradient(px, py, 0, px, py, Math.max(width, height) * 0.16);
       lens.addColorStop(0, isDark ? "rgba(255,255,255,0.045)" : "rgba(255,255,255,0.12)");
@@ -344,21 +344,23 @@ export default function LiquidBackdrop() {
       ctx.stroke();
       ctx.restore();
 
-      // Two slow glass ribbons in 2D fallback/base layer.
-      ctx.save();
-      ctx.globalCompositeOperation = "source-over";
-      for (let i = 0; i < 2; i += 1) {
-        const y = height * (0.24 + i * 0.28) + Math.sin(t * (0.00025 + i * 0.00006) + i) * (14 + i * 5);
-        const grad = ctx.createLinearGradient(0, y - 36, width, y + 36);
-        grad.addColorStop(0, "rgba(0,0,0,0)");
-        grad.addColorStop(0.28, isDark ? "rgba(121,163,230,0.045)" : "rgba(121,163,230,0.06)");
-        grad.addColorStop(0.52, isDark ? "rgba(212,107,140,0.038)" : "rgba(212,107,140,0.05)");
-        grad.addColorStop(0.72, isDark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.05)");
-        grad.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, y - 40, width, 80);
+      // Keep the 2D layer lighter when GPU is active.
+      if (!state.gpuActive) {
+        ctx.save();
+        ctx.globalCompositeOperation = "source-over";
+        for (let i = 0; i < 2; i += 1) {
+          const y = height * (0.24 + i * 0.28) + Math.sin(t * (0.00025 + i * 0.00006) + i) * (14 + i * 5);
+          const grad = ctx.createLinearGradient(0, y - 36, width, y + 36);
+          grad.addColorStop(0, "rgba(0,0,0,0)");
+          grad.addColorStop(0.28, isDark ? "rgba(121,163,230,0.045)" : "rgba(121,163,230,0.06)");
+          grad.addColorStop(0.52, isDark ? "rgba(212,107,140,0.038)" : "rgba(212,107,140,0.05)");
+          grad.addColorStop(0.72, isDark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.05)");
+          grad.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, y - 40, width, 80);
+        }
+        ctx.restore();
       }
-      ctx.restore();
 
       // Stars stay subtle and cheap.
       ctx.save();
@@ -367,22 +369,11 @@ export default function LiquidBackdrop() {
         const alphaDelta = isDark ? 0.08 : 0.12;
         const alpha = alphaBase + (Math.sin(t * 0.0012 * star.twinkle + star.phase) + 1) * alphaDelta * 0.5;
         const y = (star.y + t * 0.003 * star.drift + height) % height;
-        const x = star.x + (pointerX - 0.5) * 2.5;
+        const x = star.x + (pointerX - 0.5) * 1.2;
         ctx.beginPath();
         ctx.arc(x, y, star.r, 0, Math.PI * 2);
         ctx.fillStyle = isDark ? `rgba(220,232,255,${alpha.toFixed(3)})` : `rgba(255,255,255,${alpha.toFixed(3)})`;
         ctx.fill();
-      }
-      ctx.restore();
-
-      // Light dithering/noise to reduce visible banding.
-      ctx.save();
-      ctx.globalAlpha = isDark ? 0.06 : 0.05;
-      for (let i = 0; i < 110; i += 1) {
-        const nx = ((i * 53 + Math.floor(t * 0.08)) % 127) / 127;
-        const ny = ((i * 97 + Math.floor(t * 0.05)) % 131) / 131;
-        ctx.fillStyle = i % 2 ? "rgba(255,255,255,0.4)" : "rgba(19,33,56,0.3)";
-        ctx.fillRect(nx * width, ny * height, 1, 1);
       }
       ctx.restore();
     };
@@ -397,34 +388,21 @@ export default function LiquidBackdrop() {
         return;
       }
       state.lastDrawMs = time;
+      // Autonomous focus point replaces cursor-follow to reduce lag/jitter.
+      state.targetPointerX = 0.5 + Math.sin(time * 0.00019) * 0.11 + Math.cos(time * 0.00007) * 0.03;
+      state.targetPointerY = 0.42 + Math.cos(time * 0.00017 + 0.6) * 0.09 + Math.sin(time * 0.00009) * 0.025;
       draw(time);
       state.rafId = window.requestAnimationFrame(loop);
-    };
-
-    const onPointerMove = (event) => {
-      const rect = canvas.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
-      state.targetPointerX = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
-      state.targetPointerY = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
-    };
-
-    const resetPointer = () => {
-      state.targetPointerX = POINTER_DEFAULT.x;
-      state.targetPointerY = POINTER_DEFAULT.y;
     };
 
     rebuildScene();
     syncPointerCssVars(state.pointerX, state.pointerY);
     state.rafId = window.requestAnimationFrame(loop);
     window.addEventListener("resize", rebuildScene);
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("pointerleave", resetPointer);
 
     return () => {
       window.cancelAnimationFrame(state.rafId);
       window.removeEventListener("resize", rebuildScene);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerleave", resetPointer);
     };
   }, []);
 

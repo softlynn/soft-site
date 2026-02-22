@@ -291,16 +291,17 @@ function RouteAwareOverlays() {
   const path = location.pathname || "/";
   const isViewerRoute = path.startsWith("/youtube/") || path.startsWith("/cdn/") || path.startsWith("/games/");
   const showFloatingToggle = !isViewerRoute;
+  const showBackdrop = path === "/" || path === "/vods";
 
   return (
     <>
-      {!isViewerRoute && <LiquidBackdrop />}
+      {showBackdrop && <LiquidBackdrop />}
       {showFloatingToggle && (
         <ThemeModeToggle
           announceKey={`floating-${path}`}
           sx={{
             position: "fixed",
-            bottom: { xs: 10, md: 14 },
+            bottom: { xs: 18, md: 24 },
             left: { xs: 10, md: 14 },
             zIndex: 1500,
             width: 42,

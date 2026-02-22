@@ -1,13 +1,17 @@
 import { useEffect, useRef } from "react";
 
 const POINTER_DEFAULT = { x: 0.45, y: 0.5 };
-const FPS = 24;
-const FRAME_MS = 1000 / FPS;
+const FPS_ACTIVE = 24;
+const FPS_IDLE = 12;
+const FRAME_MS_ACTIVE = 1000 / FPS_ACTIVE;
+const FRAME_MS_IDLE = 1000 / FPS_IDLE;
 
 async function startButtonGpu(canvas, tone) {
   if (!canvas || typeof window === "undefined") return () => {};
   if (!navigator.gpu) return () => {};
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return () => {};
+  if (window.matchMedia?.("(max-width: 900px)")?.matches) return () => {};
+  if (navigator.connection?.saveData) return () => {};
 
   const context = canvas.getContext("webgpu", { alpha: true });
   if (!context) return () => {};
@@ -152,6 +156,7 @@ fn fs(inFrag: VertexOut) -> @location(0) vec4f {
     targetY: POINTER_DEFAULT.y,
     hover: 0,
     targetHover: 0,
+    visible: true,
     rafId: 0,
     lastFrameMs: 0,
   };
@@ -184,20 +189,28 @@ fn fs(inFrag: VertexOut) -> @location(0) vec4f {
     state.targetX = POINTER_DEFAULT.x;
     state.targetY = POINTER_DEFAULT.y;
   };
+  const visibilityObserver = new IntersectionObserver(
+    ([entry]) => {
+      state.visible = Boolean(entry?.isIntersecting);
+    },
+    { threshold: 0.01 }
+  );
 
   configure();
   const resizeObserver = new ResizeObserver(configure);
   resizeObserver.observe(canvas);
+  visibilityObserver.observe(host);
   host.addEventListener("pointermove", onMove, { passive: true });
   host.addEventListener("pointerenter", onEnter);
   host.addEventListener("pointerleave", onLeave);
 
   const render = (time) => {
-    if (document.hidden) {
+    if (document.hidden || !state.visible) {
       state.rafId = window.requestAnimationFrame(render);
       return;
     }
-    if (state.lastFrameMs && time - state.lastFrameMs < FRAME_MS) {
+    const frameBudget = state.targetHover > 0.3 ? FRAME_MS_ACTIVE : FRAME_MS_IDLE;
+    if (state.lastFrameMs && time - state.lastFrameMs < frameBudget) {
       state.rafId = window.requestAnimationFrame(render);
       return;
     }
@@ -243,6 +256,7 @@ fn fs(inFrag: VertexOut) -> @location(0) vec4f {
   return () => {
     window.cancelAnimationFrame(state.rafId);
     resizeObserver.disconnect();
+    visibilityObserver.disconnect();
     host.removeEventListener("pointermove", onMove);
     host.removeEventListener("pointerenter", onEnter);
     host.removeEventListener("pointerleave", onLeave);

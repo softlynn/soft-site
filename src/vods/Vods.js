@@ -372,7 +372,7 @@ export default function Vods() {
     </Box>
   );
 
-  const renderVodGrid = (list, cardSizes) => {
+  const renderVodGrid = (list, cardSizes, { edgePad = { xs: 0.05, sm: 0.15, md: 0.25 } } = {}) => {
     if (!list) return <Loading />;
     if (list.length === 0) {
       return (
@@ -391,9 +391,7 @@ export default function Vods() {
         sx={{
           mt: 0.5,
           justifyContent: "center",
-          mx: "auto",
-          maxWidth: "1360px",
-          px: { xs: 0, sm: 0.5, md: 1 },
+          px: edgePad,
         }}
       >
         {list.map((vod, index) => (
@@ -407,7 +405,7 @@ export default function Vods() {
 
   return (
     <SimpleBar style={{ minHeight: 0, height: "100%" }}>
-      <Box sx={{ px: { xs: 1.1, sm: 1.8, md: 2.2 }, pb: 1, width: "100%", maxWidth: "1500px", mx: "auto" }}>
+      <Box sx={{ px: { xs: 1.25, sm: 2, md: 2.2 }, pb: 1 }}>
         {ENABLE_ADSENSE && ADSENSE_CLIENT && ADSENSE_SLOT && (
           <Box sx={{ mt: 1, textAlign: "center" }}>
             <ErrorBoundary>
@@ -531,7 +529,9 @@ export default function Vods() {
                   </Button>
                 </Box>
 
-                {previewVods === null ? <Loading /> : renderVodGrid(previewVods, { xs: 12, sm: 6, lg: 3 })}
+                {previewVods === null
+                  ? <Loading />
+                  : renderVodGrid(previewVods, { xs: 12, sm: 6, lg: 3 }, { edgePad: { xs: 0.25, sm: 0.4, md: 0.55 } })}
               </Box>
             </Reveal>
 

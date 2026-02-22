@@ -158,7 +158,6 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   background:
     radial-gradient(120px 90px at 18% 18%, rgba(255, 255, 255, 0.05) 0 20%, transparent 62%),
     radial-gradient(140px 100px at 74% 72%, rgba(255, 255, 255, 0.035) 0 18%, transparent 64%),
-    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 5px),
     radial-gradient(220px 160px at 18% 8%, rgba(255, 255, 255, 0.16), transparent 70%),
     radial-gradient(180px 140px at 72% 88%, rgba(212, 107, 140, 0.05), transparent 74%);
   opacity: 0.7;
@@ -183,12 +182,11 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.38) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.35) 1px, transparent 1px);
-  background-size: 26px 26px;
-  mask-image: radial-gradient(circle at 50% 30%, black 30%, transparent 78%);
-  opacity: 0.2;
+  background:
+    radial-gradient(circle at 22% 30%, rgba(255,255,255,0.06) 0 1px, transparent 1.3px) 0 0 / 18px 18px,
+    radial-gradient(circle at 68% 56%, rgba(255,255,255,0.04) 0 1px, transparent 1.3px) 9px 7px / 22px 22px;
+  mask-image: radial-gradient(circle at 50% 28%, black 28%, transparent 82%);
+  opacity: 0.26;
   border-radius: inherit;
 }
 
@@ -383,6 +381,16 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   border-radius: inherit;
 }
 
+.youtube-player:fullscreen,
+.youtube-player:-webkit-full-screen,
+.youtube-player > div:fullscreen,
+.youtube-player > div:-webkit-full-screen,
+.youtube-player iframe:fullscreen,
+.youtube-player iframe:-webkit-full-screen {
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
 .soft-logo-shell {
   position: relative;
   overflow: hidden;
@@ -402,11 +410,12 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   height: var(--size, 6px);
   margin-left: calc(var(--size, 6px) * -0.5);
   margin-top: calc(var(--size, 6px) * -0.5);
-  border-radius: 999px;
+  border-radius: 55% 45% 60% 40% / 48% 58% 42% 52%;
   background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.95), rgba(212,107,140,0.72));
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.22);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.18), 0 2px 8px rgba(212,107,140,0.18);
   opacity: 0;
-  animation: soft-logo-bubble-pop 620ms cubic-bezier(.18,.78,.2,1) forwards;
+  filter: blur(var(--blur, 0px));
+  animation: soft-logo-bubble-pop 680ms cubic-bezier(.14,.82,.2,1) forwards;
   animation-delay: var(--delay, 0ms);
 }
 
@@ -484,9 +493,9 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
 }
 
 html[data-soft-theme="dark"] .soft-grid-pattern::before {
-  background-image:
-    linear-gradient(rgba(167, 187, 219, 0.14) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(167, 187, 219, 0.12) 1px, transparent 1px);
+  background:
+    radial-gradient(circle at 22% 30%, rgba(167, 187, 219, 0.09) 0 1px, transparent 1.3px) 0 0 / 18px 18px,
+    radial-gradient(circle at 68% 56%, rgba(167, 187, 219, 0.06) 0 1px, transparent 1.3px) 9px 7px / 22px 22px;
 }
 
 html[data-soft-theme="dark"] .liquid-backdrop__canvas {
@@ -542,14 +551,17 @@ html[data-soft-theme="dark"] .video-js {
 @keyframes soft-logo-bubble-pop {
   0% {
     opacity: 0.9;
-    transform: translate(-50%, -50%) scale(0.35);
+    transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) scale(0.28);
   }
   35% {
     opacity: 0.95;
   }
   100% {
     opacity: 0;
-    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -16px))) scale(1.1);
+    transform:
+      translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -16px)))
+      rotate(calc(var(--rot, 0deg) + 24deg))
+      scale(1.08);
   }
 }
 

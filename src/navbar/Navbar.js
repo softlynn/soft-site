@@ -176,18 +176,25 @@ export default function Navbar() {
                   }}
                 />
                 {logoBurstSeed > 0 &&
-                  Array.from({ length: 8 }, (_, i) => {
-                    const angle = (Math.PI * 2 * i) / 8;
-                    const radius = 12 + (i % 2) * 6;
+                  Array.from({ length: 11 }, (_, i) => {
+                    const spread = Math.PI * 1.7;
+                    const baseAngle = -Math.PI / 2 - spread / 2 + (spread * i) / 10;
+                    const jitter = Math.sin((logoBurstSeed + i) * 1.73) * 0.16;
+                    const angle = baseAngle + jitter;
+                    const radius = 10 + (i % 4) * 3 + ((logoBurstSeed + i) % 2);
+                    const dx = Math.cos(angle) * radius;
+                    const dy = Math.sin(angle) * radius - 4 - Math.abs(Math.cos(angle)) * 2.5;
                     return (
                       <Box
                         key={`${logoBurstSeed}-${i}`}
                         className="soft-logo-bubble"
                         sx={{
-                          "--dx": `${Math.cos(angle) * radius}px`,
-                          "--dy": `${Math.sin(angle) * radius}px`,
-                          "--delay": `${i * 12}ms`,
-                          "--size": `${i % 3 === 0 ? 7 : 5}px`,
+                          "--dx": `${dx}px`,
+                          "--dy": `${dy}px`,
+                          "--delay": `${i * 10}ms`,
+                          "--size": `${i % 4 === 0 ? 7 : i % 3 === 0 ? 6 : 5}px`,
+                          "--rot": `${(i * 29 + logoBurstSeed * 13) % 360}deg`,
+                          "--blur": `${i % 5 === 0 ? 0.45 : 0}px`,
                         }}
                       />
                     );
