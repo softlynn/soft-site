@@ -53,10 +53,21 @@ export default function Vod(props) {
   const [delay, setDelay] = useState(0);
   const [userChatDelay, setUserChatDelay] = useState(0);
   const [mobileFullscreenChat, setMobileFullscreenChat] = useState(false);
+  const [mobileViewportSize, setMobileViewportSize] = useState({ width: 0, height: 0 });
   const playerRef = useRef(null);
   const mobileViewerFullscreen = isMobile && mobileFullscreenChat;
   const mobileFullscreenSideLayout = mobileViewerFullscreen && !isPortrait;
   const useStackedMobileLayout = !mobileFullscreenSideLayout && isPortrait;
+  const fullscreenViewportHeight = mobileViewerFullscreen
+    ? mobileViewportSize.height
+      ? `${mobileViewportSize.height}px`
+      : "100svh"
+    : "100%";
+  const fullscreenViewportWidth = mobileViewerFullscreen
+    ? mobileViewportSize.width
+      ? `${mobileViewportSize.width}px`
+      : "100vw"
+    : "100%";
 
   useEffect(() => {
     const fetchVod = async () => {
@@ -110,6 +121,45 @@ export default function Vod(props) {
     };
   }, [mobileViewerFullscreen]);
 
+  useEffect(() => {
+    if (!mobileViewerFullscreen) return;
+
+    let raf = null;
+    let settleTimer = null;
+    const applyViewportSize = () => {
+      const vv = window.visualViewport;
+      const width = Math.round((vv && vv.width) || window.innerWidth || 0);
+      const height = Math.round((vv && vv.height) || window.innerHeight || 0);
+      setMobileViewportSize((prev) => (prev.width === width && prev.height === height ? prev : { width, height }));
+    };
+
+    const queueApply = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(applyViewportSize);
+      if (settleTimer) clearTimeout(settleTimer);
+      settleTimer = setTimeout(applyViewportSize, 220);
+    };
+
+    queueApply();
+    window.addEventListener("resize", queueApply);
+    window.addEventListener("orientationchange", queueApply);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", queueApply);
+      window.visualViewport.addEventListener("scroll", queueApply);
+    }
+
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      if (settleTimer) clearTimeout(settleTimer);
+      window.removeEventListener("resize", queueApply);
+      window.removeEventListener("orientationchange", queueApply);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", queueApply);
+        window.visualViewport.removeEventListener("scroll", queueApply);
+      }
+    };
+  }, [mobileViewerFullscreen]);
+
   const handleExpandClick = () => {
     setShowMenu(!showMenu);
   };
@@ -146,9 +196,13 @@ export default function Vod(props) {
   return (
     <Box
       sx={{
-        height: mobileViewerFullscreen ? "100dvh" : "100%",
-        width: "100%",
-        p: mobileViewerFullscreen ? 0.6 : { xs: 0.75, md: 1 },
+        height: fullscreenViewportHeight,
+        width: fullscreenViewportWidth,
+        p: mobileViewerFullscreen
+          ? "max(env(safe-area-inset-top), 6px) max(env(safe-area-inset-right), 6px) max(env(safe-area-inset-bottom), 6px) max(env(safe-area-inset-left), 6px)"
+          : { xs: 0.75, md: 1 },
+        boxSizing: "border-box",
+        minHeight: 0,
         position: mobileViewerFullscreen ? "fixed" : "relative",
         inset: mobileViewerFullscreen ? 0 : "auto",
         zIndex: mobileViewerFullscreen ? 1400 : "auto",
