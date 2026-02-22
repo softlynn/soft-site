@@ -265,7 +265,7 @@ export default function Games(props) {
                     </Tooltip>
                   )}
                 </Box>
-                <VodReactions vodId={vod.id} compact sx={{ ml: 0.7 }} />
+                <VodReactions vodId={vod.id} compact lazy={false} sx={{ ml: 0.7 }} />
               </Box>
             </Box>
           </Collapse>
