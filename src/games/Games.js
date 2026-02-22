@@ -48,8 +48,12 @@ export default function Games(props) {
   const [mobileViewportSize, setMobileViewportSize] = useState({ width: 0, height: 0 });
   const playerRef = useRef(null);
   const mobileViewerFullscreen = isMobile && mobileFullscreenChat;
-  const mobileFullscreenSideLayout = mobileViewerFullscreen && !isPortrait;
-  const useStackedMobileLayout = !mobileFullscreenSideLayout && isPortrait;
+  const mobileViewportLooksLandscape =
+    mobileViewportSize.width > 0 &&
+    mobileViewportSize.height > 0 &&
+    mobileViewportSize.width > mobileViewportSize.height;
+  const mobileFullscreenSideLayout = mobileViewerFullscreen && (mobileViewportLooksLandscape || !isPortrait);
+  const useStackedMobileLayout = mobileViewerFullscreen ? !mobileFullscreenSideLayout : isPortrait;
   const fullscreenViewportHeight = mobileViewerFullscreen
     ? mobileViewportSize.height
       ? `${mobileViewportSize.height}px`
@@ -283,7 +287,7 @@ export default function Games(props) {
               </ExpandMore>
             </Tooltip>
             {isMobile && (
-              <Tooltip title={mobileViewerFullscreen ? "Exit Fullscreen + Chat" : "Fullscreen + Chat (Mobile)"}>
+              <Tooltip title={mobileViewerFullscreen ? "Exit Fullscreen + Chat" : "Open Fullscreen + Chat (Overlay)"}>
                 <IconButton
                   onClick={handleMobileFullscreenChatToggle}
                   aria-label={mobileViewerFullscreen ? "Exit fullscreen with chat" : "Open fullscreen with chat"}
