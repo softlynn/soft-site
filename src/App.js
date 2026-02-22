@@ -1,11 +1,13 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
-import { CssBaseline, styled } from "@mui/material";
+import { CssBaseline, styled, Tooltip, IconButton } from "@mui/material";
 import Loading from "./utils/Loading";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import LiquidBackdrop from "./utils/LiquidBackdrop";
+import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
+import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 
 const Vods = lazy(() => import("./vods/Vods"));
 const YoutubeVod = lazy(() => import("./vods/YoutubeVod"));
@@ -15,25 +17,37 @@ const Navbar = lazy(() => import("./navbar/Navbar"));
 const NotFound = lazy(() => import("./utils/NotFound"));
 const AdminPage = lazy(() => import("./admin/AdminPage"));
 
-export default function App() {
-  let darkTheme = createTheme({
+const THEME_STORAGE_KEY = "softu-theme-mode";
+
+const getInitialThemeMode = () => {
+  if (typeof window === "undefined") return "dark";
+  const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (saved === "light" || saved === "dark") return saved;
+  const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
+  return prefersDark ? "dark" : "light";
+};
+
+const buildTheme = (mode) => {
+  const isDark = mode === "dark";
+
+  let theme = createTheme({
     palette: {
-      mode: "light",
+      mode,
       background: {
-        default: "#E2E9F3",
-        paper: "rgba(255,255,255,0.72)",
+        default: isDark ? "#0F172A" : "#E2E9F3",
+        paper: isDark ? "rgba(20,28,44,0.72)" : "rgba(255,255,255,0.72)",
       },
       primary: {
-        main: "#132138",
+        main: isDark ? "#E7EFFA" : "#132138",
       },
       secondary: {
         main: "#D46B8C",
       },
       text: {
-        primary: "#132138",
-        secondary: "#395473",
+        primary: isDark ? "#E7EFFA" : "#132138",
+        secondary: isDark ? "#A9B8D1" : "#395473",
       },
-      divider: "rgba(19,33,56,0.10)",
+      divider: isDark ? "rgba(167,187,219,0.12)" : "rgba(19,33,56,0.10)",
       warning: {
         main: "#CC6F4E",
       },
@@ -55,23 +69,26 @@ export default function App() {
       MuiCssBaseline: {
         styleOverrides: {
           body: {
-            background:
-              "radial-gradient(circle at 15% 18%, rgba(212,107,140,0.14), transparent 38%), radial-gradient(circle at 82% 12%, rgba(89,145,226,0.16), transparent 46%), #E2E9F3",
-            color: "#132138",
+            background: isDark
+              ? "radial-gradient(circle at 14% 10%, rgba(212,107,140,0.10), transparent 38%), radial-gradient(circle at 86% 14%, rgba(89,145,226,0.16), transparent 46%), #0F172A"
+              : "radial-gradient(circle at 15% 18%, rgba(212,107,140,0.14), transparent 38%), radial-gradient(circle at 82% 12%, rgba(89,145,226,0.16), transparent 46%), #E2E9F3",
+            color: isDark ? "#E7EFFA" : "#132138",
           },
           "::selection": {
-            backgroundColor: alpha("#D46B8C", 0.26),
-            color: "#132138",
+            backgroundColor: alpha("#D46B8C", isDark ? 0.34 : 0.26),
+            color: isDark ? "#F8FBFF" : "#132138",
           },
         },
       },
       MuiAppBar: {
         styleOverrides: {
           root: {
-            background: "rgba(255,255,255,0.72)",
-            boxShadow: "0 18px 36px rgba(23,40,69,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
-            color: "#132138",
-            borderBottom: "1px solid rgba(255,255,255,0.55)",
+            background: isDark ? "rgba(14, 20, 34, 0.72)" : "rgba(255,255,255,0.72)",
+            boxShadow: isDark
+              ? "0 18px 36px rgba(2,6,18,0.42), inset 0 1px 0 rgba(255,255,255,0.06)"
+              : "0 18px 36px rgba(23,40,69,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
+            color: isDark ? "#E7EFFA" : "#132138",
+            borderBottom: isDark ? "1px solid rgba(167,187,219,0.08)" : "1px solid rgba(255,255,255,0.55)",
             backdropFilter: "blur(16px) saturate(140%)",
             backgroundImage: "none",
           },
@@ -80,11 +97,11 @@ export default function App() {
       MuiDrawer: {
         styleOverrides: {
           paper: {
-            color: "#132138",
-            background: "rgba(248,251,255,0.92)",
+            color: isDark ? "#E7EFFA" : "#132138",
+            background: isDark ? "rgba(12,18,30,0.92)" : "rgba(248,251,255,0.92)",
             backgroundImage: "none",
             backdropFilter: "blur(18px) saturate(140%)",
-            borderRight: "1px solid rgba(255,255,255,0.6)",
+            borderRight: isDark ? "1px solid rgba(167,187,219,0.10)" : "1px solid rgba(255,255,255,0.6)",
           },
         },
       },
@@ -106,18 +123,22 @@ export default function App() {
             transition: "transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease",
           },
           contained: {
-            boxShadow: "0 10px 22px rgba(19,33,56,0.12), inset 0 1px 0 rgba(255,255,255,0.35)",
+            boxShadow: isDark
+              ? "0 10px 22px rgba(2,6,18,0.24), inset 0 1px 0 rgba(255,255,255,0.14)"
+              : "0 10px 22px rgba(19,33,56,0.12), inset 0 1px 0 rgba(255,255,255,0.35)",
             "&:hover": {
               transform: "translateY(-1px)",
-              boxShadow: "0 14px 28px rgba(19,33,56,0.16), inset 0 1px 0 rgba(255,255,255,0.45)",
+              boxShadow: isDark
+                ? "0 14px 28px rgba(2,6,18,0.34), inset 0 1px 0 rgba(255,255,255,0.16)"
+                : "0 14px 28px rgba(19,33,56,0.16), inset 0 1px 0 rgba(255,255,255,0.45)",
             },
           },
           outlined: {
-            borderColor: "rgba(19,33,56,0.12)",
-            background: "rgba(255,255,255,0.54)",
+            borderColor: isDark ? "rgba(167,187,219,0.16)" : "rgba(19,33,56,0.12)",
+            background: isDark ? "rgba(17,24,39,0.42)" : "rgba(255,255,255,0.54)",
             "&:hover": {
-              borderColor: "rgba(19,33,56,0.2)",
-              background: "rgba(255,255,255,0.78)",
+              borderColor: isDark ? "rgba(167,187,219,0.28)" : "rgba(19,33,56,0.2)",
+              background: isDark ? "rgba(20,30,48,0.62)" : "rgba(255,255,255,0.78)",
               transform: "translateY(-1px)",
             },
           },
@@ -130,8 +151,8 @@ export default function App() {
             transition: "transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease",
             "&:hover": {
               transform: "translateY(-1px) scale(1.02)",
-              backgroundColor: "rgba(255,255,255,0.72)",
-              boxShadow: "0 8px 18px rgba(19,33,56,0.08)",
+              backgroundColor: isDark ? "rgba(20,30,48,0.66)" : "rgba(255,255,255,0.72)",
+              boxShadow: isDark ? "0 8px 18px rgba(2,6,18,0.22)" : "0 8px 18px rgba(19,33,56,0.08)",
             },
           },
         },
@@ -140,7 +161,7 @@ export default function App() {
         styleOverrides: {
           tooltip: {
             borderRadius: 12,
-            backgroundColor: "rgba(17, 28, 49, 0.92)",
+            backgroundColor: "rgba(10, 14, 24, 0.92)",
             backdropFilter: "blur(10px)",
             boxShadow: "0 14px 34px rgba(10,18,30,0.26)",
           },
@@ -150,9 +171,11 @@ export default function App() {
         styleOverrides: {
           paper: {
             borderRadius: 16,
-            border: "1px solid rgba(255,255,255,0.68)",
-            background: "rgba(247,250,255,0.9)",
-            boxShadow: "0 16px 38px rgba(19,33,56,0.12), inset 0 1px 0 rgba(255,255,255,0.8)",
+            border: isDark ? "1px solid rgba(167,187,219,0.12)" : "1px solid rgba(255,255,255,0.68)",
+            background: isDark ? "rgba(14,20,34,0.9)" : "rgba(247,250,255,0.9)",
+            boxShadow: isDark
+              ? "0 16px 38px rgba(2,6,18,0.34), inset 0 1px 0 rgba(255,255,255,0.04)"
+              : "0 16px 38px rgba(19,33,56,0.12), inset 0 1px 0 rgba(255,255,255,0.8)",
             backdropFilter: "blur(14px)",
           },
         },
@@ -162,8 +185,8 @@ export default function App() {
           root: {
             "& .MuiOutlinedInput-root": {
               borderRadius: 14,
-              background: "rgba(255,255,255,0.72)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.75)",
+              background: isDark ? "rgba(17,24,39,0.58)" : "rgba(255,255,255,0.72)",
+              boxShadow: isDark ? "inset 0 1px 0 rgba(255,255,255,0.04)" : "inset 0 1px 0 rgba(255,255,255,0.75)",
             },
           },
         },
@@ -173,8 +196,8 @@ export default function App() {
           root: {
             "& .MuiOutlinedInput-root": {
               borderRadius: 14,
-              background: "rgba(255,255,255,0.72)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.75)",
+              background: isDark ? "rgba(17,24,39,0.58)" : "rgba(255,255,255,0.72)",
+              boxShadow: isDark ? "inset 0 1px 0 rgba(255,255,255,0.04)" : "inset 0 1px 0 rgba(255,255,255,0.75)",
             },
           },
         },
@@ -193,15 +216,52 @@ export default function App() {
     },
   });
 
-  darkTheme = responsiveFontSizes(darkTheme);
+  theme = responsiveFontSizes(theme);
+  return theme;
+};
+
+export default function App() {
+  const [themeMode, setThemeMode] = useState(getInitialThemeMode);
+  const theme = useMemo(() => buildTheme(themeMode), [themeMode]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.setAttribute("data-soft-theme", themeMode);
+    document.body.setAttribute("data-soft-theme", themeMode);
+    window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
+  }, [themeMode]);
+
+  const toggleThemeMode = () => setThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
 
   return (
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       <HashRouter>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Parent>
             <LiquidBackdrop />
+            <Tooltip title={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
+              <IconButton
+                onClick={toggleThemeMode}
+                color="primary"
+                sx={{
+                  position: "fixed",
+                  top: { xs: 12, md: 14 },
+                  right: { xs: 12, md: 16 },
+                  zIndex: 1500,
+                  width: 42,
+                  height: 42,
+                  borderRadius: "14px",
+                  border: "1px solid var(--soft-border)",
+                  background: "var(--soft-surface)",
+                  boxShadow: "var(--soft-shadow)",
+                  backdropFilter: "blur(14px) saturate(130%)",
+                }}
+                aria-label={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {themeMode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
+              </IconButton>
+            </Tooltip>
             <Suspense fallback={<Loading />}>
               <Routes>
                 <Route path="*" element={<NotFound />} />

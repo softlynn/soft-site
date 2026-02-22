@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from "react";
-import { AppBar, Toolbar, Typography, useMediaQuery, Box, Divider, Button, Stack, Chip } from "@mui/material";
+import { AppBar, Toolbar, Typography, useMediaQuery, Box, Divider, Button, Stack, Tooltip, IconButton } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import CustomLink from "../utils/CustomLink";
@@ -46,15 +46,15 @@ const socials = [
 
 const navChipSx = {
   borderRadius: "999px",
-  border: "1px solid rgba(255,255,255,0.6)",
-  background: "rgba(255,255,255,0.52)",
+  border: "1px solid var(--soft-border)",
+  background: "var(--soft-surface)",
   color: "text.primary",
-  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.78)",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14)",
   transition: "transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease",
   "&:hover": {
     transform: "translateY(-1px)",
-    boxShadow: "0 10px 20px rgba(19,33,56,0.09), inset 0 1px 0 rgba(255,255,255,0.88)",
-    background: "rgba(255,255,255,0.82)",
+    boxShadow: "0 10px 20px rgba(19,33,56,0.09), inset 0 1px 0 rgba(255,255,255,0.18)",
+    background: "var(--soft-surface-strong)",
   },
 };
 
@@ -143,9 +143,9 @@ export default function Navbar() {
                   width: 42,
                   height: 42,
                   borderRadius: "14px",
-                  background: "rgba(255,255,255,0.58)",
-                  border: "1px solid rgba(255,255,255,0.7)",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,.85), 0 6px 14px rgba(19,33,56,.08)",
+                  background: "var(--soft-surface)",
+                  border: "1px solid var(--soft-border)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 6px 14px rgba(19,33,56,.08)",
                   display: "grid",
                   placeItems: "center",
                 }}
@@ -173,11 +173,11 @@ export default function Navbar() {
                   "&:hover": { opacity: 0.84 },
                 }}
               >
-                {SITE_TITLE}
+                {String(SITE_TITLE || "softu").toLowerCase()}
               </Typography>
               {!isMobile && (
                 <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 0.1, letterSpacing: "0.03em" }}>
-                  Vod Archive
+                  vod archives with chat replay
                 </Typography>
               )}
             </Box>
@@ -210,39 +210,49 @@ export default function Navbar() {
             <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexShrink: 0 }}>
               {mainLinks.map((item) => (
                 <CustomLink key={item.path} href={item.path}>
-                  <Chip
-                    icon={item.icon}
-                    label={item.title}
-                    clickable
+                  <Button
+                    variant={item.active ? "contained" : "outlined"}
+                    color={item.active ? "secondary" : "primary"}
+                    startIcon={item.icon}
                     sx={{
-                      ...navChipSx,
-                      px: 0.35,
-                      height: 34,
-                      background: item.active ? "rgba(212,107,140,0.14)" : navChipSx.background,
-                      borderColor: item.active ? "rgba(212,107,140,0.28)" : "rgba(255,255,255,0.6)",
-                      color: item.active ? "#7f2946" : "text.primary",
+                      borderRadius: "999px",
+                      px: 1.35,
+                      minWidth: 96,
+                      height: 40,
+                      fontWeight: 800,
+                      letterSpacing: "0.01em",
+                      borderColor: item.active ? "rgba(212,107,140,0.28)" : "var(--soft-border)",
+                      background: item.active ? "linear-gradient(180deg, rgba(212,107,140,0.20), rgba(212,107,140,0.10))" : "var(--soft-surface)",
+                      color: item.active ? "secondary.main" : "text.primary",
+                      boxShadow: item.active
+                        ? "0 10px 22px rgba(212,107,140,0.12), inset 0 1px 0 rgba(255,255,255,0.18)"
+                        : "inset 0 1px 0 rgba(255,255,255,0.14)",
+                      "& .MuiButton-startIcon svg": { fontSize: 18 },
                     }}
-                  />
+                  >
+                    {item.title}
+                  </Button>
                 </CustomLink>
               ))}
 
               {GITHUB_ISSUES_URL && (
-                <CustomLink href={GITHUB_ISSUES_URL} rel="noopener noreferrer" target="_blank">
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<ReportIcon sx={{ fontSize: 16 }} />}
-                    sx={{
-                      borderRadius: "999px",
-                      px: 1.25,
-                      height: 34,
-                      borderColor: "rgba(19,33,56,0.12)",
-                      background: "rgba(255,255,255,0.56)",
-                    }}
-                  >
-                    Issues
-                  </Button>
-                </CustomLink>
+                <Tooltip title="Issues">
+                  <CustomLink href={GITHUB_ISSUES_URL} rel="noopener noreferrer" target="_blank" aria-label="Issues">
+                    <IconButton
+                      size="small"
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "12px",
+                        border: "1px solid var(--soft-border)",
+                        background: "var(--soft-surface)",
+                        opacity: 0.78,
+                      }}
+                    >
+                      <ReportIcon sx={{ fontSize: 18 }} />
+                    </IconButton>
+                  </CustomLink>
+                </Tooltip>
               )}
             </Stack>
           )}

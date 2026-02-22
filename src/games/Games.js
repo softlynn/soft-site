@@ -105,9 +105,9 @@ export default function Games(props) {
                 p: 1,
                 alignItems: "center",
                 borderRadius: "14px",
-                background: "rgba(255,255,255,0.62)",
-                border: "1px solid rgba(255,255,255,0.7)",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.82)",
+                background: "var(--soft-control-strip-bg)",
+                border: "1px solid var(--soft-control-strip-border)",
+                boxShadow: "var(--soft-control-strip-inset)",
                 mx: 0.4,
                 mb: 0.2,
               }}

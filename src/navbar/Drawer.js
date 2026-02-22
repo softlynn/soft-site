@@ -10,8 +10,7 @@ import { GITHUB_ISSUES_URL } from "../config/site";
 const mainLinks = [
   { title: `Home`, path: `/`, icon: <HomeIcon color="primary" /> },
   { title: `Vods`, path: `/vods`, icon: <OndemandVideoIcon color="primary" /> },
-  { title: `Issues`, path: GITHUB_ISSUES_URL, icon: <ReportIcon color="primary" /> },
-].filter(({ path }) => Boolean(path));
+];
 
 export default function DrawerComponent(props) {
   const { socials } = props;
@@ -29,10 +28,10 @@ export default function DrawerComponent(props) {
         <List sx={{ pt: 0 }}>
           {mainLinks.map(({ title, path, icon }) => (
             <Box key={title}>
-              <ListItemButton onClick={() => setDrawerOpen(false)} sx={{ borderRadius: 2, mx: 1 }}>
+              <ListItemButton onClick={() => setDrawerOpen(false)} sx={{ borderRadius: 2, mx: 1, py: 0.75 }}>
                 <ListItemIcon>{icon}</ListItemIcon>
                 <ListItemText>
-                  <CustomLink color="primary" href={path} rel={path.startsWith("http") ? "noopener noreferrer" : undefined} target={path.startsWith("http") ? "_blank" : undefined}>
+                  <CustomLink color="primary" href={path}>
                     {title}
                   </CustomLink>
                 </ListItemText>
@@ -40,6 +39,25 @@ export default function DrawerComponent(props) {
               <Divider sx={{ mx: 2 }} />
             </Box>
           ))}
+          {GITHUB_ISSUES_URL && (
+            <>
+              <Box sx={{ px: 2, pt: 1.2 }}>
+                <Typography variant="caption" sx={{ color: "text.secondary", letterSpacing: "0.06em" }}>
+                  SUPPORT
+                </Typography>
+              </Box>
+              <ListItemButton onClick={() => setDrawerOpen(false)} sx={{ borderRadius: 2, mx: 1, py: 0.65 }}>
+                <ListItemIcon>
+                  <ReportIcon color="primary" />
+                </ListItemIcon>
+                <ListItemText>
+                  <CustomLink color="primary" href={GITHUB_ISSUES_URL} rel="noopener noreferrer" target="_blank">
+                    Issues
+                  </CustomLink>
+                </ListItemText>
+              </ListItemButton>
+            </>
+          )}
           {socials.length > 0 && (
             <>
               <Divider sx={{ mx: 2, mt: 0.5 }} />
@@ -53,9 +71,9 @@ export default function DrawerComponent(props) {
                       borderRadius: 2,
                       display: "grid",
                       placeItems: "center",
-                      background: "rgba(255,255,255,0.55)",
-                      border: "1px solid rgba(255,255,255,0.7)",
-                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)",
+                      background: "var(--soft-surface)",
+                      border: "1px solid var(--soft-border)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14)",
                     }}
                   >
                     <CustomLink href={path} rel="noopener noreferrer" target="_blank">
@@ -68,7 +86,7 @@ export default function DrawerComponent(props) {
           )}
         </List>
       </Drawer>
-      <IconButton onClick={() => setDrawerOpen(!drawerOpen)} sx={{ borderRadius: "14px", background: "rgba(255,255,255,0.42)" }}>
+      <IconButton onClick={() => setDrawerOpen(!drawerOpen)} sx={{ borderRadius: "14px", background: "var(--soft-surface)" }}>
         <Menu color="primary" />
       </IconButton>
     </Box>

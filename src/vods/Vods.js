@@ -35,19 +35,14 @@ import {
   SITE_DESCRIPTION,
   SITE_TITLE,
   SOCIAL_LINKS,
-  GITHUB_ISSUES_URL,
 } from "../config/site";
-import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
-import LiveTvRoundedIcon from "@mui/icons-material/LiveTvRounded";
-import RocketLaunchRoundedIcon from "@mui/icons-material/RocketLaunchRounded";
-import ArrowDownwardRoundedIcon from "@mui/icons-material/ArrowDownwardRounded";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
-import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import Reveal from "../utils/Reveal";
 
 const FILTERS = ["Default", "Date", "Title", "Game"];
 const PLATFORMS = ["All", "Twitch", "Kick"];
+const SPOTIFY_PLAYLIST_EMBED_URL = "https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator";
 
 const extractTwitchChannel = (url) => {
   const raw = String(url || "").trim();
@@ -92,45 +87,6 @@ function TwitchLiveEmbedCard() {
         frameBorder="0"
         style={{ width: "100%", height: "100%", border: 0 }}
       />
-    </Box>
-  );
-}
-
-function StatChip({ icon, label, value }) {
-  return (
-    <Box
-      className="soft-glass soft-surface-float"
-      sx={{
-        borderRadius: "16px",
-        px: 1.25,
-        py: 0.9,
-        minWidth: 132,
-        display: "flex",
-        alignItems: "center",
-        gap: 1,
-      }}
-    >
-      <Box
-        sx={{
-          width: 30,
-          height: 30,
-          borderRadius: "10px",
-          background: "linear-gradient(180deg, rgba(212,107,140,.16), rgba(121,163,230,.14))",
-          display: "grid",
-          placeItems: "center",
-          color: "secondary.main",
-        }}
-      >
-        {icon}
-      </Box>
-      <Box sx={{ minWidth: 0 }}>
-        <Typography variant="caption" sx={{ display: "block", color: "text.secondary", lineHeight: 1.15 }}>
-          {label}
-        </Typography>
-        <Typography variant="body2" sx={{ fontWeight: 800, color: "text.primary", lineHeight: 1.1 }}>
-          {value}
-        </Typography>
-      </Box>
     </Box>
   );
 }
@@ -186,6 +142,7 @@ export default function Vods() {
   }, [isHomeRoute, previewLimit]);
 
   useEffect(() => {
+    if (isHomeRoute) return undefined;
     setVods(null);
     const fetchVods = async () => {
       let nextQuery = {
@@ -276,7 +233,7 @@ export default function Vods() {
 
     fetchVods();
     return undefined;
-  }, [limit, page, filter, filterStartDate, filterEndDate, filterTitle, filterGame, platform]);
+  }, [isHomeRoute, limit, page, filter, filterStartDate, filterEndDate, filterTitle, filterGame, platform]);
 
   const changeFilter = (evt) => {
     setFilter(evt.target.value);
@@ -340,12 +297,6 @@ export default function Vods() {
 
   const totalPages = Math.max(1, Math.ceil((totalVods || 0) / limit));
 
-  const scrollToArchive = () => {
-    const node = document.getElementById("home-archive-section");
-    if (!node) return;
-    node.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   const renderArchiveControls = () => (
     <Box className="soft-glass soft-grid-pattern" sx={{ px: { xs: 1.25, md: 2 }, py: 1.25, borderRadius: "22px" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: { xs: "flex-start", md: "center" }, gap: 1.5, flexDirection: { xs: "column", md: "row" } }}>
@@ -363,10 +314,10 @@ export default function Vods() {
             label={`${totalVods} vod${totalVods === 1 ? "" : "s"}`}
             sx={{
               borderRadius: "999px",
-              background: "rgba(255,255,255,.7)",
-              border: "1px solid rgba(255,255,255,.74)",
+              background: "var(--soft-surface)",
+              border: "1px solid var(--soft-border)",
               fontWeight: 700,
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,.86)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,.14)",
             }}
           />
         )}
@@ -475,32 +426,7 @@ export default function Vods() {
               <Box className="soft-glass soft-grid-pattern soft-hero-glow" sx={{ p: { xs: 1.2, sm: 1.8, md: 2.2 }, borderRadius: "28px" }}>
                 <Grid container spacing={{ xs: 1.5, md: 2.5 }} alignItems="stretch">
                   <Grid size={{ xs: 12, lg: 5 }}>
-                    <Box sx={{ height: "100%", display: "flex", flexDirection: "column", gap: 1.35, justifyContent: "center", pr: { lg: 1 } }}>
-                      <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
-                        <Chip
-                          icon={<LiveTvRoundedIcon sx={{ fontSize: 16 }} />}
-                          label="Live Twitch Embed"
-                          sx={{
-                            borderRadius: "999px",
-                            background: "rgba(212,107,140,.15)",
-                            border: "1px solid rgba(212,107,140,.24)",
-                            color: "#7f2946",
-                            fontWeight: 700,
-                          }}
-                        />
-                        <Chip
-                          icon={<AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />}
-                          label="Chat Replay Archive"
-                          sx={{
-                            borderRadius: "999px",
-                            background: "rgba(121,163,230,.12)",
-                            border: "1px solid rgba(121,163,230,.24)",
-                            color: "#214a88",
-                            fontWeight: 700,
-                          }}
-                        />
-                      </Stack>
-
+                    <Box sx={{ height: "100%", display: "flex", flexDirection: "column", gap: 1.15, justifyContent: "center", pr: { lg: 1 } }}>
                       <Box>
                         <Typography
                           variant="h2"
@@ -509,34 +435,36 @@ export default function Vods() {
                             lineHeight: 0.96,
                             color: "primary.main",
                             letterSpacing: "-0.03em",
+                            textTransform: "lowercase",
                           }}
                         >
-                          {SITE_TITLE}
+                          softu
                         </Typography>
                         <Typography
                           variant="h4"
                           sx={{
                             mt: 0.5,
-                            fontSize: { xs: "1.15rem", sm: "1.35rem" },
-                            color: "secondary.main",
-                            letterSpacing: "-0.02em",
+                            fontSize: { xs: "1.02rem", sm: "1.18rem" },
+                            color: "text.secondary",
+                            letterSpacing: "0.01em",
+                            fontWeight: 600,
                           }}
                         >
-                          Vod Archive
+                          vod archives with chat replay
                         </Typography>
                       </Box>
 
-                      <Typography variant="body1" sx={{ color: "text.secondary", maxWidth: 540 }}>
-                        {SITE_DESCRIPTION} Watch live, jump into recent uploads, then scroll into the full archive with filters and internal VOD pages.
+                      <Typography variant="body1" sx={{ color: "text.secondary", maxWidth: 520 }}>
+                        {SITE_DESCRIPTION}
                       </Typography>
 
-                      <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ pt: 0.5 }}>
+                      <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ pt: 0.35 }}>
                         <Button
                           variant="contained"
                           color="secondary"
                           size="large"
-                          startIcon={<ArrowDownwardRoundedIcon />}
-                          onClick={scrollToArchive}
+                          startIcon={<VideoLibraryRoundedIcon />}
+                          onClick={() => navigate("/vods")}
                           sx={{
                             borderRadius: "14px",
                             px: 2,
@@ -544,7 +472,7 @@ export default function Vods() {
                             color: "#fff",
                           }}
                         >
-                          Browse Archive
+                          Open VODs
                         </Button>
                         {SOCIAL_LINKS.twitch && (
                           <Button
@@ -557,30 +485,29 @@ export default function Vods() {
                             startIcon={<OpenInNewRoundedIcon />}
                             sx={{ borderRadius: "14px", px: 2 }}
                           >
-                            Open Twitch
-                          </Button>
-                        )}
-                        {GITHUB_ISSUES_URL && (
-                          <Button
-                            component="a"
-                            href={GITHUB_ISSUES_URL}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            variant="outlined"
-                            size="large"
-                            startIcon={<RocketLaunchRoundedIcon />}
-                            sx={{ borderRadius: "14px", px: 2 }}
-                          >
-                            Issues
+                            Twitch
                           </Button>
                         )}
                       </Stack>
 
-                      <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap flexWrap="wrap" sx={{ pt: 0.2 }}>
-                        <StatChip icon={<BoltRoundedIcon sx={{ fontSize: 16 }} />} label="Design mood" value="Liquid glass" />
-                        <StatChip icon={<AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />} label="Motif" value="Clouds + Stars" />
-                        <StatChip icon={<VideoLibraryRoundedIcon sx={{ fontSize: 16 }} />} label="Brand" value="softu" />
-                      </Stack>
+                      <Box className="soft-glass" sx={{ mt: 0.6, p: 0.85, borderRadius: "18px", maxWidth: 360 }}>
+                        <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.75, px: 0.25 }}>
+                          stream playlist
+                        </Typography>
+                        <Box sx={{ borderRadius: "14px", overflow: "hidden" }}>
+                          <iframe
+                            data-testid="embed-iframe"
+                            title="softu stream playlist"
+                            src={SPOTIFY_PLAYLIST_EMBED_URL}
+                            width="100%"
+                            height="152"
+                            frameBorder="0"
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            loading="lazy"
+                            style={{ border: 0, display: "block", borderRadius: "12px" }}
+                          />
+                        </Box>
+                      </Box>
                     </Box>
                   </Grid>
 
@@ -601,7 +528,7 @@ export default function Vods() {
                       Recent VODs
                     </Typography>
                     <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                      A quick preview. Scroll down for the full archive browser.
+                      Latest uploads only. Open the full VODs page for filters and the complete archive.
                     </Typography>
                   </Box>
                   <Button variant="outlined" onClick={() => navigate("/vods")} startIcon={<VideoLibraryRoundedIcon />}>
@@ -615,40 +542,44 @@ export default function Vods() {
           </>
         )}
 
-        <Reveal delay={isHomeRoute ? 180 : 40} sx={{ mt: 2.25 }} id="home-archive-section">
-          {renderArchiveControls()}
-        </Reveal>
+        {!isHomeRoute && (
+          <>
+            <Reveal delay={40} sx={{ mt: 2.25 }} id="home-archive-section">
+              {renderArchiveControls()}
+            </Reveal>
 
-        <Box sx={{ mt: 1.2 }}>{renderVodGrid(vods, { xs: 12, sm: 6, md: 4, xl: 3 })}</Box>
+            <Box sx={{ mt: 1.2 }}>{renderVodGrid(vods, { xs: 12, sm: 6, md: 4, xl: 3 })}</Box>
 
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 2.5, mb: 1.2, alignItems: "center", flexDirection: isMobile ? "column" : "row" }}>
-          {totalPages !== null && (
-            <>
-              <Pagination
-                shape="rounded"
-                variant="outlined"
-                count={totalPages}
-                disabled={totalPages <= 1}
-                color="primary"
-                page={page}
-                renderItem={(item) => <PaginationItem component={Link} to={`${location.pathname}${item.page === 1 ? "" : `?page=${item.page}`}`} {...item} />}
-              />
-              <TextField
-                inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">Page</InputAdornment>,
-                }}
-                sx={{
-                  width: "116px",
-                  m: 1,
-                }}
-                size="small"
-                type="text"
-                onKeyDown={handleSubmit}
-              />
-            </>
-          )}
-        </Box>
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 2.5, mb: 1.2, alignItems: "center", flexDirection: isMobile ? "column" : "row" }}>
+              {totalPages !== null && (
+                <>
+                  <Pagination
+                    shape="rounded"
+                    variant="outlined"
+                    count={totalPages}
+                    disabled={totalPages <= 1}
+                    color="primary"
+                    page={page}
+                    renderItem={(item) => <PaginationItem component={Link} to={`${location.pathname}${item.page === 1 ? "" : `?page=${item.page}`}`} {...item} />}
+                  />
+                  <TextField
+                    inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start">Page</InputAdornment>,
+                    }}
+                    sx={{
+                      width: "116px",
+                      m: 1,
+                    }}
+                    size="small"
+                    type="text"
+                    onKeyDown={handleSubmit}
+                  />
+                </>
+              )}
+            </Box>
+          </>
+        )}
       </Box>
       <Footer />
     </SimpleBar>

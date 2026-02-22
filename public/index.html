@@ -5,6 +5,18 @@
     <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#E2E9F3" />
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("softu-theme-mode");
+          var mode = saved === "light" || saved === "dark"
+            ? saved
+            : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          document.documentElement.setAttribute("data-soft-theme", mode);
+          document.documentElement.style.backgroundColor = mode === "dark" ? "#0f172a" : "#e2e9f3";
+        } catch (e) {}
+      })();
+    </script>
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
