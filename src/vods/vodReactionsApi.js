@@ -1,6 +1,5 @@
 const COUNTER_API_BASE = "https://api.counterapi.dev/v1";
 const COUNTER_NAMESPACE = "softu-vod-reactions-v1";
-const LOCAL_VOTE_STORAGE_KEY = "softu-vod-reactions-votes";
 const CACHE_TTL_MS = 2 * 60 * 1000;
 const REQUEST_GAP_MS = 550;
 const MAX_RETRIES = 2;
@@ -12,6 +11,7 @@ let requestChain = Promise.resolve();
 let nextRequestAt = 0;
 let writeRequestChain = Promise.resolve();
 let nextWriteRequestAt = 0;
+const sessionVoteMap = new Map();
 
 const clampCount = (value) => {
   const num = Number(value);
@@ -74,42 +74,21 @@ const retryableCounterRequest = async (factory, attempt = 0) => {
   return retryableCounterRequest(factory, attempt + 1);
 };
 
-const readVoteMap = () => {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(LOCAL_VOTE_STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-};
-
-const writeVoteMap = (voteMap) => {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(LOCAL_VOTE_STORAGE_KEY, JSON.stringify(voteMap || {}));
-  } catch {}
-};
-
 export const getStoredVodReactionVote = (vodId) => {
   const key = normalizeVodId(vodId);
   if (!key) return null;
-  const value = readVoteMap()[key];
+  const value = sessionVoteMap.get(key);
   return value === "like" || value === "dislike" ? value : null;
 };
 
 export const setStoredVodReactionVote = (vodId, vote) => {
   const key = normalizeVodId(vodId);
   if (!key) return;
-  const voteMap = readVoteMap();
   if (vote === "like" || vote === "dislike") {
-    voteMap[key] = vote;
+    sessionVoteMap.set(key, vote);
   } else {
-    delete voteMap[key];
+    sessionVoteMap.delete(key);
   }
-  writeVoteMap(voteMap);
 };
 
 const emitSnapshot = (vodId, snapshot) => {
