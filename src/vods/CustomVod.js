@@ -20,9 +20,12 @@ const getOriginalTwitchVodUrl = (vod) => {
   if (!vod || String(vod.platform || "").toLowerCase() !== "twitch") return "";
   if (vod.unpublished) return "";
   if (vod.twitchPublished === false) return "";
+  if (vod.twitchUnpublished === true) return "";
   if (vod.twitchExists === false || vod.twitchDeleted === true || vod.twitchUnavailable === true) return "";
-  if (vod.twitch && typeof vod.twitch === "object" && vod.twitch.published === false) return "";
+  if (vod.twitch && typeof vod.twitch === "object" && (vod.twitch.published === false || vod.twitch.unpublished === true)) return "";
+  if (vod.twitch && typeof vod.twitch === "object" && (vod.twitch.deleted === true || vod.twitch.available === false)) return "";
   if (typeof vod.twitchStatus === "string" && ["deleted", "unpublished", "private", "missing"].includes(vod.twitchStatus.toLowerCase())) return "";
+  if (typeof vod.originalTwitchStatus === "string" && ["deleted", "unpublished", "private", "missing"].includes(vod.originalTwitchStatus.toLowerCase())) return "";
   if (vod.twitch && typeof vod.twitch === "object" && vod.twitch.exists === false) return "";
   const id = String(vod.id || "").trim();
   if (!/^\d+$/.test(id)) return "";

@@ -233,17 +233,9 @@ const buildTheme = (mode) => {
 
 export default function App() {
   const [preferredThemeMode, setPreferredThemeMode] = useState(getInitialThemeMode);
-  const [hashPath, setHashPath] = useState(getHashPath);
-  const effectiveThemeMode = isViewerPath(hashPath) ? "dark" : preferredThemeMode;
+  const [routePath, setRoutePath] = useState(getHashPath);
+  const effectiveThemeMode = isViewerPath(routePath) ? "dark" : preferredThemeMode;
   const theme = useMemo(() => buildTheme(effectiveThemeMode), [effectiveThemeMode]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return undefined;
-    const syncHashPath = () => setHashPath(getHashPath());
-    syncHashPath();
-    window.addEventListener("hashchange", syncHashPath);
-    return () => window.removeEventListener("hashchange", syncHashPath);
-  }, []);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -265,6 +257,7 @@ export default function App() {
         <HashRouter>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Parent>
+              <RouteThemeBridge onPathChange={setRoutePath} />
               <RouteAwareOverlays />
               <Suspense fallback={<Loading />}>
                 <Routes>
@@ -312,12 +305,23 @@ export default function App() {
   );
 }
 
+function RouteThemeBridge({ onPathChange }) {
+  const location = useLocation();
+
+  useEffect(() => {
+    onPathChange(location.pathname || "/");
+  }, [location.pathname, onPathChange]);
+
+  return null;
+}
+
 function RouteAwareOverlays() {
   const location = useLocation();
   const path = location.pathname || "/";
   const isViewerRoute = path.startsWith("/youtube/") || path.startsWith("/cdn/") || path.startsWith("/games/");
   const showFloatingToggle = !isViewerRoute;
   const showBackdrop = path === "/" || path === "/vods";
+  const footerAwareBottom = path === "/" || path === "/vods" ? { xs: 72, md: 80 } : { xs: 20, md: 26 };
 
   return (
     <>
@@ -327,7 +331,7 @@ function RouteAwareOverlays() {
           announceKey={`floating-${path}`}
           sx={{
             position: "fixed",
-            bottom: { xs: 18, md: 24 },
+            bottom: footerAwareBottom,
             left: { xs: 10, md: 14 },
             zIndex: 1500,
             width: 42,

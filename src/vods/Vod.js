@@ -11,11 +11,12 @@ import { useNavigate } from "react-router-dom";
 
 dayjs.extend(localizedFormat);
 
-const DEFAULT_CARD_WIDTH = "20rem";
+const DEFAULT_CARD_WIDTH = "20.75rem";
 
 export default function Vod(props) {
-  const { vod, gridSize, sizes, sheen = false } = props;
+  const { vod, gridSize, sizes, sheen = false, cardWidth } = props;
   const navigate = useNavigate();
+  const resolvedCardWidth = cardWidth || DEFAULT_CARD_WIDTH;
 
   const thumbnail = useMemo(() => {
     if (vod.youtube?.length > 0) return vod.youtube[0].thumbnail_url;
@@ -29,7 +30,7 @@ export default function Vod(props) {
   };
 
   return (
-    <Grid size={sizes || { xs: gridSize }} sx={{ maxWidth: DEFAULT_CARD_WIDTH, flexBasis: DEFAULT_CARD_WIDTH }}>
+    <Grid size={sizes || { xs: gridSize }} sx={{ maxWidth: resolvedCardWidth, flexBasis: resolvedCardWidth }}>
       <Box
         className={`soft-glass soft-surface-float soft-vod-card${sheen ? " soft-shimmer" : ""}`}
         sx={{

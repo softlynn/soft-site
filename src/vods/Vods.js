@@ -372,7 +372,7 @@ export default function Vods() {
     </Box>
   );
 
-  const renderVodGrid = (list, cardSizes, { edgePad = { xs: 0.05, sm: 0.15, md: 0.25 } } = {}) => {
+  const renderVodGrid = (list, cardSizes, { edgePad = { xs: 0.05, sm: 0.15, md: 0.25 }, cardWidth } = {}) => {
     if (!list) return <Loading />;
     if (list.length === 0) {
       return (
@@ -396,7 +396,7 @@ export default function Vods() {
       >
         {list.map((vod, index) => (
           <Reveal key={vod.id} delay={Math.min(index * 40, 220)} sx={{ display: "contents" }}>
-            <Vod vod={vod} sizes={cardSizes} gridSize={2.1} sheen={index === 0} />
+            <Vod vod={vod} sizes={cardSizes} gridSize={2.1} sheen={index === 0} cardWidth={cardWidth} />
           </Reveal>
         ))}
       </Grid>
@@ -405,7 +405,8 @@ export default function Vods() {
 
   return (
     <SimpleBar style={{ minHeight: 0, height: "100%" }}>
-      <Box sx={{ px: { xs: 1.25, sm: 2, md: 2.2 }, pb: 1 }}>
+      <Box sx={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
+      <Box sx={{ px: { xs: 1.25, sm: 2, md: 2.2 }, pb: 1, flexGrow: 1 }}>
         {ENABLE_ADSENSE && ADSENSE_CLIENT && ADSENSE_SLOT && (
           <Box sx={{ mt: 1, textAlign: "center" }}>
             <ErrorBoundary>
@@ -533,7 +534,7 @@ export default function Vods() {
 
                 {previewVods === null
                   ? <Loading />
-                  : renderVodGrid(previewVods, { xs: 12, sm: 6, lg: 3 }, { edgePad: { xs: 0.25, sm: 0.4, md: 0.55 } })}
+                  : renderVodGrid(previewVods, { xs: 12, sm: 6, lg: 3 }, { edgePad: { xs: 0.12, sm: 0.16, md: 0.22 }, cardWidth: "21.5rem" })}
               </Box>
             </Reveal>
 
@@ -600,6 +601,7 @@ export default function Vods() {
         )}
       </Box>
       <Footer />
+      </Box>
     </SimpleBar>
   );
 }

@@ -145,7 +145,10 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   position: relative;
   border-radius: var(--soft-radius-xl);
   border: 1px solid var(--soft-border);
-  background: linear-gradient(180deg, var(--soft-surface-strong), var(--soft-surface-soft));
+  background:
+    radial-gradient(150% 110% at 8% 0%, rgba(255, 255, 255, 0.18), transparent 46%),
+    radial-gradient(130% 110% at 100% 100%, rgba(121, 163, 230, 0.06), transparent 52%),
+    linear-gradient(180deg, var(--soft-surface-strong), var(--soft-surface-soft));
   box-shadow: var(--soft-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(18px) saturate(135%);
   overflow: hidden;
@@ -158,11 +161,10 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   border-radius: inherit;
   pointer-events: none;
   background:
-    radial-gradient(120px 90px at 18% 18%, rgba(255, 255, 255, 0.05) 0 20%, transparent 62%),
-    radial-gradient(140px 100px at 74% 72%, rgba(255, 255, 255, 0.035) 0 18%, transparent 64%),
-    radial-gradient(220px 160px at 18% 8%, rgba(255, 255, 255, 0.16), transparent 70%),
-    radial-gradient(180px 140px at 72% 88%, rgba(212, 107, 140, 0.05), transparent 74%);
-  opacity: 0.7;
+    radial-gradient(320px 220px at 14% 6%, rgba(255, 255, 255, 0.16), transparent 72%),
+    radial-gradient(260px 200px at 86% 90%, rgba(212, 107, 140, 0.06), transparent 76%),
+    radial-gradient(220px 160px at 78% 12%, rgba(121, 163, 230, 0.05), transparent 74%);
+  opacity: 0.62;
 }
 
 .soft-glass::after {
@@ -185,22 +187,22 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 22% 30%, rgba(255,255,255,0.06) 0 1px, transparent 1.3px) 0 0 / 18px 18px,
-    radial-gradient(circle at 68% 56%, rgba(255,255,255,0.04) 0 1px, transparent 1.3px) 9px 7px / 22px 22px;
-  mask-image: radial-gradient(circle at 50% 28%, black 28%, transparent 82%);
-  opacity: 0.22;
+    radial-gradient(circle at 18% 24%, rgba(255,255,255,0.045) 0 1px, transparent 1.3px) 0 0 / 24px 24px,
+    radial-gradient(circle at 70% 58%, rgba(255,255,255,0.032) 0 1px, transparent 1.3px) 10px 8px / 30px 30px,
+    radial-gradient(420px 190px at 10% 0%, rgba(255,255,255,0.07), transparent 74%),
+    radial-gradient(320px 220px at 92% 100%, rgba(212,107,140,0.035), transparent 76%);
+  mask-image: radial-gradient(circle at 52% 24%, black 28%, transparent 86%);
+  opacity: 0.16;
   border-radius: inherit;
 }
 
 .soft-panel-ambient.soft-glass::before {
   background:
-    radial-gradient(220px 140px at 14% 12%, rgba(255, 255, 255, 0.17), transparent 72%),
-    radial-gradient(220px 160px at 86% 92%, rgba(212, 107, 140, 0.07), transparent 76%),
-    radial-gradient(200px 150px at 76% 10%, rgba(121, 163, 230, 0.06), transparent 72%),
-    radial-gradient(120px 90px at 18% 18%, rgba(255, 255, 255, 0.05) 0 20%, transparent 62%),
-    radial-gradient(140px 100px at 74% 72%, rgba(255, 255, 255, 0.035) 0 18%, transparent 64%),
-    radial-gradient(180px 140px at 72% 88%, rgba(212, 107, 140, 0.05), transparent 74%);
-  animation: soft-panel-drift 18s ease-in-out infinite;
+    radial-gradient(360px 220px at 10% 8%, rgba(255, 255, 255, 0.18), transparent 72%),
+    radial-gradient(300px 240px at 90% 88%, rgba(212, 107, 140, 0.07), transparent 76%),
+    radial-gradient(280px 220px at 76% 12%, rgba(121, 163, 230, 0.07), transparent 74%),
+    radial-gradient(220px 170px at 28% 84%, rgba(255, 255, 255, 0.05), transparent 74%);
+  animation: soft-panel-flow 22s ease-in-out infinite;
   will-change: transform, opacity;
 }
 
@@ -288,10 +290,11 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   inset: -8%;
   pointer-events: none;
   background:
-    radial-gradient(circle at 20% 28%, rgba(255, 255, 255, 0.05) 0 0.7px, transparent 1.1px) 0 0 / 18px 18px,
-    radial-gradient(circle at 68% 52%, rgba(255, 255, 255, 0.03) 0 0.7px, transparent 1.1px) 9px 7px / 22px 22px,
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
-  opacity: 0.45;
+    radial-gradient(circle at 20% 28%, rgba(255, 255, 255, 0.04) 0 0.7px, transparent 1.05px) 0 0 / 22px 22px,
+    radial-gradient(circle at 68% 52%, rgba(255, 255, 255, 0.025) 0 0.7px, transparent 1.05px) 10px 9px / 28px 28px,
+    radial-gradient(720px 320px at 12% 0%, rgba(255,255,255,0.06), transparent 72%),
+    radial-gradient(620px 280px at 90% 100%, rgba(121,163,230,0.05), transparent 76%);
+  opacity: 0.32;
   mix-blend-mode: soft-light;
 }
 
@@ -395,6 +398,19 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
 }
 
+.soft-vod-card__media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(180px 70px at 22% 12%, rgba(255,255,255,0.34), transparent 72%),
+    linear-gradient(118deg, rgba(255,255,255,0.12) 12%, rgba(255,255,255,0.02) 36%, rgba(255,255,255,0.16) 48%, rgba(255,255,255,0.03) 62%, transparent 76%);
+  opacity: 0.34;
+  transition: opacity 220ms ease, transform 260ms ease;
+}
+
 .soft-vod-card__media::after {
   content: "";
   position: absolute;
@@ -406,6 +422,11 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
     radial-gradient(160px 90px at 88% 90%, rgba(212,107,140,0.10), transparent 74%);
   opacity: 0.55;
   transition: opacity 220ms ease, transform 260ms ease;
+}
+
+.soft-vod-card:hover .soft-vod-card__media::before {
+  opacity: 0.52;
+  transform: scale(1.014);
 }
 
 .soft-vod-card:hover .soft-vod-card__media::after {
@@ -615,8 +636,10 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
 
 html[data-soft-theme="dark"] .soft-grid-pattern::before {
   background:
-    radial-gradient(circle at 22% 30%, rgba(167, 187, 219, 0.09) 0 1px, transparent 1.3px) 0 0 / 18px 18px,
-    radial-gradient(circle at 68% 56%, rgba(167, 187, 219, 0.06) 0 1px, transparent 1.3px) 9px 7px / 22px 22px;
+    radial-gradient(460px 210px at 10% 0%, rgba(167, 187, 219, 0.075), transparent 76%),
+    radial-gradient(420px 260px at 92% 100%, rgba(212, 107, 140, 0.045), transparent 78%),
+    radial-gradient(circle at 18% 24%, rgba(167, 187, 219, 0.04) 0 1px, transparent 1.25px) 0 0 / 30px 30px;
+  opacity: 0.1;
 }
 
 html[data-soft-theme="dark"] .liquid-backdrop__canvas {
@@ -629,8 +652,35 @@ html[data-soft-theme="dark"] .liquid-backdrop__gpu {
 }
 
 html[data-soft-theme="dark"] .liquid-backdrop__grain {
-  opacity: 0.62;
+  opacity: 0.34;
   mix-blend-mode: screen;
+}
+
+html[data-soft-theme="dark"] .soft-glass {
+  background:
+    radial-gradient(150% 120% at 8% 0%, rgba(255,255,255,0.05), transparent 52%),
+    radial-gradient(130% 120% at 100% 100%, rgba(121,163,230,0.05), transparent 58%),
+    linear-gradient(180deg, rgba(20, 28, 44, 0.88), rgba(17, 23, 37, 0.82));
+}
+
+html[data-soft-theme="dark"] .soft-glass::before {
+  background:
+    radial-gradient(340px 220px at 14% 6%, rgba(255,255,255,0.08), transparent 74%),
+    radial-gradient(280px 220px at 86% 92%, rgba(212,107,140,0.05), transparent 78%),
+    radial-gradient(240px 190px at 78% 14%, rgba(121,163,230,0.05), transparent 76%);
+  opacity: 0.52;
+}
+
+html[data-soft-theme="light"] .soft-vod-card__media::before {
+  opacity: 0.46;
+}
+
+html[data-soft-theme="light"] .soft-vod-card__media::after {
+  opacity: 0.66;
+}
+
+html[data-soft-theme="dark"] .soft-vod-card__media::before {
+  opacity: 0.22;
 }
 
 html[data-soft-theme="dark"] .soft-live-frame::before {
@@ -686,18 +736,22 @@ html[data-soft-theme="dark"] .video-js {
   }
 }
 
-@keyframes soft-panel-drift {
+@keyframes soft-panel-flow {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.72;
+    opacity: 0.64;
   }
-  50% {
-    transform: translate3d(8px, -6px, 0) scale(1.02);
-    opacity: 0.86;
+  33% {
+    transform: translate3d(6px, -5px, 0) scale(1.012);
+    opacity: 0.76;
+  }
+  66% {
+    transform: translate3d(-5px, 4px, 0) scale(1.016);
+    opacity: 0.8;
   }
   100% {
     transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.72;
+    opacity: 0.64;
   }
 }
 
