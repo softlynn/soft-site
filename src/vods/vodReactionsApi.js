@@ -143,10 +143,21 @@ const readCounter = async (key) => {
       cache: "no-store",
     });
 
-    if (response.status === 404) return 0;
-    if (!response.ok) throw new Error(`Counter read failed (${response.status})`);
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
 
-    const payload = await response.json();
+    if (!response.ok) {
+      const message = String(payload?.message || "").toLowerCase();
+      if (response.status === 404 || (response.status === 400 && message.includes("record not found"))) {
+        return 0;
+      }
+      throw new Error(`Counter read failed (${response.status})`);
+    }
+
     return clampCount(payload?.count);
   });
 };
