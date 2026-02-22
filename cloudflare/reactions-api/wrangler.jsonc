@@ -1,0 +1,16 @@
+{
+  "name": "softu-reactions-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-02-22",
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGINS": "https://softu.one,https://www.softu.one,https://softlynn.github.io,http://localhost:3000,http://127.0.0.1:3000"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "softu-reactions",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ]
+}

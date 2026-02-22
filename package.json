@@ -57,6 +57,11 @@
     "admin:task:install": "powershell -ExecutionPolicy Bypass -File scripts/install_local_admin_api_task.ps1",
     "admin:task:remove": "powershell -ExecutionPolicy Bypass -File scripts/remove_local_admin_api_task.ps1",
     "twitch-ext:zip": "powershell -ExecutionPolicy Bypass -File scripts/package_twitch_panel_extension.ps1",
+    "cf:reactions:whoami": "npx wrangler whoami",
+    "cf:reactions:d1:create": "npx wrangler d1 create softu-reactions",
+    "cf:reactions:d1:init": "npx wrangler d1 execute softu-reactions --remote --file=cloudflare/reactions-api/schema.sql",
+    "cf:reactions:dev": "npx wrangler dev --config cloudflare/reactions-api/wrangler.jsonc --local",
+    "cf:reactions:deploy": "npx wrangler deploy --config cloudflare/reactions-api/wrangler.jsonc",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
