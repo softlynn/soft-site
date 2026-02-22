@@ -7,6 +7,15 @@ import ThumbDownAltRoundedIcon from "@mui/icons-material/ThumbDownAltRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import { getStoredVodReactionVote, getVodLikeCount, getVodReactionSnapshot, setVodReactionVote, subscribeVodReactionSnapshot } from "./vodReactionsApi";
 
+const CARD_AUTO_FETCH_LIMIT = 10;
+let cardAutoFetchCount = 0;
+
+const tryClaimCardAutoFetchSlot = () => {
+  if (cardAutoFetchCount >= CARD_AUTO_FETCH_LIMIT) return false;
+  cardAutoFetchCount += 1;
+  return true;
+};
+
 const optimisticCounts = (snapshot, previousVote, nextVote) => {
   const current = {
     likes: Math.max(0, Number(snapshot?.likes) || 0),
@@ -37,6 +46,7 @@ export default function VodReactions({
   const [loading, setLoading] = useState(!lazy);
   const [pendingVote, setPendingVote] = useState(null);
   const [error, setError] = useState("");
+  const [allowCardNetworkFetch] = useState(() => (countOnlyLike ? tryClaimCardAutoFetchSlot() : true));
 
   useEffect(() => {
     setVote(getStoredVodReactionVote(vodId));
@@ -83,6 +93,11 @@ export default function VodReactions({
 
     setLoading(true);
     setError("");
+    if (countOnlyLike && !allowCardNetworkFetch) {
+      setLoading(false);
+      return undefined;
+    }
+
     const loader = countOnlyLike ? getVodLikeCount(vodId).then((likes) => ({ likes, dislikes: 0 })) : getVodReactionSnapshot(vodId);
 
     loader
@@ -102,7 +117,7 @@ export default function VodReactions({
     return () => {
       cancelled = true;
     };
-  }, [countOnlyLike, enabled, vodId]);
+  }, [allowCardNetworkFetch, countOnlyLike, enabled, vodId]);
 
   const likeCount = counts?.likes ?? 0;
   const dislikeCount = counts?.dislikes ?? 0;
@@ -293,4 +308,3 @@ export default function VodReactions({
     </Box>
   );
 }
-

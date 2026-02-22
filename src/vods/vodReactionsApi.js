@@ -3,6 +3,7 @@ const COUNTER_NAMESPACE = "softu-vod-reactions-v1";
 const LOCAL_VOTE_STORAGE_KEY = "softu-vod-reactions-votes";
 const CACHE_TTL_MS = 2 * 60 * 1000;
 const REQUEST_GAP_MS = 550;
+const MAX_RETRIES = 2;
 
 const snapshotCache = new Map();
 const inflightLoads = new Map();
@@ -40,6 +41,22 @@ const enqueueCounterRequest = (factory) => {
   const queued = requestChain.then(run, run);
   requestChain = queued.catch(() => undefined);
   return queued;
+};
+
+const retryableCounterRequest = async (factory, attempt = 0) => {
+  const response = await factory();
+  if (response.status !== 429 && response.status < 500) {
+    return response;
+  }
+
+  if (attempt >= MAX_RETRIES) {
+    return response;
+  }
+
+  const retryAfterHeader = Number(response.headers?.get?.("retry-after"));
+  const retryDelay = Number.isFinite(retryAfterHeader) && retryAfterHeader > 0 ? retryAfterHeader * 1000 : 1200 * (attempt + 1);
+  await sleep(retryDelay);
+  return retryableCounterRequest(factory, attempt + 1);
 };
 
 const readVoteMap = () => {
@@ -136,12 +153,14 @@ const getCachedSnapshot = (vodId) => {
 const readCounter = async (key) => {
   return enqueueCounterRequest(async () => {
     const url = `${COUNTER_API_BASE}/${encodeURIComponent(COUNTER_NAMESPACE)}/${encodeURIComponent(key)}`;
-    const response = await fetch(url, {
-      method: "GET",
-      mode: "cors",
-      credentials: "omit",
-      cache: "no-store",
-    });
+    const response = await retryableCounterRequest(() =>
+      fetch(url, {
+        method: "GET",
+        mode: "cors",
+        credentials: "omit",
+        cache: "no-store",
+      })
+    );
 
     let payload = null;
     try {
@@ -165,12 +184,14 @@ const readCounter = async (key) => {
 const mutateCounter = async (key, operation) => {
   return enqueueCounterRequest(async () => {
     const url = `${COUNTER_API_BASE}/${encodeURIComponent(COUNTER_NAMESPACE)}/${encodeURIComponent(key)}/${operation}`;
-    const response = await fetch(url, {
-      method: "GET",
-      mode: "cors",
-      credentials: "omit",
-      cache: "no-store",
-    });
+    const response = await retryableCounterRequest(() =>
+      fetch(url, {
+        method: "GET",
+        mode: "cors",
+        credentials: "omit",
+        cache: "no-store",
+      })
+    );
     if (!response.ok) throw new Error(`Counter ${operation} failed (${response.status})`);
     const payload = await response.json();
     return clampCount(payload?.count);
