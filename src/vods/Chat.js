@@ -54,16 +54,15 @@ export default function Chat(props) {
     if (chatRef && chatRef.current) {
       const ref = chatRef.current;
       const handleScroll = (e) => {
-        e.stopPropagation();
         const atBottom = ref.scrollHeight - ref.clientHeight - ref.scrollTop < 512;
-        setScrolling(!atBottom);
+        setScrolling((prev) => (prev === !atBottom ? prev : !atBottom));
       };
 
-      ref.addEventListener("scroll", handleScroll);
+      ref.addEventListener("scroll", handleScroll, { passive: true });
 
       return () => ref.removeEventListener("scroll", handleScroll);
     }
-  });
+  }, []);
 
   useEffect(() => {
     if (!chatReplayAvailable) return;

@@ -35,7 +35,7 @@ const getOriginalTwitchVodUrl = (vod) => {
 export default function Games(props) {
   const location = useLocation();
   const isPortrait = useMediaQuery("(orientation: portrait)");
-  const isMobile = useMediaQuery("(max-width:899.95px)");
+  const isMobile = useMediaQuery("(max-width:1024px), (hover: none) and (pointer: coarse)");
   const { vodId } = useParams();
   const [vod, setVod] = useState(undefined);
   const [games, setGames] = useState(undefined);
@@ -129,7 +129,6 @@ export default function Games(props) {
     window.addEventListener("orientationchange", queueApply);
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", queueApply);
-      window.visualViewport.addEventListener("scroll", queueApply);
     }
 
     return () => {
@@ -139,7 +138,6 @@ export default function Games(props) {
       window.removeEventListener("orientationchange", queueApply);
       if (window.visualViewport) {
         window.visualViewport.removeEventListener("resize", queueApply);
-        window.visualViewport.removeEventListener("scroll", queueApply);
       }
     };
   }, [mobileViewerFullscreen]);

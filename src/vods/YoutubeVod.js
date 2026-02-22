@@ -39,7 +39,7 @@ export default function Vod(props) {
   const location = useLocation();
   const navigate = useNavigate();
   const isPortrait = useMediaQuery("(orientation: portrait)");
-  const isMobile = useMediaQuery("(max-width:899.95px)");
+  const isMobile = useMediaQuery("(max-width:1024px), (hover: none) and (pointer: coarse)");
   const { vodId } = useParams();
   const { type } = props;
   const [vod, setVod] = useState(undefined);
@@ -180,7 +180,6 @@ export default function Vod(props) {
     window.addEventListener("resize", queueApply);
     window.addEventListener("orientationchange", queueApply);
     window.visualViewport?.addEventListener("resize", queueApply);
-    window.visualViewport?.addEventListener("scroll", queueApply);
 
     return () => {
       if (raf) cancelAnimationFrame(raf);
@@ -188,7 +187,6 @@ export default function Vod(props) {
       window.removeEventListener("resize", queueApply);
       window.removeEventListener("orientationchange", queueApply);
       window.visualViewport?.removeEventListener("resize", queueApply);
-      window.visualViewport?.removeEventListener("scroll", queueApply);
     };
   }, [mobileViewerFullscreen]);
 
