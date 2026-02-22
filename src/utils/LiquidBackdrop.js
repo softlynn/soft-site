@@ -1,9 +1,8 @@
 import { Box } from "@mui/material";
 import { useEffect, useRef } from "react";
 
-const STAR_COUNT = 28;
-const BLOB_COUNT = 4;
-const DEFAULT_POINTER = { x: 0.5, y: 0.4 };
+const STAR_COUNT = 22;
+const POINTER_DEFAULT = { x: 0.52, y: 0.44 };
 const TARGET_FPS = 30;
 const FRAME_MS = 1000 / TARGET_FPS;
 
@@ -12,12 +11,10 @@ const random = (min, max) => Math.random() * (max - min) + min;
 const syncPointerCssVars = (pointerX, pointerY) => {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  const rx = (pointerX - 0.5) * 2;
-  const ry = (pointerY - 0.5) * 2;
   root.style.setProperty("--soft-pointer-x", `${(pointerX * 100).toFixed(2)}%`);
   root.style.setProperty("--soft-pointer-y", `${(pointerY * 100).toFixed(2)}%`);
-  root.style.setProperty("--soft-pointer-rx", rx.toFixed(4));
-  root.style.setProperty("--soft-pointer-ry", ry.toFixed(4));
+  root.style.setProperty("--soft-pointer-rx", ((pointerX - 0.5) * 2).toFixed(4));
+  root.style.setProperty("--soft-pointer-ry", ((pointerY - 0.5) * 2).toFixed(4));
 };
 
 async function startTypeGpuBackdrop(gpuCanvasRef, sharedStateRef) {
@@ -31,12 +28,8 @@ async function startTypeGpuBackdrop(gpuCanvasRef, sharedStateRef) {
   if (!context) return () => {};
 
   const [{ default: tgpu }, d] = await Promise.all([import("typegpu"), import("typegpu/data")]);
-
-  const adapter = await navigator.gpu.requestAdapter({
-    powerPreference: "high-performance",
-  });
+  const adapter = await navigator.gpu.requestAdapter({ powerPreference: "low-power" });
   if (!adapter) return () => {};
-
   const device = await adapter.requestDevice();
   const format = navigator.gpu.getPreferredCanvasFormat ? navigator.gpu.getPreferredCanvasFormat() : "bgra8unorm";
   const root = tgpu.initFromDevice({ device });
@@ -52,7 +45,7 @@ async function startTypeGpuBackdrop(gpuCanvasRef, sharedStateRef) {
 
   const uniforms = root.createUniform(Uniforms, {
     resolution: d.vec2f(1, 1),
-    pointer: d.vec2f(DEFAULT_POINTER.x, DEFAULT_POINTER.y),
+    pointer: d.vec2f(POINTER_DEFAULT.x, POINTER_DEFAULT.y),
     time: 0,
     intensity: 1,
     tintA: d.vec4f(0.831, 0.420, 0.549, 1.0),
@@ -84,7 +77,6 @@ fn vsMain(@builtin(vertex_index) index: u32) -> VertexOut {
     vec2f(-1.0, 1.0),
     vec2f(3.0, 1.0)
   );
-
   var out: VertexOut;
   let p = positions[index];
   out.position = vec4f(p, 0.0, 1.0);
@@ -92,86 +84,69 @@ fn vsMain(@builtin(vertex_index) index: u32) -> VertexOut {
   return out;
 }
 
-fn blobField(p: vec2f, c: vec2f, r: f32) -> f32 {
-  let delta = p - c;
-  let d2 = max(dot(delta, delta), 0.0008);
-  return (r * r) / d2;
+fn hash21(p: vec2f) -> f32 {
+  let h = dot(p, vec2f(127.1, 311.7));
+  return fract(sin(h) * 43758.5453123);
+}
+
+fn ring(p: vec2f, center: vec2f, radius: f32, width: f32) -> f32 {
+  let d = abs(length(p - center) - radius);
+  return exp(-pow(d / max(width, 0.001), 2.0) * 2.2);
 }
 
 @fragment
 fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
   let res = max(u.resolution, vec2f(1.0, 1.0));
-  let t = u.time * 0.001;
   let aspect = res.x / res.y;
-
-  var uv = inFrag.uv;
+  let t = u.time * 0.001;
+  let uv = inFrag.uv;
   let centered = uv - 0.5;
-  let mouse = vec2f((u.pointer.x - 0.5) * 2.0, (u.pointer.y - 0.5) * 2.0);
+  let p = vec2f(centered.x * aspect, centered.y);
 
-  var p = vec2f(centered.x * aspect, centered.y);
-  p = p + vec2f(mouse.x * 0.10, -mouse.y * 0.08);
+  let mouse = vec2f((u.pointer.x - 0.5) * aspect, u.pointer.y - 0.5);
+  let parallax = vec2f((u.pointer.x - 0.5) * 0.14, -(u.pointer.y - 0.5) * 0.10);
 
-  let c0 = vec2f(0.0, -0.04) + vec2f(mouse.x * 0.06, -mouse.y * 0.05);
-  let c1 = vec2f(cos(t * 0.85) * 0.34, sin(t * 0.95) * 0.18);
-  let c2 = vec2f(cos(t * 0.61 + 2.1) * 0.28, sin(t * 0.72 + 1.4) * 0.15);
-  let c3 = vec2f(cos(t * 1.02 + 4.0) * 0.19, sin(t * 0.83 + 0.7) * 0.14);
+  let warpA = vec2f(
+    sin((p.y + t * 0.25) * 5.4 + p.x * 1.8) * 0.045,
+    cos((p.x - t * 0.20) * 6.2 - p.y * 1.2) * 0.035
+  );
+  let warpB = vec2f(
+    cos((p.y - t * 0.42) * 7.4 + p.x * 0.9) * 0.035,
+    sin((p.x + t * 0.31) * 5.9 + p.y * 1.4) * 0.028
+  );
+  let q = p + parallax + warpA + warpB;
 
-  let field =
-    blobField(p, c0, 0.23) +
-    blobField(p, c1, 0.19) +
-    blobField(p, c2, 0.17) +
-    blobField(p, c3, 0.14);
+  let ringA = ring(q, vec2f(-0.32 + sin(t * 0.45) * 0.12, -0.02 + cos(t * 0.52) * 0.07), 0.44, 0.055);
+  let ringB = ring(q, vec2f(0.22 + cos(t * 0.37 + 0.6) * 0.10, 0.10 + sin(t * 0.33) * 0.08), 0.33, 0.045);
+  let ringC = ring(q, vec2f(mouse.x * 0.65, mouse.y * 0.65), 0.22 + sin(t * 0.8) * 0.02, 0.032);
 
-  let fieldX =
-    blobField(p + vec2f(0.012, 0.0), c0, 0.23) +
-    blobField(p + vec2f(0.012, 0.0), c1, 0.19) +
-    blobField(p + vec2f(0.012, 0.0), c2, 0.17) +
-    blobField(p + vec2f(0.012, 0.0), c3, 0.14);
-  let fieldY =
-    blobField(p + vec2f(0.0, 0.012), c0, 0.23) +
-    blobField(p + vec2f(0.0, 0.012), c1, 0.19) +
-    blobField(p + vec2f(0.0, 0.012), c2, 0.17) +
-    blobField(p + vec2f(0.0, 0.012), c3, 0.14);
-  let normal = normalize(vec2f(fieldX - field, fieldY - field) + vec2f(0.0001, 0.0001));
+  let streak = pow(max(0.0, sin((q.x * 9.0 - q.y * 5.8) + t * 1.4) * 0.5 + 0.5), 4.0);
+  let caustics = streak * (ringA * 0.8 + ringB * 0.75 + ringC * 1.2);
+  let body = smoothstep(0.22, 0.95, ringA * 0.85 + ringB * 0.8 + ringC * 0.7);
+  let cursorGlow = exp(-pow(length(q - mouse) * 3.8, 2.0) * 1.3);
+  let vignette = 1.0 - smoothstep(0.35, 1.08, length(vec2f(centered.x * aspect, centered.y)));
 
-  let body = smoothstep(1.4, 2.15, field);
-  let rim = smoothstep(1.7, 2.7, field) - smoothstep(2.7, 4.3, field);
-  let caustic = pow(max(0.0, sin((p.x * 8.0 - p.y * 5.0) + t * 1.2) * 0.5 + 0.5), 3.0) * rim;
-  let cursorHalo = 1.0 - smoothstep(0.0, 0.42, distance(uv, u.pointer));
-  let vignette = 1.0 - smoothstep(0.24, 1.02, length(vec2f(centered.x * aspect, centered.y)));
-
-  let tintMix = clamp(uv.x * 0.45 + uv.y * 0.55 + normal.x * 0.12 - normal.y * 0.07, 0.0, 1.0);
+  let tintMix = clamp(uv.x * 0.58 + uv.y * 0.20 + ringC * 0.2, 0.0, 1.0);
   let tint = mix(u.tintA.rgb, u.tintB.rgb, tintMix);
-  let refractionShade = 0.08 + normal.x * 0.07 - normal.y * 0.05;
+  var color =
+    tint * (body * 0.15 + caustics * 0.18) +
+    vec3f(1.0) * (caustics * 0.16 + cursorGlow * 0.08 + ringC * 0.06);
 
-  let color =
-    tint * (0.08 + body * 0.20) +
-    mix(u.tintB.rgb, vec3f(1.0), 0.35) * (rim * 0.18 + caustic * 0.16) +
-    vec3f(1.0) * (cursorHalo * 0.05 + max(0.0, refractionShade) * body * 0.22);
-
-  color = color * vignette;
-  let alpha = clamp((body * 0.17 + rim * 0.11 + cursorHalo * 0.04 + vignette * 0.02) * u.intensity, 0.0, 0.42);
+  let grain = (hash21(floor(uv * res * 0.5) + vec2f(t * 24.0, -t * 19.0)) - 0.5) / 255.0;
+  color = (color + vec3f(grain)) * vignette;
+  let alpha = clamp((body * 0.11 + caustics * 0.16 + cursorGlow * 0.04) * vignette * u.intensity, 0.0, 0.34);
   return vec4f(color, alpha);
 }
 `,
   });
 
   const bindGroupLayout = device.createBindGroupLayout({
-    entries: [
-      {
-        binding: 0,
-        visibility: window.GPUShaderStage?.FRAGMENT ?? 0x2,
-        buffer: { type: "uniform" },
-      },
-    ],
+    entries: [{ binding: 0, visibility: window.GPUShaderStage?.FRAGMENT ?? 0x2, buffer: { type: "uniform" } }],
   });
 
   const pipeline = device.createRenderPipeline({
     layout: device.createPipelineLayout({ bindGroupLayouts: [bindGroupLayout] }),
-    vertex: {
-      module: shaderModule,
-      entryPoint: "vsMain",
-    },
+    vertex: { module: shaderModule, entryPoint: "vsMain" },
     fragment: {
       module: shaderModule,
       entryPoint: "fsMain",
@@ -179,23 +154,13 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
         {
           format,
           blend: {
-            color: {
-              srcFactor: "src-alpha",
-              dstFactor: "one-minus-src-alpha",
-              operation: "add",
-            },
-            alpha: {
-              srcFactor: "one",
-              dstFactor: "one-minus-src-alpha",
-              operation: "add",
-            },
+            color: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha", operation: "add" },
+            alpha: { srcFactor: "one", dstFactor: "one-minus-src-alpha", operation: "add" },
           },
         },
       ],
     },
-    primitive: {
-      topology: "triangle-list",
-    },
+    primitive: { topology: "triangle-list" },
   });
 
   const bindGroup = device.createBindGroup({
@@ -211,24 +176,20 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
     const rect = canvas.getBoundingClientRect();
     const width = Math.max(1, Math.floor(rect.width));
     const height = Math.max(1, Math.floor(rect.height));
-    const dpr = Math.max(1, Math.min(1.5, window.devicePixelRatio || 1));
-    const isMobile = window.matchMedia?.("(max-width: 900px)")?.matches;
-    const renderScale = isMobile ? 0.5 : 0.68;
+    const dpr = Math.max(1, Math.min(1.35, window.devicePixelRatio || 1));
+    const renderScale = 0.62;
     const nextWidth = Math.max(1, Math.floor(width * dpr * renderScale));
     const nextHeight = Math.max(1, Math.floor(height * dpr * renderScale));
     if (canvas.width !== nextWidth) canvas.width = nextWidth;
     if (canvas.height !== nextHeight) canvas.height = nextHeight;
-    context.configure({
-      device,
-      format,
-      alphaMode: "premultiplied",
-    });
+    context.configure({ device, format, alphaMode: "premultiplied" });
   };
 
   configureCanvas();
   const resizeObserver = new ResizeObserver(configureCanvas);
   resizeObserver.observe(canvas);
   window.addEventListener("resize", configureCanvas);
+  sharedStateRef.current.gpuActive = true;
 
   const render = (time) => {
     if (document.hidden) {
@@ -249,15 +210,15 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
       resolution: d.vec2f(canvas.width || 1, canvas.height || 1),
       pointer: d.vec2f(pointerX, pointerY),
       time: Number(time || 0),
-      intensity: isDark ? 1.0 : 0.9,
+      intensity: isDark ? 1.0 : 0.92,
       tintA: d.vec4f(0.831, 0.420, 0.549, 1.0),
-      tintB: d.vec4f(isDark ? 0.412 : 0.475, isDark ? 0.553 : 0.639, isDark ? 0.824 : 0.902, 1.0),
+      tintB: d.vec4f(isDark ? 0.39 : 0.475, isDark ? 0.53 : 0.639, isDark ? 0.86 : 0.902, 1.0),
     });
 
     let currentTexture;
     try {
       currentTexture = context.getCurrentTexture();
-    } catch (error) {
+    } catch {
       configureCanvas();
       rafId = window.requestAnimationFrame(render);
       return;
@@ -265,16 +226,8 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
 
     const encoder = device.createCommandEncoder();
     const pass = encoder.beginRenderPass({
-      colorAttachments: [
-        {
-          view: currentTexture.createView(),
-          loadOp: "clear",
-          clearValue: { r: 0, g: 0, b: 0, a: 0 },
-          storeOp: "store",
-        },
-      ],
+      colorAttachments: [{ view: currentTexture.createView(), loadOp: "clear", storeOp: "store", clearValue: { r: 0, g: 0, b: 0, a: 0 } }],
     });
-
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
     pass.draw(3, 1, 0, 0);
@@ -290,6 +243,7 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
     window.cancelAnimationFrame(rafId);
     window.removeEventListener("resize", configureCanvas);
     resizeObserver.disconnect();
+    sharedStateRef.current.gpuActive = false;
     try {
       root.destroy();
     } catch {
@@ -305,14 +259,14 @@ export default function LiquidBackdrop() {
     width: 0,
     height: 0,
     dpr: 1,
-    pointerX: DEFAULT_POINTER.x,
-    pointerY: DEFAULT_POINTER.y,
-    targetPointerX: DEFAULT_POINTER.x,
-    targetPointerY: DEFAULT_POINTER.y,
+    pointerX: POINTER_DEFAULT.x,
+    pointerY: POINTER_DEFAULT.y,
+    targetPointerX: POINTER_DEFAULT.x,
+    targetPointerY: POINTER_DEFAULT.y,
     stars: [],
-    blobs: [],
     rafId: 0,
     lastDrawMs: 0,
+    gpuActive: false,
   });
 
   useEffect(() => {
@@ -325,7 +279,7 @@ export default function LiquidBackdrop() {
 
     const rebuildScene = () => {
       const rect = canvas.getBoundingClientRect();
-      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const dpr = Math.max(1, Math.min(1.5, window.devicePixelRatio || 1));
       state.width = Math.max(1, Math.floor(rect.width));
       state.height = Math.max(1, Math.floor(rect.height));
       state.dpr = dpr;
@@ -336,122 +290,99 @@ export default function LiquidBackdrop() {
       state.stars = Array.from({ length: STAR_COUNT }, () => ({
         x: random(0, state.width),
         y: random(0, state.height),
-        r: random(0.7, 2.4),
-        twinkle: random(0.3, 1.2),
+        r: random(0.6, 1.8),
+        twinkle: random(0.35, 1.1),
         phase: random(0, Math.PI * 2),
-        drift: random(-0.12, 0.12),
-      }));
-
-      state.blobs = Array.from({ length: BLOB_COUNT }, (_, index) => ({
-        angle: random(0, Math.PI * 2),
-        radiusFactor: 0.15 + index * 0.07,
-        wobble: random(10, 34),
-        speed: random(0.00011, 0.00026),
-        size: random(150, 260),
-        hueShift: index,
-        phase: random(0, Math.PI * 2),
+        drift: random(-0.08, 0.08),
       }));
     };
 
     const draw = (time) => {
       const t = Number(time || 0);
-      const { width, height, stars, blobs } = state;
+      const { width, height, stars } = state;
       if (!width || !height) return;
 
-      state.pointerX += (state.targetPointerX - state.pointerX) * 0.06;
-      state.pointerY += (state.targetPointerY - state.pointerY) * 0.06;
+      state.pointerX += (state.targetPointerX - state.pointerX) * 0.09;
+      state.pointerY += (state.targetPointerY - state.pointerY) * 0.09;
       const pointerX = state.pointerX;
       const pointerY = state.pointerY;
-
       syncPointerCssVars(pointerX, pointerY);
 
+      const isDark = document.documentElement.getAttribute("data-soft-theme") === "dark";
       ctx.clearRect(0, 0, width, height);
 
       const bgGradient = ctx.createLinearGradient(0, 0, width, height);
-      const isDark = document.documentElement.getAttribute("data-soft-theme") === "dark";
       if (isDark) {
         bgGradient.addColorStop(0, "rgba(13,18,31,0.98)");
-        bgGradient.addColorStop(0.55, "rgba(15,23,42,0.92)");
-        bgGradient.addColorStop(1, "rgba(17,24,39,0.96)");
+        bgGradient.addColorStop(0.52, "rgba(14,22,40,0.94)");
+        bgGradient.addColorStop(1, "rgba(17,24,39,0.98)");
       } else {
-        bgGradient.addColorStop(0, "rgba(226,233,243,0.92)");
-        bgGradient.addColorStop(0.45, "rgba(214,226,244,0.65)");
-        bgGradient.addColorStop(1, "rgba(199,217,241,0.85)");
+        bgGradient.addColorStop(0, "rgba(226,233,243,0.96)");
+        bgGradient.addColorStop(0.56, "rgba(217,228,244,0.88)");
+        bgGradient.addColorStop(1, "rgba(206,221,242,0.92)");
       }
       ctx.fillStyle = bgGradient;
       ctx.fillRect(0, 0, width, height);
 
-      ctx.save();
       const px = pointerX * width;
       const py = pointerY * height;
-      const pointerGlow = ctx.createRadialGradient(px, py, 0, px, py, Math.max(width, height) * 0.24);
-      pointerGlow.addColorStop(0, isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.12)");
-      pointerGlow.addColorStop(0.45, isDark ? "rgba(212,107,140,0.05)" : "rgba(212,107,140,0.07)");
-      pointerGlow.addColorStop(1, "rgba(212,107,140,0)");
-      ctx.fillStyle = pointerGlow;
+
+      // Soft cursor lens (cleaner than the previous multi-element follow).
+      ctx.save();
+      const lens = ctx.createRadialGradient(px, py, 0, px, py, Math.max(width, height) * 0.16);
+      lens.addColorStop(0, isDark ? "rgba(255,255,255,0.045)" : "rgba(255,255,255,0.12)");
+      lens.addColorStop(0.42, isDark ? "rgba(121,163,230,0.045)" : "rgba(121,163,230,0.065)");
+      lens.addColorStop(0.7, isDark ? "rgba(212,107,140,0.032)" : "rgba(212,107,140,0.048)");
+      lens.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = lens;
       ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = isDark ? "rgba(231,239,250,0.055)" : "rgba(255,255,255,0.18)";
+      ctx.lineWidth = 1.25;
+      ctx.beginPath();
+      ctx.arc(px, py, Math.max(34, Math.min(width, height) * 0.08), 0, Math.PI * 2);
+      ctx.stroke();
       ctx.restore();
 
+      // Two slow glass ribbons in 2D fallback/base layer.
       ctx.save();
       ctx.globalCompositeOperation = "source-over";
+      for (let i = 0; i < 2; i += 1) {
+        const y = height * (0.24 + i * 0.28) + Math.sin(t * (0.00025 + i * 0.00006) + i) * (14 + i * 5);
+        const grad = ctx.createLinearGradient(0, y - 36, width, y + 36);
+        grad.addColorStop(0, "rgba(0,0,0,0)");
+        grad.addColorStop(0.28, isDark ? "rgba(121,163,230,0.045)" : "rgba(121,163,230,0.06)");
+        grad.addColorStop(0.52, isDark ? "rgba(212,107,140,0.038)" : "rgba(212,107,140,0.05)");
+        grad.addColorStop(0.72, isDark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.05)");
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, y - 40, width, 80);
+      }
+      ctx.restore();
+
+      // Stars stay subtle and cheap.
+      ctx.save();
       for (const star of stars) {
-        const alphaBase = isDark ? 0.04 : 0.10;
-        const alphaDelta = isDark ? 0.14 : 0.18;
-        const alpha = alphaBase + (Math.sin(t * 0.0014 * star.twinkle + star.phase) + 1) * alphaDelta;
+        const alphaBase = isDark ? 0.035 : 0.08;
+        const alphaDelta = isDark ? 0.08 : 0.12;
+        const alpha = alphaBase + (Math.sin(t * 0.0012 * star.twinkle + star.phase) + 1) * alphaDelta * 0.5;
         const y = (star.y + t * 0.003 * star.drift + height) % height;
-        const x = star.x + (pointerX - 0.5) * 4 * star.twinkle;
+        const x = star.x + (pointerX - 0.5) * 2.5;
         ctx.beginPath();
-        ctx.fillStyle = isDark ? `rgba(220,232,255,${alpha.toFixed(3)})` : `rgba(255,255,255,${alpha.toFixed(3)})`;
         ctx.arc(x, y, star.r, 0, Math.PI * 2);
+        ctx.fillStyle = isDark ? `rgba(220,232,255,${alpha.toFixed(3)})` : `rgba(255,255,255,${alpha.toFixed(3)})`;
         ctx.fill();
       }
       ctx.restore();
 
+      // Light dithering/noise to reduce visible banding.
       ctx.save();
-      ctx.globalCompositeOperation = "lighter";
-      for (const blob of blobs) {
-        const orbitRadius = Math.min(width, height) * (0.22 + blob.radiusFactor);
-        const cx =
-          width * 0.5 +
-          Math.cos(t * blob.speed + blob.angle) * orbitRadius +
-          (pointerX - 0.5) * 70 +
-          Math.sin(t * 0.00031 + blob.phase) * blob.wobble;
-        const cy =
-          height * 0.38 +
-          Math.sin(t * blob.speed * 1.13 + blob.angle) * (orbitRadius * 0.55) +
-          (pointerY - 0.45) * 56 +
-          Math.cos(t * 0.00027 + blob.phase) * (blob.wobble * 0.8);
-        const radius = blob.size + Math.sin(t * 0.00035 + blob.phase) * 20;
-
-        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-        if (blob.hueShift % 2 === 0) {
-          g.addColorStop(0, isDark ? "rgba(212,107,140,0.18)" : "rgba(212,107,140,0.26)");
-          g.addColorStop(0.55, isDark ? "rgba(212,107,140,0.05)" : "rgba(212,107,140,0.08)");
-          g.addColorStop(1, "rgba(212,107,140,0)");
-        } else {
-          g.addColorStop(0, isDark ? "rgba(117,163,230,0.18)" : "rgba(117,163,230,0.23)");
-          g.addColorStop(0.55, isDark ? "rgba(117,163,230,0.06)" : "rgba(117,163,230,0.07)");
-          g.addColorStop(1, "rgba(117,163,230,0)");
-        }
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-
-      ctx.save();
-      ctx.strokeStyle = isDark ? "rgba(167,187,219,0.08)" : "rgba(255,255,255,0.12)";
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 5; i += 1) {
-        const y = height * (0.08 + i * 0.11) + Math.sin(t * 0.00035 + i) * 8 + (pointerY - 0.5) * (2 + i * 0.7);
-        ctx.beginPath();
-        ctx.moveTo(-20, y);
-        for (let x = 0; x <= width + 40; x += 80) {
-          const wave = Math.sin(t * 0.0006 + x * 0.01 + i * 0.8 + (pointerX - 0.5) * 0.8) * 7;
-          ctx.quadraticCurveTo(x + 40, y + wave, x + 80, y);
-        }
-        ctx.stroke();
+      ctx.globalAlpha = isDark ? 0.06 : 0.05;
+      for (let i = 0; i < 110; i += 1) {
+        const nx = ((i * 53 + Math.floor(t * 0.08)) % 127) / 127;
+        const ny = ((i * 97 + Math.floor(t * 0.05)) % 131) / 131;
+        ctx.fillStyle = i % 2 ? "rgba(255,255,255,0.4)" : "rgba(19,33,56,0.3)";
+        ctx.fillRect(nx * width, ny * height, 1, 1);
       }
       ctx.restore();
     };
@@ -473,13 +404,13 @@ export default function LiquidBackdrop() {
     const onPointerMove = (event) => {
       const rect = canvas.getBoundingClientRect();
       if (!rect.width || !rect.height) return;
-      state.targetPointerX = (event.clientX - rect.left) / rect.width;
-      state.targetPointerY = (event.clientY - rect.top) / rect.height;
+      state.targetPointerX = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+      state.targetPointerY = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
     };
 
     const resetPointer = () => {
-      state.targetPointerX = DEFAULT_POINTER.x;
-      state.targetPointerY = DEFAULT_POINTER.y;
+      state.targetPointerX = POINTER_DEFAULT.x;
+      state.targetPointerY = POINTER_DEFAULT.y;
     };
 
     rebuildScene();
@@ -510,7 +441,7 @@ export default function LiquidBackdrop() {
         cleanup = teardown || (() => {});
       })
       .catch((error) => {
-        console.error("TypeGPU backdrop failed, falling back to 2D backdrop only.", error);
+        console.error("TypeGPU backdrop failed, using 2D fallback only.", error);
       });
 
     return () => {
@@ -523,12 +454,7 @@ export default function LiquidBackdrop() {
     <Box className="liquid-backdrop" aria-hidden="true">
       <canvas ref={canvasRef} className="liquid-backdrop__canvas" />
       <canvas ref={gpuCanvasRef} className="liquid-backdrop__gpu" />
-      <Box className="liquid-backdrop__cloud liquid-backdrop__cloud--a" />
-      <Box className="liquid-backdrop__cloud liquid-backdrop__cloud--b" />
-      <Box className="liquid-backdrop__cloud liquid-backdrop__cloud--c" />
-      <Box className="liquid-backdrop__orbit liquid-backdrop__orbit--a" />
-      <Box className="liquid-backdrop__orbit liquid-backdrop__orbit--b" />
-      <Box className="liquid-backdrop__wordmark">softu</Box>
+      <Box className="liquid-backdrop__grain" />
     </Box>
   );
 }

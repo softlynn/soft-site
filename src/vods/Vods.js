@@ -39,6 +39,7 @@ import {
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import Reveal from "../utils/Reveal";
+import TypeGpuButtonOverlay from "../utils/TypeGpuButtonOverlay";
 
 const FILTERS = ["Default", "Date", "Title", "Game"];
 const PLATFORMS = ["All", "Twitch", "Kick"];
@@ -109,7 +110,7 @@ export default function Vods() {
   const [platform] = useState(PLATFORMS[0]);
   const page = parseInt(query.get("page") || "1", 10);
   const limit = isMobile ? 10 : 20;
-  const previewLimit = isMobile ? 4 : 6;
+  const previewLimit = isMobile ? 4 : 8;
 
   useEffect(() => {
     document.title = isHomeRoute ? `${SITE_TITLE} | Vod Archive` : `${SITE_TITLE} | Archive`;
@@ -384,7 +385,17 @@ export default function Vods() {
     }
 
     return (
-      <Grid container spacing={2} sx={{ mt: 0.5, justifyContent: "center" }}>
+      <Grid
+        container
+        spacing={{ xs: 1.2, sm: 1.6, md: 2 }}
+        sx={{
+          mt: 0.5,
+          justifyContent: "center",
+          mx: "auto",
+          maxWidth: "1360px",
+          px: { xs: 0, sm: 0.5, md: 1 },
+        }}
+      >
         {list.map((vod, index) => (
           <Reveal key={vod.id} delay={Math.min(index * 40, 220)} sx={{ display: "contents" }}>
             <Vod vod={vod} sizes={cardSizes} gridSize={2.1} sheen={index === 0} />
@@ -396,7 +407,7 @@ export default function Vods() {
 
   return (
     <SimpleBar style={{ minHeight: 0, height: "100%" }}>
-      <Box sx={{ px: { xs: 1.25, sm: 2 }, pb: 1 }}>
+      <Box sx={{ px: { xs: 1.1, sm: 1.8, md: 2.2 }, pb: 1, width: "100%", maxWidth: "1500px", mx: "auto" }}>
         {ENABLE_ADSENSE && ADSENSE_CLIENT && ADSENSE_SLOT && (
           <Box sx={{ mt: 1, textAlign: "center" }}>
             <ErrorBoundary>
@@ -448,16 +459,23 @@ export default function Vods() {
                           variant="contained"
                           color="secondary"
                           size="large"
-                          startIcon={<VideoLibraryRoundedIcon />}
                           onClick={() => navigate("/vods")}
+                          className="soft-cta-button soft-cta-button--salmon"
                           sx={{
                             borderRadius: "14px",
                             px: 2,
                             background: "linear-gradient(180deg, #D46B8C 0%, #C85E80 100%)",
                             color: "#fff",
+                            position: "relative",
+                            overflow: "hidden",
+                            border: "1px solid rgba(255,255,255,0.22)",
                           }}
                         >
-                          Open VODs
+                          <TypeGpuButtonOverlay tone="salmon" />
+                          <Box component="span" sx={{ position: "relative", zIndex: 2, display: "inline-flex", alignItems: "center", gap: 0.8 }}>
+                            <VideoLibraryRoundedIcon sx={{ fontSize: 20 }} />
+                            Open VODs
+                          </Box>
                         </Button>
                         {SOCIAL_LINKS.twitch && (
                           <Button
@@ -467,10 +485,20 @@ export default function Vods() {
                             rel="noopener noreferrer"
                             variant="outlined"
                             size="large"
-                            startIcon={<OpenInNewRoundedIcon />}
-                            sx={{ borderRadius: "14px", px: 2 }}
+                            className="soft-cta-button soft-cta-button--blue"
+                            sx={{
+                              borderRadius: "14px",
+                              px: 2,
+                              position: "relative",
+                              overflow: "hidden",
+                              borderWidth: "1px",
+                            }}
                           >
-                            Twitch
+                            <TypeGpuButtonOverlay tone="blue" />
+                            <Box component="span" sx={{ position: "relative", zIndex: 2, display: "inline-flex", alignItems: "center", gap: 0.8 }}>
+                              <OpenInNewRoundedIcon sx={{ fontSize: 20 }} />
+                              Twitch
+                            </Box>
                           </Button>
                         )}
                       </Stack>
@@ -503,22 +531,22 @@ export default function Vods() {
                   </Button>
                 </Box>
 
-                {previewVods === null ? <Loading /> : renderVodGrid(previewVods, { xs: 12, sm: 6, lg: 4 })}
+                {previewVods === null ? <Loading /> : renderVodGrid(previewVods, { xs: 12, sm: 6, lg: 3 })}
               </Box>
             </Reveal>
 
-            <Reveal delay={150} sx={{ mt: 1.25 }}>
-              <Box className="soft-glass" sx={{ p: { xs: 0.95, md: 1.1 }, borderRadius: "20px" }}>
+            <Reveal delay={150} sx={{ mt: 1.9, display: "flex", justifyContent: "center" }}>
+              <Box className="soft-glass" sx={{ p: { xs: 0.95, md: 1.1 }, borderRadius: "20px", width: "100%", maxWidth: "430px" }}>
                 <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.75, px: 0.35, letterSpacing: "0.03em" }}>
                   stream playlist
                 </Typography>
-                <Box sx={{ borderRadius: "14px", overflow: "hidden" }}>
+                <Box sx={{ borderRadius: "14px", overflow: "hidden", mx: "auto" }}>
                   <iframe
                     data-testid="embed-iframe"
                     title="softu stream playlist"
                     src={SPOTIFY_PLAYLIST_EMBED_URL}
                     width="100%"
-                    height="132"
+                    height="352"
                     frameBorder="0"
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                     loading="lazy"
@@ -536,7 +564,7 @@ export default function Vods() {
               {renderArchiveControls()}
             </Reveal>
 
-            <Box sx={{ mt: 1.2 }}>{renderVodGrid(vods, { xs: 12, sm: 6, md: 4, xl: 3 })}</Box>
+            <Box sx={{ mt: 1.2 }}>{renderVodGrid(vods, { xs: 12, sm: 6, lg: 3, xl: 3 })}</Box>
 
             <Box sx={{ display: "flex", justifyContent: "center", mt: 2.5, mb: 1.2, alignItems: "center", flexDirection: isMobile ? "column" : "row" }}>
               {totalPages !== null && (

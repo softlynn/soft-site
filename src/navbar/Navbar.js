@@ -148,30 +148,33 @@ export default function Navbar() {
               <Box
                 className="soft-logo-shell"
                 sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: "14px",
+                  width: 52,
+                  height: 52,
+                  borderRadius: "16px",
                   background: theme.palette.mode === "dark" ? "rgba(23,31,47,0.76)" : "var(--soft-surface)",
                   border: "1px solid var(--soft-border)",
                   boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 6px 14px rgba(19,33,56,.08)",
                   display: "grid",
                   placeItems: "center",
                   position: "relative",
+                  overflow: "hidden",
                 }}
               >
                 <Box
+                  component="img"
+                  alt=""
+                  src={Logo}
                   sx={{
-                    width: 38,
-                    height: 38,
+                    width: 40,
+                    height: 40,
+                    p: 0.45,
                     borderRadius: "12px",
-                    background: "rgba(255,255,255,0.96)",
-                    display: "grid",
-                    placeItems: "center",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,.95)",
+                    background: "rgba(255,255,255,0.98)",
+                    objectFit: "contain",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,.95), 0 0 0 1px rgba(19,33,56,0.03)",
+                    display: "block",
                   }}
-                >
-                  <img alt="" style={{ maxWidth: "34px", height: "auto" }} src={Logo} />
-                </Box>
+                />
                 {logoBurstSeed > 0 &&
                   Array.from({ length: 8 }, (_, i) => {
                     const angle = (Math.PI * 2 * i) / 8;

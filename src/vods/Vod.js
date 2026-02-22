@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 dayjs.extend(localizedFormat);
 
-const DEFAULT_CARD_WIDTH = "20.25rem";
+const DEFAULT_CARD_WIDTH = "18.75rem";
 
 export default function Vod(props) {
   const { vod, gridSize, sizes, sheen = false } = props;
@@ -38,7 +38,7 @@ export default function Vod(props) {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          gap: 0.85,
+          gap: 0.95,
         }}
       >
         <Box

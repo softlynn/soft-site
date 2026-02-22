@@ -15,6 +15,10 @@ import { getVodById } from "../api/vodsApi";
 const delay = 0;
 const getOriginalTwitchVodUrl = (vod) => {
   if (!vod || String(vod.platform || "").toLowerCase() !== "twitch") return "";
+  if (vod.unpublished) return "";
+  if (vod.twitchExists === false || vod.twitchDeleted === true || vod.twitchUnavailable === true) return "";
+  if (typeof vod.twitchStatus === "string" && ["deleted", "unpublished", "private", "missing"].includes(vod.twitchStatus.toLowerCase())) return "";
+  if (vod.twitch && typeof vod.twitch === "object" && vod.twitch.exists === false) return "";
   const id = String(vod.id || "").trim();
   if (!/^\d+$/.test(id)) return "";
   return `https://www.twitch.tv/videos/${id}`;

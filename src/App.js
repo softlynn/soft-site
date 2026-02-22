@@ -1,13 +1,13 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { HashRouter, Route, Routes, useLocation } from "react-router-dom";
 import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
-import { CssBaseline, styled, Tooltip, IconButton } from "@mui/material";
+import { CssBaseline, styled } from "@mui/material";
 import Loading from "./utils/Loading";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import LiquidBackdrop from "./utils/LiquidBackdrop";
-import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
-import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
+import ThemeModeToggle from "./utils/ThemeModeToggle";
+import { ThemeModeContext } from "./utils/ThemeModeContext";
 
 const Vods = lazy(() => import("./vods/Vods"));
 const YoutubeVod = lazy(() => import("./vods/YoutubeVod"));
@@ -233,14 +233,15 @@ export default function App() {
   const toggleThemeMode = () => setThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <HashRouter>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <Parent>
-            <RouteAwareOverlays themeMode={themeMode} toggleThemeMode={toggleThemeMode} />
-            <Suspense fallback={<Loading />}>
-              <Routes>
+    <ThemeModeContext.Provider value={{ themeMode, toggleThemeMode }}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <HashRouter>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Parent>
+              <RouteAwareOverlays />
+              <Suspense fallback={<Loading />}>
+                <Routes>
                 <Route path="*" element={<NotFound />} />
                 <Route
                   exact
@@ -275,53 +276,38 @@ export default function App() {
                     </>
                   }
                 />
-              </Routes>
-            </Suspense>
-          </Parent>
-        </LocalizationProvider>
-      </HashRouter>
-    </ThemeProvider>
+                </Routes>
+              </Suspense>
+            </Parent>
+          </LocalizationProvider>
+        </HashRouter>
+      </ThemeProvider>
+    </ThemeModeContext.Provider>
   );
 }
 
-function RouteAwareOverlays({ themeMode, toggleThemeMode }) {
+function RouteAwareOverlays() {
   const location = useLocation();
   const path = location.pathname || "/";
   const isViewerRoute = path.startsWith("/youtube/") || path.startsWith("/cdn/") || path.startsWith("/games/");
-  const hasNavbar = path === "/" || path === "/vods" || path === "/admin";
+  const showFloatingToggle = !isViewerRoute;
 
   return (
     <>
       {!isViewerRoute && <LiquidBackdrop />}
-      <Tooltip title={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
-        <IconButton
-          onClick={toggleThemeMode}
-          color="primary"
+      {showFloatingToggle && (
+        <ThemeModeToggle
+          announceKey={`floating-${path}`}
           sx={{
             position: "fixed",
-            ...(hasNavbar
-              ? {
-                  top: { xs: 78, md: 92 },
-                  right: { xs: 10, md: 14 },
-                }
-              : {
-                  bottom: { xs: 12, md: 16 },
-                  right: { xs: 12, md: 16 },
-                }),
+            bottom: { xs: 10, md: 14 },
+            left: { xs: 10, md: 14 },
             zIndex: 1500,
-            width: 40,
-            height: 40,
-            borderRadius: "14px",
-            border: "1px solid var(--soft-border)",
-            background: "var(--soft-surface)",
-            boxShadow: "var(--soft-shadow)",
-            backdropFilter: "blur(14px) saturate(130%)",
+            width: 42,
+            height: 42,
           }}
-          aria-label={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-        >
-          {themeMode === "dark" ? <LightModeRoundedIcon fontSize="small" /> : <DarkModeRoundedIcon fontSize="small" />}
-        </IconButton>
-      </Tooltip>
+        />
+      )}
     </>
   );
 }

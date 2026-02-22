@@ -11,6 +11,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import MessageTooltip from "./MessageTooltip";
 import { BTTV_EMOTE_CDN } from "../config/site";
 import { getBadges, getEmotes, getVodComments } from "../api/vodsApi";
+import ThemeModeToggle from "../utils/ThemeModeToggle";
 
 const SEVENTV_API = "https://7tv.io/v3";
 const BASE_TWITCH_CDN = "https://static-cdn.jtvnw.net";
@@ -618,13 +619,26 @@ export default function Chat(props) {
                 Chat Replay
               </Typography>
             </Box>
-            {chatReplayAvailable && (
-              <Box sx={{ justifySelf: "end", gridColumnStart: 1, gridRowStart: 1 }}>
+            <Box sx={{ justifySelf: "end", gridColumnStart: 1, gridRowStart: 1, display: "flex", alignItems: "center", gap: 0.35 }}>
+              <ThemeModeToggle
+                variant="inline"
+                size="small"
+                announceKey={`viewer-${vodId}`}
+                sx={{
+                  width: 34,
+                  height: 34,
+                  color: "rgba(234,242,255,0.92)",
+                  borderColor: "rgba(255,255,255,0.10)",
+                  background: "rgba(255,255,255,0.04)",
+                  boxShadow: "none",
+                }}
+              />
+              {chatReplayAvailable && (
                 <IconButton title="Settings" onClick={() => setShowModal(true)} sx={{ color: "rgba(234,242,255,0.9)" }}>
                   <SettingsIcon />
                 </IconButton>
-              </Box>
-            )}
+              )}
+            </Box>
           </Box>
           <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
           <CustomCollapse in={showChat} timeout="auto" unmountOnExit sx={{ minWidth: "340px" }}>
