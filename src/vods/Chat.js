@@ -23,9 +23,12 @@ let messageCount = 0;
 let badgesCount = 0;
 
 export default function Chat(props) {
-  const { isPortrait, vodId, playerRef, playing, userChatDelay, delay, youtube, part, games, chatReplayAvailable = true } = props;
+  const { isPortrait, vodId, playerRef, playing, userChatDelay, delay, youtube, part, games, chatReplayAvailable = true, forceSideLayout = false } = props;
   const desktopExpandedWidth = "clamp(320px, 34vw, 420px)";
   const desktopCollapsedWidth = "46px";
+  const sideLayout = forceSideLayout || !isPortrait;
+  const expandedPanelWidth = forceSideLayout ? "clamp(240px, 38vw, 340px)" : desktopExpandedWidth;
+  const expandedPanelMinWidth = forceSideLayout ? "clamp(220px, 30vw, 300px)" : "clamp(320px, 28vw, 420px)";
   const [showChat, setShowChat] = useState(true);
   const [shownMessages, setShownMessages] = useState([]);
   const comments = useRef([]);
@@ -40,6 +43,12 @@ export default function Chat(props) {
   const [scrolling, setScrolling] = useState(false);
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    if (forceSideLayout) {
+      setShowChat(true);
+    }
+  }, [forceSideLayout]);
 
   useEffect(() => {
     if (chatRef && chatRef.current) {
@@ -591,12 +600,12 @@ export default function Chat(props) {
     <Box
       sx={{
         height: "100%",
-        width: isPortrait ? "100%" : showChat ? desktopExpandedWidth : desktopCollapsedWidth,
-        minWidth: isPortrait ? 0 : showChat ? "clamp(320px, 28vw, 420px)" : desktopCollapsedWidth,
+        width: !sideLayout ? "100%" : showChat ? expandedPanelWidth : desktopCollapsedWidth,
+        minWidth: !sideLayout ? 0 : showChat ? expandedPanelMinWidth : desktopCollapsedWidth,
         transition: "none",
         background:
           "linear-gradient(180deg, rgba(16,24,40,0.92), rgba(14,19,31,0.96))",
-        borderLeft: isPortrait ? "none" : "1px solid rgba(255,255,255,0.08)",
+        borderLeft: !sideLayout ? "none" : "1px solid rgba(255,255,255,0.08)",
         color: "rgba(234,242,255,0.96)",
         display: "flex",
         flexDirection: "column",
@@ -610,7 +619,7 @@ export default function Chat(props) {
       {showChat ? (
         <>
           <Box sx={{ display: "grid", alignItems: "center", p: 1 }}>
-            {!isPortrait && (
+            {sideLayout && (
               <Box sx={{ justifySelf: "left", gridColumnStart: 1, gridRowStart: 1 }}>
                 <Tooltip title="Collapse">
                   <ExpandMore expand={showChat} onClick={handleExpandClick} aria-expanded={showChat}>
@@ -646,7 +655,7 @@ export default function Chat(props) {
             </Box>
           </Box>
           <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
-          <CustomCollapse in={showChat} timeout={isPortrait ? "auto" : 0} unmountOnExit sx={{ minWidth: 0 }}>
+          <CustomCollapse in={showChat} timeout={!sideLayout ? "auto" : 0} unmountOnExit sx={{ minWidth: 0 }}>
             {!chatReplayAvailable ? (
               <Box sx={{ p: 2 }}>
                 <Typography variant="body2" sx={{ color: "rgba(219,232,255,0.74)" }}>
@@ -676,7 +685,7 @@ export default function Chat(props) {
           </CustomCollapse>
         </>
       ) : (
-        !isPortrait && (
+        sideLayout && (
           <Box sx={{ position: "absolute", inset: 0, display: "grid", placeItems: "center" }}>
             <Tooltip title="Expand">
               <ExpandMore expand={showChat} onClick={handleExpandClick} aria-expanded={showChat}>

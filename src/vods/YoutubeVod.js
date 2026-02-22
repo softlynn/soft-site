@@ -13,6 +13,8 @@ import CustomToolTip from "../utils/CustomToolTip";
 import { toHMS, convertTimestamp, toSeconds } from "../utils/helpers";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import HomeIcon from "@mui/icons-material/Home";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import { BRAND_NAME, DEFAULT_DELAY } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "./VodReactions";
@@ -37,6 +39,7 @@ export default function Vod(props) {
   const location = useLocation();
   const navigate = useNavigate();
   const isPortrait = useMediaQuery("(orientation: portrait)");
+  const isMobile = useMediaQuery("(max-width:899.95px)");
   const { vodId } = useParams();
   const { type } = props;
   const [vod, setVod] = useState(undefined);
@@ -49,7 +52,11 @@ export default function Vod(props) {
   const [playing, setPlaying] = useState({ playing: false });
   const [delay, setDelay] = useState(undefined);
   const [userChatDelay, setUserChatDelay] = useState(0);
+  const [mobileFullscreenChat, setMobileFullscreenChat] = useState(false);
   const playerRef = useRef(null);
+  const mobileViewerFullscreen = isMobile && mobileFullscreenChat;
+  const mobileFullscreenSideLayout = mobileViewerFullscreen && !isPortrait;
+  const useStackedMobileLayout = !mobileFullscreenSideLayout && isPortrait;
 
   useEffect(() => {
     const fetchVod = async () => {
@@ -121,6 +128,24 @@ export default function Vod(props) {
     return;
   }, [youtube, vod]);
 
+  useEffect(() => {
+    if (!isMobile && mobileFullscreenChat) {
+      setMobileFullscreenChat(false);
+    }
+  }, [isMobile, mobileFullscreenChat]);
+
+  useEffect(() => {
+    if (!mobileViewerFullscreen) return;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+    };
+  }, [mobileViewerFullscreen]);
+
   const handlePartChange = (evt) => {
     const tmpPart = evt.target.value + 1;
     setPart({ part: tmpPart, duration: 0 });
@@ -128,6 +153,11 @@ export default function Vod(props) {
 
   const handleExpandClick = () => {
     setShowMenu(!showMenu);
+  };
+
+  const handleMobileFullscreenChatToggle = () => {
+    if (!isMobile) return;
+    setMobileFullscreenChat((prev) => !prev);
   };
 
   useEffect(() => {
@@ -147,14 +177,26 @@ export default function Vod(props) {
   const originalTwitchVodUrl = getOriginalTwitchVodUrl(vod);
 
   return (
-    <Box sx={{ height: "100%", width: "100%", p: { xs: 0.75, md: 1 } }}>
-      <Box sx={{ display: "flex", flexDirection: isPortrait ? "column" : "row", height: "100%", width: "100%" }}>
+    <Box
+      sx={{
+        height: mobileViewerFullscreen ? "100dvh" : "100%",
+        width: "100%",
+        p: mobileViewerFullscreen ? 0.6 : { xs: 0.75, md: 1 },
+        position: mobileViewerFullscreen ? "fixed" : "relative",
+        inset: mobileViewerFullscreen ? 0 : "auto",
+        zIndex: mobileViewerFullscreen ? 1400 : "auto",
+        background: mobileViewerFullscreen ? "rgba(8, 12, 20, 0.84)" : "transparent",
+        backdropFilter: mobileViewerFullscreen ? "blur(6px)" : "none",
+      }}
+    >
+      <Box sx={{ display: "flex", flexDirection: mobileFullscreenSideLayout ? "row" : isPortrait ? "column" : "row", height: "100%", width: "100%", gap: mobileFullscreenSideLayout ? 0.6 : 0 }}>
         <Box
           className="soft-glass"
           sx={{
             display: "flex",
             height: "100%",
-            width: "100%",
+            width: mobileFullscreenSideLayout ? "auto" : "100%",
+            flex: "1 1 auto",
             flexDirection: "column",
             alignItems: "flex-start",
             minWidth: 0,
@@ -209,7 +251,7 @@ export default function Vod(props) {
               sx={{
                 width: "100%",
                 maxWidth: {
-                  xs: "100%",
+                  xs: mobileFullscreenSideLayout ? `min(100%, calc((100dvh - ${showMenu ? 156 : 92}px) * 16 / 9))` : "100%",
                   md: `min(100%, calc((100dvh - ${showMenu ? 156 : 92}px) * 16 / 9))`,
                 },
                 maxHeight: "100%",
@@ -241,16 +283,27 @@ export default function Vod(props) {
             }}
           >
             <Tooltip title={showMenu ? "Collapse" : "Expand"}>
-              <ExpandMore
-                expand={showMenu}
-                onClick={handleExpandClick}
-                aria-expanded={showMenu}
-                aria-label="show menu"
-                sx={{ width: 34, height: 34 }}
-              >
+              <ExpandMore expand={showMenu} onClick={handleExpandClick} aria-expanded={showMenu} aria-label="show menu" sx={{ width: 34, height: 34 }}>
                 <ExpandMoreIcon />
               </ExpandMore>
             </Tooltip>
+            {isMobile && (
+              <Tooltip title={mobileViewerFullscreen ? "Exit Fullscreen + Chat" : "Fullscreen + Chat (Mobile)"}>
+                <IconButton
+                  onClick={handleMobileFullscreenChatToggle}
+                  aria-label={mobileViewerFullscreen ? "Exit fullscreen with chat" : "Open fullscreen with chat"}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    color: "var(--soft-text-primary)",
+                    borderRadius: "999px",
+                    ml: 0.15,
+                  }}
+                >
+                  {mobileViewerFullscreen ? <CloseFullscreenIcon fontSize="small" /> : <OpenInFullIcon fontSize="small" />}
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
           <Collapse in={showMenu} timeout="auto" unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
             <Box
@@ -344,9 +397,9 @@ export default function Vod(props) {
             </Box>
           </Collapse>
         </Box>
-        {isPortrait && <Divider sx={{ my: 0.6, borderColor: "rgba(19,33,56,0.08)" }} />}
+        {useStackedMobileLayout && <Divider sx={{ my: 0.6, borderColor: "rgba(19,33,56,0.08)" }} />}
         <Chat
-          isPortrait={isPortrait}
+          isPortrait={useStackedMobileLayout}
           vodId={vodId}
           chatReplayAvailable={vod.chatReplayAvailable !== false}
           playerRef={playerRef}
@@ -357,6 +410,7 @@ export default function Vod(props) {
           part={part}
           setPart={setPart}
           setUserChatDelay={setUserChatDelay}
+          forceSideLayout={mobileFullscreenSideLayout}
         />
       </Box>
     </Box>

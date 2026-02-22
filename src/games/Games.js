@@ -12,6 +12,8 @@ import CustomToolTip from "../utils/CustomToolTip";
 import { BRAND_NAME } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "../vods/VodReactions";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 
 const delay = 0;
 const getOriginalTwitchVodUrl = (vod) => {
@@ -33,6 +35,7 @@ const getOriginalTwitchVodUrl = (vod) => {
 export default function Games(props) {
   const location = useLocation();
   const isPortrait = useMediaQuery("(orientation: portrait)");
+  const isMobile = useMediaQuery("(max-width:899.95px)");
   const { vodId } = useParams();
   const [vod, setVod] = useState(undefined);
   const [games, setGames] = useState(undefined);
@@ -41,7 +44,11 @@ export default function Games(props) {
   const [showMenu, setShowMenu] = useState(true);
   const [playing, setPlaying] = useState({ playing: false });
   const [userChatDelay, setUserChatDelay] = useState(0);
+  const [mobileFullscreenChat, setMobileFullscreenChat] = useState(false);
   const playerRef = useRef(null);
+  const mobileViewerFullscreen = isMobile && mobileFullscreenChat;
+  const mobileFullscreenSideLayout = mobileViewerFullscreen && !isPortrait;
+  const useStackedMobileLayout = !mobileFullscreenSideLayout && isPortrait;
 
   useEffect(() => {
     const fetchVod = async () => {
@@ -69,6 +76,24 @@ export default function Games(props) {
     return;
   }, [vod, location.search]);
 
+  useEffect(() => {
+    if (!isMobile && mobileFullscreenChat) {
+      setMobileFullscreenChat(false);
+    }
+  }, [isMobile, mobileFullscreenChat]);
+
+  useEffect(() => {
+    if (!mobileViewerFullscreen) return;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+    };
+  }, [mobileViewerFullscreen]);
+
   const handlePartChange = (evt) => {
     const tmpPart = evt.target.value + 1;
     setPart({ part: tmpPart, timestamp: 0 });
@@ -76,6 +101,11 @@ export default function Games(props) {
 
   const handleExpandClick = () => {
     setShowMenu(!showMenu);
+  };
+
+  const handleMobileFullscreenChatToggle = () => {
+    if (!isMobile) return;
+    setMobileFullscreenChat((prev) => !prev);
   };
 
   useEffect(() => {
@@ -90,14 +120,26 @@ export default function Games(props) {
   const originalTwitchVodUrl = getOriginalTwitchVodUrl(vod);
 
   return (
-    <Box sx={{ height: "100%", width: "100%", p: { xs: 0.75, md: 1 } }}>
-      <Box sx={{ display: "flex", flexDirection: isPortrait ? "column" : "row", height: "100%", width: "100%" }}>
+    <Box
+      sx={{
+        height: mobileViewerFullscreen ? "100dvh" : "100%",
+        width: "100%",
+        p: mobileViewerFullscreen ? 0.6 : { xs: 0.75, md: 1 },
+        position: mobileViewerFullscreen ? "fixed" : "relative",
+        inset: mobileViewerFullscreen ? 0 : "auto",
+        zIndex: mobileViewerFullscreen ? 1400 : "auto",
+        background: mobileViewerFullscreen ? "rgba(8, 12, 20, 0.84)" : "transparent",
+        backdropFilter: mobileViewerFullscreen ? "blur(6px)" : "none",
+      }}
+    >
+      <Box sx={{ display: "flex", flexDirection: mobileFullscreenSideLayout ? "row" : isPortrait ? "column" : "row", height: "100%", width: "100%", gap: mobileFullscreenSideLayout ? 0.6 : 0 }}>
         <Box
           className="soft-glass"
           sx={{
             display: "flex",
             height: "100%",
-            width: "100%",
+            width: mobileFullscreenSideLayout ? "auto" : "100%",
+            flex: "1 1 auto",
             flexDirection: "column",
             alignItems: "flex-start",
             minWidth: 0,
@@ -152,7 +194,7 @@ export default function Games(props) {
               sx={{
                 width: "100%",
                 maxWidth: {
-                  xs: "100%",
+                  xs: mobileFullscreenSideLayout ? `min(100%, calc((100dvh - ${showMenu ? 156 : 92}px) * 16 / 9))` : "100%",
                   md: `min(100%, calc((100dvh - ${showMenu ? 156 : 92}px) * 16 / 9))`,
                 },
                 maxHeight: "100%",
@@ -184,16 +226,21 @@ export default function Games(props) {
             }}
           >
             <Tooltip title={showMenu ? "Collapse" : "Expand"}>
-              <ExpandMore
-                expand={showMenu}
-                onClick={handleExpandClick}
-                aria-expanded={showMenu}
-                aria-label="show menu"
-                sx={{ width: 34, height: 34 }}
-              >
+              <ExpandMore expand={showMenu} onClick={handleExpandClick} aria-expanded={showMenu} aria-label="show menu" sx={{ width: 34, height: 34 }}>
                 <ExpandMoreIcon />
               </ExpandMore>
             </Tooltip>
+            {isMobile && (
+              <Tooltip title={mobileViewerFullscreen ? "Exit Fullscreen + Chat" : "Fullscreen + Chat (Mobile)"}>
+                <IconButton
+                  onClick={handleMobileFullscreenChatToggle}
+                  aria-label={mobileViewerFullscreen ? "Exit fullscreen with chat" : "Open fullscreen with chat"}
+                  sx={{ width: 34, height: 34, color: "var(--soft-text-primary)", borderRadius: "999px", ml: 0.15 }}
+                >
+                  {mobileViewerFullscreen ? <CloseFullscreenIcon fontSize="small" /> : <OpenInFullIcon fontSize="small" />}
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
           <Collapse in={showMenu} timeout="auto" unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
             <Box
@@ -270,9 +317,9 @@ export default function Games(props) {
             </Box>
           </Collapse>
         </Box>
-        {isPortrait && <Divider sx={{ my: 0.6, borderColor: "rgba(19,33,56,0.08)" }} />}
+        {useStackedMobileLayout && <Divider sx={{ my: 0.6, borderColor: "rgba(19,33,56,0.08)" }} />}
         <Chat
-          isPortrait={isPortrait}
+          isPortrait={useStackedMobileLayout}
           vodId={vodId}
           playerRef={playerRef}
           playing={playing}
@@ -282,6 +329,7 @@ export default function Games(props) {
           setPart={setPart}
           games={games}
           setUserChatDelay={setUserChatDelay}
+          forceSideLayout={mobileFullscreenSideLayout}
         />
       </Box>
     </Box>
