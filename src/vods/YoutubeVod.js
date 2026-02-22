@@ -207,7 +207,10 @@ export default function Vod(props) {
               className="soft-player-frame"
               sx={{
                 width: "100%",
-                maxWidth: { xs: "100%", md: "min(100%, calc((100dvh - 220px) * 16 / 9))" },
+                maxWidth: {
+                  xs: "100%",
+                  md: `min(100%, calc((100dvh - ${showMenu ? 156 : 92}px) * 16 / 9))`,
+                },
                 maxHeight: "100%",
                 aspectRatio: "16 / 9",
                 borderRadius: "16px",
