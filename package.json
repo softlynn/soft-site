@@ -56,6 +56,7 @@
     "archive:task:remove": "powershell -ExecutionPolicy Bypass -File scripts/remove_local_archive_task.ps1",
     "admin:task:install": "powershell -ExecutionPolicy Bypass -File scripts/install_local_admin_api_task.ps1",
     "admin:task:remove": "powershell -ExecutionPolicy Bypass -File scripts/remove_local_admin_api_task.ps1",
+    "twitch-ext:zip": "powershell -ExecutionPolicy Bypass -File scripts/package_twitch_panel_extension.ps1",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

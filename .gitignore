@@ -23,6 +23,7 @@
 /scripts/.tmp
 /scripts/tools
 /scripts/tmp-chat.json
+/twitch-extension/dist
 
 npm-debug.log*
 yarn-debug.log*

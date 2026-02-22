@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Softu VOD Panel - Config</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        font: 14px/1.45 "Segoe UI", sans-serif;
+        color: #e7effa;
+        background: #0f172a;
+      }
+      .card {
+        max-width: 720px;
+        border: 1px solid rgba(167, 187, 219, 0.14);
+        border-radius: 14px;
+        padding: 14px;
+        background: rgba(17, 24, 39, 0.85);
+      }
+      code {
+        background: rgba(255, 255, 255, 0.06);
+        padding: 2px 6px;
+        border-radius: 8px;
+      }
+      a { color: #9ec0ff; }
+      ul { margin: 8px 0 0 18px; padding: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2 style="margin:0 0 8px;font-size:18px;">Softu VODs Panel</h2>
+      <p style="margin:0 0 10px;">
+        This extension panel does not require runtime configuration. It reads recent VODs from
+        <code>https://softu.one/data/vods.json</code> and links to <code>https://softu.one/#/youtube/:vodId</code>.
+      </p>
+      <p style="margin:0 0 8px;">Required Twitch Extension allowlisted domains (CSP / Asset Host allowlist):</p>
+      <ul>
+        <li><code>https://softu.one</code> (VOD data + destination links)</li>
+        <li><code>https://static-cdn.jtvnw.net</code> (Twitch thumbnails)</li>
+        <li><code>https://i.ytimg.com</code> (YouTube thumbnails)</li>
+      </ul>
+      <p style="margin:12px 0 0;opacity:.8;">
+        Optional preview override for local testing: add <code>?siteUrl=...</code> or <code>?dataUrl=...</code> to <code>panel.html</code>.
+      </p>
+    </div>
+  </body>
+</html>
