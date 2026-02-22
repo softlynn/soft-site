@@ -7,15 +7,6 @@ import ThumbDownAltRoundedIcon from "@mui/icons-material/ThumbDownAltRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import { getStoredVodReactionVote, getVodLikeCount, getVodReactionSnapshot, setVodReactionVote, subscribeVodReactionSnapshot } from "./vodReactionsApi";
 
-const CARD_AUTO_FETCH_LIMIT = 10;
-let cardAutoFetchCount = 0;
-
-const tryClaimCardAutoFetchSlot = () => {
-  if (cardAutoFetchCount >= CARD_AUTO_FETCH_LIMIT) return false;
-  cardAutoFetchCount += 1;
-  return true;
-};
-
 const optimisticCounts = (snapshot, previousVote, nextVote) => {
   const current = {
     likes: Math.max(0, Number(snapshot?.likes) || 0),
@@ -46,7 +37,6 @@ export default function VodReactions({
   const [loading, setLoading] = useState(!lazy);
   const [pendingVote, setPendingVote] = useState(null);
   const [error, setError] = useState("");
-  const [allowCardNetworkFetch] = useState(() => (countOnlyLike ? tryClaimCardAutoFetchSlot() : true));
 
   useEffect(() => {
     setVote(getStoredVodReactionVote(vodId));
@@ -93,11 +83,6 @@ export default function VodReactions({
 
     setLoading(true);
     setError("");
-    if (countOnlyLike && !allowCardNetworkFetch) {
-      setLoading(false);
-      return undefined;
-    }
-
     const loader = countOnlyLike ? getVodLikeCount(vodId).then((likes) => ({ likes, dislikes: 0 })) : getVodReactionSnapshot(vodId);
 
     loader
@@ -108,7 +93,8 @@ export default function VodReactions({
       .catch((loadError) => {
         if (cancelled) return;
         console.error("Failed to load VOD reactions:", loadError);
-        setError("reactions unavailable");
+        const message = String(loadError?.message || "").toLowerCase();
+        setError(message.includes("fetch") || message.includes("network") || message.includes("abort") ? "counter blocked" : "reactions unavailable");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -117,7 +103,7 @@ export default function VodReactions({
     return () => {
       cancelled = true;
     };
-  }, [allowCardNetworkFetch, countOnlyLike, enabled, vodId]);
+  }, [countOnlyLike, enabled, vodId]);
 
   const likeCount = counts?.likes ?? 0;
   const dislikeCount = counts?.dislikes ?? 0;
@@ -172,7 +158,8 @@ export default function VodReactions({
       console.error("Failed to submit VOD reaction:", submitError);
       setVote(previousVote);
       if (previousCounts) setCounts(previousCounts);
-      setError("save failed");
+      const message = String(submitError?.message || "").toLowerCase();
+      setError(message.includes("fetch") || message.includes("network") || message.includes("abort") ? "counter blocked" : "save failed");
     } finally {
       setPendingVote(null);
     }
@@ -244,8 +231,9 @@ export default function VodReactions({
   };
 
   if (countOnlyLike) {
+    const cardText = error ? "!" : loading && !counts ? "…" : likeCount;
     return (
-      <Tooltip title="Global likes">
+      <Tooltip title={error ? `Global likes unavailable (${error})` : "Global likes"}>
         <Box
           ref={rootRef}
           sx={{
@@ -265,9 +253,12 @@ export default function VodReactions({
           }}
           onClick={(event) => event.stopPropagation()}
         >
-          <FavoriteBorderRoundedIcon sx={{ fontSize: 13, color: "#D46B8C" }} />
-          <Typography variant="caption" sx={{ fontWeight: 800, lineHeight: 1, fontSize: "0.66rem", color: "text.primary" }}>
-            {loading && !counts ? "…" : likeCount}
+          <FavoriteBorderRoundedIcon sx={{ fontSize: 13, color: error ? "warning.main" : "#D46B8C" }} />
+          <Typography
+            variant="caption"
+            sx={{ fontWeight: 800, lineHeight: 1, fontSize: "0.66rem", color: error ? "warning.main" : "text.primary" }}
+          >
+            {cardText}
           </Typography>
         </Box>
       </Tooltip>
@@ -289,6 +280,28 @@ export default function VodReactions({
     >
       {renderButton("like")}
       {showDislike && renderButton("dislike")}
+
+      {compact && (isPending || error) && (
+        <Tooltip title={error || "Saving reaction..."}>
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: 20,
+              height: 20,
+              px: 0.35,
+              borderRadius: "999px",
+              border: "1px solid var(--soft-border)",
+              background: "var(--soft-surface-strong)",
+              color: error ? "warning.main" : "text.secondary",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.20)",
+            }}
+          >
+            {isPending ? <CircularProgress size={10} thickness={5} color="secondary" /> : <Typography variant="caption" sx={{ fontWeight: 900, lineHeight: 1 }}>!</Typography>}
+          </Box>
+        </Tooltip>
+      )}
 
       {!compact && (
         <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.55, minHeight: 24 }}>

@@ -3,6 +3,7 @@ const COUNTER_NAMESPACE = "softu-vod-reactions-v1";
 const CACHE_TTL_MS = 2 * 60 * 1000;
 const REQUEST_GAP_MS = 550;
 const MAX_RETRIES = 2;
+const FETCH_TIMEOUT_MS = 8000;
 
 const snapshotCache = new Map();
 const inflightLoads = new Map();
@@ -32,6 +33,30 @@ const counterKeyFor = (vodId, type) => `${sanitizeKeyPart(vodId)}-${type}`;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const fetchWithTimeout = async (url, options) => {
+  if (typeof AbortController === "undefined") {
+    return fetch(url, options);
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const isRetryableNetworkError = (error) => {
+  if (!error) return false;
+  const name = String(error.name || "").toLowerCase();
+  const message = String(error.message || "").toLowerCase();
+  return name === "aborterror" || message.includes("failed to fetch") || message.includes("networkerror");
+};
+
 const enqueueCounterRequest = (factory) => {
   const run = async () => {
     const wait = Math.max(0, nextRequestAt - Date.now());
@@ -59,19 +84,27 @@ const enqueueCounterWriteRequest = (factory) => {
 };
 
 const retryableCounterRequest = async (factory, attempt = 0) => {
-  const response = await factory();
-  if (response.status !== 429 && response.status < 500) {
-    return response;
-  }
+  try {
+    const response = await factory();
+    if (response.status !== 429 && response.status < 500) {
+      return response;
+    }
 
-  if (attempt >= MAX_RETRIES) {
-    return response;
-  }
+    if (attempt >= MAX_RETRIES) {
+      return response;
+    }
 
-  const retryAfterHeader = Number(response.headers?.get?.("retry-after"));
-  const retryDelay = Number.isFinite(retryAfterHeader) && retryAfterHeader > 0 ? retryAfterHeader * 1000 : 1200 * (attempt + 1);
-  await sleep(retryDelay);
-  return retryableCounterRequest(factory, attempt + 1);
+    const retryAfterHeader = Number(response.headers?.get?.("retry-after"));
+    const retryDelay = Number.isFinite(retryAfterHeader) && retryAfterHeader > 0 ? retryAfterHeader * 1000 : 1200 * (attempt + 1);
+    await sleep(retryDelay);
+    return retryableCounterRequest(factory, attempt + 1);
+  } catch (error) {
+    if (!isRetryableNetworkError(error) || attempt >= MAX_RETRIES) {
+      throw error;
+    }
+    await sleep(900 * (attempt + 1));
+    return retryableCounterRequest(factory, attempt + 1);
+  }
 };
 
 export const getStoredVodReactionVote = (vodId) => {
@@ -148,7 +181,7 @@ const readCounter = async (key) => {
   return enqueueCounterRequest(async () => {
     const url = `${COUNTER_API_BASE}/${encodeURIComponent(COUNTER_NAMESPACE)}/${encodeURIComponent(key)}`;
     const response = await retryableCounterRequest(() =>
-      fetch(url, {
+      fetchWithTimeout(url, {
         method: "GET",
         mode: "cors",
         credentials: "omit",
@@ -168,7 +201,10 @@ const readCounter = async (key) => {
       if (response.status === 404 || (response.status === 400 && message.includes("record not found"))) {
         return 0;
       }
-      throw new Error(`Counter read failed (${response.status})`);
+      const error = new Error(`Counter read failed (${response.status})`);
+      error.code = "COUNTER_READ_HTTP";
+      error.status = response.status;
+      throw error;
     }
 
     return clampCount(payload?.count);
@@ -179,14 +215,19 @@ const mutateCounter = async (key, operation) => {
   return enqueueCounterWriteRequest(async () => {
     const url = `${COUNTER_API_BASE}/${encodeURIComponent(COUNTER_NAMESPACE)}/${encodeURIComponent(key)}/${operation}`;
     const response = await retryableCounterRequest(() =>
-      fetch(url, {
+      fetchWithTimeout(url, {
         method: "GET",
         mode: "cors",
         credentials: "omit",
         cache: "no-store",
       })
     );
-    if (!response.ok) throw new Error(`Counter ${operation} failed (${response.status})`);
+    if (!response.ok) {
+      const error = new Error(`Counter ${operation} failed (${response.status})`);
+      error.code = "COUNTER_WRITE_HTTP";
+      error.status = response.status;
+      throw error;
+    }
     const payload = await response.json();
     return clampCount(payload?.count);
   });
