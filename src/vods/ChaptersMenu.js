@@ -5,9 +5,9 @@ import humanize from "humanize-duration";
 import { toHMS } from "../utils/helpers";
 
 export default function Chapters(props) {
-  const { vod, isCdnAvailable } = props;
+  const { vod } = props;
   const [anchorEl, setAnchorEl] = useState(null);
-  const DEFAULT_VOD = vod.youtube.length > 0 ? `/youtube/${vod.id}` : Date.now() - new Date(vod.createdAt).getTime() < 14 * 24 * 60 * 60 * 1000 && isCdnAvailable ? `/cdn/${vod.id}` : `#`;
+  const DEFAULT_VOD = vod.youtube.length > 0 ? `/youtube/${vod.id}` : `#`;
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -20,8 +20,17 @@ export default function Chapters(props) {
   return (
     <Box>
       <Tooltip title={vod.chapters[0].name ?? "Chapter 1"}>
-        <IconButton onClick={handleClick}>
-          <img alt="" src={getImage(vod.chapters[0].image)} style={{ width: "40px", height: "53px" }} />
+        <IconButton
+          onClick={handleClick}
+          sx={{
+            borderRadius: "12px",
+            p: 0.35,
+            background: "rgba(255,255,255,0.4)",
+            border: "1px solid rgba(255,255,255,0.5)",
+            "&:hover": { background: "rgba(255,255,255,0.7)" },
+          }}
+        >
+          <img alt="" src={getImage(vod.chapters[0].image)} style={{ width: "32px", height: "42px", borderRadius: "8px" }} />
         </IconButton>
       </Tooltip>
       <Menu anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>

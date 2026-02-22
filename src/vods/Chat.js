@@ -447,7 +447,7 @@ export default function Chat(props) {
             <Box sx={{ display: "flex", alignItems: "flex-start" }}>
               {showTimestamp && (
                 <Box sx={{ display: "inline", pl: 1, pr: 1 }}>
-                  <Typography variant="caption" color="textSecondary">
+                  <Typography variant="caption" sx={{ color: "rgba(219,232,255,0.72)" }}>
                     {toHHMMSS(comment.content_offset_seconds)}
                   </Typography>
                 </Box>
@@ -585,7 +585,18 @@ export default function Chat(props) {
   };
 
   return (
-    <Box sx={{ height: "100%", background: "#131314", display: "flex", flexDirection: "column", minHeight: 0 }}>
+    <Box
+      sx={{
+        height: "100%",
+        background:
+          "linear-gradient(180deg, rgba(16,24,40,0.92), rgba(14,19,31,0.96))",
+        borderLeft: isPortrait ? "none" : "1px solid rgba(255,255,255,0.08)",
+        color: "rgba(234,242,255,0.96)",
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+      }}
+    >
       {showChat ? (
         <>
           <Box sx={{ display: "grid", alignItems: "center", p: 1 }}>
@@ -599,21 +610,23 @@ export default function Chat(props) {
               </Box>
             )}
             <Box sx={{ justifySelf: "center", gridColumnStart: 1, gridRowStart: 1 }}>
-              <Typography variant="body1">Chat Replay</Typography>
+              <Typography variant="body1" sx={{ color: "inherit", fontWeight: 700 }}>
+                Chat Replay
+              </Typography>
             </Box>
             {chatReplayAvailable && (
               <Box sx={{ justifySelf: "end", gridColumnStart: 1, gridRowStart: 1 }}>
-                <IconButton title="Settings" onClick={() => setShowModal(true)} color="primary">
+                <IconButton title="Settings" onClick={() => setShowModal(true)} sx={{ color: "rgba(234,242,255,0.9)" }}>
                   <SettingsIcon />
                 </IconButton>
               </Box>
             )}
           </Box>
-          <Divider />
+          <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
           <CustomCollapse in={showChat} timeout="auto" unmountOnExit sx={{ minWidth: "340px" }}>
             {!chatReplayAvailable ? (
               <Box sx={{ p: 2 }}>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" sx={{ color: "rgba(219,232,255,0.74)" }}>
                   Chat replay is unavailable for this VOD.
                 </Typography>
               </Box>
@@ -628,8 +641,8 @@ export default function Chat(props) {
                 </SimpleBar>
                 {scrolling && (
                   <Box sx={{ position: "relative", display: "flex", justifyContent: "center" }}>
-                    <Box sx={{ background: "rgba(0,0,0,.6)", minHeight: 0, borderRadius: 1, mb: 1, bottom: 0, position: "absolute" }}>
-                      <Button size="small" onClick={scrollToBottom}>
+                    <Box sx={{ background: "rgba(12,16,28,.74)", minHeight: 0, borderRadius: 1.5, mb: 1, bottom: 0, position: "absolute", border: "1px solid rgba(255,255,255,0.08)" }}>
+                      <Button size="small" onClick={scrollToBottom} sx={{ color: "rgba(234,242,255,.95)" }}>
                         Chat Paused
                       </Button>
                     </Box>

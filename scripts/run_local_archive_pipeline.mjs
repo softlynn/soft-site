@@ -12,7 +12,8 @@ const repoRoot = path.resolve(__dirname, "..");
 
 dotenv.config({ path: path.join(repoRoot, ".env.local") });
 
-const METADATA_TEMPLATE_VERSION = 2;
+const METADATA_TEMPLATE_VERSION = 3;
+const DEFAULT_ARCHIVE_SITE_URL = "https://softu.one";
 
 const cleanUrl = (value) => String(value || "").replace(/\/+$/, "");
 
@@ -58,30 +59,7 @@ const parseGithubRepo = (value) => {
 const inferArchiveSiteUrl = () => {
   const configured = cleanUrl(process.env.ARCHIVE_SITE_URL || "");
   if (configured) return configured;
-
-  const candidates = [];
-  if (process.env.REACT_APP_GITHUB) candidates.push(process.env.REACT_APP_GITHUB);
-  if (process.env.GITHUB_REPOSITORY) candidates.push(`https://github.com/${process.env.GITHUB_REPOSITORY}`);
-
-  try {
-    const origin = spawnSync("git", ["remote", "get-url", "origin"], {
-      cwd: repoRoot,
-      encoding: "utf8",
-    });
-    if (origin.status === 0 && origin.stdout?.trim()) {
-      candidates.push(origin.stdout.trim());
-    }
-  } catch {
-    // no-op
-  }
-
-  for (const candidate of candidates) {
-    const parsed = parseGithubRepo(candidate);
-    if (!parsed) continue;
-    return `https://${parsed.owner}.github.io/${parsed.repo}`;
-  }
-
-  return "";
+  return DEFAULT_ARCHIVE_SITE_URL;
 };
 
 const config = {

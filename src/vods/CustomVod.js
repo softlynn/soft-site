@@ -39,7 +39,7 @@ export default function Vod(props) {
       await getVodById(vodId)
         .then((response) => {
           setVod(response);
-          document.title = `${response.id} - ${BRAND_NAME}`;
+          document.title = `${response.title || response.id} - ${BRAND_NAME}`;
         })
         .catch((e) => {
           console.error(e);
@@ -96,9 +96,23 @@ export default function Vod(props) {
   if (vod === null) return <NotFound />;
 
   return (
-    <Box sx={{ height: "100%", width: "100%" }}>
+    <Box sx={{ height: "100%", width: "100%", p: { xs: 0.75, md: 1 } }}>
       <Box sx={{ display: "flex", flexDirection: isPortrait ? "column" : "row", height: "100%", width: "100%" }}>
-        <Box sx={{ display: "flex", height: "100%", width: "100%", flexDirection: "column", alignItems: "flex-start", minWidth: 0, overflow: "hidden", position: "relative" }}>
+        <Box
+          className="soft-glass"
+          sx={{
+            display: "flex",
+            height: "100%",
+            width: "100%",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            minWidth: 0,
+            overflow: "hidden",
+            position: "relative",
+            borderRadius: "20px",
+            p: 0.6,
+          }}
+        >
           <CustomPlayer playerRef={playerRef} setCurrentTime={setCurrentTime} setPlaying={setPlaying} delay={delay} setDelay={setDelay} type={type} vod={vod} timestamp={timestamp} />
           <Box sx={{ position: "absolute", bottom: 0, left: "50%" }}>
             <Tooltip title={showMenu ? "Collapse" : "Expand"}>
@@ -108,17 +122,50 @@ export default function Vod(props) {
             </Tooltip>
           </Box>
           <Collapse in={showMenu} timeout="auto" unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
-            <Box sx={{ display: "flex", p: 1, alignItems: "center" }}>
+            <Box
+              sx={{
+                display: "flex",
+                p: 1,
+                alignItems: "center",
+                borderRadius: "14px",
+                background: "rgba(255,255,255,0.62)",
+                border: "1px solid rgba(255,255,255,0.7)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.82)",
+                mx: 0.4,
+                mb: 0.2,
+              }}
+            >
               {chapter && <Chapters chapters={vod.chapters} chapter={chapter} setChapter={setChapter} setTimestamp={setTimestamp} />}
-              <CustomWidthTooltip title={vod.title}>
-                <Typography fontWeight={550} variant="body1" noWrap={true}>{`${vod.title}`}</Typography>
-              </CustomWidthTooltip>
+              <Box sx={{ minWidth: 0 }}>
+                <CustomWidthTooltip title={vod.title}>
+                  <Typography fontWeight={550} variant="body1" noWrap={true}>{`${vod.title}`}</Typography>
+                </CustomWidthTooltip>
+                {vod.vodNotice && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "warning.main",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 0.4,
+                      px: 0.75,
+                      py: 0.3,
+                      mt: 0.2,
+                      borderRadius: "999px",
+                      background: "rgba(204,111,78,0.10)",
+                      border: "1px solid rgba(204,111,78,0.18)",
+                    }}
+                  >
+                    {vod.vodNotice}
+                  </Typography>
+                )}
+              </Box>
               <Button
                 variant="outlined"
                 size="small"
                 startIcon={<HomeIcon />}
                 onClick={() => navigate("/vods")}
-                sx={{ ml: 1, whiteSpace: "nowrap" }}
+                sx={{ ml: 1, whiteSpace: "nowrap", borderRadius: "12px" }}
               >
                 Home
               </Button>
@@ -143,7 +190,7 @@ export default function Vod(props) {
             </Box>
           </Collapse>
         </Box>
-        {isPortrait && <Divider />}
+        {isPortrait && <Divider sx={{ my: 0.6, borderColor: "rgba(19,33,56,0.08)" }} />}
         {
           <Chat
             isPortrait={isPortrait}

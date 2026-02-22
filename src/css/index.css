@@ -1,3 +1,47 @@
+:root {
+  --soft-bg: #e2e9f3;
+  --soft-surface: rgba(255, 255, 255, 0.66);
+  --soft-surface-strong: rgba(255, 255, 255, 0.82);
+  --soft-border: rgba(255, 255, 255, 0.68);
+  --soft-border-subtle: rgba(19, 33, 56, 0.1);
+  --soft-shadow: 0 18px 40px rgba(19, 33, 56, 0.11);
+  --soft-shadow-hover: 0 22px 48px rgba(19, 33, 56, 0.16);
+  --soft-text: #132138;
+  --soft-muted: #395473;
+  --soft-salmon: #d46b8c;
+  --soft-salmon-deep: #c05779;
+  --soft-blue: #79a3e6;
+  --soft-blue-deep: #5a84cf;
+  --soft-radius-xl: 26px;
+  --soft-radius-lg: 18px;
+  --soft-radius-md: 14px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--soft-text);
+  background: var(--soft-bg);
+  font-family: "Manrope", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
 ul {
   border: 0;
   font: inherit;
@@ -6,18 +50,18 @@ ul {
   vertical-align: baseline;
 }
 
-.background {
-  background-repeat: no-repeat;
-  background-size: cover;
-  height: 100%;
-  width: 100%;
-}
-
 a,
 a:visited,
 a:hover,
 a:active {
   text-decoration: none !important;
+}
+
+.background {
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100%;
+  width: 100%;
 }
 
 .thumbnail {
@@ -28,6 +72,7 @@ a:active {
   left: 0;
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
 .youtube-player {
@@ -39,6 +84,12 @@ a:active {
   outline: none;
 }
 
+*:focus-visible {
+  outline: 2px solid rgba(212, 107, 140, 0.55);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
 .twemoji {
   height: 20px;
   width: 20px;
@@ -48,4 +99,346 @@ a:active {
 
 ins.adsbygoogle[data-ad-status="unfilled"] {
   display: none !important;
+}
+
+.soft-glass {
+  position: relative;
+  border-radius: var(--soft-radius-xl);
+  border: 1px solid var(--soft-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.58));
+  box-shadow: var(--soft-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.82), inset 0 -1px 0 rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+
+.soft-glass::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  opacity: 0.65;
+}
+
+.soft-grid-pattern {
+  position: relative;
+}
+
+.soft-grid-pattern::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.38) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.35) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(circle at 50% 30%, black 30%, transparent 78%);
+  opacity: 0.2;
+  border-radius: inherit;
+}
+
+.soft-reveal {
+  opacity: 0;
+  transform: translateY(18px) scale(0.985);
+  filter: blur(8px);
+  transition:
+    opacity 720ms cubic-bezier(0.2, 0.8, 0.18, 1),
+    transform 720ms cubic-bezier(0.2, 0.8, 0.18, 1),
+    filter 720ms cubic-bezier(0.2, 0.8, 0.18, 1);
+  transition-delay: var(--soft-reveal-delay, 0ms);
+}
+
+.soft-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+.soft-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.soft-shimmer::before {
+  content: "";
+  position: absolute;
+  inset: -150% -40%;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.42) 48%, transparent 62%);
+  transform: translateX(-65%) rotate(8deg);
+  animation: soft-shimmer-sweep 10s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.liquid-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.liquid-backdrop__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.95;
+}
+
+.liquid-backdrop__cloud {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(20px);
+  opacity: 0.35;
+  background:
+    radial-gradient(circle at 28% 38%, rgba(255, 255, 255, 0.84), transparent 52%),
+    radial-gradient(circle at 68% 48%, rgba(255, 255, 255, 0.6), transparent 58%),
+    radial-gradient(circle at 45% 70%, rgba(212, 107, 140, 0.18), transparent 62%);
+  animation: soft-cloud-drift 18s ease-in-out infinite;
+}
+
+.liquid-backdrop__cloud--a {
+  width: min(32vw, 460px);
+  height: min(18vw, 240px);
+  top: 4%;
+  left: -4%;
+}
+
+.liquid-backdrop__cloud--b {
+  width: min(28vw, 420px);
+  height: min(16vw, 220px);
+  top: 22%;
+  right: -4%;
+  animation-delay: -6s;
+}
+
+.liquid-backdrop__cloud--c {
+  width: min(24vw, 360px);
+  height: min(14vw, 180px);
+  bottom: 5%;
+  left: 15%;
+  animation-delay: -11s;
+  opacity: 0.28;
+}
+
+.liquid-backdrop__orbit {
+  position: absolute;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  animation: soft-spin 30s linear infinite;
+  opacity: 0.28;
+}
+
+.liquid-backdrop__orbit--a {
+  width: 48vw;
+  height: 48vw;
+  top: -18vw;
+  right: -12vw;
+}
+
+.liquid-backdrop__orbit--b {
+  width: 36vw;
+  height: 36vw;
+  bottom: -14vw;
+  left: -8vw;
+  animation-direction: reverse;
+  animation-duration: 42s;
+}
+
+.liquid-backdrop__wordmark {
+  position: absolute;
+  right: 3.5rem;
+  bottom: 2.5rem;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  color: rgba(19, 33, 56, 0.045);
+  letter-spacing: -0.03em;
+  text-transform: lowercase;
+  user-select: none;
+}
+
+.soft-star {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12), 0 0 10px rgba(255, 255, 255, 0.34);
+  animation: soft-twinkle 4s ease-in-out infinite;
+}
+
+.soft-star::before,
+.soft-star::after {
+  content: "";
+  position: absolute;
+  inset: 50%;
+  width: 14px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.65);
+  transform: translate(-50%, -50%);
+}
+
+.soft-star::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.soft-live-frame {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  box-shadow:
+    0 28px 50px rgba(19, 33, 56, 0.16),
+    0 0 0 1px rgba(255, 255, 255, 0.35) inset,
+    0 0 120px rgba(212, 107, 140, 0.15);
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(18px);
+}
+
+.soft-live-frame::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(212, 107, 140, 0.24), transparent 55%),
+    radial-gradient(circle at 90% 10%, rgba(121, 163, 230, 0.22), transparent 50%);
+  z-index: 1;
+}
+
+.soft-live-frame iframe {
+  position: relative;
+  z-index: 2;
+  display: block;
+}
+
+.soft-hero-glow {
+  box-shadow:
+    0 20px 48px rgba(19, 33, 56, 0.13),
+    0 0 0 1px rgba(255, 255, 255, 0.35) inset,
+    0 0 120px rgba(212, 107, 140, 0.12);
+}
+
+.soft-surface-float {
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.soft-surface-float:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--soft-shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.simplebar-scrollbar::before {
+  background: linear-gradient(180deg, rgba(212, 107, 140, 0.46), rgba(121, 163, 230, 0.34)) !important;
+  border-radius: 999px !important;
+}
+
+.simplebar-track.simplebar-vertical {
+  width: 12px !important;
+}
+
+.simplebar-track.simplebar-vertical .simplebar-scrollbar:before {
+  right: 3px !important;
+  left: 3px !important;
+}
+
+.video-js {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 16px 36px rgba(19, 33, 56, 0.18);
+}
+
+.video-js .vjs-control-bar {
+  background: linear-gradient(180deg, rgba(17, 28, 49, 0.28), rgba(17, 28, 49, 0.82));
+  backdrop-filter: blur(10px);
+}
+
+.video-js .vjs-big-play-button {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(19, 33, 56, 0.62);
+}
+
+@keyframes soft-cloud-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(18px, -10px, 0) scale(1.04);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes soft-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes soft-twinkle {
+  0%,
+  100% {
+    transform: scale(0.95);
+    opacity: 0.4;
+  }
+  45% {
+    transform: scale(1.12);
+    opacity: 0.95;
+  }
+}
+
+@keyframes soft-shimmer-sweep {
+  0%,
+  76%,
+  100% {
+    transform: translateX(-65%) rotate(8deg);
+    opacity: 0;
+  }
+  8%,
+  22% {
+    transform: translateX(68%) rotate(8deg);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .soft-reveal,
+  .soft-reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+
+  .soft-shimmer::before,
+  .liquid-backdrop__cloud,
+  .liquid-backdrop__orbit,
+  .soft-star {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .liquid-backdrop__wordmark {
+    right: 1rem;
+    bottom: 0.75rem;
+    font-size: clamp(1.4rem, 7vw, 2.4rem);
+  }
+
+  .liquid-backdrop__orbit--a,
+  .liquid-backdrop__orbit--b {
+    opacity: 0.18;
+  }
 }

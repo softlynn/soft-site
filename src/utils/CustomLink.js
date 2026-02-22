@@ -14,8 +14,15 @@ const CustomLink = styled(
     return <Link href={href} ref={ref} {...rest} />;
   })
 )`
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  transition: opacity 160ms ease, transform 160ms ease, filter 160ms ease;
+
   &:hover {
-    opacity: 50%;
+    opacity: 0.88;
+    transform: translateY(-1px);
+    filter: saturate(1.05);
   }
 `;
 

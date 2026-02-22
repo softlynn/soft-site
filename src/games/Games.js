@@ -32,7 +32,7 @@ export default function Games(props) {
       await getVodById(vodId)
         .then((response) => {
           setVod(response);
-          document.title = `${response.id} - ${BRAND_NAME}`;
+          document.title = `${response.title || response.id} - ${BRAND_NAME}`;
         })
         .catch((e) => {
           console.error(e);
@@ -73,9 +73,23 @@ export default function Games(props) {
   if (games.length === 0) return <NotFound />;
 
   return (
-    <Box sx={{ height: "100%", width: "100%" }}>
+    <Box sx={{ height: "100%", width: "100%", p: { xs: 0.75, md: 1 } }}>
       <Box sx={{ display: "flex", flexDirection: isPortrait ? "column" : "row", height: "100%", width: "100%" }}>
-        <Box sx={{ display: "flex", height: "100%", width: "100%", flexDirection: "column", alignItems: "flex-start", minWidth: 0, overflow: "hidden", position: "relative" }}>
+        <Box
+          className="soft-glass"
+          sx={{
+            display: "flex",
+            height: "100%",
+            width: "100%",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            minWidth: 0,
+            overflow: "hidden",
+            position: "relative",
+            borderRadius: "20px",
+            p: 0.6,
+          }}
+        >
           <YoutubePlayer playerRef={playerRef} part={part} games={games} setPart={setPart} setPlaying={setPlaying} delay={delay} />
           <Box sx={{ position: "absolute", bottom: 0, left: "50%" }}>
             <Tooltip title={showMenu ? "Collapse" : "Expand"}>
@@ -85,10 +99,43 @@ export default function Games(props) {
             </Tooltip>
           </Box>
           <Collapse in={showMenu} timeout="auto" unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
-            <Box sx={{ display: "flex", p: 1, alignItems: "center" }}>
-              <CustomToolTip title={vod.title}>
-                <Typography fontWeight={550} variant="body1" noWrap={true}>{`${vod.title}`}</Typography>
-              </CustomToolTip>
+            <Box
+              sx={{
+                display: "flex",
+                p: 1,
+                alignItems: "center",
+                borderRadius: "14px",
+                background: "rgba(255,255,255,0.62)",
+                border: "1px solid rgba(255,255,255,0.7)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.82)",
+                mx: 0.4,
+                mb: 0.2,
+              }}
+            >
+              <Box sx={{ minWidth: 0 }}>
+                <CustomToolTip title={vod.title}>
+                  <Typography fontWeight={550} variant="body1" noWrap={true}>{`${vod.title}`}</Typography>
+                </CustomToolTip>
+                {vod.vodNotice && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "warning.main",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 0.4,
+                      px: 0.75,
+                      py: 0.3,
+                      mt: 0.2,
+                      borderRadius: "999px",
+                      background: "rgba(204,111,78,0.10)",
+                      border: "1px solid rgba(204,111,78,0.18)",
+                    }}
+                  >
+                    {vod.vodNotice}
+                  </Typography>
+                )}
+              </Box>
               <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
                 <Box sx={{ ml: 0.5 }}>
                   <FormControl variant="outlined">
@@ -117,7 +164,7 @@ export default function Games(props) {
             </Box>
           </Collapse>
         </Box>
-        {isPortrait && <Divider />}
+        {isPortrait && <Divider sx={{ my: 0.6, borderColor: "rgba(19,33,56,0.08)" }} />}
         <Chat
           isPortrait={isPortrait}
           vodId={vodId}
