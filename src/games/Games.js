@@ -240,7 +240,6 @@ export default function Games(props) {
                     </Link>
                   </Typography>
                 )}
-                <VodReactions vodId={vod.id} sx={{ mt: 0.45 }} />
               </Box>
               <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
                 <Box sx={{ ml: 0.5 }}>
@@ -266,6 +265,7 @@ export default function Games(props) {
                     </Tooltip>
                   )}
                 </Box>
+                <VodReactions vodId={vod.id} compact sx={{ ml: 0.7 }} />
               </Box>
             </Box>
           </Collapse>

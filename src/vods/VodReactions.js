@@ -4,7 +4,8 @@ import ThumbUpAltOutlinedIcon from "@mui/icons-material/ThumbUpAltOutlined";
 import ThumbUpAltRoundedIcon from "@mui/icons-material/ThumbUpAltRounded";
 import ThumbDownAltOutlinedIcon from "@mui/icons-material/ThumbDownAltOutlined";
 import ThumbDownAltRoundedIcon from "@mui/icons-material/ThumbDownAltRounded";
-import { getStoredVodReactionVote, getVodReactionSnapshot, setVodReactionVote, subscribeVodReactionSnapshot } from "./vodReactionsApi";
+import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
+import { getStoredVodReactionVote, getVodLikeCount, getVodReactionSnapshot, setVodReactionVote, subscribeVodReactionSnapshot } from "./vodReactionsApi";
 
 const optimisticCounts = (snapshot, previousVote, nextVote) => {
   const current = {
@@ -20,7 +21,15 @@ const optimisticCounts = (snapshot, previousVote, nextVote) => {
   return current;
 };
 
-export default function VodReactions({ vodId, compact = false, sx, lazy = compact }) {
+export default function VodReactions({
+  vodId,
+  compact = false,
+  sx,
+  lazy = compact,
+  readOnly = false,
+  showDislike = true,
+  countOnlyLike = false,
+}) {
   const rootRef = useRef(null);
   const [enabled, setEnabled] = useState(!lazy);
   const [vote, setVote] = useState(() => getStoredVodReactionVote(vodId));
@@ -53,7 +62,7 @@ export default function VodReactions({ vodId, compact = false, sx, lazy = compac
           observer.disconnect();
         }
       },
-      { root: null, threshold: 0, rootMargin: "160px 0px" }
+      { root: null, threshold: 0, rootMargin: "180px 0px" }
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -61,11 +70,12 @@ export default function VodReactions({ vodId, compact = false, sx, lazy = compac
 
   useEffect(() => {
     if (!vodId) return undefined;
+    if (countOnlyLike) return undefined;
     const unsubscribe = subscribeVodReactionSnapshot(vodId, (snapshot) => {
       setCounts(snapshot);
     });
     return unsubscribe;
-  }, [vodId]);
+  }, [vodId, countOnlyLike]);
 
   useEffect(() => {
     let cancelled = false;
@@ -73,7 +83,9 @@ export default function VodReactions({ vodId, compact = false, sx, lazy = compac
 
     setLoading(true);
     setError("");
-    getVodReactionSnapshot(vodId)
+    const loader = countOnlyLike ? getVodLikeCount(vodId).then((likes) => ({ likes, dislikes: 0 })) : getVodReactionSnapshot(vodId);
+
+    loader
       .then((snapshot) => {
         if (cancelled) return;
         setCounts(snapshot);
@@ -90,43 +102,44 @@ export default function VodReactions({ vodId, compact = false, sx, lazy = compac
     return () => {
       cancelled = true;
     };
-  }, [enabled, vodId]);
+  }, [countOnlyLike, enabled, vodId]);
 
   const likeCount = counts?.likes ?? 0;
   const dislikeCount = counts?.dislikes ?? 0;
   const isPending = pendingVote !== null;
-  const compactGap = compact ? 0.5 : 0.75;
+  const compactGap = compact ? 0.45 : 0.7;
+  const isInteractive = !readOnly && !countOnlyLike;
 
   const reactionButtonSx = useMemo(
     () => ({
       display: "inline-flex",
       alignItems: "center",
-      gap: compact ? 0.35 : 0.45,
-      px: compact ? 0.65 : 0.9,
-      py: compact ? 0.35 : 0.5,
-      minHeight: compact ? 26 : 32,
+      gap: compact ? 0.35 : 0.42,
+      px: compact ? 0.55 : 0.8,
+      py: compact ? 0.28 : 0.45,
+      minHeight: compact ? 24 : 31,
       borderRadius: compact ? "10px" : "12px",
       border: "1px solid var(--soft-border)",
       background: "var(--soft-surface-strong)",
-      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22)",
+      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.20)",
       color: "text.secondary",
       transition: "transform 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease",
-      cursor: isPending ? "wait" : "pointer",
+      cursor: isInteractive ? (isPending ? "wait" : "pointer") : "default",
       "&:hover": {
-        transform: isPending ? "none" : "translateY(-1px)",
+        transform: isInteractive && !isPending ? "translateY(-1px)" : "none",
       },
       "&:disabled": {
-        opacity: 0.72,
+        opacity: 0.76,
         cursor: "wait",
       },
     }),
-    [compact, isPending]
+    [compact, isInteractive, isPending]
   );
 
   const submitVote = async (direction, event) => {
     event?.preventDefault?.();
     event?.stopPropagation?.();
-    if (!vodId || isPending) return;
+    if (!vodId || isPending || !isInteractive) return;
 
     const previousVote = vote === "like" || vote === "dislike" ? vote : null;
     const nextVote = previousVote === direction ? null : direction;
@@ -169,33 +182,29 @@ export default function VodReactions({ vodId, compact = false, sx, lazy = compac
           component="button"
           type="button"
           onClick={(event) => submitVote(direction, event)}
-          disabled={isPending}
+          disabled={isPending || !isInteractive}
           aria-pressed={active}
           aria-label={`${isLike ? "Like" : "Dislike"} this VOD`}
           sx={{
             ...reactionButtonSx,
             borderColor: active ? (isLike ? "rgba(212,107,140,0.26)" : "rgba(89,145,226,0.24)") : undefined,
-            background: active
-              ? isLike
-                ? "rgba(212,107,140,0.12)"
-                : "rgba(89,145,226,0.12)"
-              : undefined,
+            background: active ? (isLike ? "rgba(212,107,140,0.12)" : "rgba(89,145,226,0.12)") : undefined,
             boxShadow: active
               ? isLike
-                ? "inset 0 1px 0 rgba(255,255,255,0.32), 0 4px 10px rgba(212,107,140,0.10)"
-                : "inset 0 1px 0 rgba(255,255,255,0.32), 0 4px 10px rgba(89,145,226,0.10)"
+                ? "inset 0 1px 0 rgba(255,255,255,0.28), 0 4px 10px rgba(212,107,140,0.08)"
+                : "inset 0 1px 0 rgba(255,255,255,0.28), 0 4px 10px rgba(89,145,226,0.08)"
               : reactionButtonSx.boxShadow,
           }}
         >
-          <Icon sx={{ fontSize: compact ? 14 : 16, color: active ? accentColor : "currentColor" }} />
+          <Icon sx={{ fontSize: compact ? 13 : 15, color: active ? accentColor : "currentColor" }} />
           <Typography
             variant="caption"
             sx={{
               fontWeight: 800,
               lineHeight: 1,
-              minWidth: compact ? 10 : 12,
+              minWidth: compact ? 9 : 11,
               color: active ? "text.primary" : "text.secondary",
-              fontSize: compact ? "0.68rem" : "0.72rem",
+              fontSize: compact ? "0.66rem" : "0.72rem",
             }}
           >
             {loading && !counts ? "…" : count}
@@ -207,7 +216,7 @@ export default function VodReactions({ vodId, compact = false, sx, lazy = compac
                 fontWeight: 700,
                 lineHeight: 1,
                 color: active ? "text.primary" : "text.secondary",
-                fontSize: "0.7rem",
+                fontSize: "0.68rem",
                 opacity: 0.9,
               }}
             >
@@ -219,6 +228,37 @@ export default function VodReactions({ vodId, compact = false, sx, lazy = compac
     );
   };
 
+  if (countOnlyLike) {
+    return (
+      <Tooltip title="Global likes">
+        <Box
+          ref={rootRef}
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.35,
+            minHeight: 22,
+            px: 0.6,
+            py: 0.25,
+            borderRadius: "10px",
+            border: "1px solid var(--soft-border)",
+            background: "var(--soft-surface-strong)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.20)",
+            color: "text.secondary",
+            flexShrink: 0,
+            ...sx,
+          }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <FavoriteBorderRoundedIcon sx={{ fontSize: 13, color: "#D46B8C" }} />
+          <Typography variant="caption" sx={{ fontWeight: 800, lineHeight: 1, fontSize: "0.66rem", color: "text.primary" }}>
+            {loading && !counts ? "…" : likeCount}
+          </Typography>
+        </Box>
+      </Tooltip>
+    );
+  }
+
   return (
     <Box
       ref={rootRef}
@@ -227,16 +267,16 @@ export default function VodReactions({ vodId, compact = false, sx, lazy = compac
         alignItems: "center",
         gap: compactGap,
         flexWrap: "wrap",
-        minHeight: compact ? 28 : 34,
+        minHeight: compact ? 26 : 34,
         ...sx,
       }}
       onClick={(event) => event.stopPropagation()}
     >
       {renderButton("like")}
-      {renderButton("dislike")}
+      {showDislike && renderButton("dislike")}
 
       {!compact && (
-        <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.6, minHeight: 24 }}>
+        <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.55, minHeight: 24 }}>
           {isPending && <CircularProgress size={13} thickness={5} color="secondary" />}
           {error && (
             <Typography variant="caption" sx={{ color: "warning.main", fontWeight: 700 }}>

@@ -2,10 +2,13 @@ const COUNTER_API_BASE = "https://api.counterapi.dev/v1";
 const COUNTER_NAMESPACE = "softu-vod-reactions-v1";
 const LOCAL_VOTE_STORAGE_KEY = "softu-vod-reactions-votes";
 const CACHE_TTL_MS = 2 * 60 * 1000;
+const REQUEST_GAP_MS = 550;
 
 const snapshotCache = new Map();
 const inflightLoads = new Map();
 const subscribers = new Map();
+let requestChain = Promise.resolve();
+let nextRequestAt = 0;
 
 const clampCount = (value) => {
   const num = Number(value);
@@ -23,6 +26,21 @@ const sanitizeKeyPart = (value) =>
     .replace(/^-+|-+$/g, "") || "unknown";
 
 const counterKeyFor = (vodId, type) => `${sanitizeKeyPart(vodId)}-${type}`;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const enqueueCounterRequest = (factory) => {
+  const run = async () => {
+    const wait = Math.max(0, nextRequestAt - Date.now());
+    if (wait > 0) await sleep(wait);
+    nextRequestAt = Date.now() + REQUEST_GAP_MS;
+    return factory();
+  };
+
+  const queued = requestChain.then(run, run);
+  requestChain = queued.catch(() => undefined);
+  return queued;
+};
 
 const readVoteMap = () => {
   if (typeof window === "undefined") return {};
@@ -116,32 +134,36 @@ const getCachedSnapshot = (vodId) => {
 };
 
 const readCounter = async (key) => {
-  const url = `${COUNTER_API_BASE}/${encodeURIComponent(COUNTER_NAMESPACE)}/${encodeURIComponent(key)}`;
-  const response = await fetch(url, {
-    method: "GET",
-    mode: "cors",
-    credentials: "omit",
-    cache: "no-store",
+  return enqueueCounterRequest(async () => {
+    const url = `${COUNTER_API_BASE}/${encodeURIComponent(COUNTER_NAMESPACE)}/${encodeURIComponent(key)}`;
+    const response = await fetch(url, {
+      method: "GET",
+      mode: "cors",
+      credentials: "omit",
+      cache: "no-store",
+    });
+
+    if (response.status === 404) return 0;
+    if (!response.ok) throw new Error(`Counter read failed (${response.status})`);
+
+    const payload = await response.json();
+    return clampCount(payload?.count);
   });
-
-  if (response.status === 404) return 0;
-  if (!response.ok) throw new Error(`Counter read failed (${response.status})`);
-
-  const payload = await response.json();
-  return clampCount(payload?.count);
 };
 
 const mutateCounter = async (key, operation) => {
-  const url = `${COUNTER_API_BASE}/${encodeURIComponent(COUNTER_NAMESPACE)}/${encodeURIComponent(key)}/${operation}`;
-  const response = await fetch(url, {
-    method: "GET",
-    mode: "cors",
-    credentials: "omit",
-    cache: "no-store",
+  return enqueueCounterRequest(async () => {
+    const url = `${COUNTER_API_BASE}/${encodeURIComponent(COUNTER_NAMESPACE)}/${encodeURIComponent(key)}/${operation}`;
+    const response = await fetch(url, {
+      method: "GET",
+      mode: "cors",
+      credentials: "omit",
+      cache: "no-store",
+    });
+    if (!response.ok) throw new Error(`Counter ${operation} failed (${response.status})`);
+    const payload = await response.json();
+    return clampCount(payload?.count);
   });
-  if (!response.ok) throw new Error(`Counter ${operation} failed (${response.status})`);
-  const payload = await response.json();
-  return clampCount(payload?.count);
 };
 
 export const getVodReactionSnapshot = async (vodId, { force = false } = {}) => {
@@ -165,6 +187,23 @@ export const getVodReactionSnapshot = async (vodId, { force = false } = {}) => {
   return promise;
 };
 
+export const getVodLikeCount = async (vodId, { force = false } = {}) => {
+  const key = normalizeVodId(vodId);
+  if (!key) return 0;
+  if (!force) {
+    const cached = getCachedSnapshot(key);
+    if (cached) return clampCount(cached.likes);
+  }
+
+  const likes = await readCounter(counterKeyFor(key, "like"));
+  const previous = snapshotCache.get(key);
+  cacheSnapshot(key, {
+    likes,
+    dislikes: previous?.dislikes ?? 0,
+  });
+  return likes;
+};
+
 const applyVoteDelta = (snapshot, previousVote, nextVote) => {
   let likes = clampCount(snapshot?.likes);
   let dislikes = clampCount(snapshot?.dislikes);
@@ -185,29 +224,26 @@ export const setVodReactionVote = async (vodId, nextVote, previousVote) => {
   const normalizedPrev = previousVote === "like" || previousVote === "dislike" ? previousVote : null;
 
   const current = (await getVodReactionSnapshot(key).catch(() => null)) || { likes: 0, dislikes: 0, fetchedAt: Date.now() };
-  const optimistic = cacheSnapshot(key, applyVoteDelta(current, normalizedPrev, normalizedNext));
+  cacheSnapshot(key, applyVoteDelta(current, normalizedPrev, normalizedNext));
   setStoredVodReactionVote(key, normalizedNext);
 
   try {
-    const operations = [];
-
-    if (normalizedPrev === "like" && normalizedNext !== "like") {
-      operations.push(mutateCounter(counterKeyFor(key, "like"), "down"));
+    let likes = clampCount(current.likes);
+    let dislikes = clampCount(current.dislikes);
+    if (normalizedPrev === "like" && normalizedNext !== "like" && likes > 0) {
+      likes = await mutateCounter(counterKeyFor(key, "like"), "down");
     }
-    if (normalizedPrev === "dislike" && normalizedNext !== "dislike") {
-      operations.push(mutateCounter(counterKeyFor(key, "dislike"), "down"));
+    if (normalizedPrev === "dislike" && normalizedNext !== "dislike" && dislikes > 0) {
+      dislikes = await mutateCounter(counterKeyFor(key, "dislike"), "down");
     }
     if (normalizedNext === "like" && normalizedPrev !== "like") {
-      operations.push(mutateCounter(counterKeyFor(key, "like"), "up"));
+      likes = await mutateCounter(counterKeyFor(key, "like"), "up");
     }
     if (normalizedNext === "dislike" && normalizedPrev !== "dislike") {
-      operations.push(mutateCounter(counterKeyFor(key, "dislike"), "up"));
+      dislikes = await mutateCounter(counterKeyFor(key, "dislike"), "up");
     }
 
-    if (operations.length === 0) return optimistic;
-
-    await Promise.all(operations);
-    return await getVodReactionSnapshot(key, { force: true });
+    return cacheSnapshot(key, { likes, dislikes });
   } catch (error) {
     setStoredVodReactionVote(key, normalizedPrev);
     await getVodReactionSnapshot(key, { force: true }).catch(() => {
@@ -216,4 +252,3 @@ export const setVodReactionVote = async (vodId, nextVote, previousVote) => {
     throw error;
   }
 };
-

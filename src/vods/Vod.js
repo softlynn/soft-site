@@ -135,41 +135,45 @@ export default function Vod(props) {
           </Box>
         </Box>
 
-        <VodReactions vodId={vod.id} compact sx={{ px: 0.15, pb: 0.05 }} />
-
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.5, minWidth: 0 }}>
           {vod.chapters && vod.chapters.length > 0 && <Chapters vod={vod} />}
 
           <Box sx={{ minWidth: 0, width: "100%", pr: 0.15 }}>
-            <CustomWidthTooltip title={vod.title} placement="top">
-              <Button
-                className="soft-vod-card__titlebtn"
-                onClick={openVod}
-                sx={{
-                  width: "100%",
-                  justifyContent: "flex-start",
-                  textAlign: "left",
-                  px: 0.65,
-                  py: 0.45,
-                  borderRadius: "12px",
-                  "&:hover": {
-                    background: "rgba(255,255,255,0.58)",
-                  },
-                }}
-                size="small"
-                disabled={vod.youtube?.length === 0}
-              >
-                <Typography
-                  fontWeight={700}
-                  variant="body2"
-                  color="primary"
-                  noWrap
-                  sx={{ width: "100%", textAlign: "left", lineHeight: 1.28, letterSpacing: "-0.01em" }}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.45, minWidth: 0 }}>
+              <CustomWidthTooltip title={vod.title} placement="top">
+                <Button
+                  className="soft-vod-card__titlebtn"
+                  onClick={openVod}
+                  sx={{
+                    width: "auto",
+                    flex: 1,
+                    minWidth: 0,
+                    justifyContent: "flex-start",
+                    textAlign: "left",
+                    px: 0.65,
+                    py: 0.45,
+                    borderRadius: "12px",
+                    "&:hover": {
+                      background: "rgba(255,255,255,0.58)",
+                    },
+                  }}
+                  size="small"
+                  disabled={vod.youtube?.length === 0}
                 >
-                  {vod.title}
-                </Typography>
-              </Button>
-            </CustomWidthTooltip>
+                  <Typography
+                    fontWeight={700}
+                    variant="body2"
+                    color="primary"
+                    noWrap
+                    sx={{ width: "100%", textAlign: "left", lineHeight: 1.28, letterSpacing: "-0.01em" }}
+                  >
+                    {vod.title}
+                  </Typography>
+                </Button>
+              </CustomWidthTooltip>
+
+              <VodReactions vodId={vod.id} countOnlyLike readOnly compact sx={{ ml: "auto" }} />
+            </Box>
           </Box>
         </Box>
       </Box>

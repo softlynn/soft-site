@@ -265,7 +265,6 @@ export default function Vod(props) {
                     </Link>
                   </Typography>
                 )}
-                <VodReactions vodId={vod.id} sx={{ mt: 0.45 }} />
               </Box>
               <Button
                 variant="outlined"
@@ -293,6 +292,7 @@ export default function Vod(props) {
                     </IconButton>
                   </Tooltip>
                 </Box>
+                <VodReactions vodId={vod.id} compact sx={{ ml: 0.7 }} />
               </Box>
             </Box>
           </Collapse>
