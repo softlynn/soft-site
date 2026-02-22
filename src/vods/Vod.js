@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 dayjs.extend(localizedFormat);
 
-const DEFAULT_CARD_WIDTH = "19.75rem";
+const DEFAULT_CARD_WIDTH = "20rem";
 
 export default function Vod(props) {
   const { vod, gridSize, sizes, sheen = false } = props;
@@ -31,17 +31,18 @@ export default function Vod(props) {
   return (
     <Grid size={sizes || { xs: gridSize }} sx={{ maxWidth: DEFAULT_CARD_WIDTH, flexBasis: DEFAULT_CARD_WIDTH }}>
       <Box
-        className={`soft-glass soft-surface-float${sheen ? " soft-shimmer" : ""}`}
+        className={`soft-glass soft-surface-float soft-vod-card${sheen ? " soft-shimmer" : ""}`}
         sx={{
           borderRadius: "22px",
-          p: 0.85,
+          p: 0.95,
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          gap: 0.95,
+          gap: 1,
         }}
       >
         <Box
+          className="soft-vod-card__media"
           onClick={openVod}
           sx={{
             overflow: "hidden",
@@ -76,6 +77,7 @@ export default function Vod(props) {
 
           <Box sx={{ position: "absolute", top: 10, left: 10 }}>
             <Box
+              className="soft-vod-card__metachip"
               sx={{
                 px: 1,
                 py: 0.45,
@@ -98,6 +100,7 @@ export default function Vod(props) {
           <Box sx={{ position: "absolute", bottom: 10, left: 10, right: 10, display: "flex", justifyContent: "space-between", gap: 1 }}>
             <Typography
               variant="caption"
+              className="soft-vod-card__metachip"
               sx={{
                 px: 0.85,
                 py: 0.35,
@@ -111,6 +114,7 @@ export default function Vod(props) {
             </Typography>
             <Typography
               variant="caption"
+              className="soft-vod-card__metachip"
               sx={{
                 px: 0.85,
                 py: 0.35,
@@ -132,19 +136,20 @@ export default function Vod(props) {
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.5, minWidth: 0 }}>
           {vod.chapters && vod.chapters.length > 0 && <Chapters vod={vod} />}
 
-          <Box sx={{ minWidth: 0, width: "100%" }}>
+          <Box sx={{ minWidth: 0, width: "100%", pr: 0.15 }}>
             <CustomWidthTooltip title={vod.title} placement="top">
               <Button
+                className="soft-vod-card__titlebtn"
                 onClick={openVod}
                 sx={{
                   width: "100%",
                   justifyContent: "flex-start",
                   textAlign: "left",
-                  px: 0.5,
-                  py: 0.35,
+                  px: 0.65,
+                  py: 0.45,
                   borderRadius: "12px",
                   "&:hover": {
-                    background: "rgba(255,255,255,0.55)",
+                    background: "rgba(255,255,255,0.58)",
                   },
                 }}
                 size="small"
@@ -155,7 +160,7 @@ export default function Vod(props) {
                   variant="body2"
                   color="primary"
                   noWrap
-                  sx={{ width: "100%", textAlign: "left", lineHeight: 1.25 }}
+                  sx={{ width: "100%", textAlign: "left", lineHeight: 1.28, letterSpacing: "-0.01em" }}
                 >
                   {vod.title}
                 </Typography>

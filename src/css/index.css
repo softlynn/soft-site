@@ -75,6 +75,7 @@ body {
   color: var(--soft-text);
   background: var(--soft-bg);
   font-family: "Manrope", "Segoe UI", sans-serif;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -147,6 +148,7 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   background: linear-gradient(180deg, var(--soft-surface-strong), var(--soft-surface-soft));
   box-shadow: var(--soft-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(18px) saturate(135%);
+  overflow: hidden;
 }
 
 .soft-glass::before {
@@ -186,8 +188,40 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
     radial-gradient(circle at 22% 30%, rgba(255,255,255,0.06) 0 1px, transparent 1.3px) 0 0 / 18px 18px,
     radial-gradient(circle at 68% 56%, rgba(255,255,255,0.04) 0 1px, transparent 1.3px) 9px 7px / 22px 22px;
   mask-image: radial-gradient(circle at 50% 28%, black 28%, transparent 82%);
-  opacity: 0.26;
+  opacity: 0.22;
   border-radius: inherit;
+}
+
+.soft-panel-ambient.soft-glass::before {
+  background:
+    radial-gradient(220px 140px at 14% 12%, rgba(255, 255, 255, 0.17), transparent 72%),
+    radial-gradient(220px 160px at 86% 92%, rgba(212, 107, 140, 0.07), transparent 76%),
+    radial-gradient(200px 150px at 76% 10%, rgba(121, 163, 230, 0.06), transparent 72%),
+    radial-gradient(120px 90px at 18% 18%, rgba(255, 255, 255, 0.05) 0 20%, transparent 62%),
+    radial-gradient(140px 100px at 74% 72%, rgba(255, 255, 255, 0.035) 0 18%, transparent 64%),
+    radial-gradient(180px 140px at 72% 88%, rgba(212, 107, 140, 0.05), transparent 74%);
+  animation: soft-panel-drift 18s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.soft-section-heading {
+  position: relative;
+  display: inline-block;
+  letter-spacing: -0.015em;
+}
+
+.soft-section-heading::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.32rem;
+  width: clamp(46px, 42%, 96px);
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(212,107,140,0.75), rgba(121,163,230,0.45), rgba(255,255,255,0));
+  opacity: 0.5;
+  transform-origin: left center;
+  animation: soft-heading-breathe 6.5s ease-in-out infinite;
 }
 
 .soft-reveal {
@@ -340,6 +374,61 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   box-shadow: var(--soft-shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
+.soft-vod-card {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease,
+    background-color 220ms ease;
+}
+
+.soft-vod-card.soft-glass::before {
+  transition: transform 280ms ease, opacity 280ms ease;
+}
+
+.soft-vod-card:hover.soft-glass::before {
+  transform: translate3d(0, -3px, 0) scale(1.01);
+  opacity: 0.84;
+}
+
+.soft-vod-card__media {
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.soft-vod-card__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(180px 80px at 14% 12%, rgba(255,255,255,0.14), transparent 70%),
+    radial-gradient(160px 90px at 88% 90%, rgba(212,107,140,0.10), transparent 74%);
+  opacity: 0.55;
+  transition: opacity 220ms ease, transform 260ms ease;
+}
+
+.soft-vod-card:hover .soft-vod-card__media::after {
+  opacity: 0.9;
+  transform: scale(1.015);
+}
+
+.soft-vod-card__metachip {
+  transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.soft-vod-card:hover .soft-vod-card__metachip {
+  transform: translateY(-1px);
+}
+
+.soft-vod-card__titlebtn {
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.soft-vod-card:hover .soft-vod-card__titlebtn {
+  transform: translateY(-1px);
+}
+
 .simplebar-scrollbar::before {
   background: linear-gradient(180deg, rgba(212, 107, 140, 0.46), rgba(121, 163, 230, 0.34)) !important;
   border-radius: 999px !important;
@@ -440,6 +529,26 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   animation: soft-theme-toggle-pop 1100ms cubic-bezier(.2,.85,.25,1) 280ms both;
 }
 
+.soft-nav-main-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.soft-nav-main-button::after {
+  content: "";
+  position: absolute;
+  inset: -120% -20%;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 38%, rgba(255,255,255,0.18) 48%, transparent 62%);
+  transform: translateX(-70%) rotate(8deg);
+  opacity: 0;
+}
+
+.soft-nav-main-button.is-active::after {
+  opacity: 0.8;
+  animation: soft-nav-sheen 7.2s ease-in-out infinite;
+}
+
 .soft-cta-button {
   isolation: isolate;
   transform: translateZ(0);
@@ -479,6 +588,18 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   border-radius: inherit;
   opacity: 0.9;
   mix-blend-mode: screen;
+}
+
+.soft-footer-shell {
+  position: relative;
+}
+
+.soft-footer-shell::before {
+  opacity: 0.8;
+}
+
+.soft-footer-shell::after {
+  opacity: 0.7;
 }
 
 .video-js .vjs-control-bar {
@@ -565,6 +686,33 @@ html[data-soft-theme="dark"] .video-js {
   }
 }
 
+@keyframes soft-panel-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.72;
+  }
+  50% {
+    transform: translate3d(8px, -6px, 0) scale(1.02);
+    opacity: 0.86;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.72;
+  }
+}
+
+@keyframes soft-heading-breathe {
+  0%,
+  100% {
+    transform: scaleX(0.92);
+    opacity: 0.42;
+  }
+  50% {
+    transform: scaleX(1.06);
+    opacity: 0.62;
+  }
+}
+
 @keyframes soft-theme-toggle-pop {
   0% {
     transform: scale(0.84) rotate(-10deg);
@@ -597,6 +745,18 @@ html[data-soft-theme="dark"] .video-js {
   }
 }
 
+@keyframes soft-nav-sheen {
+  0%,
+  74%,
+  100% {
+    transform: translateX(-70%) rotate(8deg);
+  }
+  8%,
+  20% {
+    transform: translateX(78%) rotate(8deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -613,7 +773,10 @@ html[data-soft-theme="dark"] .video-js {
   .soft-shimmer::before,
   .soft-star,
   .soft-cta-button::after,
-  .soft-theme-toggle.is-announce {
+  .soft-theme-toggle.is-announce,
+  .soft-panel-ambient.soft-glass::before,
+  .soft-section-heading::after,
+  .soft-nav-main-button.is-active::after {
     animation: none !important;
   }
 }

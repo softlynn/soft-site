@@ -32,18 +32,18 @@ export default function Footer() {
   return (
     <Box
       component="footer"
-      className="soft-glass soft-surface-float"
+      className="soft-glass soft-surface-float soft-panel-ambient soft-footer-shell"
       sx={{
         mt: 3,
         mx: { xs: 1.5, sm: 2.5 },
         mb: 2,
-        px: { xs: 1.5, sm: 2.5 },
-        py: 1.3,
+        px: { xs: 1.55, sm: 2.4 },
+        py: { xs: 1.35, sm: 1.45 },
         borderRadius: "20px",
       }}
     >
-      <Stack direction={{ xs: "column", md: "row" }} spacing={{ xs: 0.75, md: 2 }} alignItems={{ xs: "flex-start", md: "center" }} justifyContent="space-between">
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 0.35, sm: 1.5 }} alignItems={{ xs: "flex-start", sm: "center" }} sx={{ minWidth: 0 }}>
+      <Stack direction={{ xs: "column", md: "row" }} spacing={{ xs: 0.9, md: 2 }} alignItems={{ xs: "flex-start", md: "center" }} justifyContent="space-between">
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 0.45, sm: 1.5 }} alignItems={{ xs: "flex-start", sm: "center" }} sx={{ minWidth: 0 }}>
           <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700, letterSpacing: "0.02em" }}>
             {`${brandLabel} © ${COPYRIGHT_YEAR}`}
           </Typography>

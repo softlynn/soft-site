@@ -259,6 +259,7 @@ export default function Navbar() {
               {mainLinks.map((item) => (
                 <CustomLink key={item.path} href={item.path}>
                   <Button
+                    className={`soft-nav-main-button${item.active ? " is-active" : ""}`}
                     variant={item.active ? "contained" : "outlined"}
                     color={item.active ? "secondary" : "primary"}
                     startIcon={item.icon}

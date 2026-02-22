@@ -294,13 +294,13 @@ export default function Vods() {
   const totalPages = Math.max(1, Math.ceil((totalVods || 0) / limit));
 
   const renderArchiveControls = () => (
-    <Box className="soft-glass soft-grid-pattern" sx={{ px: { xs: 1.25, md: 2 }, py: 1.25, borderRadius: "22px" }}>
+    <Box className="soft-glass soft-grid-pattern soft-panel-ambient" sx={{ px: { xs: 1.25, md: 2 }, py: { xs: 1.25, md: 1.45 }, borderRadius: "22px" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: { xs: "flex-start", md: "center" }, gap: 1.5, flexDirection: { xs: "column", md: "row" } }}>
         <Box>
-          <Typography variant="h5" sx={{ color: "primary.main" }}>
+          <Typography variant="h5" className="soft-section-heading" sx={{ color: "primary.main", pr: 1 }}>
             Full VOD Archive
           </Typography>
-          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.35, maxWidth: 520, lineHeight: 1.45 }}>
             Search, filter, and jump into any stream with chat replay.
           </Typography>
         </Box>
@@ -321,10 +321,10 @@ export default function Vods() {
 
       <Box
         sx={{
-          mt: 1.25,
+          mt: 1.35,
           display: "grid",
           gridTemplateColumns: { xs: "1fr", md: "auto auto 1fr auto" },
-          gap: 1,
+          gap: 1.1,
           alignItems: "center",
         }}
       >
@@ -417,10 +417,10 @@ export default function Vods() {
         {isHomeRoute && (
           <>
             <Reveal delay={40} sx={{ mt: { xs: 0.5, md: 1 } }}>
-              <Box className="soft-glass soft-grid-pattern soft-hero-glow" sx={{ p: { xs: 1.2, sm: 1.8, md: 2.2 }, borderRadius: "28px" }}>
+              <Box className="soft-glass soft-grid-pattern soft-panel-ambient soft-hero-glow" sx={{ p: { xs: 1.3, sm: 1.95, md: 2.35 }, borderRadius: "28px" }}>
                 <Grid container spacing={{ xs: 1.5, md: 2.5 }} alignItems="stretch">
                   <Grid size={{ xs: 12, lg: 5 }}>
-                    <Box sx={{ height: "100%", display: "flex", flexDirection: "column", gap: 1.15, justifyContent: "center", pr: { lg: 1 } }}>
+                    <Box sx={{ height: "100%", display: "flex", flexDirection: "column", gap: 1.25, justifyContent: "center", pr: { lg: 1 } }}>
                       <Box>
                         <Typography
                           variant="h2"
@@ -436,19 +436,21 @@ export default function Vods() {
                         </Typography>
                         <Typography
                           variant="h4"
+                          className="soft-section-heading"
                           sx={{
                             mt: 0.5,
                             fontSize: { xs: "1.02rem", sm: "1.18rem" },
                             color: "text.secondary",
                             letterSpacing: "0.01em",
                             fontWeight: 600,
+                            lineHeight: 1.28,
                           }}
                         >
                           vod archives with chat replay
                         </Typography>
                       </Box>
 
-                      <Typography variant="body1" sx={{ color: "text.secondary", maxWidth: 520 }}>
+                      <Typography variant="body1" sx={{ color: "text.secondary", maxWidth: 520, lineHeight: 1.52 }}>
                         {SITE_DESCRIPTION}
                       </Typography>
 
@@ -514,13 +516,13 @@ export default function Vods() {
             </Reveal>
 
             <Reveal delay={120} sx={{ mt: 2 }}>
-              <Box className="soft-glass" sx={{ p: { xs: 1.2, md: 1.5 }, borderRadius: "24px" }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, mb: 0.5, flexWrap: "wrap" }}>
+              <Box className="soft-glass soft-panel-ambient" sx={{ p: { xs: 1.2, md: 1.5 }, borderRadius: "24px" }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, mb: 0.7, flexWrap: "wrap" }}>
                   <Box>
-                    <Typography variant="h5" sx={{ color: "primary.main" }}>
+                    <Typography variant="h5" className="soft-section-heading" sx={{ color: "primary.main" }}>
                       Recent VODs
                     </Typography>
-                    <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.35, lineHeight: 1.45, maxWidth: 560 }}>
                       Latest uploads only. Open the full VODs page for filters and the complete archive.
                     </Typography>
                   </Box>
@@ -536,8 +538,8 @@ export default function Vods() {
             </Reveal>
 
             <Reveal delay={150} sx={{ mt: 1.9, display: "flex", justifyContent: "center" }}>
-              <Box className="soft-glass" sx={{ p: { xs: 0.95, md: 1.1 }, borderRadius: "20px", width: "100%", maxWidth: "430px" }}>
-                <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.75, px: 0.35, letterSpacing: "0.03em" }}>
+              <Box className="soft-glass soft-panel-ambient" sx={{ p: { xs: 0.95, md: 1.1 }, borderRadius: "20px", width: "100%", maxWidth: "430px" }}>
+                <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.75, px: 0.35, letterSpacing: "0.05em", fontWeight: 700 }}>
                   stream playlist
                 </Typography>
                 <Box sx={{ borderRadius: "14px", overflow: "hidden", mx: "auto" }}>
