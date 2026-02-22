@@ -19,12 +19,9 @@
     archiveLinkEl.href = siteUrl + "/#/vods";
   }
 
-  if (window.Twitch && window.Twitch.ext) {
-    window.Twitch.ext.onContext(function (context) {
-      var theme = context && context.theme === "light" ? "light" : "dark";
-      document.body.setAttribute("data-theme", theme);
-    });
-  }
+  // Intentionally default to light mode for this panel to match the site design.
+  // The panel edges remain transparent so it blends into Twitch's dark UI.
+  document.body.setAttribute("data-theme", "light");
 
   fetchAndRender();
 
@@ -159,15 +156,12 @@
       row.className = "softu-card__row";
 
       row.appendChild(createChip(formatDate(vod.createdAt), false));
-      if (vod.duration) row.appendChild(createChip(String(vod.duration), false));
       if (vod.chatReplayAvailable !== false) {
         row.appendChild(createChip("Chat Replay", true));
       } else {
-        row.appendChild(createChip("No Chat Replay", false));
+        row.appendChild(createChip("No Chat", false));
       }
-      if (vod.vodNotice && /spotify/i.test(String(vod.vodNotice))) {
-        row.appendChild(createChip("Spotify Muted", false));
-      }
+      if (vod.duration) row.appendChild(createChip(compactDuration(String(vod.duration)), false));
 
       meta.appendChild(title);
       meta.appendChild(row);
@@ -186,6 +180,18 @@
     chip.className = "softu-chip" + (accent ? " softu-chip--accent" : "");
     chip.textContent = text;
     return chip;
+  }
+
+  function compactDuration(value) {
+    var raw = String(value || "").trim();
+    if (!raw) return "";
+    if (raw.indexOf(":") !== -1) return raw;
+    return raw
+      .replace(/\bhours?\b/gi, "h")
+      .replace(/\bminutes?\b/gi, "m")
+      .replace(/\bseconds?\b/gi, "s")
+      .replace(/,\s*/g, "")
+      .replace(/\s+/g, "");
   }
 
   function setLoading(loading) {

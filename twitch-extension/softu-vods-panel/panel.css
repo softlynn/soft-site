@@ -1,23 +1,23 @@
 :root {
-  --softu-bg: #111827;
-  --softu-surface: rgba(17, 24, 39, 0.9);
-  --softu-surface-2: rgba(24, 33, 52, 0.86);
-  --softu-border: rgba(167, 187, 219, 0.14);
-  --softu-text: #e7effa;
-  --softu-muted: #a9b8d1;
-  --softu-salmon: #d46b8c;
-  --softu-blue: #79a3e6;
-  --softu-shadow: 0 14px 30px rgba(2, 6, 18, 0.32);
-}
-
-body[data-theme="light"] {
   --softu-bg: #e2e9f3;
-  --softu-surface: rgba(255, 255, 255, 0.9);
-  --softu-surface-2: rgba(248, 251, 255, 0.88);
+  --softu-surface: rgba(255, 255, 255, 0.88);
+  --softu-surface-2: rgba(247, 250, 255, 0.9);
   --softu-border: rgba(19, 33, 56, 0.12);
   --softu-text: #132138;
   --softu-muted: #395473;
-  --softu-shadow: 0 14px 26px rgba(19, 33, 56, 0.12);
+  --softu-salmon: #d46b8c;
+  --softu-blue: #85aeea;
+  --softu-shadow: 0 10px 22px rgba(19, 33, 56, 0.12);
+}
+
+body[data-theme="dark"] {
+  --softu-bg: #111827;
+  --softu-surface: rgba(17, 24, 39, 0.9);
+  --softu-surface-2: rgba(24, 33, 52, 0.9);
+  --softu-border: rgba(167, 187, 219, 0.14);
+  --softu-text: #e7effa;
+  --softu-muted: #a9b8d1;
+  --softu-shadow: 0 12px 24px rgba(2, 6, 18, 0.3);
 }
 
 *,
@@ -28,39 +28,42 @@ body[data-theme="light"] {
 
 html,
 body {
+  width: 100%;
+  height: 100%;
   margin: 0;
   padding: 0;
-  width: 100%;
-  min-height: 100%;
+  overflow: hidden;
   font-family: "Inter", "Segoe UI", sans-serif;
-  background: transparent;
   color: var(--softu-text);
+  background: transparent;
 }
 
 body {
-  background:
-    radial-gradient(120% 90% at 8% 0%, rgba(212, 107, 140, 0.16), transparent 48%),
-    radial-gradient(110% 90% at 100% 100%, rgba(121, 163, 230, 0.14), transparent 54%),
-    var(--softu-bg);
+  background: transparent;
 }
 
 .softu-panel {
   position: relative;
-  min-height: 100vh;
-  padding: 10px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
   overflow: hidden;
 }
 
 .softu-panel::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 6px;
   pointer-events: none;
+  border-radius: 18px;
   background:
-    radial-gradient(280px 160px at 14% 6%, rgba(255, 255, 255, 0.08), transparent 72%),
-    radial-gradient(260px 180px at 92% 88%, rgba(212, 107, 140, 0.09), transparent 74%);
-  opacity: 0.75;
-  animation: softu-panel-float 14s ease-in-out infinite;
+    radial-gradient(180px 120px at 8% 0%, rgba(212, 107, 140, 0.14), transparent 72%),
+    radial-gradient(220px 140px at 100% 100%, rgba(133, 174, 234, 0.16), transparent 72%);
+  opacity: 0.9;
+  animation: softu-panel-float 16s ease-in-out infinite;
 }
 
 .softu-header,
@@ -73,48 +76,49 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-  padding: 10px 12px;
-  border-radius: 16px;
+  gap: 8px;
+  min-height: 52px;
+  padding: 8px 10px;
+  border-radius: 15px;
   border: 1px solid var(--softu-border);
   background:
-    radial-gradient(110% 90% at 0% 0%, rgba(255, 255, 255, 0.1), transparent 52%),
+    radial-gradient(120% 100% at 0% 0%, rgba(255, 255, 255, 0.22), transparent 56%),
     linear-gradient(180deg, var(--softu-surface), var(--softu-surface-2));
   box-shadow: var(--softu-shadow);
-  backdrop-filter: blur(14px) saturate(135%);
+  backdrop-filter: blur(12px) saturate(130%);
 }
 
 .softu-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
 .softu-brand__dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--softu-salmon), #ee95b1);
+  background: linear-gradient(180deg, var(--softu-salmon), #f098b6);
   box-shadow:
-    0 0 0 3px rgba(212, 107, 140, 0.16),
-    0 0 12px rgba(212, 107, 140, 0.28);
+    0 0 0 3px rgba(212, 107, 140, 0.14),
+    0 0 10px rgba(212, 107, 140, 0.22);
   flex: 0 0 auto;
 }
 
 .softu-brand__name {
-  font-size: 0.95rem;
-  font-weight: 800;
+  font-size: 0.88rem;
   line-height: 1;
+  font-weight: 800;
   letter-spacing: -0.02em;
   text-transform: lowercase;
 }
 
 .softu-brand__sub {
   margin-top: 2px;
-  font-size: 0.66rem;
-  line-height: 1.2;
+  max-width: 150px;
+  font-size: 0.58rem;
+  line-height: 1.15;
   color: var(--softu-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -122,72 +126,92 @@ body {
 }
 
 .softu-header__link {
-  color: var(--softu-text);
-  text-decoration: none;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 7px 10px;
-  border-radius: 12px;
-  border: 1px solid var(--softu-border);
-  background: rgba(255, 255, 255, 0.04);
-  transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease;
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 107, 140, 0.2);
+  background:
+    linear-gradient(180deg, rgba(212, 107, 140, 0.11), rgba(212, 107, 140, 0.08)),
+    rgba(255, 255, 255, 0.12);
+  color: var(--softu-text);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
 }
 
 .softu-header__link:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(212, 107, 140, 0.22);
+  border-color: rgba(212, 107, 140, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 6px 14px rgba(212, 107, 140, 0.12);
 }
 
 .softu-content {
-  border-radius: 16px;
+  min-height: 0;
+  padding: 8px;
+  border-radius: 15px;
   border: 1px solid var(--softu-border);
   background:
-    radial-gradient(90% 80% at 8% 8%, rgba(255, 255, 255, 0.05), transparent 62%),
+    radial-gradient(100% 90% at 8% 0%, rgba(255, 255, 255, 0.22), transparent 60%),
     linear-gradient(180deg, var(--softu-surface), var(--softu-surface-2));
   box-shadow: var(--softu-shadow);
-  backdrop-filter: blur(14px) saturate(130%);
-  padding: 10px;
+  backdrop-filter: blur(12px) saturate(130%);
+  overflow: hidden;
 }
 
 .softu-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
 }
 
 .softu-card {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 10px;
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(19, 33, 56, 0.11);
+  background:
+    radial-gradient(100% 80% at 12% 0%, rgba(255, 255, 255, 0.38), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(250, 252, 255, 0.28));
   color: inherit;
   text-decoration: none;
-  border-radius: 14px;
-  border: 1px solid var(--softu-border);
-  background:
-    radial-gradient(120% 80% at 8% 0%, rgba(255,255,255,0.07), transparent 56%),
-    rgba(255, 255, 255, 0.03);
-  padding: 8px;
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
   overflow: hidden;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
 }
 
 .softu-card:hover {
   transform: translateY(-1px);
-  border-color: rgba(212, 107, 140, 0.22);
-  box-shadow: 0 10px 22px rgba(2, 6, 18, 0.18);
+  border-color: rgba(212, 107, 140, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.46),
+    0 8px 18px rgba(19, 33, 56, 0.12);
 }
 
 .softu-card__thumb {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 10px;
+  border-radius: 9px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(19, 33, 56, 0.06));
 }
 
 .softu-card__thumb img {
@@ -201,53 +225,67 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.08)),
-    radial-gradient(140px 70px at 16% 8%, rgba(255,255,255,0.18), transparent 72%);
   pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.12)),
+    radial-gradient(110px 58px at 16% 8%, rgba(255, 255, 255, 0.2), transparent 72%);
 }
 
 .softu-card__meta {
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 6px;
+  gap: 5px;
+  min-width: 0;
+  min-height: 0;
 }
 
 .softu-card__title {
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1.22;
+  margin: 0;
+  color: var(--softu-text);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.16;
   letter-spacing: -0.01em;
+  min-height: 1.58em;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
 }
 
 .softu-card__row {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 4px;
   align-items: center;
+  align-content: flex-start;
+  max-height: 30px;
+  overflow: hidden;
 }
 
 .softu-chip {
-  font-size: 0.62rem;
-  line-height: 1;
-  padding: 5px 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 16px;
+  max-width: 100%;
+  padding: 0 5px;
   border-radius: 999px;
-  border: 1px solid var(--softu-border);
+  border: 1px solid rgba(19, 33, 56, 0.1);
+  background: rgba(255, 255, 255, 0.45);
   color: var(--softu-muted);
-  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.52rem;
+  font-weight: 700;
+  line-height: 1;
   white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .softu-chip--accent {
-  color: var(--softu-text);
+  color: #6f2143;
   border-color: rgba(212, 107, 140, 0.22);
-  background: rgba(212, 107, 140, 0.1);
+  background: rgba(212, 107, 140, 0.12);
 }
 
 .softu-loading,
@@ -257,33 +295,35 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 110px;
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
   border-radius: 12px;
   border: 1px dashed var(--softu-border);
   color: var(--softu-muted);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   text-align: center;
   padding: 10px;
 }
 
 .softu-loading__orb {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   background: linear-gradient(180deg, var(--softu-salmon), var(--softu-blue));
-  box-shadow: 0 0 0 4px rgba(121, 163, 230, 0.1);
-  animation: softu-pulse 1.15s ease-in-out infinite;
+  box-shadow: 0 0 0 4px rgba(133, 174, 234, 0.12);
+  animation: softu-pulse 1.1s ease-in-out infinite;
 }
 
 .softu-error {
   border-style: solid;
   border-color: rgba(212, 107, 140, 0.2);
-  color: #f4c3d1;
-  background: rgba(212, 107, 140, 0.08);
+  color: #7f2946;
+  background: rgba(212, 107, 140, 0.07);
 }
 
-body[data-theme="light"] .softu-error {
-  color: #7f2946;
+body[data-theme="dark"] .softu-error {
+  color: #f4c3d1;
 }
 
 .is-hidden {
@@ -305,34 +345,34 @@ body[data-theme="light"] .softu-error {
 @keyframes softu-panel-float {
   0% {
     transform: translate3d(0, 0, 0);
-    opacity: 0.72;
+    opacity: 0.8;
   }
   50% {
-    transform: translate3d(4px, -4px, 0);
-    opacity: 0.92;
+    transform: translate3d(3px, -3px, 0);
+    opacity: 1;
   }
   100% {
     transform: translate3d(0, 0, 0);
-    opacity: 0.72;
+    opacity: 0.8;
   }
 }
 
-@media (max-width: 360px) {
-  .softu-card {
-    grid-template-columns: 1fr;
-  }
-
-  .softu-card__thumb {
-    max-width: 100%;
-  }
-
-  .softu-header {
-    flex-direction: column;
-    align-items: stretch;
+@media (max-width: 320px) {
+  .softu-brand__sub {
+    max-width: 120px;
   }
 
   .softu-header__link {
-    text-align: center;
+    padding: 0 7px;
+    font-size: 0.62rem;
+  }
+
+  .softu-card__title {
+    font-size: 0.64rem;
+  }
+
+  .softu-chip {
+    font-size: 0.49rem;
   }
 }
 
