@@ -155,7 +155,7 @@ export default function Vod(props) {
                   backgroundSize: "cover",
                   filter: "blur(28px) saturate(1.08)",
                   transform: "scale(1.06)",
-                  opacity: 0.38,
+                  opacity: 0.6,
                   zIndex: 0,
                 }}
               />
@@ -166,7 +166,7 @@ export default function Vod(props) {
                 position: "absolute",
                 inset: 0,
                 background:
-                  "radial-gradient(120% 90% at 8% 8%, rgba(255,255,255,0.14), transparent 58%), radial-gradient(110% 90% at 92% 92%, rgba(121,163,230,0.12), transparent 64%), linear-gradient(180deg, rgba(17,24,39,0.05), rgba(17,24,39,0.10))",
+                  "radial-gradient(120% 90% at 8% 8%, rgba(255,255,255,0.16), transparent 58%), radial-gradient(110% 90% at 92% 92%, rgba(121,163,230,0.15), transparent 64%), linear-gradient(180deg, rgba(255,255,255,0.04), rgba(17,24,39,0.04))",
                 zIndex: 1,
               }}
             />
@@ -174,6 +174,7 @@ export default function Vod(props) {
               className="soft-player-frame"
               sx={{
                 width: "100%",
+                maxWidth: { xs: "100%", md: "min(100%, calc((100dvh - 220px) * 16 / 9))" },
                 maxHeight: "100%",
                 aspectRatio: "16 / 9",
                 borderRadius: "16px",
@@ -188,9 +189,28 @@ export default function Vod(props) {
               <CustomPlayer playerRef={playerRef} setCurrentTime={setCurrentTime} setPlaying={setPlaying} delay={delay} setDelay={setDelay} type={type} vod={vod} timestamp={timestamp} />
             </Box>
           </Box>
-          <Box sx={{ position: "absolute", bottom: 0, left: "50%" }}>
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: showMenu ? 8 : 10,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 4,
+              borderRadius: "999px",
+              background: "var(--soft-control-strip-bg)",
+              border: "1px solid var(--soft-control-strip-border)",
+              boxShadow: "var(--soft-control-strip-inset), 0 6px 16px rgba(2,6,18,0.14)",
+              p: 0.25,
+            }}
+          >
             <Tooltip title={showMenu ? "Collapse" : "Expand"}>
-              <ExpandMore expand={showMenu} onClick={handleExpandClick} aria-expanded={showMenu} aria-label="show menu">
+              <ExpandMore
+                expand={showMenu}
+                onClick={handleExpandClick}
+                aria-expanded={showMenu}
+                aria-label="show menu"
+                sx={{ width: 34, height: 34 }}
+              >
                 <ExpandMoreIcon />
               </ExpandMore>
             </Tooltip>

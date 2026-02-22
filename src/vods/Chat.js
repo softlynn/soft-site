@@ -593,7 +593,7 @@ export default function Chat(props) {
         height: "100%",
         width: isPortrait ? "100%" : showChat ? desktopExpandedWidth : desktopCollapsedWidth,
         minWidth: isPortrait ? 0 : showChat ? "clamp(320px, 28vw, 420px)" : desktopCollapsedWidth,
-        transition: isPortrait ? "none" : "width 220ms cubic-bezier(.2,.8,.2,1)",
+        transition: "none",
         background:
           "linear-gradient(180deg, rgba(16,24,40,0.92), rgba(14,19,31,0.96))",
         borderLeft: isPortrait ? "none" : "1px solid rgba(255,255,255,0.08)",
@@ -646,7 +646,7 @@ export default function Chat(props) {
             </Box>
           </Box>
           <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
-          <CustomCollapse in={showChat} timeout="auto" unmountOnExit sx={{ minWidth: 0 }}>
+          <CustomCollapse in={showChat} timeout={isPortrait ? "auto" : 0} unmountOnExit sx={{ minWidth: 0 }}>
             {!chatReplayAvailable ? (
               <Box sx={{ p: 2 }}>
                 <Typography variant="body2" sx={{ color: "rgba(219,232,255,0.74)" }}>

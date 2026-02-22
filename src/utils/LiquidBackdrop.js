@@ -344,9 +344,9 @@ export default function LiquidBackdrop() {
         const oy = height * (0.22 + i * 0.2) + Math.cos(t * (0.00017 + i * 0.00004) + i * 1.5) * (18 + i * 6);
         const r = Math.max(width, height) * (0.14 + i * 0.04);
         const bloom = ctx.createRadialGradient(ox, oy, 0, ox, oy, r);
-        bloom.addColorStop(0, isDark ? `rgba(255,255,255,${(0.032 * bloomStrength).toFixed(3)})` : `rgba(255,255,255,${(0.08 * bloomStrength).toFixed(3)})`);
-        bloom.addColorStop(0.34, isDark ? `rgba(121,163,230,${(0.055 * bloomStrength).toFixed(3)})` : `rgba(121,163,230,${(0.09 * bloomStrength).toFixed(3)})`);
-        bloom.addColorStop(0.62, isDark ? `rgba(212,107,140,${(0.05 * bloomStrength).toFixed(3)})` : `rgba(212,107,140,${(0.08 * bloomStrength).toFixed(3)})`);
+        bloom.addColorStop(0, isDark ? `rgba(255,255,255,${(0.032 * bloomStrength).toFixed(3)})` : `rgba(255,255,255,${(0.12 * bloomStrength).toFixed(3)})`);
+        bloom.addColorStop(0.34, isDark ? `rgba(121,163,230,${(0.055 * bloomStrength).toFixed(3)})` : `rgba(121,163,230,${(0.13 * bloomStrength).toFixed(3)})`);
+        bloom.addColorStop(0.62, isDark ? `rgba(212,107,140,${(0.05 * bloomStrength).toFixed(3)})` : `rgba(212,107,140,${(0.11 * bloomStrength).toFixed(3)})`);
         bloom.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = bloom;
         ctx.fillRect(ox - r, oy - r, r * 2, r * 2);
@@ -357,8 +357,8 @@ export default function LiquidBackdrop() {
         const cx = width * (0.34 + i * 0.24) + Math.sin(t * (0.00022 + i * 0.00005) + i) * 16;
         const cy = height * (0.58 - i * 0.17) + Math.cos(t * (0.0002 + i * 0.00006) + i * 1.3) * 14;
         const ribbon = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(width, height) * 0.22);
-        ribbon.addColorStop(0, isDark ? `rgba(121,163,230,${(0.03 * ribbonStrength).toFixed(3)})` : `rgba(121,163,230,${(0.055 * ribbonStrength).toFixed(3)})`);
-        ribbon.addColorStop(0.44, isDark ? `rgba(212,107,140,${(0.028 * ribbonStrength).toFixed(3)})` : `rgba(212,107,140,${(0.05 * ribbonStrength).toFixed(3)})`);
+        ribbon.addColorStop(0, isDark ? `rgba(121,163,230,${(0.03 * ribbonStrength).toFixed(3)})` : `rgba(121,163,230,${(0.072 * ribbonStrength).toFixed(3)})`);
+        ribbon.addColorStop(0.44, isDark ? `rgba(212,107,140,${(0.028 * ribbonStrength).toFixed(3)})` : `rgba(212,107,140,${(0.064 * ribbonStrength).toFixed(3)})`);
         ribbon.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = ribbon;
         ctx.fillRect(cx - width * 0.3, cy - height * 0.18, width * 0.6, height * 0.36);

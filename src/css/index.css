@@ -298,6 +298,21 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   mix-blend-mode: soft-light;
 }
 
+html[data-soft-theme="light"] .liquid-backdrop__canvas {
+  opacity: 1;
+}
+
+html[data-soft-theme="light"] .liquid-backdrop__gpu {
+  opacity: 0.72;
+  mix-blend-mode: multiply;
+  filter: saturate(138%) contrast(1.04);
+}
+
+html[data-soft-theme="light"] .liquid-backdrop__grain {
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+}
+
 .soft-star {
   position: absolute;
   width: 10px;
