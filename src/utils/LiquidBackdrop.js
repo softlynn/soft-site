@@ -1,9 +1,11 @@
 import { Box } from "@mui/material";
 import { useEffect, useRef } from "react";
 
-const STAR_COUNT = 44;
-const BLOB_COUNT = 5;
+const STAR_COUNT = 28;
+const BLOB_COUNT = 4;
 const DEFAULT_POINTER = { x: 0.5, y: 0.4 };
+const TARGET_FPS = 30;
+const FRAME_MS = 1000 / TARGET_FPS;
 
 const random = (min, max) => Math.random() * (max - min) + min;
 
@@ -22,6 +24,7 @@ async function startTypeGpuBackdrop(gpuCanvasRef, sharedStateRef) {
   if (typeof window === "undefined" || !gpuCanvasRef.current) return () => {};
   if (!navigator.gpu) return () => {};
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return () => {};
+  if (window.matchMedia?.("(max-width: 900px)")?.matches) return () => {};
 
   const canvas = gpuCanvasRef.current;
   const context = canvas.getContext("webgpu", { alpha: true });
@@ -89,24 +92,10 @@ fn vsMain(@builtin(vertex_index) index: u32) -> VertexOut {
   return out;
 }
 
-fn waveField(inputP: vec2f, time: f32) -> f32 {
-  var p = inputP;
-  var acc = 0.0;
-  var amp = 0.55;
-  var freq = 1.0;
-
-  for (var i = 0; i < 4; i = i + 1) {
-    let swirl = vec2f(
-      sin(p.y * (2.8 * freq) + time * (0.9 + f32(i) * 0.2)),
-      cos(p.x * (3.1 * freq) - time * (0.75 + f32(i) * 0.17))
-    );
-    p = p + swirl * 0.18;
-    acc = acc + (sin((p.x + p.y) * (1.8 * freq) + time * (0.45 + f32(i) * 0.15)) * 0.5 + 0.5) * amp;
-    amp = amp * 0.56;
-    freq = freq * 1.74;
-  }
-
-  return acc;
+fn blobField(p: vec2f, c: vec2f, r: f32) -> f32 {
+  let delta = p - c;
+  let d2 = max(dot(delta, delta), 0.0008);
+  return (r * r) / d2;
 }
 
 @fragment
@@ -120,28 +109,48 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
   let mouse = vec2f((u.pointer.x - 0.5) * 2.0, (u.pointer.y - 0.5) * 2.0);
 
   var p = vec2f(centered.x * aspect, centered.y);
-  p = p + vec2f(mouse.x * 0.22, -mouse.y * 0.18);
+  p = p + vec2f(mouse.x * 0.10, -mouse.y * 0.08);
 
-  let base = waveField(p * 2.8 + vec2f(t * 0.55, -t * 0.38), t);
-  let ripple = waveField(p * 6.7 - vec2f(t * 0.90, t * 0.58), t * 1.35);
+  let c0 = vec2f(0.0, -0.04) + vec2f(mouse.x * 0.06, -mouse.y * 0.05);
+  let c1 = vec2f(cos(t * 0.85) * 0.34, sin(t * 0.95) * 0.18);
+  let c2 = vec2f(cos(t * 0.61 + 2.1) * 0.28, sin(t * 0.72 + 1.4) * 0.15);
+  let c3 = vec2f(cos(t * 1.02 + 4.0) * 0.19, sin(t * 0.83 + 0.7) * 0.14);
 
-  let lens = smoothstep(0.96, 0.14, length(vec2f(centered.x * aspect, centered.y)));
-  let edgeGlow = smoothstep(0.98, 0.36, length(vec2f(centered.x * aspect, centered.y)));
-  let cursorHalo = smoothstep(0.65, 0.0, distance(uv, u.pointer));
+  let field =
+    blobField(p, c0, 0.23) +
+    blobField(p, c1, 0.19) +
+    blobField(p, c2, 0.17) +
+    blobField(p, c3, 0.14);
 
-  let streakX = pow(max(0.0, 1.0 - abs(centered.y + sin((centered.x + t * 0.6) * 10.0) * 0.05) * 6.0), 7.0);
-  let streakY = pow(max(0.0, 1.0 - abs(centered.x + cos((centered.y - t * 0.4) * 11.0) * 0.04) * 7.0), 8.0) * 0.4;
+  let fieldX =
+    blobField(p + vec2f(0.012, 0.0), c0, 0.23) +
+    blobField(p + vec2f(0.012, 0.0), c1, 0.19) +
+    blobField(p + vec2f(0.012, 0.0), c2, 0.17) +
+    blobField(p + vec2f(0.012, 0.0), c3, 0.14);
+  let fieldY =
+    blobField(p + vec2f(0.0, 0.012), c0, 0.23) +
+    blobField(p + vec2f(0.0, 0.012), c1, 0.19) +
+    blobField(p + vec2f(0.0, 0.012), c2, 0.17) +
+    blobField(p + vec2f(0.0, 0.012), c3, 0.14);
+  let normal = normalize(vec2f(fieldX - field, fieldY - field) + vec2f(0.0001, 0.0001));
 
-  let liquid = clamp(0.15 + base * 0.55 + ripple * 0.24 + streakX * 0.32 + streakY, 0.0, 1.0);
-  let tintMix = clamp(uv.y * 0.65 + uv.x * 0.35 + base * 0.12 - ripple * 0.07, 0.0, 1.0);
+  let body = smoothstep(1.4, 2.15, field);
+  let rim = smoothstep(1.7, 2.7, field) - smoothstep(2.7, 4.3, field);
+  let caustic = pow(max(0.0, sin((p.x * 8.0 - p.y * 5.0) + t * 1.2) * 0.5 + 0.5), 3.0) * rim;
+  let cursorHalo = 1.0 - smoothstep(0.0, 0.42, distance(uv, u.pointer));
+  let vignette = 1.0 - smoothstep(0.24, 1.02, length(vec2f(centered.x * aspect, centered.y)));
+
+  let tintMix = clamp(uv.x * 0.45 + uv.y * 0.55 + normal.x * 0.12 - normal.y * 0.07, 0.0, 1.0);
   let tint = mix(u.tintA.rgb, u.tintB.rgb, tintMix);
+  let refractionShade = 0.08 + normal.x * 0.07 - normal.y * 0.05;
 
-  let sparkle = vec3f(1.0) * (pow(max(0.0, base - 0.45), 3.5) * 0.35 + pow(max(0.0, ripple - 0.6), 4.0) * 0.25);
-  let edgeTint = mix(u.tintA.rgb, u.tintB.rgb, 0.65) * edgeGlow * 0.18;
-  let cursorTint = mix(u.tintB.rgb, vec3f(1.0), 0.25) * cursorHalo * 0.16;
+  let color =
+    tint * (0.08 + body * 0.20) +
+    mix(u.tintB.rgb, vec3f(1.0), 0.35) * (rim * 0.18 + caustic * 0.16) +
+    vec3f(1.0) * (cursorHalo * 0.05 + max(0.0, refractionShade) * body * 0.22);
 
-  let color = tint * (0.12 + liquid * 0.34) + sparkle + edgeTint + cursorTint;
-  let alpha = clamp((0.10 + liquid * 0.18 + edgeGlow * 0.14 + cursorHalo * 0.08) * u.intensity, 0.0, 0.62);
+  color = color * vignette;
+  let alpha = clamp((body * 0.17 + rim * 0.11 + cursorHalo * 0.04 + vignette * 0.02) * u.intensity, 0.0, 0.42);
   return vec4f(color, alpha);
 }
 `,
@@ -194,19 +203,19 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
     entries: [{ binding: 0, resource: { buffer: uniforms.buffer } }],
   });
 
-  let width = 1;
-  let height = 1;
-  let dpr = 1;
   let rafId = 0;
+  let lastFrameMs = 0;
 
   const configureCanvas = () => {
     if (!canvas.isConnected) return;
     const rect = canvas.getBoundingClientRect();
-    width = Math.max(1, Math.floor(rect.width));
-    height = Math.max(1, Math.floor(rect.height));
-    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-    const nextWidth = Math.max(1, Math.floor(width * dpr));
-    const nextHeight = Math.max(1, Math.floor(height * dpr));
+    const width = Math.max(1, Math.floor(rect.width));
+    const height = Math.max(1, Math.floor(rect.height));
+    const dpr = Math.max(1, Math.min(1.5, window.devicePixelRatio || 1));
+    const isMobile = window.matchMedia?.("(max-width: 900px)")?.matches;
+    const renderScale = isMobile ? 0.5 : 0.68;
+    const nextWidth = Math.max(1, Math.floor(width * dpr * renderScale));
+    const nextHeight = Math.max(1, Math.floor(height * dpr * renderScale));
     if (canvas.width !== nextWidth) canvas.width = nextWidth;
     if (canvas.height !== nextHeight) canvas.height = nextHeight;
     context.configure({
@@ -222,6 +231,16 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
   window.addEventListener("resize", configureCanvas);
 
   const render = (time) => {
+    if (document.hidden) {
+      rafId = window.requestAnimationFrame(render);
+      return;
+    }
+    if (lastFrameMs && time - lastFrameMs < FRAME_MS) {
+      rafId = window.requestAnimationFrame(render);
+      return;
+    }
+    lastFrameMs = time;
+
     const pointerX = sharedStateRef.current.pointerX;
     const pointerY = sharedStateRef.current.pointerY;
     const isDark = document.documentElement.getAttribute("data-soft-theme") === "dark";
@@ -230,7 +249,7 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
       resolution: d.vec2f(canvas.width || 1, canvas.height || 1),
       pointer: d.vec2f(pointerX, pointerY),
       time: Number(time || 0),
-      intensity: isDark ? 1.1 : 0.95,
+      intensity: isDark ? 1.0 : 0.9,
       tintA: d.vec4f(0.831, 0.420, 0.549, 1.0),
       tintB: d.vec4f(isDark ? 0.412 : 0.475, isDark ? 0.553 : 0.639, isDark ? 0.824 : 0.902, 1.0),
     });
@@ -293,6 +312,7 @@ export default function LiquidBackdrop() {
     stars: [],
     blobs: [],
     rafId: 0,
+    lastDrawMs: 0,
   });
 
   useEffect(() => {
@@ -324,10 +344,10 @@ export default function LiquidBackdrop() {
 
       state.blobs = Array.from({ length: BLOB_COUNT }, (_, index) => ({
         angle: random(0, Math.PI * 2),
-        radiusFactor: 0.16 + index * 0.075,
-        wobble: random(16, 60),
-        speed: random(0.00013, 0.00036),
-        size: random(180, 360),
+        radiusFactor: 0.15 + index * 0.07,
+        wobble: random(10, 34),
+        speed: random(0.00011, 0.00026),
+        size: random(150, 260),
         hueShift: index,
         phase: random(0, Math.PI * 2),
       }));
@@ -338,8 +358,8 @@ export default function LiquidBackdrop() {
       const { width, height, stars, blobs } = state;
       if (!width || !height) return;
 
-      state.pointerX += (state.targetPointerX - state.pointerX) * 0.085;
-      state.pointerY += (state.targetPointerY - state.pointerY) * 0.085;
+      state.pointerX += (state.targetPointerX - state.pointerX) * 0.06;
+      state.pointerY += (state.targetPointerY - state.pointerY) * 0.06;
       const pointerX = state.pointerX;
       const pointerY = state.pointerY;
 
@@ -364,9 +384,9 @@ export default function LiquidBackdrop() {
       ctx.save();
       const px = pointerX * width;
       const py = pointerY * height;
-      const pointerGlow = ctx.createRadialGradient(px, py, 0, px, py, Math.max(width, height) * 0.32);
-      pointerGlow.addColorStop(0, isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.18)");
-      pointerGlow.addColorStop(0.45, isDark ? "rgba(212,107,140,0.08)" : "rgba(212,107,140,0.10)");
+      const pointerGlow = ctx.createRadialGradient(px, py, 0, px, py, Math.max(width, height) * 0.24);
+      pointerGlow.addColorStop(0, isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.12)");
+      pointerGlow.addColorStop(0.45, isDark ? "rgba(212,107,140,0.05)" : "rgba(212,107,140,0.07)");
       pointerGlow.addColorStop(1, "rgba(212,107,140,0)");
       ctx.fillStyle = pointerGlow;
       ctx.fillRect(0, 0, width, height);
@@ -379,7 +399,7 @@ export default function LiquidBackdrop() {
         const alphaDelta = isDark ? 0.14 : 0.18;
         const alpha = alphaBase + (Math.sin(t * 0.0014 * star.twinkle + star.phase) + 1) * alphaDelta;
         const y = (star.y + t * 0.003 * star.drift + height) % height;
-        const x = star.x + (pointerX - 0.5) * 8 * star.twinkle;
+        const x = star.x + (pointerX - 0.5) * 4 * star.twinkle;
         ctx.beginPath();
         ctx.fillStyle = isDark ? `rgba(220,232,255,${alpha.toFixed(3)})` : `rgba(255,255,255,${alpha.toFixed(3)})`;
         ctx.arc(x, y, star.r, 0, Math.PI * 2);
@@ -394,14 +414,14 @@ export default function LiquidBackdrop() {
         const cx =
           width * 0.5 +
           Math.cos(t * blob.speed + blob.angle) * orbitRadius +
-          (pointerX - 0.5) * 180 +
+          (pointerX - 0.5) * 70 +
           Math.sin(t * 0.00031 + blob.phase) * blob.wobble;
         const cy =
           height * 0.38 +
           Math.sin(t * blob.speed * 1.13 + blob.angle) * (orbitRadius * 0.55) +
-          (pointerY - 0.45) * 145 +
+          (pointerY - 0.45) * 56 +
           Math.cos(t * 0.00027 + blob.phase) * (blob.wobble * 0.8);
-        const radius = blob.size + Math.sin(t * 0.0004 + blob.phase) * 42;
+        const radius = blob.size + Math.sin(t * 0.00035 + blob.phase) * 20;
 
         const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
         if (blob.hueShift % 2 === 0) {
@@ -424,11 +444,11 @@ export default function LiquidBackdrop() {
       ctx.strokeStyle = isDark ? "rgba(167,187,219,0.08)" : "rgba(255,255,255,0.12)";
       ctx.lineWidth = 1;
       for (let i = 0; i < 5; i += 1) {
-        const y = height * (0.08 + i * 0.11) + Math.sin(t * 0.00035 + i) * 10 + (pointerY - 0.5) * (4 + i * 1.4);
+        const y = height * (0.08 + i * 0.11) + Math.sin(t * 0.00035 + i) * 8 + (pointerY - 0.5) * (2 + i * 0.7);
         ctx.beginPath();
         ctx.moveTo(-20, y);
         for (let x = 0; x <= width + 40; x += 80) {
-          const wave = Math.sin(t * 0.0006 + x * 0.01 + i * 0.8 + (pointerX - 0.5) * 1.5) * 10;
+          const wave = Math.sin(t * 0.0006 + x * 0.01 + i * 0.8 + (pointerX - 0.5) * 0.8) * 7;
           ctx.quadraticCurveTo(x + 40, y + wave, x + 80, y);
         }
         ctx.stroke();
@@ -437,6 +457,15 @@ export default function LiquidBackdrop() {
     };
 
     const loop = (time) => {
+      if (document.hidden) {
+        state.rafId = window.requestAnimationFrame(loop);
+        return;
+      }
+      if (state.lastDrawMs && time - state.lastDrawMs < FRAME_MS) {
+        state.rafId = window.requestAnimationFrame(loop);
+        return;
+      }
+      state.lastDrawMs = time;
       draw(time);
       state.rafId = window.requestAnimationFrame(loop);
     };

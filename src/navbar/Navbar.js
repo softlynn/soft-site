@@ -1,6 +1,7 @@
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { AppBar, Toolbar, Typography, useMediaQuery, Box, Divider, Button, Stack, Tooltip, IconButton } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
 import Logo from "../assets/logo.png";
 import CustomLink from "../utils/CustomLink";
 import TwitterIcon from "@mui/icons-material/Twitter";
@@ -60,9 +61,11 @@ const navChipSx = {
 
 export default function Navbar() {
   const isMobile = useMediaQuery("(max-width: 900px)");
+  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const titleTapState = useRef(titleTapStateStore);
+  const [logoBurstSeed, setLogoBurstSeed] = useState(0);
 
   const mainLinks = useMemo(
     () =>
@@ -130,6 +133,10 @@ export default function Navbar() {
     }
   };
 
+  const handleLogoClick = () => {
+    setLogoBurstSeed((seed) => seed + 1);
+  };
+
   return (
     <Box sx={{ px: { xs: 1, sm: 1.5 }, pt: { xs: 1, sm: 1.25 }, pb: 0.5 }}>
       <AppBar position="static" elevation={0} sx={{ borderRadius: "20px" }}>
@@ -137,20 +144,51 @@ export default function Navbar() {
           <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
             {isMobile && <Drawer socials={socials} />}
 
-            <CustomLink color="inherit" href="/" sx={{ mr: 1.25 }}>
+            <CustomLink color="inherit" href="/" onClick={handleLogoClick} sx={{ mr: 1.25 }}>
               <Box
+                className="soft-logo-shell"
                 sx={{
-                  width: 42,
-                  height: 42,
+                  width: 48,
+                  height: 48,
                   borderRadius: "14px",
-                  background: "var(--soft-surface)",
+                  background: theme.palette.mode === "dark" ? "rgba(23,31,47,0.76)" : "var(--soft-surface)",
                   border: "1px solid var(--soft-border)",
                   boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 6px 14px rgba(19,33,56,.08)",
                   display: "grid",
                   placeItems: "center",
+                  position: "relative",
                 }}
               >
-                <img alt="" style={{ maxWidth: "32px", height: "auto" }} src={Logo} />
+                <Box
+                  sx={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: "12px",
+                    background: "rgba(255,255,255,0.96)",
+                    display: "grid",
+                    placeItems: "center",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,.95)",
+                  }}
+                >
+                  <img alt="" style={{ maxWidth: "34px", height: "auto" }} src={Logo} />
+                </Box>
+                {logoBurstSeed > 0 &&
+                  Array.from({ length: 8 }, (_, i) => {
+                    const angle = (Math.PI * 2 * i) / 8;
+                    const radius = 12 + (i % 2) * 6;
+                    return (
+                      <Box
+                        key={`${logoBurstSeed}-${i}`}
+                        className="soft-logo-bubble"
+                        sx={{
+                          "--dx": `${Math.cos(angle) * radius}px`,
+                          "--dy": `${Math.sin(angle) * radius}px`,
+                          "--delay": `${i * 12}ms`,
+                          "--size": `${i % 3 === 0 ? 7 : 5}px`,
+                        }}
+                      />
+                    );
+                  })}
               </Box>
             </CustomLink>
 

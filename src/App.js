@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { HashRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes, useLocation } from "react-router-dom";
 import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
 import { CssBaseline, styled, Tooltip, IconButton } from "@mui/material";
 import Loading from "./utils/Loading";
@@ -20,11 +20,10 @@ const AdminPage = lazy(() => import("./admin/AdminPage"));
 const THEME_STORAGE_KEY = "softu-theme-mode";
 
 const getInitialThemeMode = () => {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
   if (saved === "light" || saved === "dark") return saved;
-  const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
-  return prefersDark ? "dark" : "light";
+  return "light";
 };
 
 const buildTheme = (mode) => {
@@ -239,29 +238,7 @@ export default function App() {
       <HashRouter>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Parent>
-            <LiquidBackdrop />
-            <Tooltip title={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
-              <IconButton
-                onClick={toggleThemeMode}
-                color="primary"
-                sx={{
-                  position: "fixed",
-                  top: { xs: 12, md: 14 },
-                  right: { xs: 12, md: 16 },
-                  zIndex: 1500,
-                  width: 42,
-                  height: 42,
-                  borderRadius: "14px",
-                  border: "1px solid var(--soft-border)",
-                  background: "var(--soft-surface)",
-                  boxShadow: "var(--soft-shadow)",
-                  backdropFilter: "blur(14px) saturate(130%)",
-                }}
-                aria-label={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              >
-                {themeMode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
-              </IconButton>
-            </Tooltip>
+            <RouteAwareOverlays themeMode={themeMode} toggleThemeMode={toggleThemeMode} />
             <Suspense fallback={<Loading />}>
               <Routes>
                 <Route path="*" element={<NotFound />} />
@@ -304,6 +281,48 @@ export default function App() {
         </LocalizationProvider>
       </HashRouter>
     </ThemeProvider>
+  );
+}
+
+function RouteAwareOverlays({ themeMode, toggleThemeMode }) {
+  const location = useLocation();
+  const path = location.pathname || "/";
+  const isViewerRoute = path.startsWith("/youtube/") || path.startsWith("/cdn/") || path.startsWith("/games/");
+  const hasNavbar = path === "/" || path === "/vods" || path === "/admin";
+
+  return (
+    <>
+      {!isViewerRoute && <LiquidBackdrop />}
+      <Tooltip title={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
+        <IconButton
+          onClick={toggleThemeMode}
+          color="primary"
+          sx={{
+            position: "fixed",
+            ...(hasNavbar
+              ? {
+                  top: { xs: 78, md: 92 },
+                  right: { xs: 10, md: 14 },
+                }
+              : {
+                  bottom: { xs: 12, md: 16 },
+                  right: { xs: 12, md: 16 },
+                }),
+            zIndex: 1500,
+            width: 40,
+            height: 40,
+            borderRadius: "14px",
+            border: "1px solid var(--soft-border)",
+            background: "var(--soft-surface)",
+            boxShadow: "var(--soft-shadow)",
+            backdropFilter: "blur(14px) saturate(130%)",
+          }}
+          aria-label={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {themeMode === "dark" ? <LightModeRoundedIcon fontSize="small" /> : <DarkModeRoundedIcon fontSize="small" />}
+        </IconButton>
+      </Tooltip>
+    </>
   );
 }
 

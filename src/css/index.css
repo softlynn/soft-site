@@ -154,9 +154,9 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   border-radius: inherit;
   pointer-events: none;
   background:
-    radial-gradient(260px 180px at var(--soft-pointer-x) var(--soft-pointer-y), rgba(255, 255, 255, 0.16), transparent 70%),
-    radial-gradient(180px 140px at calc(var(--soft-pointer-x) - 10%) calc(var(--soft-pointer-y) + 18%), rgba(212, 107, 140, 0.08), transparent 74%);
-  opacity: 0.85;
+    radial-gradient(220px 160px at 18% 8%, rgba(255, 255, 255, 0.16), transparent 70%),
+    radial-gradient(180px 140px at 72% 88%, rgba(212, 107, 140, 0.05), transparent 74%);
+  opacity: 0.7;
 }
 
 .soft-glass::after {
@@ -255,7 +255,6 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
     radial-gradient(circle at 68% 48%, rgba(255, 255, 255, 0.6), transparent 58%),
     radial-gradient(circle at 45% 70%, rgba(212, 107, 140, 0.18), transparent 62%);
   animation: soft-cloud-drift 18s ease-in-out infinite;
-  transform: translate3d(calc(var(--soft-pointer-rx) * 12px), calc(var(--soft-pointer-ry) * 8px), 0);
 }
 
 .liquid-backdrop__cloud--a {
@@ -289,7 +288,6 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
   animation: soft-spin 30s linear infinite;
   opacity: 0.28;
-  transform: translate3d(calc(var(--soft-pointer-rx) * 10px), calc(var(--soft-pointer-ry) * 10px), 0);
 }
 
 .liquid-backdrop__orbit--a {
@@ -319,7 +317,6 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   letter-spacing: -0.03em;
   text-transform: lowercase;
   user-select: none;
-  transform: translate3d(calc(var(--soft-pointer-rx) * 18px), calc(var(--soft-pointer-ry) * 14px), 0);
 }
 
 .soft-star {
@@ -374,7 +371,7 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   inset: 0;
   pointer-events: none;
   z-index: 2;
-  background: radial-gradient(340px 220px at var(--soft-pointer-x) var(--soft-pointer-y), rgba(255, 255, 255, 0.12), transparent 70%);
+  background: radial-gradient(280px 180px at var(--soft-pointer-x) var(--soft-pointer-y), rgba(255, 255, 255, 0.08), transparent 70%);
 }
 
 .soft-live-frame iframe {
@@ -417,6 +414,48 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 16px 36px rgba(19, 33, 56, 0.18);
+}
+
+.video-js video,
+.video-js .vjs-tech {
+  border-radius: inherit;
+}
+
+.youtube-player {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.youtube-player > div,
+.youtube-player iframe {
+  border-radius: inherit;
+}
+
+.soft-logo-shell {
+  position: relative;
+  overflow: visible;
+}
+
+.soft-logo-bubbles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.soft-logo-bubble {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--size, 6px);
+  height: var(--size, 6px);
+  margin-left: calc(var(--size, 6px) * -0.5);
+  margin-top: calc(var(--size, 6px) * -0.5);
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.95), rgba(212,107,140,0.72));
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.22);
+  opacity: 0;
+  animation: soft-logo-bubble-pop 620ms cubic-bezier(.18,.78,.2,1) forwards;
+  animation-delay: var(--delay, 0ms);
 }
 
 .video-js .vjs-control-bar {
@@ -474,22 +513,22 @@ html[data-soft-theme="dark"] .video-js {
 
 @keyframes soft-cloud-drift {
   0% {
-    transform: translate3d(calc(var(--soft-pointer-rx) * 12px), calc(var(--soft-pointer-ry) * 8px), 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   50% {
-    transform: translate3d(calc(var(--soft-pointer-rx) * 12px + 18px), calc(var(--soft-pointer-ry) * 8px - 10px), 0) scale(1.04);
+    transform: translate3d(14px, -8px, 0) scale(1.03);
   }
   100% {
-    transform: translate3d(calc(var(--soft-pointer-rx) * 12px), calc(var(--soft-pointer-ry) * 8px), 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
 @keyframes soft-spin {
   from {
-    transform: translate3d(calc(var(--soft-pointer-rx) * 10px), calc(var(--soft-pointer-ry) * 10px), 0) rotate(0deg);
+    transform: rotate(0deg);
   }
   to {
-    transform: translate3d(calc(var(--soft-pointer-rx) * 10px), calc(var(--soft-pointer-ry) * 10px), 0) rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 
@@ -516,6 +555,20 @@ html[data-soft-theme="dark"] .video-js {
   22% {
     transform: translateX(68%) rotate(8deg);
     opacity: 1;
+  }
+}
+
+@keyframes soft-logo-bubble-pop {
+  0% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+  35% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -16px))) scale(1.1);
   }
 }
 

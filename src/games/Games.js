@@ -13,6 +13,12 @@ import { BRAND_NAME } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 
 const delay = 0;
+const getOriginalTwitchVodUrl = (vod) => {
+  if (!vod || String(vod.platform || "").toLowerCase() !== "twitch") return "";
+  const id = String(vod.id || "").trim();
+  if (!/^\d+$/.test(id)) return "";
+  return `https://www.twitch.tv/videos/${id}`;
+};
 
 export default function Games(props) {
   const location = useLocation();
@@ -71,6 +77,7 @@ export default function Games(props) {
   if (vod === null) return <NotFound />;
 
   if (games.length === 0) return <NotFound />;
+  const originalTwitchVodUrl = getOriginalTwitchVodUrl(vod);
 
   return (
     <Box sx={{ height: "100%", width: "100%", p: { xs: 0.75, md: 1 } }}>
@@ -90,7 +97,9 @@ export default function Games(props) {
             p: 0.6,
           }}
         >
-          <YoutubePlayer playerRef={playerRef} part={part} games={games} setPart={setPart} setPlaying={setPlaying} delay={delay} />
+          <Box sx={{ width: "100%", height: "100%", borderRadius: "16px", overflow: "hidden", background: "#000", minHeight: 0 }}>
+            <YoutubePlayer playerRef={playerRef} part={part} games={games} setPart={setPart} setPlaying={setPlaying} delay={delay} />
+          </Box>
           <Box sx={{ position: "absolute", bottom: 0, left: "50%" }}>
             <Tooltip title={showMenu ? "Collapse" : "Expand"}>
               <ExpandMore expand={showMenu} onClick={handleExpandClick} aria-expanded={showMenu} aria-label="show menu">
@@ -133,6 +142,14 @@ export default function Games(props) {
                     }}
                   >
                     {vod.vodNotice}
+                  </Typography>
+                )}
+                {originalTwitchVodUrl && (
+                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mt: 0.25 }}>
+                    Original Twitch VOD:{" "}
+                    <Link href={originalTwitchVodUrl} target="_blank" rel="noopener noreferrer" underline="hover" color="secondary">
+                      open
+                    </Link>
                   </Typography>
                 )}
               </Box>

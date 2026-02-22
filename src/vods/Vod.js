@@ -11,10 +11,10 @@ import { useNavigate } from "react-router-dom";
 
 dayjs.extend(localizedFormat);
 
-const DEFAULT_CARD_WIDTH = "19rem";
+const DEFAULT_CARD_WIDTH = "20.25rem";
 
 export default function Vod(props) {
-  const { vod, gridSize, sizes } = props;
+  const { vod, gridSize, sizes, sheen = false } = props;
   const navigate = useNavigate();
 
   const thumbnail = useMemo(() => {
@@ -31,14 +31,14 @@ export default function Vod(props) {
   return (
     <Grid size={sizes || { xs: gridSize }} sx={{ maxWidth: DEFAULT_CARD_WIDTH, flexBasis: DEFAULT_CARD_WIDTH }}>
       <Box
-        className="soft-glass soft-surface-float soft-shimmer"
+        className={`soft-glass soft-surface-float${sheen ? " soft-shimmer" : ""}`}
         sx={{
           borderRadius: "22px",
-          p: 1,
+          p: 0.85,
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          gap: 1,
+          gap: 0.85,
         }}
       >
         <Box
@@ -50,14 +50,14 @@ export default function Vod(props) {
             position: "relative",
             borderRadius: "16px",
             cursor: vod.youtube?.length ? "pointer" : "default",
-            background: "rgba(255,255,255,0.55)",
-            border: "1px solid rgba(255,255,255,0.68)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.75)",
+            background: "var(--soft-surface)",
+            border: "1px solid var(--soft-border)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14)",
             "& img": {
               transition: "transform 360ms cubic-bezier(.2,.8,.2,1), filter 260ms ease",
             },
             "&:hover img": {
-              transform: "scale(1.045)",
+              transform: "scale(1.055)",
               filter: "saturate(1.06) contrast(1.02)",
             },
           }}
@@ -80,8 +80,8 @@ export default function Vod(props) {
                 px: 1,
                 py: 0.45,
                 borderRadius: "999px",
-                background: "rgba(255,255,255,0.72)",
-                border: "1px solid rgba(255,255,255,0.8)",
+                background: "var(--soft-surface-strong)",
+                border: "1px solid var(--soft-border)",
                 boxShadow: "0 8px 16px rgba(19,33,56,0.10)",
                 display: "flex",
                 alignItems: "center",

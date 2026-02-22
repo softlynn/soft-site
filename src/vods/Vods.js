@@ -106,7 +106,7 @@ export default function Vods() {
   const [filterEndDate, setFilterEndDate] = useState(dayjs());
   const [filterTitle, setFilterTitle] = useState("");
   const [filterGame, setFilterGame] = useState("");
-  const [platform, setPlatform] = useState(PLATFORMS[0]);
+  const [platform] = useState(PLATFORMS[0]);
   const page = parseInt(query.get("page") || "1", 10);
   const limit = isMobile ? 10 : 20;
   const previewLimit = isMobile ? 4 : 6;
@@ -240,11 +240,6 @@ export default function Vods() {
     navigate(`${location.pathname}?page=1`);
   };
 
-  const changePlatform = (evt) => {
-    setPlatform(evt.target.value);
-    navigate(`${location.pathname}?page=1`);
-  };
-
   const handleSubmit = (e) => {
     const value = e.target.value;
     if (e.which === 13 && !isNaN(value) && value > 0) {
@@ -372,16 +367,6 @@ export default function Vods() {
           <Box />
         )}
 
-        <FormControl sx={{ minWidth: 110 }}>
-          <InputLabel id="platform-select-label">Platform</InputLabel>
-          <Select labelId="platform-select-label" label="Platform" value={platform} onChange={changePlatform}>
-            {PLATFORMS.map((value) => (
-              <MenuItem key={value} value={value}>
-                {value}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
       </Box>
     </Box>
   );
@@ -402,7 +387,7 @@ export default function Vods() {
       <Grid container spacing={2} sx={{ mt: 0.5, justifyContent: "center" }}>
         {list.map((vod, index) => (
           <Reveal key={vod.id} delay={Math.min(index * 40, 220)} sx={{ display: "contents" }}>
-            <Vod vod={vod} sizes={cardSizes} gridSize={2.1} />
+            <Vod vod={vod} sizes={cardSizes} gridSize={2.1} sheen={index === 0} />
           </Reveal>
         ))}
       </Grid>
@@ -490,24 +475,6 @@ export default function Vods() {
                         )}
                       </Stack>
 
-                      <Box className="soft-glass" sx={{ mt: 0.6, p: 0.85, borderRadius: "18px", maxWidth: 360 }}>
-                        <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.75, px: 0.25 }}>
-                          stream playlist
-                        </Typography>
-                        <Box sx={{ borderRadius: "14px", overflow: "hidden" }}>
-                          <iframe
-                            data-testid="embed-iframe"
-                            title="softu stream playlist"
-                            src={SPOTIFY_PLAYLIST_EMBED_URL}
-                            width="100%"
-                            height="152"
-                            frameBorder="0"
-                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                            loading="lazy"
-                            style={{ border: 0, display: "block", borderRadius: "12px" }}
-                          />
-                        </Box>
-                      </Box>
                     </Box>
                   </Grid>
 
@@ -537,6 +504,27 @@ export default function Vods() {
                 </Box>
 
                 {previewVods === null ? <Loading /> : renderVodGrid(previewVods, { xs: 12, sm: 6, lg: 4 })}
+              </Box>
+            </Reveal>
+
+            <Reveal delay={150} sx={{ mt: 1.25 }}>
+              <Box className="soft-glass" sx={{ p: { xs: 0.95, md: 1.1 }, borderRadius: "20px" }}>
+                <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.75, px: 0.35, letterSpacing: "0.03em" }}>
+                  stream playlist
+                </Typography>
+                <Box sx={{ borderRadius: "14px", overflow: "hidden" }}>
+                  <iframe
+                    data-testid="embed-iframe"
+                    title="softu stream playlist"
+                    src={SPOTIFY_PLAYLIST_EMBED_URL}
+                    width="100%"
+                    height="132"
+                    frameBorder="0"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                    style={{ border: 0, display: "block", borderRadius: "12px" }}
+                  />
+                </Box>
               </Box>
             </Reveal>
           </>

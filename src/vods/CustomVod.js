@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Box, Typography, Tooltip, useMediaQuery, IconButton, Collapse, Divider, Button } from "@mui/material";
+import { Box, Typography, Tooltip, useMediaQuery, IconButton, Collapse, Divider, Button, Link } from "@mui/material";
 import Loading from "../utils/Loading";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -15,6 +15,13 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import HomeIcon from "@mui/icons-material/Home";
 import { BRAND_NAME } from "../config/site";
 import { getVodById } from "../api/vodsApi";
+
+const getOriginalTwitchVodUrl = (vod) => {
+  if (!vod || String(vod.platform || "").toLowerCase() !== "twitch") return "";
+  const id = String(vod.id || "").trim();
+  if (!/^\d+$/.test(id)) return "";
+  return `https://www.twitch.tv/videos/${id}`;
+};
 
 export default function Vod(props) {
   const location = useLocation();
@@ -94,6 +101,7 @@ export default function Vod(props) {
 
   if (vod === undefined || drive === undefined) return <Loading />;
   if (vod === null) return <NotFound />;
+  const originalTwitchVodUrl = getOriginalTwitchVodUrl(vod);
 
   return (
     <Box sx={{ height: "100%", width: "100%", p: { xs: 0.75, md: 1 } }}>
@@ -113,7 +121,9 @@ export default function Vod(props) {
             p: 0.6,
           }}
         >
-          <CustomPlayer playerRef={playerRef} setCurrentTime={setCurrentTime} setPlaying={setPlaying} delay={delay} setDelay={setDelay} type={type} vod={vod} timestamp={timestamp} />
+          <Box sx={{ width: "100%", height: "100%", borderRadius: "16px", overflow: "hidden", background: "#000", minHeight: 0 }}>
+            <CustomPlayer playerRef={playerRef} setCurrentTime={setCurrentTime} setPlaying={setPlaying} delay={delay} setDelay={setDelay} type={type} vod={vod} timestamp={timestamp} />
+          </Box>
           <Box sx={{ position: "absolute", bottom: 0, left: "50%" }}>
             <Tooltip title={showMenu ? "Collapse" : "Expand"}>
               <ExpandMore expand={showMenu} onClick={handleExpandClick} aria-expanded={showMenu} aria-label="show menu">
@@ -157,6 +167,14 @@ export default function Vod(props) {
                     }}
                   >
                     {vod.vodNotice}
+                  </Typography>
+                )}
+                {originalTwitchVodUrl && (
+                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mt: 0.25 }}>
+                    Original Twitch VOD:{" "}
+                    <Link href={originalTwitchVodUrl} target="_blank" rel="noopener noreferrer" underline="hover" color="secondary">
+                      open
+                    </Link>
                   </Typography>
                 )}
               </Box>

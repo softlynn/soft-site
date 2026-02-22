@@ -588,6 +588,7 @@ export default function Chat(props) {
     <Box
       sx={{
         height: "100%",
+        width: isPortrait ? "100%" : "min(34vw, 420px)",
         background:
           "linear-gradient(180deg, rgba(16,24,40,0.92), rgba(14,19,31,0.96))",
         borderLeft: isPortrait ? "none" : "1px solid rgba(255,255,255,0.08)",
@@ -595,6 +596,9 @@ export default function Chat(props) {
         display: "flex",
         flexDirection: "column",
         minHeight: 0,
+        borderRadius: "18px",
+        overflow: "hidden",
+        boxShadow: "0 14px 34px rgba(2,6,18,0.22)",
       }}
     >
       {showChat ? (
@@ -634,7 +638,7 @@ export default function Chat(props) {
               <Loading />
             ) : (
               <>
-                <SimpleBar scrollableNodeProps={{ ref: chatRef }} style={{ height: "100%", overflowX: "hidden" }}>
+                <SimpleBar scrollableNodeProps={{ ref: chatRef }} style={{ height: "100%", overflowX: "hidden", borderRadius: "0 0 18px 18px" }}>
                   <Box sx={{ display: "flex", justifyContent: "flex-end", flexDirection: "column" }}>
                     <Box sx={{ display: "flex", flexWrap: "wrap", minHeight: 0, alignItems: "flex-end" }}>{shownMessages}</Box>
                   </Box>
