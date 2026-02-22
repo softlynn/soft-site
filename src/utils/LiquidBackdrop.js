@@ -1,21 +1,12 @@
 import { Box } from "@mui/material";
 import { useEffect, useRef } from "react";
 
-const STAR_COUNT = 16;
+const STAR_COUNT = 12;
 const POINTER_DEFAULT = { x: 0.52, y: 0.44 };
-const TARGET_FPS = 24;
+const TARGET_FPS = 22;
 const FRAME_MS = 1000 / TARGET_FPS;
 
 const random = (min, max) => Math.random() * (max - min) + min;
-
-const syncPointerCssVars = (pointerX, pointerY) => {
-  if (typeof document === "undefined") return;
-  const root = document.documentElement;
-  root.style.setProperty("--soft-pointer-x", `${(pointerX * 100).toFixed(2)}%`);
-  root.style.setProperty("--soft-pointer-y", `${(pointerY * 100).toFixed(2)}%`);
-  root.style.setProperty("--soft-pointer-rx", ((pointerX - 0.5) * 2).toFixed(4));
-  root.style.setProperty("--soft-pointer-ry", ((pointerY - 0.5) * 2).toFixed(4));
-};
 
 async function startTypeGpuBackdrop(gpuCanvasRef, sharedStateRef) {
   if (typeof window === "undefined" || !gpuCanvasRef.current) return () => {};
@@ -308,8 +299,6 @@ export default function LiquidBackdrop() {
       state.pointerY += (state.targetPointerY - state.pointerY) * 0.065;
       const pointerX = state.pointerX;
       const pointerY = state.pointerY;
-      syncPointerCssVars(pointerX, pointerY);
-
       const isDark = document.documentElement.getAttribute("data-soft-theme") === "dark";
       ctx.clearRect(0, 0, width, height);
 
@@ -410,7 +399,6 @@ export default function LiquidBackdrop() {
     };
 
     rebuildScene();
-    syncPointerCssVars(state.pointerX, state.pointerY);
     state.rafId = window.requestAnimationFrame(loop);
     window.addEventListener("resize", rebuildScene);
 

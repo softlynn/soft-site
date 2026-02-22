@@ -10,7 +10,7 @@ export default function ThemeModeToggle({ sx = {}, variant = "floating", size = 
 
   useEffect(() => {
     setAnnounce(true);
-    const timer = window.setTimeout(() => setAnnounce(false), 1650);
+    const timer = window.setTimeout(() => setAnnounce(false), 2200);
     return () => window.clearTimeout(timer);
   }, [announceKey]);
 
@@ -31,4 +31,3 @@ export default function ThemeModeToggle({ sx = {}, variant = "floating", size = 
     </Tooltip>
   );
 }
-

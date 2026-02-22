@@ -564,24 +564,24 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
 }
 
 .soft-theme-toggle.is-announce {
-  animation: soft-theme-toggle-pop 1100ms cubic-bezier(.2,.85,.25,1) 280ms both;
+  animation: soft-theme-toggle-pop 1320ms cubic-bezier(.18,.86,.22,1) 180ms both;
 }
 
 .soft-theme-toggle.is-announce::before,
 .soft-theme-toggle.is-announce::after {
   content: "";
   position: absolute;
-  inset: -7px;
+  inset: -12px;
   border-radius: inherit;
   pointer-events: none;
   z-index: -1;
   border: 1px solid rgba(212, 107, 140, 0.24);
   box-shadow: 0 0 0 1px rgba(121,163,230,0.08) inset;
-  animation: soft-theme-toggle-ripple 1100ms cubic-bezier(.16,.8,.22,1) both;
+  animation: soft-theme-toggle-ripple 1320ms cubic-bezier(.16,.8,.22,1) both;
 }
 
 .soft-theme-toggle.is-announce::after {
-  animation-delay: 180ms;
+  animation-delay: 230ms;
   border-color: rgba(121, 163, 230, 0.22);
 }
 
@@ -873,33 +873,35 @@ html[data-soft-theme="dark"] .soft-player-stage::before {
 
 @keyframes soft-theme-toggle-pop {
   0% {
-    transform: scale(0.84) rotate(-10deg);
+    transform: scale(0.42) rotate(-14deg);
+    box-shadow: 0 0 0 rgba(0,0,0,0);
   }
-  26% {
-    transform: scale(1.14) rotate(7deg);
+  20% {
+    transform: scale(1.32) rotate(8deg);
   }
-  42% {
-    transform: scale(0.97) rotate(-5deg);
+  38% {
+    transform: scale(0.92) rotate(-6deg);
   }
-  62% {
-    transform: scale(1.04) rotate(3deg);
+  58% {
+    transform: scale(1.12) rotate(4deg);
   }
   100% {
     transform: scale(1) rotate(0deg);
+    box-shadow: var(--soft-shadow);
   }
 }
 
 @keyframes soft-theme-toggle-ripple {
   0% {
     opacity: 0;
-    transform: scale(0.78);
+    transform: scale(0.52);
   }
-  18% {
-    opacity: 0.48;
+  14% {
+    opacity: 0.56;
   }
   100% {
     opacity: 0;
-    transform: scale(1.9);
+    transform: scale(2.65);
   }
 }
 

@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 
 const POINTER_DEFAULT = { x: 0.45, y: 0.5 };
-const FPS_ACTIVE = 24;
-const FPS_IDLE = 12;
+const FPS_ACTIVE = 20;
+const FPS_IDLE = 10;
 const FRAME_MS_ACTIVE = 1000 / FPS_ACTIVE;
 const FRAME_MS_IDLE = 1000 / FPS_IDLE;
 
@@ -167,8 +167,9 @@ fn fs(inFrag: VertexOut) -> @location(0) vec4f {
   const configure = () => {
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.max(1, Math.min(1.25, window.devicePixelRatio || 1));
-    const width = Math.max(1, Math.floor(rect.width * dpr));
-    const height = Math.max(1, Math.floor(rect.height * dpr));
+    const renderScale = 0.82;
+    const width = Math.max(1, Math.floor(rect.width * dpr * renderScale));
+    const height = Math.max(1, Math.floor(rect.height * dpr * renderScale));
     if (canvas.width !== width) canvas.width = width;
     if (canvas.height !== height) canvas.height = height;
     context.configure({ device, format, alphaMode: "premultiplied" });
@@ -192,6 +193,9 @@ fn fs(inFrag: VertexOut) -> @location(0) vec4f {
   const visibilityObserver = new IntersectionObserver(
     ([entry]) => {
       state.visible = Boolean(entry?.isIntersecting);
+      if (!state.visible) {
+        state.targetHover = 0.12;
+      }
     },
     { threshold: 0.01 }
   );
