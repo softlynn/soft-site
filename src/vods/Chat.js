@@ -24,6 +24,8 @@ let badgesCount = 0;
 
 export default function Chat(props) {
   const { isPortrait, vodId, playerRef, playing, userChatDelay, delay, youtube, part, games, chatReplayAvailable = true } = props;
+  const desktopExpandedWidth = "clamp(320px, 34vw, 420px)";
+  const desktopCollapsedWidth = "46px";
   const [showChat, setShowChat] = useState(true);
   const [shownMessages, setShownMessages] = useState([]);
   const comments = useRef([]);
@@ -589,7 +591,9 @@ export default function Chat(props) {
     <Box
       sx={{
         height: "100%",
-        width: isPortrait ? "100%" : "min(34vw, 420px)",
+        width: isPortrait ? "100%" : showChat ? desktopExpandedWidth : desktopCollapsedWidth,
+        minWidth: isPortrait ? 0 : showChat ? "clamp(320px, 28vw, 420px)" : desktopCollapsedWidth,
+        transition: isPortrait ? "none" : "width 220ms cubic-bezier(.2,.8,.2,1)",
         background:
           "linear-gradient(180deg, rgba(16,24,40,0.92), rgba(14,19,31,0.96))",
         borderLeft: isPortrait ? "none" : "1px solid rgba(255,255,255,0.08)",
@@ -600,6 +604,7 @@ export default function Chat(props) {
         borderRadius: "18px",
         overflow: "hidden",
         boxShadow: "0 14px 34px rgba(2,6,18,0.22)",
+        position: "relative",
       }}
     >
       {showChat ? (
@@ -641,7 +646,7 @@ export default function Chat(props) {
             </Box>
           </Box>
           <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
-          <CustomCollapse in={showChat} timeout="auto" unmountOnExit sx={{ minWidth: "340px" }}>
+          <CustomCollapse in={showChat} timeout="auto" unmountOnExit sx={{ minWidth: 0 }}>
             {!chatReplayAvailable ? (
               <Box sx={{ p: 2 }}>
                 <Typography variant="body2" sx={{ color: "rgba(219,232,255,0.74)" }}>
@@ -672,7 +677,7 @@ export default function Chat(props) {
         </>
       ) : (
         !isPortrait && (
-          <Box sx={{ position: "absolute", right: 0 }}>
+          <Box sx={{ position: "absolute", inset: 0, display: "grid", placeItems: "center" }}>
             <Tooltip title="Expand">
               <ExpandMore expand={showChat} onClick={handleExpandClick} aria-expanded={showChat}>
                 <ExpandMoreIcon />

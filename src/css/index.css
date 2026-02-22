@@ -468,6 +468,14 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 16px 36px rgba(19, 33, 56, 0.18);
+  background: transparent !important;
+}
+
+.video-js,
+.video-js .vjs-tech,
+.video-js video,
+[data-vjs-player] {
+  background-color: transparent !important;
 }
 
 .video-js video,
@@ -479,6 +487,7 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   border-radius: 16px;
   overflow: hidden;
   background: transparent;
+  line-height: 0;
 }
 
 .youtube-player > div,
@@ -489,6 +498,7 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   border: 0;
   vertical-align: top;
   border-radius: inherit;
+  background: transparent !important;
 }
 
 .youtube-player:fullscreen,
@@ -499,6 +509,10 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
 .youtube-player iframe:-webkit-full-screen {
   background: transparent !important;
   border-radius: 0 !important;
+}
+
+.youtube-player iframe {
+  color-scheme: dark;
 }
 
 .soft-logo-shell {

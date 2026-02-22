@@ -104,20 +104,32 @@ export default function Games(props) {
             position: "relative",
             borderRadius: "20px",
             p: 0.6,
+            gap: 0.5,
           }}
         >
           <Box
             sx={{
               width: "100%",
-              height: "100%",
-              borderRadius: "16px",
-              overflow: "hidden",
-              background:
-                "linear-gradient(180deg, rgba(18,27,44,0.06), rgba(18,27,44,0.10))",
               minHeight: 0,
+              flex: 1,
+              display: "grid",
+              placeItems: "center",
             }}
           >
-            <YoutubePlayer playerRef={playerRef} part={part} games={games} setPart={setPart} setPlaying={setPlaying} delay={delay} />
+            <Box
+              sx={{
+                width: "100%",
+                maxHeight: "100%",
+                aspectRatio: "16 / 9",
+                borderRadius: "16px",
+                overflow: "hidden",
+                background: "transparent",
+                minHeight: 0,
+                boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
+              }}
+            >
+              <YoutubePlayer playerRef={playerRef} part={part} games={games} setPart={setPart} setPlaying={setPlaying} delay={delay} />
+            </Box>
           </Box>
           <Box sx={{ position: "absolute", bottom: 0, left: "50%" }}>
             <Tooltip title={showMenu ? "Collapse" : "Expand"}>

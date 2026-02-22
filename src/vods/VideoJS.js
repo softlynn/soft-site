@@ -18,7 +18,7 @@ export const VideoJS = (props) => {
   }, [options, videoRef, onReady]);
 
   return (
-    <div data-vjs-player>
+    <div data-vjs-player style={{ width: "100%", height: "100%", lineHeight: 0, background: "transparent" }}>
       <video ref={videoRef} autoPlay playsInline className="video-js" style={{ height: "100%", width: "100%" }} />
     </div>
   );

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { HashRouter, Route, Routes, useLocation } from "react-router-dom";
 import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
 import { CssBaseline, styled } from "@mui/material";
@@ -238,6 +238,17 @@ export default function App() {
   const theme = useMemo(() => buildTheme(effectiveThemeMode), [effectiveThemeMode]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const syncHashPath = () => setRoutePath(getHashPath());
+    window.addEventListener("hashchange", syncHashPath);
+    window.addEventListener("popstate", syncHashPath);
+    return () => {
+      window.removeEventListener("hashchange", syncHashPath);
+      window.removeEventListener("popstate", syncHashPath);
+    };
+  }, []);
+
+  useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.setAttribute("data-soft-theme", effectiveThemeMode);
     document.body.setAttribute("data-soft-theme", effectiveThemeMode);
@@ -308,7 +319,7 @@ export default function App() {
 function RouteThemeBridge({ onPathChange }) {
   const location = useLocation();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     onPathChange(location.pathname || "/");
   }, [location.pathname, onPathChange]);
 
@@ -321,7 +332,55 @@ function RouteAwareOverlays() {
   const isViewerRoute = path.startsWith("/youtube/") || path.startsWith("/cdn/") || path.startsWith("/games/");
   const showFloatingToggle = !isViewerRoute;
   const showBackdrop = path === "/" || path === "/vods";
-  const footerAwareBottom = path === "/" || path === "/vods" ? { xs: 72, md: 80 } : { xs: 20, md: 26 };
+  const [liftFloatingToggle, setLiftFloatingToggle] = useState(false);
+
+  useEffect(() => {
+    if (!showFloatingToggle || typeof document === "undefined") {
+      setLiftFloatingToggle(false);
+      return undefined;
+    }
+
+    let observer = null;
+    let retryTimer = null;
+    let retries = 0;
+    let disposed = false;
+
+    const attachObserver = () => {
+      if (disposed || typeof window === "undefined" || typeof window.IntersectionObserver === "undefined") return;
+      const footer = document.querySelector("footer");
+      if (!footer) {
+        if (retries < 12) {
+          retries += 1;
+          retryTimer = window.setTimeout(attachObserver, 250);
+        }
+        return;
+      }
+
+      observer = new window.IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          setLiftFloatingToggle(Boolean(entry?.isIntersecting));
+        },
+        {
+          root: null,
+          threshold: 0,
+          rootMargin: "0px 0px 96px 0px",
+        }
+      );
+      observer.observe(footer);
+    };
+
+    setLiftFloatingToggle(false);
+    attachObserver();
+
+    return () => {
+      disposed = true;
+      if (retryTimer) window.clearTimeout(retryTimer);
+      if (observer) observer.disconnect();
+    };
+  }, [path, showFloatingToggle]);
+
+  const footerAwareBottom = liftFloatingToggle ? { xs: 52, md: 62 } : { xs: 10, md: 14 };
 
   return (
     <>
