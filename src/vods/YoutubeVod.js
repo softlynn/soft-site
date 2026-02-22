@@ -165,15 +165,46 @@ export default function Vod(props) {
           }}
         >
           <Box
+            className="soft-player-stage"
             sx={{
               width: "100%",
               minHeight: 0,
               flex: 1,
               display: "grid",
               placeItems: "center",
+              position: "relative",
+              borderRadius: "16px",
+              overflow: "hidden",
             }}
           >
+            {!!vod.thumbnail_url && (
+              <Box
+                aria-hidden="true"
+                sx={{
+                  position: "absolute",
+                  inset: -12,
+                  backgroundImage: `url(${vod.thumbnail_url})`,
+                  backgroundPosition: "center",
+                  backgroundSize: "cover",
+                  filter: "blur(28px) saturate(1.08)",
+                  transform: "scale(1.06)",
+                  opacity: 0.38,
+                  zIndex: 0,
+                }}
+              />
+            )}
             <Box
+              aria-hidden="true"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "radial-gradient(120% 90% at 8% 8%, rgba(255,255,255,0.14), transparent 58%), radial-gradient(110% 90% at 92% 92%, rgba(212,107,140,0.12), transparent 64%), linear-gradient(180deg, rgba(17,24,39,0.05), rgba(17,24,39,0.10))",
+                zIndex: 1,
+              }}
+            />
+            <Box
+              className="soft-player-frame"
               sx={{
                 width: "100%",
                 maxHeight: "100%",
@@ -183,6 +214,8 @@ export default function Vod(props) {
                 background: "transparent",
                 minHeight: 0,
                 boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
+                position: "relative",
+                zIndex: 2,
               }}
             >
               <YoutubePlayer playerRef={playerRef} part={part} youtube={youtube} setCurrentTime={setCurrentTime} setPart={setPart} setPlaying={setPlaying} delay={delay} />

@@ -404,7 +404,7 @@ export default function Vods() {
   };
 
   return (
-    <SimpleBar style={{ minHeight: 0, height: "100%" }}>
+    <SimpleBar className="soft-vods-scroll" style={{ minHeight: 0, height: "100%" }}>
       <Box sx={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
       <Box sx={{ px: { xs: 1.25, sm: 2, md: 2.2 }, pb: 1, flexGrow: 1 }}>
         {ENABLE_ADSENSE && ADSENSE_CLIENT && ADSENSE_SLOT && (

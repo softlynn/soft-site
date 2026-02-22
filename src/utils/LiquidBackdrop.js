@@ -120,8 +120,10 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
   let ringB = ring(q, vec2f(0.22 + cos(t * 0.37 + 0.6) * 0.10, 0.10 + sin(t * 0.33) * 0.08), 0.33, 0.045);
   let ringC = ring(q, vec2f(mouse.x * 0.65, mouse.y * 0.65), 0.22 + sin(t * 0.8) * 0.02, 0.032);
 
-  let streak = pow(max(0.0, sin((q.x * 9.0 - q.y * 5.8) + t * 1.4) * 0.5 + 0.5), 4.0);
-  let caustics = streak * (ringA * 0.8 + ringB * 0.75 + ringC * 1.2);
+  let rippleField = sin(length(q * 1.18 + warpA * 0.42) * 11.2 - t * 1.35 + sin(q.x * 2.8 + t * 0.25) * 0.8);
+  let filamentField = sin((q.x + q.y) * 4.2 + t * 0.55) * sin((q.x - q.y) * 3.6 - t * 0.45);
+  let causticsShape = pow(max(0.0, rippleField * 0.5 + 0.5), 4.2) * 0.76 + pow(max(0.0, filamentField * 0.5 + 0.5), 5.2) * 0.42;
+  let caustics = causticsShape * (ringA * 0.82 + ringB * 0.76 + ringC * 1.18);
   let body = smoothstep(0.22, 0.95, ringA * 0.85 + ringB * 0.8 + ringC * 0.7);
   let cursorGlow = exp(-pow(length(q - mouse) * 3.8, 2.0) * 1.3);
   let vignette = 1.0 - smoothstep(0.35, 1.08, length(vec2f(centered.x * aspect, centered.y)));
@@ -129,12 +131,12 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
   let tintMix = clamp(uv.x * 0.58 + uv.y * 0.20 + ringC * 0.2, 0.0, 1.0);
   let tint = mix(u.tintA.rgb, u.tintB.rgb, tintMix);
   var color =
-    tint * (body * 0.15 + caustics * 0.18) +
-    vec3f(1.0) * (caustics * 0.16 + cursorGlow * 0.08 + ringC * 0.06);
+    tint * (body * 0.18 + caustics * 0.24) +
+    vec3f(1.0) * (caustics * 0.19 + cursorGlow * 0.10 + ringC * 0.06);
 
   let grain = (hash21(floor(uv * res * 0.5) + vec2f(t * 24.0, -t * 19.0)) - 0.5) / 255.0;
   color = (color + vec3f(grain)) * vignette;
-  let alpha = clamp((body * 0.11 + caustics * 0.16 + cursorGlow * 0.04) * vignette * u.intensity, 0.0, 0.34);
+  let alpha = clamp((body * 0.13 + caustics * 0.21 + cursorGlow * 0.05) * vignette * u.intensity, 0.0, 0.42);
   return vec4f(color, alpha);
 }
 `,
@@ -210,9 +212,9 @@ fn fsMain(inFrag: VertexOut) -> @location(0) vec4f {
       resolution: d.vec2f(canvas.width || 1, canvas.height || 1),
       pointer: d.vec2f(pointerX, pointerY),
       time: Number(time || 0),
-      intensity: isDark ? 1.0 : 0.92,
+      intensity: isDark ? 1.02 : 1.12,
       tintA: d.vec4f(0.831, 0.420, 0.549, 1.0),
-      tintB: d.vec4f(isDark ? 0.39 : 0.475, isDark ? 0.53 : 0.639, isDark ? 0.86 : 0.902, 1.0),
+      tintB: d.vec4f(isDark ? 0.40 : 0.50, isDark ? 0.55 : 0.67, isDark ? 0.88 : 0.94, 1.0),
     });
 
     let currentTexture;
@@ -344,23 +346,35 @@ export default function LiquidBackdrop() {
       ctx.stroke();
       ctx.restore();
 
-      // Keep the 2D layer lighter when GPU is active.
-      if (!state.gpuActive) {
-        ctx.save();
-        ctx.globalCompositeOperation = "source-over";
-        for (let i = 0; i < 2; i += 1) {
-          const y = height * (0.24 + i * 0.28) + Math.sin(t * (0.00025 + i * 0.00006) + i) * (14 + i * 5);
-          const grad = ctx.createLinearGradient(0, y - 36, width, y + 36);
-          grad.addColorStop(0, "rgba(0,0,0,0)");
-          grad.addColorStop(0.28, isDark ? "rgba(121,163,230,0.045)" : "rgba(121,163,230,0.06)");
-          grad.addColorStop(0.52, isDark ? "rgba(212,107,140,0.038)" : "rgba(212,107,140,0.05)");
-          grad.addColorStop(0.72, isDark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.05)");
-          grad.addColorStop(1, "rgba(0,0,0,0)");
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, y - 40, width, 80);
-        }
-        ctx.restore();
+      // Layered drifting blooms keep the backdrop visible without striped/banded artifacts.
+      ctx.save();
+      ctx.globalCompositeOperation = "source-over";
+      const bloomStrength = state.gpuActive ? 0.58 : 1;
+      for (let i = 0; i < 3; i += 1) {
+        const ox = width * (0.18 + i * 0.28) + Math.sin(t * (0.00014 + i * 0.00003) + i * 1.2) * (22 + i * 7);
+        const oy = height * (0.22 + i * 0.2) + Math.cos(t * (0.00017 + i * 0.00004) + i * 1.5) * (18 + i * 6);
+        const r = Math.max(width, height) * (0.14 + i * 0.04);
+        const bloom = ctx.createRadialGradient(ox, oy, 0, ox, oy, r);
+        bloom.addColorStop(0, isDark ? `rgba(255,255,255,${(0.032 * bloomStrength).toFixed(3)})` : `rgba(255,255,255,${(0.08 * bloomStrength).toFixed(3)})`);
+        bloom.addColorStop(0.34, isDark ? `rgba(121,163,230,${(0.055 * bloomStrength).toFixed(3)})` : `rgba(121,163,230,${(0.09 * bloomStrength).toFixed(3)})`);
+        bloom.addColorStop(0.62, isDark ? `rgba(212,107,140,${(0.05 * bloomStrength).toFixed(3)})` : `rgba(212,107,140,${(0.08 * bloomStrength).toFixed(3)})`);
+        bloom.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = bloom;
+        ctx.fillRect(ox - r, oy - r, r * 2, r * 2);
       }
+
+      const ribbonStrength = state.gpuActive ? 0.48 : 0.9;
+      for (let i = 0; i < 2; i += 1) {
+        const cx = width * (0.34 + i * 0.24) + Math.sin(t * (0.00022 + i * 0.00005) + i) * 16;
+        const cy = height * (0.58 - i * 0.17) + Math.cos(t * (0.0002 + i * 0.00006) + i * 1.3) * 14;
+        const ribbon = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(width, height) * 0.22);
+        ribbon.addColorStop(0, isDark ? `rgba(121,163,230,${(0.03 * ribbonStrength).toFixed(3)})` : `rgba(121,163,230,${(0.055 * ribbonStrength).toFixed(3)})`);
+        ribbon.addColorStop(0.44, isDark ? `rgba(212,107,140,${(0.028 * ribbonStrength).toFixed(3)})` : `rgba(212,107,140,${(0.05 * ribbonStrength).toFixed(3)})`);
+        ribbon.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = ribbon;
+        ctx.fillRect(cx - width * 0.3, cy - height * 0.18, width * 0.6, height * 0.36);
+      }
+      ctx.restore();
 
       // Stars stay subtle and cheap.
       ctx.save();

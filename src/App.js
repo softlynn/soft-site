@@ -234,7 +234,9 @@ const buildTheme = (mode) => {
 export default function App() {
   const [preferredThemeMode, setPreferredThemeMode] = useState(getInitialThemeMode);
   const [routePath, setRoutePath] = useState(getHashPath);
-  const effectiveThemeMode = isViewerPath(routePath) ? "dark" : preferredThemeMode;
+  const [viewerThemeOverride, setViewerThemeOverride] = useState(null);
+  const viewerRoute = isViewerPath(routePath);
+  const effectiveThemeMode = viewerRoute ? viewerThemeOverride || "dark" : preferredThemeMode;
   const theme = useMemo(() => buildTheme(effectiveThemeMode), [effectiveThemeMode]);
 
   useEffect(() => {
@@ -259,7 +261,19 @@ export default function App() {
     window.localStorage.setItem(THEME_STORAGE_KEY, preferredThemeMode);
   }, [preferredThemeMode]);
 
-  const toggleThemeMode = () => setPreferredThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
+  useEffect(() => {
+    if (!viewerRoute) {
+      setViewerThemeOverride(null);
+    }
+  }, [viewerRoute]);
+
+  const toggleThemeMode = () => {
+    if (viewerRoute) {
+      setViewerThemeOverride((prev) => ((prev || "dark") === "dark" ? "light" : "dark"));
+      return;
+    }
+    setPreferredThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
+  };
 
   return (
     <ThemeModeContext.Provider value={{ themeMode: effectiveThemeMode, toggleThemeMode }}>
