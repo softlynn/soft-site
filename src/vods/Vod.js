@@ -8,6 +8,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat.js";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
 import { useNavigate } from "react-router-dom";
+import VodReactions from "./VodReactions";
 
 dayjs.extend(localizedFormat);
 
@@ -133,6 +134,8 @@ export default function Vod(props) {
             </Typography>
           </Box>
         </Box>
+
+        <VodReactions vodId={vod.id} compact sx={{ px: 0.15, pb: 0.05 }} />
 
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.5, minWidth: 0 }}>
           {vod.chapters && vod.chapters.length > 0 && <Chapters vod={vod} />}

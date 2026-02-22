@@ -11,6 +11,7 @@ import ExpandMore from "../utils/CustomExpandMore";
 import CustomToolTip from "../utils/CustomToolTip";
 import { BRAND_NAME } from "../config/site";
 import { getVodById } from "../api/vodsApi";
+import VodReactions from "../vods/VodReactions";
 
 const delay = 0;
 const getOriginalTwitchVodUrl = (vod) => {
@@ -239,6 +240,7 @@ export default function Games(props) {
                     </Link>
                   </Typography>
                 )}
+                <VodReactions vodId={vod.id} sx={{ mt: 0.45 }} />
               </Box>
               <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
                 <Box sx={{ ml: 0.5 }}>

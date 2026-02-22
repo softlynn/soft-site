@@ -15,6 +15,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import HomeIcon from "@mui/icons-material/Home";
 import { BRAND_NAME } from "../config/site";
 import { getVodById } from "../api/vodsApi";
+import VodReactions from "./VodReactions";
 
 const getOriginalTwitchVodUrl = (vod) => {
   if (!vod || String(vod.platform || "").toLowerCase() !== "twitch") return "";
@@ -264,6 +265,7 @@ export default function Vod(props) {
                     </Link>
                   </Typography>
                 )}
+                <VodReactions vodId={vod.id} sx={{ mt: 0.45 }} />
               </Box>
               <Button
                 variant="outlined"

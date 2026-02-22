@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { HashRouter, Route, Routes, useLocation } from "react-router-dom";
 import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
 import { CssBaseline, styled } from "@mui/material";
@@ -18,19 +18,6 @@ const NotFound = lazy(() => import("./utils/NotFound"));
 const AdminPage = lazy(() => import("./admin/AdminPage"));
 
 const THEME_STORAGE_KEY = "softu-theme-mode";
-const isViewerPath = (path) =>
-  String(path || "").startsWith("/youtube/") || String(path || "").startsWith("/cdn/") || String(path || "").startsWith("/games/");
-
-const getHashPath = () => {
-  if (typeof window === "undefined") return "/";
-  const rawHash = String(window.location.hash || "");
-  if (!rawHash || rawHash === "#") return "/";
-  const hashWithoutPrefix = rawHash.startsWith("#") ? rawHash.slice(1) : rawHash;
-  const pathOnly = hashWithoutPrefix.split("?")[0];
-  if (!pathOnly || pathOnly === "/") return "/";
-  return pathOnly.startsWith("/") ? pathOnly : `/${pathOnly}`;
-};
-
 const getInitialThemeMode = () => {
   if (typeof window === "undefined") return "light";
   const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
@@ -233,22 +220,8 @@ const buildTheme = (mode) => {
 
 export default function App() {
   const [preferredThemeMode, setPreferredThemeMode] = useState(getInitialThemeMode);
-  const [routePath, setRoutePath] = useState(getHashPath);
-  const [viewerThemeOverride, setViewerThemeOverride] = useState(null);
-  const viewerRoute = isViewerPath(routePath);
-  const effectiveThemeMode = viewerRoute ? viewerThemeOverride || "dark" : preferredThemeMode;
+  const effectiveThemeMode = preferredThemeMode;
   const theme = useMemo(() => buildTheme(effectiveThemeMode), [effectiveThemeMode]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return undefined;
-    const syncHashPath = () => setRoutePath(getHashPath());
-    window.addEventListener("hashchange", syncHashPath);
-    window.addEventListener("popstate", syncHashPath);
-    return () => {
-      window.removeEventListener("hashchange", syncHashPath);
-      window.removeEventListener("popstate", syncHashPath);
-    };
-  }, []);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -261,17 +234,7 @@ export default function App() {
     window.localStorage.setItem(THEME_STORAGE_KEY, preferredThemeMode);
   }, [preferredThemeMode]);
 
-  useEffect(() => {
-    if (!viewerRoute) {
-      setViewerThemeOverride(null);
-    }
-  }, [viewerRoute]);
-
   const toggleThemeMode = () => {
-    if (viewerRoute) {
-      setViewerThemeOverride((prev) => ((prev || "dark") === "dark" ? "light" : "dark"));
-      return;
-    }
     setPreferredThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
@@ -282,7 +245,6 @@ export default function App() {
         <HashRouter>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Parent>
-              <RouteThemeBridge onPathChange={setRoutePath} />
               <RouteAwareOverlays />
               <Suspense fallback={<Loading />}>
                 <Routes>
@@ -328,16 +290,6 @@ export default function App() {
       </ThemeProvider>
     </ThemeModeContext.Provider>
   );
-}
-
-function RouteThemeBridge({ onPathChange }) {
-  const location = useLocation();
-
-  useLayoutEffect(() => {
-    onPathChange(location.pathname || "/");
-  }, [location.pathname, onPathChange]);
-
-  return null;
 }
 
 function RouteAwareOverlays() {
