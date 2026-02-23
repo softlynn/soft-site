@@ -30,7 +30,7 @@ const config = {
   youtubeTokenPath: process.env.YOUTUBE_TOKEN_PATH || path.join(repoRoot, "secrets", "youtube_token.json"),
   twitchAuthTimeoutSeconds: Number(process.env.TWITCH_AUTH_TIMEOUT_SECONDS || "180"),
   adminIdleTimeoutMinutes: Number(process.env.ADMIN_API_IDLE_TIMEOUT_MINUTES || "30"),
-  spotifyNoticeText: process.env.ADMIN_SPOTIFY_NOTICE_TEXT || "Spotify audio is muted on this VOD.",
+  spotifyNoticeText: process.env.ADMIN_SPOTIFY_NOTICE_TEXT || "Spotify audio may be muted on this VOD.",
 };
 
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;

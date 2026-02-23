@@ -28,7 +28,7 @@
     "games": [],
     "createdAt": "2026-02-22T22:45:49Z",
     "updatedAt": "2026-02-23T02:21:53.841Z",
-    "vodNotice": "Spotify audio is muted on this VOD.",
+    "vodNotice": "Spotify audio may be muted on this VOD.",
     "chatReplayAvailable": true
   },
   {
@@ -131,6 +131,7 @@
     "games": [],
     "createdAt": "2026-02-10T01:34:36Z",
     "updatedAt": "2026-02-12T07:01:50.365Z",
-    "vodNotice": "Spotify audio is muted on this VOD."
+    "vodNotice": "Spotify audio may be muted on this VOD."
   }
 ]
+

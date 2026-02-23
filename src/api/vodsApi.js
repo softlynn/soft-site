@@ -5,6 +5,8 @@ const STATIC_COMMENTS_BASE = `${process.env.PUBLIC_URL || ""}/data/comments`;
 const STATIC_EMOTES_BASE = `${process.env.PUBLIC_URL || ""}/data/emotes`;
 const LOCAL_VOD_OVERRIDES_KEY = "softu-vod-overrides";
 const LOCAL_VOD_OVERRIDE_TTL_MS = 30 * 60 * 1000;
+const SPOTIFY_NOTICE_OLD = "Spotify audio is muted on this VOD.";
+const SPOTIFY_NOTICE_NEW = "Spotify audio may be muted on this VOD.";
 
 let staticVodsCache = null;
 const staticCommentsCache = new Map();
@@ -96,13 +98,20 @@ const applyLocalVodOverride = (vod) => {
   return nextVod;
 };
 
+const normalizeVodNoticeText = (vod) => {
+  if (!vod || !vod.vodNotice) return vod;
+  if (vod.vodNotice !== SPOTIFY_NOTICE_OLD) return vod;
+  return { ...vod, vodNotice: SPOTIFY_NOTICE_NEW };
+};
+
 export const cacheLocalVodOverrideFromVod = (vod) => {
   if (!vod || vod.id == null) return;
   const key = String(vod.id);
+  const normalizedNotice = vod.vodNotice === SPOTIFY_NOTICE_OLD ? SPOTIFY_NOTICE_NEW : vod.vodNotice || "";
   const overrides = { ...readLocalVodOverrides() };
   overrides[key] = {
     ...(overrides[key] || {}),
-    vodNotice: vod.vodNotice || "",
+    vodNotice: normalizedNotice,
     chatReplayAvailable: vod.chatReplayAvailable !== false,
     unpublished: Boolean(vod.unpublished),
     savedAt: Date.now(),
@@ -111,15 +120,17 @@ export const cacheLocalVodOverrideFromVod = (vod) => {
 };
 
 const normalizeVod = (vod) =>
-  applyLocalVodOverride({
-    chapters: [],
-    drive: [],
-    games: [],
-    youtube: [],
-    platform: "twitch",
-    unpublished: false,
-    ...vod,
-  });
+  normalizeVodNoticeText(
+    applyLocalVodOverride({
+      chapters: [],
+      drive: [],
+      games: [],
+      youtube: [],
+      platform: "twitch",
+      unpublished: false,
+      ...vod,
+    })
+  );
 
 const loadStaticVods = async () => {
   try {
@@ -204,7 +215,7 @@ export const getVodById = async (vodId) => {
   if (USE_STATIC_ARCHIVE) {
     const vods = await loadStaticVods();
     const match = vods.find((vod) => String(vod.id) === String(vodId));
-    const resolvedMatch = match ? applyLocalVodOverride(match) : match;
+    const resolvedMatch = match ? normalizeVodNoticeText(applyLocalVodOverride(match)) : match;
     if (resolvedMatch?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
     if (!resolvedMatch) throw new Error(`VOD ${vodId} not found in static data`);
     return resolvedMatch;

@@ -49,6 +49,7 @@ export default function Chat(props) {
   const [scrolling, setScrolling] = useState(false);
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [chatSyncing, setChatSyncing] = useState(false);
 
   const applyCommentsPage = useCallback((response) => {
     const nextComments = Array.isArray(response?.comments) ? response.comments : [];
@@ -56,16 +57,24 @@ export default function Chat(props) {
     cursor.current = response?.cursor ?? null;
     setCommentsCount(nextComments.length);
     setCommentsLoaded(true);
+    setChatSyncing(false);
     return nextComments;
   }, []);
 
   const requestComments = useCallback(
     async ({ cursor: nextCursor, contentOffsetSeconds } = {}, { resetIndex = false } = {}) => {
       const requestSeq = ++commentsRequestSeqRef.current;
-      const response = await getVodComments(vodId, { cursor: nextCursor, contentOffsetSeconds });
-      if (requestSeq !== commentsRequestSeqRef.current) return null;
-      if (resetIndex) stoppedAtIndex.current = 0;
-      return applyCommentsPage(response);
+      try {
+        const response = await getVodComments(vodId, { cursor: nextCursor, contentOffsetSeconds });
+        if (requestSeq !== commentsRequestSeqRef.current) return null;
+        if (resetIndex) stoppedAtIndex.current = 0;
+        return applyCommentsPage(response);
+      } catch (error) {
+        if (requestSeq === commentsRequestSeqRef.current) {
+          setChatSyncing(false);
+        }
+        throw error;
+      }
     },
     [vodId, applyCommentsPage]
   );
@@ -83,6 +92,7 @@ export default function Chat(props) {
     setShownMessages([]);
     setCommentsCount(0);
     setCommentsLoaded(false);
+    setChatSyncing(false);
     lastPlaybackTimeRef.current = null;
     commentsRequestSeqRef.current += 1;
     hasInitializedSyncRef.current = false;
@@ -543,7 +553,7 @@ export default function Chat(props) {
   const loop = useCallback(() => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
     buildComments();
-    loopRef.current = setInterval(buildComments, 1000);
+    loopRef.current = setInterval(buildComments, 400);
   }, [buildComments]);
 
   useEffect(() => {
@@ -554,6 +564,7 @@ export default function Chat(props) {
       requestComments({ contentOffsetSeconds: getSeekFetchOffset(offset) }, { resetIndex: false })
         .then((response) => {
           if (!response) return;
+          buildComments({ force: true });
         })
         .catch((e) => {
           console.error(e);
@@ -585,13 +596,14 @@ export default function Chat(props) {
       setShownMessages([]);
       setCommentsCount(0);
       setCommentsLoaded(false);
+      setChatSyncing(true);
       fetchComments(time);
       loop();
-    }, 300);
+    }, 100);
     return () => {
       stopLoop();
     };
-  }, [playing, vodId, getCurrentTime, loop, chatReplayAvailable, requestComments, getSeekFetchOffset]);
+  }, [playing, vodId, getCurrentTime, loop, chatReplayAvailable, requestComments, getSeekFetchOffset, buildComments]);
 
   // Initial/setting-change sync: rebuild chat for current player time (works even while paused).
   useEffect(() => {
@@ -606,6 +618,7 @@ export default function Chat(props) {
         setShownMessages([]);
         setCommentsLoaded(false);
         setCommentsCount(0);
+        setChatSyncing(true);
         requestComments({ contentOffsetSeconds: getSeekFetchOffset(videoTime) }, { resetIndex: true })
           .then((data) => {
             if (!data) return;
@@ -619,7 +632,7 @@ export default function Chat(props) {
 
     const isInitialSync = !hasInitializedSyncRef.current;
     hasInitializedSyncRef.current = true;
-    const timer = setTimeout(syncChat, isInitialSync ? 500 : 250);
+    const timer = setTimeout(syncChat, isInitialSync ? 220 : 80);
     return () => clearTimeout(timer);
   }, [vodId, part?.part, playerRef, getCurrentTime, loop, buildComments, chatReplayAvailable, requestComments, getSeekFetchOffset, playing?.playing, delay, userChatDelay]);
 
@@ -716,7 +729,7 @@ export default function Chat(props) {
                   Chat replay is unavailable for this VOD.
                 </Typography>
               </Box>
-            ) : !commentsLoaded ? (
+            ) : !commentsLoaded || chatSyncing ? (
               <Loading />
             ) : commentsCount === 0 || shownMessages.length === 0 ? (
               <Box sx={{ p: 2 }}>

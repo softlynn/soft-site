@@ -1,20 +1,22 @@
-import { useMemo } from "react";
-import debounce from "lodash.debounce";
+import { useEffect, useState } from "react";
 import { Box, Modal, Typography, TextField, InputAdornment, FormGroup, FormControlLabel, Checkbox } from "@mui/material";
 
 export default function Settings(props) {
   const { userChatDelay, setUserChatDelay, showModal, setShowModal, showTimestamp, setShowTimestamp } = props;
+  const [chatDelayInput, setChatDelayInput] = useState(String(userChatDelay ?? 0));
 
-  const delayChange = useMemo(
-    () =>
-      debounce((evt) => {
-        if (evt.target.value.length === 0) return;
-        const value = Number(evt.target.value);
-        if (isNaN(value)) return;
-        setUserChatDelay(value);
-      }, 300),
-    [setUserChatDelay]
-  );
+  useEffect(() => {
+    setChatDelayInput(String(userChatDelay ?? 0));
+  }, [userChatDelay, showModal]);
+
+  const delayChange = (evt) => {
+    const value = evt.target.value;
+    setChatDelayInput(value);
+    if (value === "" || value === "-" || value === "+") return;
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return;
+    setUserChatDelay(parsed);
+  };
 
   return (
     <Modal open={showModal} onClose={() => setShowModal(false)}>
@@ -34,7 +36,7 @@ export default function Settings(props) {
               size="small"
               type="number"
               onChange={delayChange}
-              defaultValue={userChatDelay}
+              value={chatDelayInput}
               onFocus={(evt) => evt.target.select()}
             />
           </Box>
