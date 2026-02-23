@@ -5,7 +5,6 @@ import { CssBaseline, styled } from "@mui/material";
 import Loading from "./utils/Loading";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import LiquidBackdrop from "./utils/LiquidBackdrop";
 import ThemeModeToggle from "./utils/ThemeModeToggle";
 import { ThemeModeContext } from "./utils/ThemeModeContext";
 
@@ -16,6 +15,7 @@ const Games = lazy(() => import("./games/Games"));
 const Navbar = lazy(() => import("./navbar/Navbar"));
 const NotFound = lazy(() => import("./utils/NotFound"));
 const AdminPage = lazy(() => import("./admin/AdminPage"));
+const LiquidBackdrop = lazy(() => import("./utils/LiquidBackdrop"));
 
 const THEME_STORAGE_KEY = "softu-theme-mode";
 const getInitialThemeMode = () => {
@@ -299,6 +299,42 @@ function RouteAwareOverlays() {
   const showFloatingToggle = !isViewerRoute;
   const showBackdrop = path === "/" || path === "/vods";
   const [liftFloatingToggle, setLiftFloatingToggle] = useState(false);
+  const [backdropReady, setBackdropReady] = useState(false);
+
+  useEffect(() => {
+    if (!showBackdrop) {
+      setBackdropReady(false);
+      return undefined;
+    }
+
+    let canceled = false;
+    let timeoutId = null;
+    const activate = () => {
+      if (canceled) return;
+      setBackdropReady(true);
+    };
+
+    if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
+      const idleId = window.requestIdleCallback(() => {
+        timeoutId = window.setTimeout(activate, 80);
+      }, { timeout: 500 });
+      return () => {
+        canceled = true;
+        try {
+          window.cancelIdleCallback(idleId);
+        } catch {
+          // no-op
+        }
+        if (timeoutId) window.clearTimeout(timeoutId);
+      };
+    }
+
+    timeoutId = setTimeout(activate, 120);
+    return () => {
+      canceled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [showBackdrop, path]);
 
   useEffect(() => {
     if (!showFloatingToggle || typeof document === "undefined") {
@@ -350,7 +386,11 @@ function RouteAwareOverlays() {
 
   return (
     <>
-      {showBackdrop && <LiquidBackdrop />}
+      {showBackdrop && backdropReady && (
+        <Suspense fallback={null}>
+          <LiquidBackdrop />
+        </Suspense>
+      )}
       {showFloatingToggle && (
         <ThemeModeToggle
           announceKey={`floating-${path}`}

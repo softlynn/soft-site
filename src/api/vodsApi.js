@@ -4,10 +4,12 @@ const STATIC_DATA_PATH = `${process.env.PUBLIC_URL || ""}/data/vods.json`;
 const STATIC_COMMENTS_BASE = `${process.env.PUBLIC_URL || ""}/data/comments`;
 const STATIC_EMOTES_BASE = `${process.env.PUBLIC_URL || ""}/data/emotes`;
 const STATIC_COMMENTS_PAGE_SIZE = 600;
+const LOCAL_VOD_OVERRIDES_KEY = "softu-vod-overrides";
 
 let staticVodsCache = null;
 const staticCommentsCache = new Map();
 const staticEmotesCache = new Map();
+let localVodOverridesCache = null;
 
 const DEFAULT_EMOTES = {
   ffz_emotes: [],
@@ -31,15 +33,75 @@ const chapterMatches = (chapters, game) => {
   return chapters.some((chapter) => textMatches(chapter.name, game));
 };
 
-const normalizeVod = (vod) => ({
-  chapters: [],
-  drive: [],
-  games: [],
-  youtube: [],
-  platform: "twitch",
-  unpublished: false,
-  ...vod,
-});
+const readLocalVodOverrides = () => {
+  if (localVodOverridesCache) return localVodOverridesCache;
+  if (typeof window === "undefined") {
+    localVodOverridesCache = {};
+    return localVodOverridesCache;
+  }
+  try {
+    const raw = window.localStorage.getItem(LOCAL_VOD_OVERRIDES_KEY);
+    localVodOverridesCache = raw ? JSON.parse(raw) || {} : {};
+  } catch {
+    localVodOverridesCache = {};
+  }
+  return localVodOverridesCache;
+};
+
+const writeLocalVodOverrides = (overrides) => {
+  localVodOverridesCache = overrides && typeof overrides === "object" ? overrides : {};
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(LOCAL_VOD_OVERRIDES_KEY, JSON.stringify(localVodOverridesCache));
+  } catch {
+    // no-op
+  }
+};
+
+const applyLocalVodOverride = (vod) => {
+  if (!vod || vod.id == null) return vod;
+  const overrides = readLocalVodOverrides();
+  const override = overrides[String(vod.id)];
+  if (!override || typeof override !== "object") return vod;
+
+  const nextVod = { ...vod };
+  if (Object.prototype.hasOwnProperty.call(override, "vodNotice")) {
+    if (override.vodNotice) nextVod.vodNotice = override.vodNotice;
+    else delete nextVod.vodNotice;
+  }
+  if (Object.prototype.hasOwnProperty.call(override, "chatReplayAvailable")) {
+    nextVod.chatReplayAvailable = Boolean(override.chatReplayAvailable);
+  }
+  if (Object.prototype.hasOwnProperty.call(override, "unpublished")) {
+    nextVod.unpublished = Boolean(override.unpublished);
+  }
+
+  return nextVod;
+};
+
+export const cacheLocalVodOverrideFromVod = (vod) => {
+  if (!vod || vod.id == null) return;
+  const key = String(vod.id);
+  const overrides = { ...readLocalVodOverrides() };
+  overrides[key] = {
+    ...(overrides[key] || {}),
+    vodNotice: vod.vodNotice || "",
+    chatReplayAvailable: vod.chatReplayAvailable !== false,
+    unpublished: Boolean(vod.unpublished),
+  };
+  writeLocalVodOverrides(overrides);
+};
+
+const normalizeVod = (vod) =>
+  applyLocalVodOverride({
+    chapters: [],
+    drive: [],
+    games: [],
+    youtube: [],
+    platform: "twitch",
+    unpublished: false,
+    ...vod,
+  });
 
 const loadStaticVods = async () => {
   try {
@@ -124,9 +186,10 @@ export const getVodById = async (vodId) => {
   if (USE_STATIC_ARCHIVE) {
     const vods = await loadStaticVods();
     const match = vods.find((vod) => String(vod.id) === String(vodId));
-    if (match?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
-    if (!match) throw new Error(`VOD ${vodId} not found in static data`);
-    return match;
+    const resolvedMatch = match ? applyLocalVodOverride(match) : match;
+    if (resolvedMatch?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
+    if (!resolvedMatch) throw new Error(`VOD ${vodId} not found in static data`);
+    return resolvedMatch;
   }
 
   const response = await fetch(`${VODS_API_BASE}/vods/${vodId}`, {
@@ -204,7 +267,7 @@ export const getVodComments = async (vodId, { cursor, contentOffsetSeconds } = {
 
 export const findVodsStatic = async (query = {}) => {
   const vods = await loadStaticVods();
-  let filtered = vods.filter((vod) => !vod.unpublished);
+  let filtered = vods.map(applyLocalVodOverride).filter((vod) => !vod.unpublished);
 
   if (Array.isArray(query.$and)) {
     for (const condition of query.$and) {

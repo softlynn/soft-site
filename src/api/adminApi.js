@@ -1,3 +1,5 @@
+import { cacheLocalVodOverrideFromVod } from "./vodsApi";
+
 const ADMIN_API_BASE = (process.env.REACT_APP_ADMIN_API_BASE || "http://localhost:49731").replace(/\/+$/, "");
 const ADMIN_API_FALLBACK_BASES = Array.from(
   new Set(
@@ -283,27 +285,31 @@ export const getAdminVods = async () => {
 export const setVodNotice = async (vodId, enabled) => {
   const token = readAdminToken();
   if (!token) throw new Error("Admin session is missing");
-  return request(`/vods/${encodeURIComponent(String(vodId))}/notice`, {
+  const payload = await request(`/vods/${encodeURIComponent(String(vodId))}/notice`, {
     method: "POST",
     token,
     body: { enabled: Boolean(enabled) },
   });
+  if (payload?.vod) cacheLocalVodOverrideFromVod(payload.vod);
+  return payload;
 };
 
 export const setVodChatReplay = async (vodId, available) => {
   const token = readAdminToken();
   if (!token) throw new Error("Admin session is missing");
-  return request(`/vods/${encodeURIComponent(String(vodId))}/chat-replay`, {
+  const payload = await request(`/vods/${encodeURIComponent(String(vodId))}/chat-replay`, {
     method: "POST",
     token,
     body: { available: Boolean(available) },
   });
+  if (payload?.vod) cacheLocalVodOverrideFromVod(payload.vod);
+  return payload;
 };
 
 export const setVodFlags = async (vodId, { noticeEnabled, chatReplayAvailable }) => {
   const token = readAdminToken();
   if (!token) throw new Error("Admin session is missing");
-  return request(`/vods/${encodeURIComponent(String(vodId))}/flags`, {
+  const payload = await request(`/vods/${encodeURIComponent(String(vodId))}/flags`, {
     method: "POST",
     token,
     body: {
@@ -311,24 +317,30 @@ export const setVodFlags = async (vodId, { noticeEnabled, chatReplayAvailable })
       chatReplayAvailable: Boolean(chatReplayAvailable),
     },
   });
+  if (payload?.vod) cacheLocalVodOverrideFromVod(payload.vod);
+  return payload;
 };
 
 export const unpublishVod = async (vodId) => {
   const token = readAdminToken();
   if (!token) throw new Error("Admin session is missing");
-  return request(`/vods/${encodeURIComponent(String(vodId))}/unpublish`, {
+  const payload = await request(`/vods/${encodeURIComponent(String(vodId))}/unpublish`, {
     method: "POST",
     token,
   });
+  if (payload?.vod) cacheLocalVodOverrideFromVod(payload.vod);
+  return payload;
 };
 
 export const republishVod = async (vodId) => {
   const token = readAdminToken();
   if (!token) throw new Error("Admin session is missing");
-  return request(`/vods/${encodeURIComponent(String(vodId))}/republish`, {
+  const payload = await request(`/vods/${encodeURIComponent(String(vodId))}/republish`, {
     method: "POST",
     token,
   });
+  if (payload?.vod) cacheLocalVodOverrideFromVod(payload.vod);
+  return payload;
 };
 
 export const promptAndLoginAdmin = async () => {

@@ -32,6 +32,8 @@ export default function Chat(props) {
   const [showChat, setShowChat] = useState(true);
   const [shownMessages, setShownMessages] = useState([]);
   const comments = useRef([]);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(0);
   const badges = useRef();
   const emotes = useRef({ ffz_emotes: [], bttv_emotes: [], "7tv_emotes": [] });
   const cursor = useRef();
@@ -44,11 +46,29 @@ export default function Chat(props) {
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
+  const applyCommentsPage = useCallback((response) => {
+    const nextComments = Array.isArray(response?.comments) ? response.comments : [];
+    comments.current = nextComments;
+    cursor.current = response?.cursor ?? null;
+    setCommentsCount(nextComments.length);
+    setCommentsLoaded(true);
+    return nextComments;
+  }, []);
+
   useEffect(() => {
     if (forceSideLayout) {
       setShowChat(true);
     }
   }, [forceSideLayout]);
+
+  useEffect(() => {
+    comments.current = [];
+    cursor.current = null;
+    stoppedAtIndex.current = 0;
+    setShownMessages([]);
+    setCommentsCount(0);
+    setCommentsLoaded(false);
+  }, [vodId, part?.part]);
 
   useEffect(() => {
     if (chatRef && chatRef.current) {
@@ -152,8 +172,7 @@ export default function Chat(props) {
       getVodComments(vodId, { cursor: cursor.current })
         .then((response) => {
           stoppedAtIndex.current = 0;
-          comments.current = response.comments;
-          cursor.current = response.cursor;
+          applyCommentsPage(response);
         })
         .catch((e) => {
           console.error(e);
@@ -489,7 +508,7 @@ export default function Chat(props) {
     });
     stoppedAtIndex.current = lastIndex;
     if (comments.current.length - 1 === lastIndex) fetchNextComments();
-  }, [chatReplayAvailable, getCurrentTime, playerRef, vodId, youtube, games, showTimestamp]);
+  }, [chatReplayAvailable, getCurrentTime, playerRef, vodId, youtube, games, showTimestamp, applyCommentsPage]);
 
   const loop = useCallback(() => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
@@ -504,8 +523,7 @@ export default function Chat(props) {
     const fetchComments = (offset = 0) => {
       getVodComments(vodId, { contentOffsetSeconds: offset })
         .then((response) => {
-          comments.current = response.comments;
-          cursor.current = response.cursor;
+          applyCommentsPage(response);
         })
         .catch((e) => {
           console.error(e);
@@ -517,9 +535,10 @@ export default function Chat(props) {
     if (comments.current && comments.current.length > 0) {
       const lastComment = comments.current[comments.current.length - 1];
       const firstComment = comments.current[0];
+      const stoppedComment = comments.current[stoppedAtIndex.current];
 
       if (time - lastComment.content_offset_seconds <= 30 && time > firstComment.content_offset_seconds) {
-        if (comments.current[stoppedAtIndex.current].content_offset_seconds - time >= 4) {
+        if (stoppedComment && stoppedComment.content_offset_seconds - time >= 4) {
           stoppedAtIndex.current = 0;
           setShownMessages([]);
         }
@@ -534,31 +553,34 @@ export default function Chat(props) {
       comments.current = [];
       cursor.current = null;
       setShownMessages([]);
+      setCommentsCount(0);
+      setCommentsLoaded(false);
       fetchComments(time);
       loop();
     }, 300);
     return () => {
       stopLoop();
     };
-  }, [playing, vodId, getCurrentTime, loop, chatReplayAvailable]);
+  }, [playing, vodId, getCurrentTime, loop, chatReplayAvailable, applyCommentsPage]);
 
   // Add an effect to re-sync chat after the video has been set to the saved time
   useEffect(() => {
     if (!chatReplayAvailable) return;
 
     const syncChat = () => {
-      if (playerRef.current && typeof playerRef.current.currentTime === 'function') {
-        const videoTime = playerRef.current.currentTime();
-        console.log("Syncing chat to video time:", videoTime);
+      if (playerRef.current) {
+        const videoTime = getCurrentTime();
+        if (!Number.isFinite(videoTime)) return;
         // Option 1: trigger a full chat re-fetch:
         // Optionally clear current messages and restart the comment loop
         stoppedAtIndex.current = 0;
         setShownMessages([]);
+        setCommentsLoaded(false);
+        setCommentsCount(0);
         // Re-fetch chat comments using the current video time:
         getVodComments(vodId, { contentOffsetSeconds: videoTime })
           .then((data) => {
-            comments.current = data.comments;
-            cursor.current = data.cursor;
+            applyCommentsPage(data);
             loop(); // restart the chat updating loop
           })
           .catch((e) => console.error(e));
@@ -567,10 +589,11 @@ export default function Chat(props) {
     // Delay a bit so that the player’s time is updated after loadedmetadata
     const timer = setTimeout(syncChat, 500);
     return () => clearTimeout(timer);
-  }, [vodId, playerRef, getCurrentTime, loop, chatReplayAvailable]);
+  }, [vodId, playerRef, getCurrentTime, loop, chatReplayAvailable, applyCommentsPage]);
 
   const stopLoop = () => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
+    loopRef.current = null;
   };
 
   useEffect(() => {
@@ -661,8 +684,14 @@ export default function Chat(props) {
                   Chat replay is unavailable for this VOD.
                 </Typography>
               </Box>
-            ) : comments.length === 0 ? (
+            ) : !commentsLoaded ? (
               <Loading />
+            ) : commentsCount === 0 ? (
+              <Box sx={{ p: 2 }}>
+                <Typography variant="body2" sx={{ color: "rgba(219,232,255,0.74)" }}>
+                  No chat messages available for this VOD.
+                </Typography>
+              </Box>
             ) : (
               <>
                 <SimpleBar scrollableNodeProps={{ ref: chatRef }} style={{ height: "100%", overflowX: "hidden", borderRadius: "0 0 18px 18px" }}>
