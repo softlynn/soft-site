@@ -2,8 +2,8 @@
   {
     "id": "2705841479",
     "title": "doing EVRYTHING ♫♪ hi",
-    "duration": "00:45:15",
-    "thumbnail_url": "https://vod-secure.twitch.tv/_404/404_processing_640x360.png",
+    "duration": "02:43:50",
+    "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/587cf4ae5391f9f02be6_softu1_317390748252_1771876605//thumb/thumb0-640x360.jpg",
     "youtube": [
       {
         "id": "qiDgw8ydxw8",
@@ -11,6 +11,13 @@
         "duration": 0,
         "part": 1,
         "thumbnail_url": "https://i.ytimg.com/vi/qiDgw8ydxw8/mqdefault.jpg"
+      },
+      {
+        "id": "h0OB6axCcvU",
+        "type": "vod",
+        "duration": 0,
+        "part": 2,
+        "thumbnail_url": "https://i.ytimg.com/vi/h0OB6axCcvU/mqdefault.jpg"
       }
     ],
     "stream_id": "317390748252",
@@ -20,15 +27,14 @@
       {
         "gameId": "499003",
         "start": 0,
-        "end": 2719,
+        "end": 9830,
         "name": "VRChat",
         "image": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-40x53.jpg"
       }
     ],
     "games": [],
     "createdAt": "2026-02-23T19:56:50Z",
-    "updatedAt": "2026-02-23T22:56:17.516Z",
-    "unpublished": true
+    "updatedAt": "2026-02-23T23:32:11.955Z"
   },
   {
     "id": "2705127859",
