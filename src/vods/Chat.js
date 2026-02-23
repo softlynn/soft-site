@@ -18,6 +18,7 @@ const BASE_TWITCH_CDN = "https://static-cdn.jtvnw.net";
 const BASE_FFZ_EMOTE_CDN = "https://cdn.frankerfacez.com/emote";
 const BASE_BTTV_EMOTE_CDN = BTTV_EMOTE_CDN;
 const BASE_7TV_EMOTE_CDN = "https://cdn.7tv.app/emote";
+const CHAT_SEEK_BACKFILL_SECONDS = 180;
 
 let messageCount = 0;
 let badgesCount = 0;
@@ -151,13 +152,21 @@ export default function Chat(props) {
     return time;
   }, [playerRef, youtube, delay, part, userChatDelay, games]);
 
+  const getSeekFetchOffset = useCallback(
+    (time) => {
+      const normalized = Number.isFinite(time) ? time : getCurrentTime();
+      return Math.max(0, normalized - CHAT_SEEK_BACKFILL_SECONDS);
+    },
+    [getCurrentTime]
+  );
+
   const buildComments = useCallback(() => {
     if (!chatReplayAvailable) return;
     if (!playerRef.current || !comments.current || comments.current.length === 0 || stoppedAtIndex.current === null) return;
     if (youtube || games ? playerRef.current.getPlayerState() !== 1 : playerRef.current.paused()) return;
 
     const time = getCurrentTime();
-    let lastIndex = comments.current.length - 1;
+    let lastIndex = comments.current.length;
     for (let i = stoppedAtIndex.current.valueOf(); i < comments.current.length; i++) {
       if (comments.current[i].content_offset_seconds > time) {
         lastIndex = i;
@@ -507,7 +516,7 @@ export default function Chat(props) {
       return concatMessages;
     });
     stoppedAtIndex.current = lastIndex;
-    if (comments.current.length - 1 === lastIndex) fetchNextComments();
+    if (comments.current.length === lastIndex) fetchNextComments();
   }, [chatReplayAvailable, getCurrentTime, playerRef, vodId, youtube, games, showTimestamp, applyCommentsPage]);
 
   const loop = useCallback(() => {
@@ -521,7 +530,7 @@ export default function Chat(props) {
 
     if (!playing.playing || stoppedAtIndex.current === undefined) return;
     const fetchComments = (offset = 0) => {
-      getVodComments(vodId, { contentOffsetSeconds: offset })
+      getVodComments(vodId, { contentOffsetSeconds: getSeekFetchOffset(offset) })
         .then((response) => {
           applyCommentsPage(response);
         })
@@ -561,7 +570,7 @@ export default function Chat(props) {
     return () => {
       stopLoop();
     };
-  }, [playing, vodId, getCurrentTime, loop, chatReplayAvailable, applyCommentsPage]);
+  }, [playing, vodId, getCurrentTime, loop, chatReplayAvailable, applyCommentsPage, getSeekFetchOffset]);
 
   // Add an effect to re-sync chat after the video has been set to the saved time
   useEffect(() => {
@@ -578,7 +587,7 @@ export default function Chat(props) {
         setCommentsLoaded(false);
         setCommentsCount(0);
         // Re-fetch chat comments using the current video time:
-        getVodComments(vodId, { contentOffsetSeconds: videoTime })
+        getVodComments(vodId, { contentOffsetSeconds: getSeekFetchOffset(videoTime) })
           .then((data) => {
             applyCommentsPage(data);
             loop(); // restart the chat updating loop
@@ -589,7 +598,7 @@ export default function Chat(props) {
     // Delay a bit so that the player’s time is updated after loadedmetadata
     const timer = setTimeout(syncChat, 500);
     return () => clearTimeout(timer);
-  }, [vodId, playerRef, getCurrentTime, loop, chatReplayAvailable, applyCommentsPage]);
+  }, [vodId, playerRef, getCurrentTime, loop, chatReplayAvailable, applyCommentsPage, getSeekFetchOffset]);
 
   const stopLoop = () => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
@@ -689,7 +698,7 @@ export default function Chat(props) {
             ) : commentsCount === 0 ? (
               <Box sx={{ p: 2 }}>
                 <Typography variant="body2" sx={{ color: "rgba(219,232,255,0.74)" }}>
-                  No chat messages available for this VOD.
+                  No chat messages around this timestamp.
                 </Typography>
               </Box>
             ) : (
