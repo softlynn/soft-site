@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { Box, Modal, Typography, TextField, InputAdornment, FormGroup, FormControlLabel, Checkbox } from "@mui/material";
 
+const CHAT_DELAY_MIN = -600;
+const CHAT_DELAY_MAX = 600;
+
+const parseChatDelay = (value) => {
+  if (value === "" || value === "-" || value === "+") return null;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  return Math.max(CHAT_DELAY_MIN, Math.min(CHAT_DELAY_MAX, Math.round(parsed)));
+};
+
 export default function Settings(props) {
   const { userChatDelay, setUserChatDelay, showModal, setShowModal, showTimestamp, setShowTimestamp } = props;
   const [chatDelayInput, setChatDelayInput] = useState(String(userChatDelay ?? 0));
@@ -12,9 +22,18 @@ export default function Settings(props) {
   const delayChange = (evt) => {
     const value = evt.target.value;
     setChatDelayInput(value);
-    if (value === "" || value === "-" || value === "+") return;
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return;
+    const parsed = parseChatDelay(value);
+    if (parsed === null) return;
+    setUserChatDelay(parsed);
+  };
+
+  const commitDelayInput = () => {
+    const parsed = parseChatDelay(chatDelayInput);
+    if (parsed === null) {
+      setChatDelayInput(String(userChatDelay ?? 0));
+      return;
+    }
+    setChatDelayInput(String(parsed));
     setUserChatDelay(parsed);
   };
 
@@ -27,7 +46,7 @@ export default function Settings(props) {
           </Box>
           <Box sx={{ mt: 2 }}>
             <TextField
-              inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+              sx={{ "& input": { fontVariantNumeric: "tabular-nums" } }}
               InputProps={{
                 endAdornment: <InputAdornment position="start">secs</InputAdornment>,
               }}
@@ -35,8 +54,23 @@ export default function Settings(props) {
               label="Chat Delay"
               size="small"
               type="number"
+              onBlur={commitDelayInput}
+              onKeyDown={(evt) => {
+                if (evt.key === "Enter") {
+                  evt.preventDefault();
+                  commitDelayInput();
+                }
+              }}
               onChange={delayChange}
               value={chatDelayInput}
+              helperText={`Default is 7s. Range ${CHAT_DELAY_MIN} to ${CHAT_DELAY_MAX}.`}
+              inputProps={{
+                inputMode: "numeric",
+                pattern: "-?[0-9]*",
+                step: 1,
+                min: CHAT_DELAY_MIN,
+                max: CHAT_DELAY_MAX,
+              }}
               onFocus={(evt) => evt.target.select()}
             />
           </Box>

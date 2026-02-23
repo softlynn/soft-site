@@ -15,7 +15,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import HomeIcon from "@mui/icons-material/Home";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
-import { BRAND_NAME } from "../config/site";
+import { BRAND_NAME, DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "./VodReactions";
 
@@ -51,7 +51,7 @@ export default function Vod(props) {
   const search = new URLSearchParams(location.search);
   const [timestamp, setTimestamp] = useState(search.get("t") !== null ? convertTimestamp(search.get("t")) : 0);
   const [delay, setDelay] = useState(0);
-  const [userChatDelay, setUserChatDelay] = useState(0);
+  const [userChatDelay, setUserChatDelay] = useState(DEFAULT_CHAT_DELAY_SECONDS);
   const [mobileFullscreenChat, setMobileFullscreenChat] = useState(false);
   const [mobileViewportSize, setMobileViewportSize] = useState({ width: 0, height: 0 });
   const playerRef = useRef(null);

@@ -9,7 +9,7 @@ import NotFound from "../utils/NotFound";
 import Chat from "../vods/Chat";
 import ExpandMore from "../utils/CustomExpandMore";
 import CustomToolTip from "../utils/CustomToolTip";
-import { BRAND_NAME } from "../config/site";
+import { BRAND_NAME, DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "../vods/VodReactions";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
@@ -43,7 +43,7 @@ export default function Games(props) {
   const [part, setPart] = useState(undefined);
   const [showMenu, setShowMenu] = useState(true);
   const [playing, setPlaying] = useState({ playing: false });
-  const [userChatDelay, setUserChatDelay] = useState(0);
+  const [userChatDelay, setUserChatDelay] = useState(DEFAULT_CHAT_DELAY_SECONDS);
   const [mobileFullscreenChat, setMobileFullscreenChat] = useState(false);
   const [mobileViewportSize, setMobileViewportSize] = useState({ width: 0, height: 0 });
   const playerRef = useRef(null);
