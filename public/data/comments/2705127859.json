@@ -1,0 +1,63 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2705127859",
+  "generatedAt": "2026-02-23T00:47:11.885Z",
+  "comments": [
+    {
+      "id": "a5029a02-192a-4630-8e6c-b722bb39841b",
+      "created_at": "2026-02-22T23:35:56.806Z",
+      "content_offset_seconds": 3007,
+      "display_name": "spookpoke",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "ur mic is rlly quiet",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "727ae8a9-5cf2-469a-adda-c0a2acc31c2e",
+      "created_at": "2026-02-22T23:36:31.572Z",
+      "content_offset_seconds": 3041,
+      "display_name": "spookpoke",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "that is clearer",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "94aab08c-b2bd-4a15-bd53-515415bcb994",
+      "created_at": "2026-02-22T23:36:50.242Z",
+      "content_offset_seconds": 3060,
+      "display_name": "spookpoke",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "maybe a teensy bit louder",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1cec868b-a951-4d1f-ab29-1200e12d9564",
+      "created_at": "2026-02-22T23:37:35.372Z",
+      "content_offset_seconds": 3105,
+      "display_name": "spookpoke",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "yes much clearer",
+          "emoticon": null
+        }
+      ]
+    }
+  ]
+}
