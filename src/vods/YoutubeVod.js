@@ -15,7 +15,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import HomeIcon from "@mui/icons-material/Home";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
-import { BRAND_NAME, DEFAULT_DELAY } from "../config/site";
+import { BRAND_NAME } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "./VodReactions";
 
@@ -130,12 +130,15 @@ export default function Vod(props) {
   useEffect(() => {
     if (!youtube || !vod) return;
     const vodDuration = toSeconds(vod.duration);
+    const hasUnknownDurations = youtube.some((data) => !Number.isFinite(Number(data.duration)) || Number(data.duration) <= 0);
+    if (hasUnknownDurations) {
+      // Newly uploaded parts can have duration=0 until metadata sync; treat delay as unknown (0) instead
+      // of shifting chat to the end of the VOD.
+      setDelay(0);
+      return;
+    }
     let totalYoutubeDuration = 0;
     for (let data of youtube) {
-      if (!data.duration) {
-        totalYoutubeDuration += DEFAULT_DELAY;
-        continue;
-      }
       totalYoutubeDuration += data.duration;
     }
     const tmpDelay = vodDuration - totalYoutubeDuration < 0 ? 0 : vodDuration - totalYoutubeDuration;
