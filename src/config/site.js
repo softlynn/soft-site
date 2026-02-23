@@ -23,7 +23,7 @@ export const SOCIAL_LINKS = {
 
 export const START_DATE = process.env.REACT_APP_START_DATE || "2022-01-01";
 export const DEFAULT_DELAY = Number(process.env.REACT_APP_DEFAULT_DELAY || "0");
-export const DEFAULT_CHAT_DELAY_SECONDS = Number(process.env.REACT_APP_DEFAULT_CHAT_DELAY_SECONDS || "8");
+export const DEFAULT_CHAT_DELAY_SECONDS = Number(process.env.REACT_APP_DEFAULT_CHAT_DELAY_SECONDS || "5");
 
 export const ENABLE_ADSENSE = process.env.REACT_APP_ENABLE_ADSENSE === "true";
 export const ADSENSE_CLIENT = process.env.REACT_APP_ADSENSE_CLIENT || "";

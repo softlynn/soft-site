@@ -162,7 +162,7 @@ export default function Games(props) {
   };
 
   useEffect(() => {
-    console.info(`Chat Delay: ${userChatDelay + delay} seconds`);
+    console.info(`Chat Delay (effective): ${delay - userChatDelay} seconds`);
     return;
   }, [userChatDelay]);
 

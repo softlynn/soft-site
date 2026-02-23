@@ -214,7 +214,7 @@ export default function Vod(props) {
 
   useEffect(() => {
     if (delay === undefined) return;
-    console.info(`Chat Delay: ${userChatDelay + delay} seconds`);
+    console.info(`Chat Delay (effective): ${delay - userChatDelay} seconds`);
     return;
   }, [userChatDelay, delay]);
 

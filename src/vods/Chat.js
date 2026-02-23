@@ -175,7 +175,8 @@ export default function Chat(props) {
       time += playerRef.current.currentTime();
     }
     time += delay;
-    time += userChatDelay;
+    // Positive userChatDelay means "show chat later", so subtract it from the replay clock.
+    time -= userChatDelay;
     return time;
   }, [playerRef, youtube, delay, part, userChatDelay, games]);
 
