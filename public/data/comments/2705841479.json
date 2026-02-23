@@ -1,0 +1,92 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2705841479",
+  "generatedAt": "2026-02-23T20:42:13.826Z",
+  "comments": [
+    {
+      "id": "0661c915-ce29-4ae6-aeab-8736c13cfe9f",
+      "created_at": "2026-02-23T20:25:03.36Z",
+      "content_offset_seconds": 1692,
+      "display_name": "2osama0",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Hi",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "63890680-c5f0-466a-953a-3b7591838f76",
+      "created_at": "2026-02-23T20:25:30.738Z",
+      "content_offset_seconds": 1720,
+      "display_name": "2osama0",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "tenacityCatjam",
+          "emote": {
+            "emoteID": "emotesv2_6329b19dc6794eaab93055869d9707ab"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_6329b19dc6794eaab93055869d9707ab"
+          }
+        }
+      ]
+    },
+    {
+      "id": "eddb9a90-bafd-4c96-a027-2d8f8e6b138a",
+      "created_at": "2026-02-23T20:26:07.231Z",
+      "content_offset_seconds": 1756,
+      "display_name": "2osama0",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "tenacityYgmt",
+          "emote": {
+            "emoteID": "301776283"
+          },
+          "emoticon": {
+            "emoticon_id": "301776283"
+          }
+        }
+      ]
+    },
+    {
+      "id": "16f9f3b4-db89-4477-8738-d35f47619422",
+      "created_at": "2026-02-23T20:31:29.329Z",
+      "content_offset_seconds": 2078,
+      "display_name": "2osama0",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Why do most men use female characters?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9c92ae05-b05b-4a8d-aa26-302864a0ceca",
+      "created_at": "2026-02-23T20:31:35.527Z",
+      "content_offset_seconds": 2084,
+      "display_name": "2osama0",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "NotLikeThis",
+          "emote": {
+            "emoteID": "58765"
+          },
+          "emoticon": {
+            "emoticon_id": "58765"
+          }
+        }
+      ]
+    }
+  ]
+}
