@@ -3,7 +3,6 @@ import { USE_STATIC_ARCHIVE, VODS_API_BASE } from "../config/site";
 const STATIC_DATA_PATH = `${process.env.PUBLIC_URL || ""}/data/vods.json`;
 const STATIC_COMMENTS_BASE = `${process.env.PUBLIC_URL || ""}/data/comments`;
 const STATIC_EMOTES_BASE = `${process.env.PUBLIC_URL || ""}/data/emotes`;
-const STATIC_COMMENTS_PAGE_SIZE = 600;
 const LOCAL_VOD_OVERRIDES_KEY = "softu-vod-overrides";
 const LOCAL_VOD_OVERRIDE_TTL_MS = 30 * 60 * 1000;
 
@@ -247,29 +246,9 @@ export const getVodComments = async (vodId, { cursor, contentOffsetSeconds } = {
   if (USE_STATIC_ARCHIVE) {
     const comments = await loadStaticComments(vodId);
     if (comments.length === 0) return { comments: [], cursor: null };
-
-    let startIndex = 0;
-
-    if (Number.isFinite(contentOffsetSeconds)) {
-      startIndex = comments.length;
-      for (let i = 0; i < comments.length; i++) {
-        if ((comments[i].content_offset_seconds || 0) >= contentOffsetSeconds) {
-          startIndex = i;
-          break;
-        }
-      }
-    } else if (cursor) {
-      const parsedCursor = Number(cursor);
-      if (Number.isFinite(parsedCursor) && parsedCursor >= 0) {
-        startIndex = parsedCursor;
-      }
-    }
-
-    const nextIndex = startIndex + STATIC_COMMENTS_PAGE_SIZE;
-    const slice = comments.slice(startIndex, nextIndex);
-    const nextCursor = nextIndex < comments.length ? String(nextIndex) : null;
-
-    return { comments: slice, cursor: nextCursor };
+    // For the static archive frontend, return the full saved chat log so seeking/delay changes
+    // can rebuild history reliably without paging race conditions.
+    return { comments, cursor: null };
   }
 
   const url = new URL(`${VODS_API_BASE}/v1/vods/${vodId}/comments`);

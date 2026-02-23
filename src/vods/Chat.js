@@ -43,6 +43,9 @@ export default function Chat(props) {
   const chatRef = useRef();
   const stoppedAtIndex = useRef(0);
   const newMessages = useRef();
+  const lastPlaybackTimeRef = useRef(null);
+  const commentsRequestSeqRef = useRef(0);
+  const hasInitializedSyncRef = useRef(false);
   const [scrolling, setScrolling] = useState(false);
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -55,6 +58,17 @@ export default function Chat(props) {
     setCommentsLoaded(true);
     return nextComments;
   }, []);
+
+  const requestComments = useCallback(
+    async ({ cursor: nextCursor, contentOffsetSeconds } = {}, { resetIndex = false } = {}) => {
+      const requestSeq = ++commentsRequestSeqRef.current;
+      const response = await getVodComments(vodId, { cursor: nextCursor, contentOffsetSeconds });
+      if (requestSeq !== commentsRequestSeqRef.current) return null;
+      if (resetIndex) stoppedAtIndex.current = 0;
+      return applyCommentsPage(response);
+    },
+    [vodId, applyCommentsPage]
+  );
 
   useEffect(() => {
     if (forceSideLayout) {
@@ -69,6 +83,9 @@ export default function Chat(props) {
     setShownMessages([]);
     setCommentsCount(0);
     setCommentsLoaded(false);
+    lastPlaybackTimeRef.current = null;
+    commentsRequestSeqRef.current += 1;
+    hasInitializedSyncRef.current = false;
   }, [vodId, part?.part]);
 
   useEffect(() => {
@@ -160,12 +177,20 @@ export default function Chat(props) {
     [getCurrentTime]
   );
 
-  const buildComments = useCallback(() => {
+  const buildComments = useCallback((options = {}) => {
+    const force = Boolean(options?.force);
     if (!chatReplayAvailable) return;
     if (!playerRef.current || !comments.current || comments.current.length === 0 || stoppedAtIndex.current === null) return;
-    if (youtube || games ? playerRef.current.getPlayerState() !== 1 : playerRef.current.paused()) return;
+    if (!force && (youtube || games ? playerRef.current.getPlayerState() !== 1 : playerRef.current.paused())) return;
 
     const time = getCurrentTime();
+    const previousTime = lastPlaybackTimeRef.current;
+    if (Number.isFinite(previousTime) && Number.isFinite(time) && time + 2 < previousTime) {
+      stoppedAtIndex.current = 0;
+      setShownMessages([]);
+    }
+    lastPlaybackTimeRef.current = time;
+
     let lastIndex = comments.current.length;
     for (let i = stoppedAtIndex.current.valueOf(); i < comments.current.length; i++) {
       if (comments.current[i].content_offset_seconds > time) {
@@ -178,10 +203,9 @@ export default function Chat(props) {
 
     const fetchNextComments = () => {
       if (!cursor.current) return;
-      getVodComments(vodId, { cursor: cursor.current })
+      requestComments({ cursor: cursor.current }, { resetIndex: true })
         .then((response) => {
-          stoppedAtIndex.current = 0;
-          applyCommentsPage(response);
+          if (!response) return;
         })
         .catch((e) => {
           console.error(e);
@@ -510,14 +534,11 @@ export default function Chat(props) {
     newMessages.current = messages;
 
     setShownMessages((shownMessages) => {
-      const concatMessages = shownMessages.concat(messages);
-      if (concatMessages.length > 200) concatMessages.splice(0, messages.length);
-
-      return concatMessages;
+      return shownMessages.concat(messages);
     });
     stoppedAtIndex.current = lastIndex;
     if (comments.current.length === lastIndex) fetchNextComments();
-  }, [chatReplayAvailable, getCurrentTime, playerRef, vodId, youtube, games, showTimestamp, applyCommentsPage]);
+  }, [chatReplayAvailable, getCurrentTime, playerRef, youtube, games, showTimestamp, requestComments]);
 
   const loop = useCallback(() => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
@@ -530,9 +551,9 @@ export default function Chat(props) {
 
     if (!playing.playing || stoppedAtIndex.current === undefined) return;
     const fetchComments = (offset = 0) => {
-      getVodComments(vodId, { contentOffsetSeconds: getSeekFetchOffset(offset) })
+      requestComments({ contentOffsetSeconds: getSeekFetchOffset(offset) }, { resetIndex: false })
         .then((response) => {
-          applyCommentsPage(response);
+          if (!response) return;
         })
         .catch((e) => {
           console.error(e);
@@ -570,35 +591,37 @@ export default function Chat(props) {
     return () => {
       stopLoop();
     };
-  }, [playing, vodId, getCurrentTime, loop, chatReplayAvailable, applyCommentsPage, getSeekFetchOffset]);
+  }, [playing, vodId, getCurrentTime, loop, chatReplayAvailable, requestComments, getSeekFetchOffset]);
 
-  // Add an effect to re-sync chat after the video has been set to the saved time
+  // Initial/setting-change sync: rebuild chat for current player time (works even while paused).
   useEffect(() => {
     if (!chatReplayAvailable) return;
+    if (delay === undefined) return;
 
     const syncChat = () => {
       if (playerRef.current) {
         const videoTime = getCurrentTime();
         if (!Number.isFinite(videoTime)) return;
-        // Option 1: trigger a full chat re-fetch:
-        // Optionally clear current messages and restart the comment loop
         stoppedAtIndex.current = 0;
         setShownMessages([]);
         setCommentsLoaded(false);
         setCommentsCount(0);
-        // Re-fetch chat comments using the current video time:
-        getVodComments(vodId, { contentOffsetSeconds: getSeekFetchOffset(videoTime) })
+        requestComments({ contentOffsetSeconds: getSeekFetchOffset(videoTime) }, { resetIndex: true })
           .then((data) => {
-            applyCommentsPage(data);
-            loop(); // restart the chat updating loop
+            if (!data) return;
+            buildComments({ force: true });
+            if (playing?.playing) loop();
+            else stopLoop();
           })
           .catch((e) => console.error(e));
       }
     };
-    // Delay a bit so that the player’s time is updated after loadedmetadata
-    const timer = setTimeout(syncChat, 500);
+
+    const isInitialSync = !hasInitializedSyncRef.current;
+    hasInitializedSyncRef.current = true;
+    const timer = setTimeout(syncChat, isInitialSync ? 500 : 250);
     return () => clearTimeout(timer);
-  }, [vodId, playerRef, getCurrentTime, loop, chatReplayAvailable, applyCommentsPage, getSeekFetchOffset]);
+  }, [vodId, part?.part, playerRef, getCurrentTime, loop, buildComments, chatReplayAvailable, requestComments, getSeekFetchOffset, playing?.playing, delay, userChatDelay]);
 
   const stopLoop = () => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
@@ -695,7 +718,7 @@ export default function Chat(props) {
               </Box>
             ) : !commentsLoaded ? (
               <Loading />
-            ) : commentsCount === 0 ? (
+            ) : commentsCount === 0 || shownMessages.length === 0 ? (
               <Box sx={{ p: 2 }}>
                 <Typography variant="body2" sx={{ color: "rgba(219,232,255,0.74)" }}>
                   No chat messages around this timestamp.
