@@ -5,6 +5,7 @@ const STATIC_COMMENTS_BASE = `${process.env.PUBLIC_URL || ""}/data/comments`;
 const STATIC_EMOTES_BASE = `${process.env.PUBLIC_URL || ""}/data/emotes`;
 const STATIC_COMMENTS_PAGE_SIZE = 600;
 const LOCAL_VOD_OVERRIDES_KEY = "softu-vod-overrides";
+const LOCAL_VOD_OVERRIDE_TTL_MS = 30 * 60 * 1000;
 
 let staticVodsCache = null;
 const staticCommentsCache = new Map();
@@ -41,7 +42,24 @@ const readLocalVodOverrides = () => {
   }
   try {
     const raw = window.localStorage.getItem(LOCAL_VOD_OVERRIDES_KEY);
-    localVodOverridesCache = raw ? JSON.parse(raw) || {} : {};
+    const parsed = raw ? JSON.parse(raw) || {} : {};
+    const now = Date.now();
+    let changed = false;
+    const next = {};
+    for (const [vodId, override] of Object.entries(parsed)) {
+      if (!override || typeof override !== "object") {
+        changed = true;
+        continue;
+      }
+      const savedAt = Number(override.savedAt);
+      if (!Number.isFinite(savedAt) || now - savedAt > LOCAL_VOD_OVERRIDE_TTL_MS) {
+        changed = true;
+        continue;
+      }
+      next[vodId] = override;
+    }
+    localVodOverridesCache = next;
+    if (changed) writeLocalVodOverrides(next);
   } catch {
     localVodOverridesCache = {};
   }
@@ -88,6 +106,7 @@ export const cacheLocalVodOverrideFromVod = (vod) => {
     vodNotice: vod.vodNotice || "",
     chatReplayAvailable: vod.chatReplayAvailable !== false,
     unpublished: Boolean(vod.unpublished),
+    savedAt: Date.now(),
   };
   writeLocalVodOverrides(overrides);
 };

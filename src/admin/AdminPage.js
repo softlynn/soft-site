@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Box, Button, CircularProgress, FormControlLabel, MenuItem, Select, Stack, Switch, Typography } from "@mui/material";
 import SimpleBar from "simplebar-react";
 import Footer from "../utils/Footer";
@@ -7,6 +7,7 @@ import {
   consumePendingAdminPassword,
   clearAdminToken,
   getAdminVods,
+  getAdminToken,
   primeAdminWake,
   promptAndLoginAdmin,
   republishVod,
@@ -42,6 +43,7 @@ export default function AdminPage() {
   const [noticeEnabled, setNoticeEnabled] = useState(false);
   const [chatReplayAvailable, setChatReplayAvailable] = useState(true);
   const [message, setMessage] = useState({ type: "info", text: "Admin panel is locked." });
+  const userUnlockInProgressRef = useRef(false);
 
   const selectedVod = useMemo(() => {
     if (!selectedVodId) return null;
@@ -67,39 +69,52 @@ export default function AdminPage() {
   }, [selectedVodId]);
 
   useEffect(() => {
+    let active = true;
     const init = async () => {
       try {
-        const valid = await withTimeout(verifyAdminSession(), "Admin session check");
-        let isAuthorized = valid;
-        if (!isAuthorized) {
-          const pendingPassword = consumePendingAdminPassword();
-          if (pendingPassword) {
-            try {
-              await withTimeout(authenticateAdmin(pendingPassword), "Admin login");
-              isAuthorized = true;
-            } catch (error) {
-              setMessage({ type: "error", text: error.message });
-            }
+        const pendingPassword = consumePendingAdminPassword();
+        const existingToken = getAdminToken();
+        let isAuthorized = false;
+
+        if (pendingPassword) {
+          try {
+            await withTimeout(authenticateAdmin(pendingPassword), "Admin login");
+            isAuthorized = true;
+          } catch (error) {
+            if (!active || userUnlockInProgressRef.current) return;
+            setMessage({ type: "error", text: error.message });
           }
+        } else if (existingToken) {
+          const valid = await withTimeout(verifyAdminSession(), "Admin session check");
+          isAuthorized = valid;
         }
+
+        if (userUnlockInProgressRef.current || !active) return;
 
         setAuthorized(isAuthorized);
         if (isAuthorized) {
           try {
             await withTimeout(hydrateVods(), "Admin VOD sync");
+            if (!active || userUnlockInProgressRef.current) return;
             setMessage({ type: "success", text: "Admin panel unlocked." });
           } catch (error) {
+            if (!active || userUnlockInProgressRef.current) return;
             setMessage({ type: "error", text: error.message });
           }
         }
       } catch (error) {
+        if (!active || userUnlockInProgressRef.current) return;
         setAuthorized(false);
         setMessage({ type: "error", text: error.message });
       } finally {
+        if (!active) return;
         setReady(true);
       }
     };
     init();
+    return () => {
+      active = false;
+    };
   }, [hydrateVods]);
 
   useEffect(() => {
@@ -107,6 +122,7 @@ export default function AdminPage() {
   }, [selectedVodId, selectedVod]);
 
   const handleUnlock = useCallback(async () => {
+    userUnlockInProgressRef.current = true;
     setLoading(true);
     try {
       const didLogin = await promptAndLoginAdmin();
@@ -115,13 +131,15 @@ export default function AdminPage() {
         return;
       }
       setAuthorized(true);
-      await hydrateVods();
+      await withTimeout(hydrateVods(), "Admin VOD sync");
       setMessage({ type: "success", text: "Admin panel unlocked." });
     } catch (error) {
       setAuthorized(false);
       setMessage({ type: "error", text: error.message });
     } finally {
+      userUnlockInProgressRef.current = false;
       setLoading(false);
+      setReady(true);
     }
   }, [hydrateVods]);
 
