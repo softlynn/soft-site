@@ -14,6 +14,7 @@ import { getVodById } from "../api/vodsApi";
 import VodReactions from "../vods/VodReactions";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
+import { getStoredChatDelaySeconds, setStoredChatDelaySeconds } from "../vods/chatDelayPreference";
 
 const delay = 0;
 const getOriginalTwitchVodUrl = (vod) => {
@@ -43,7 +44,7 @@ export default function Games(props) {
   const [part, setPart] = useState(undefined);
   const [showMenu, setShowMenu] = useState(true);
   const [playing, setPlaying] = useState({ playing: false });
-  const [userChatDelay, setUserChatDelay] = useState(DEFAULT_CHAT_DELAY_SECONDS);
+  const [userChatDelay, setUserChatDelay] = useState(() => getStoredChatDelaySeconds() ?? DEFAULT_CHAT_DELAY_SECONDS);
   const [mobileFullscreenChat, setMobileFullscreenChat] = useState(false);
   const [mobileViewportSize, setMobileViewportSize] = useState({ width: 0, height: 0 });
   const playerRef = useRef(null);
@@ -163,6 +164,10 @@ export default function Games(props) {
   useEffect(() => {
     console.info(`Chat Delay: ${userChatDelay + delay} seconds`);
     return;
+  }, [userChatDelay]);
+
+  useEffect(() => {
+    setStoredChatDelaySeconds(userChatDelay);
   }, [userChatDelay]);
 
   if (vod === undefined || drive === undefined || part === undefined || delay === undefined) return <Loading />;

@@ -18,6 +18,7 @@ import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import { BRAND_NAME, DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "./VodReactions";
+import { getStoredChatDelaySeconds, setStoredChatDelaySeconds } from "./chatDelayPreference";
 
 const getOriginalTwitchVodUrl = (vod) => {
   if (!vod || String(vod.platform || "").toLowerCase() !== "twitch") return "";
@@ -51,7 +52,7 @@ export default function Vod(props) {
   const [currentTime, setCurrentTime] = useState(undefined);
   const [playing, setPlaying] = useState({ playing: false });
   const [delay, setDelay] = useState(undefined);
-  const [userChatDelay, setUserChatDelay] = useState(DEFAULT_CHAT_DELAY_SECONDS);
+  const [userChatDelay, setUserChatDelay] = useState(() => getStoredChatDelaySeconds() ?? DEFAULT_CHAT_DELAY_SECONDS);
   const [mobileFullscreenChat, setMobileFullscreenChat] = useState(false);
   const [mobileViewportSize, setMobileViewportSize] = useState({ width: 0, height: 0 });
   const playerRef = useRef(null);
@@ -216,6 +217,10 @@ export default function Vod(props) {
     console.info(`Chat Delay: ${userChatDelay + delay} seconds`);
     return;
   }, [userChatDelay, delay]);
+
+  useEffect(() => {
+    setStoredChatDelaySeconds(userChatDelay);
+  }, [userChatDelay]);
 
   const copyTimestamp = () => {
     navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#${location.pathname}?t=${toHMS(currentTime)}`);

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Box, Modal, Typography, TextField, InputAdornment, FormGroup, FormControlLabel, Checkbox } from "@mui/material";
+import { DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
+import { getChatDelayBounds } from "./chatDelayPreference";
 
-const CHAT_DELAY_MIN = -600;
-const CHAT_DELAY_MAX = 600;
+const { min: CHAT_DELAY_MIN, max: CHAT_DELAY_MAX } = getChatDelayBounds();
 
 const parseChatDelay = (value) => {
   if (value === "" || value === "-" || value === "+") return null;
@@ -63,7 +64,7 @@ export default function Settings(props) {
               }}
               onChange={delayChange}
               value={chatDelayInput}
-              helperText={`Default is 7s. Range ${CHAT_DELAY_MIN} to ${CHAT_DELAY_MAX}.`}
+              helperText={`Default is ${DEFAULT_CHAT_DELAY_SECONDS}s. Range ${CHAT_DELAY_MIN} to ${CHAT_DELAY_MAX}.`}
               inputProps={{
                 inputMode: "numeric",
                 pattern: "-?[0-9]*",
