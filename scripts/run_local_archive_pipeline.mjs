@@ -83,6 +83,12 @@ const config = {
   autoGitPush: (process.env.AUTO_GIT_PUSH || "true").toLowerCase() === "true",
   dryRun: (process.env.LOCAL_PIPELINE_DRY_RUN || "false").toLowerCase() === "true",
   twitchDownloaderPath: process.env.TWITCHDOWNLOADER_PATH || path.join(repoRoot, "scripts", "tools", "TwitchDownloaderCLI.exe"),
+  ffmpegPath: process.env.FFMPEG_PATH || "ffmpeg",
+  obsDockUploadStatusPath:
+    process.env.OBS_VOD_BYPASS_UPLOAD_STATUS_PATH ||
+    (process.env.APPDATA
+      ? path.join(process.env.APPDATA, "obs-studio", "plugin_config", "obs-vod-track-toggle", "upload_status.json")
+      : ""),
 };
 
 const VIDEO_EXTENSIONS = new Set([".mp4", ".mkv", ".mov", ".flv", ".m4v"]);
@@ -118,6 +124,27 @@ const readJsonFile = async (filePath, fallback) => {
 const writeJsonFile = async (filePath, value) => {
   await ensureDirectory(path.dirname(filePath));
   await fs.writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+};
+
+const writeObsDockUploadStatus = async (status = {}) => {
+  const outputPath = String(config.obsDockUploadStatusPath || "").trim();
+  if (!outputPath) return;
+
+  const payload = {
+    visible: false,
+    state: "idle",
+    message: "",
+    percent: null,
+    hide_after_ms: 0,
+    updated_at_ms: Date.now(),
+    ...status,
+  };
+
+  try {
+    await writeJsonFile(outputPath, payload);
+  } catch (error) {
+    log(`Failed to write OBS dock upload status: ${error.message}`);
+  }
 };
 
 const listRecordingFiles = async (dirPath) => {
@@ -380,6 +407,62 @@ const ensureTwitchDownloader = async () => {
   return config.twitchDownloaderPath;
 };
 
+const sanitizeFilenamePart = (value) =>
+  String(value || "")
+    .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 100) || "recording";
+
+const buildTrack1UploadCopyPath = (recordingFile) => {
+  const parsed = path.parse(recordingFile.path);
+  const safeBase = sanitizeFilenamePart(parsed.name);
+  const stamp = new Date(recordingFile.modifiedAtMs || Date.now()).toISOString().replace(/[:.]/g, "-");
+  return path.join(config.tmpDir, "youtube-upload-audio1", `${safeBase}.${stamp}.track1.mkv`);
+};
+
+const createYouTubeUploadCopyTrack1 = async (recordingFile) => {
+  const outputPath = buildTrack1UploadCopyPath(recordingFile);
+  await ensureDirectory(path.dirname(outputPath));
+  if (await fileExists(outputPath)) {
+    await fs.rm(outputPath, { force: true });
+  }
+
+  log(`Preparing YouTube upload copy (audio track 1 only): ${recordingFile.path}`);
+  const ffmpegArgs = [
+    "-y",
+    "-i",
+    recordingFile.path,
+    "-map",
+    "0:v?",
+    "-map",
+    "0:a:0?",
+    "-sn",
+    "-dn",
+    "-c",
+    "copy",
+    outputPath,
+  ];
+
+  const command = spawnSync(config.ffmpegPath, ffmpegArgs, {
+    stdio: "inherit",
+  });
+
+  if (command.status !== 0 || !(await fileExists(outputPath))) {
+    fail(`Failed to create YouTube upload copy (track 1 only) for ${recordingFile.name}`);
+  }
+
+  const stat = await fs.stat(outputPath);
+  return {
+    path: outputPath,
+    name: path.basename(outputPath),
+    size: stat.size,
+    modifiedAtMs: stat.mtimeMs,
+    originalPath: recordingFile.path,
+    generatedForYouTubeUploadOnly: true,
+  };
+};
+
 const downloadTwitchChatJson = async (twitchVodId, outputPath) => {
   const exePath = await ensureTwitchDownloader();
   await ensureDirectory(path.dirname(outputPath));
@@ -477,8 +560,31 @@ const ensureYouTubeCategoryExists = async (youtube) => {
   }
 };
 
-const uploadRecordingToYouTube = async ({ youtube, recordingFile, title, description }) => {
+const uploadRecordingToYouTube = async ({ youtube, recordingFile, title, description, onProgress }) => {
   log(`Uploading to YouTube: ${recordingFile.path}`);
+  const totalBytes = Number(recordingFile.size || 0);
+  let uploadedBytes = 0;
+  let lastReportedPercent = -1;
+  let lastReportedAt = 0;
+  const mediaBody = fsSync.createReadStream(recordingFile.path);
+
+  if (typeof onProgress === "function" && totalBytes > 0) {
+    mediaBody.on("data", (chunk) => {
+      uploadedBytes += chunk.length;
+      const percent = Math.max(0, Math.min(100, Math.floor((uploadedBytes / totalBytes) * 100)));
+      const now = Date.now();
+      if (percent === lastReportedPercent && now - lastReportedAt < 800) return;
+      if (percent < 100 && lastReportedPercent >= 0 && percent < lastReportedPercent) return;
+      lastReportedPercent = percent;
+      lastReportedAt = now;
+      onProgress({
+        uploadedBytes,
+        totalBytes,
+        percent,
+      });
+    });
+  }
+
   const response = await youtube.videos.insert({
     part: ["snippet", "status"],
     notifySubscribers: true,
@@ -493,9 +599,17 @@ const uploadRecordingToYouTube = async ({ youtube, recordingFile, title, descrip
       },
     },
     media: {
-      body: fsSync.createReadStream(recordingFile.path),
+      body: mediaBody,
     },
   });
+
+  if (typeof onProgress === "function" && totalBytes > 0) {
+    onProgress({
+      uploadedBytes: totalBytes,
+      totalBytes,
+      percent: 100,
+    });
+  }
 
   const videoId = response.data.id;
   if (!videoId) fail("YouTube upload succeeded without a returned video ID");
@@ -860,30 +974,64 @@ const run = async () => {
         youtubeParts: [],
       });
 
-      const youtubeVideoId = await uploadRecordingToYouTube({
-        youtube,
-        recordingFile: recording,
-        title,
-        description,
-      });
-      const details = await fetchYouTubeVideoDetails(youtube, youtubeVideoId);
+      let uploadRecording = null;
+      try {
+        await writeObsDockUploadStatus({
+          visible: true,
+          state: "preparing",
+          message: `Preparing VOD upload copy (track 1 audio)`,
+          percent: 0,
+        });
+        uploadRecording = await createYouTubeUploadCopyTrack1(recording);
 
-      addOrUpdateYouTubePart(vodEntry, {
-        id: youtubeVideoId,
-        part: partNumber,
-        duration: details.durationSeconds || 0,
-        thumbnail_url: details.thumbnailUrl || vodEntry.thumbnail_url,
-      });
+        const youtubeVideoId = await uploadRecordingToYouTube({
+          youtube,
+          recordingFile: uploadRecording,
+          title,
+          description,
+          onProgress: ({ percent }) => {
+            void writeObsDockUploadStatus({
+              visible: true,
+              state: "uploading",
+              message: "Uploading VOD",
+              percent: Number.isFinite(percent) ? percent : null,
+            });
+          },
+        });
+        await writeObsDockUploadStatus({
+          visible: true,
+          state: "done",
+          message: "VOD upload done",
+          percent: 100,
+          hide_after_ms: 10000,
+        });
+        const details = await fetchYouTubeVideoDetails(youtube, youtubeVideoId);
 
-      state.processedFiles[recording.path] = {
-        status: "completed",
-        twitchVodId: vodId,
-        youtubeVideoId,
-        part: partNumber,
-        processedAt: new Date().toISOString(),
-      };
+        addOrUpdateYouTubePart(vodEntry, {
+          id: youtubeVideoId,
+          part: partNumber,
+          duration: details.durationSeconds || 0,
+          thumbnail_url: details.thumbnailUrl || vodEntry.thumbnail_url,
+        });
 
-      log(`Completed pipeline for Twitch VOD ${vodId} -> YouTube ${youtubeVideoId} (Part ${partNumber})`);
+        state.processedFiles[recording.path] = {
+          status: "completed",
+          twitchVodId: vodId,
+          youtubeVideoId,
+          part: partNumber,
+          processedAt: new Date().toISOString(),
+        };
+
+        log(`Completed pipeline for Twitch VOD ${vodId} -> YouTube ${youtubeVideoId} (Part ${partNumber})`);
+      } finally {
+        if (uploadRecording?.generatedForYouTubeUploadOnly && uploadRecording.path) {
+          try {
+            await fs.rm(uploadRecording.path, { force: true });
+          } catch (error) {
+            log(`Failed to remove temporary upload copy ${uploadRecording.path}: ${error.message}`);
+          }
+        }
+      }
     }
 
     await syncYouTubeMetadataForVod(youtube, vodEntry);
@@ -931,9 +1079,22 @@ const run = async () => {
 
 run()
   .then(() => {
+    void writeObsDockUploadStatus({
+      visible: false,
+      state: "idle",
+      message: "",
+      percent: null,
+    });
     log("Local archive pipeline finished.");
   })
   .catch((error) => {
+    void writeObsDockUploadStatus({
+      visible: true,
+      state: "error",
+      message: `VOD upload error: ${error.message}`,
+      percent: null,
+      hide_after_ms: 20000,
+    });
     console.error(error);
     process.exit(1);
   });
