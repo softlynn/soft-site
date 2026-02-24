@@ -1079,12 +1079,6 @@ const run = async () => {
 
 run()
   .then(() => {
-    void writeObsDockUploadStatus({
-      visible: false,
-      state: "idle",
-      message: "",
-      percent: null,
-    });
     log("Local archive pipeline finished.");
   })
   .catch((error) => {
@@ -1093,7 +1087,7 @@ run()
       state: "error",
       message: `VOD upload error: ${error.message}`,
       percent: null,
-      hide_after_ms: 20000,
+      hide_after_ms: 0,
     });
     console.error(error);
     process.exit(1);
