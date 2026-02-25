@@ -46,6 +46,43 @@ import UploadingVodPlaceholder from "./UploadingVodPlaceholder";
 const FILTERS = ["Default", "Date", "Title", "Game"];
 const PLATFORMS = ["All", "Twitch", "Kick"];
 const SPOTIFY_PLAYLIST_EMBED_URL = "https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator";
+const ACTIVE_UPLOAD_VOD_REFRESH_MS = 8000;
+
+const normalizeUploadVodId = (upload) => {
+  const id = String(upload?.twitchVodId || "").trim();
+  return id || null;
+};
+
+const buildVodListWithUploadPlaceholders = (list, activeUploads) => {
+  const realList = Array.isArray(list) ? list : [];
+  const uploads = Array.isArray(activeUploads) ? activeUploads : [];
+  if (uploads.length === 0) return realList;
+
+  const existingVodIds = new Set(realList.map((vod) => String(vod?.id || "").trim()).filter(Boolean));
+  const seenSessionIds = new Set();
+
+  const placeholders = uploads
+    .filter((upload) => {
+      const sessionId = String(upload?.sessionId || "").trim();
+      if (!sessionId || seenSessionIds.has(sessionId)) return false;
+      seenSessionIds.add(sessionId);
+
+      const state = String(upload?.state || "").trim().toLowerCase();
+      if (!state || state === "done" || state === "error") return false;
+
+      const uploadVodId = normalizeUploadVodId(upload);
+      if (uploadVodId && existingVodIds.has(uploadVodId)) return false;
+      return true;
+    })
+    .map((upload, index) => ({
+      __type: "upload-placeholder",
+      __key: `upload-${String(upload?.sessionId || index)}`,
+      upload,
+    }));
+
+  if (placeholders.length === 0) return realList;
+  return [...placeholders, ...realList];
+};
 
 const extractTwitchChannel = (url) => {
   const raw = String(url || "").trim();
@@ -104,6 +141,7 @@ export default function Vods() {
   const [vods, setVods] = useState(null);
   const [previewVods, setPreviewVods] = useState(isHomeRoute ? null : []);
   const [activeUploads, setActiveUploads] = useState([]);
+  const [vodAutoRefreshTick, setVodAutoRefreshTick] = useState(0);
   const [totalVods, setTotalVods] = useState(null);
   const [filter, setFilter] = useState(FILTERS[0]);
   const [filterStartDate, setFilterStartDate] = useState(dayjs(START_DATE));
@@ -144,6 +182,23 @@ export default function Vods() {
     };
   }, []);
 
+  const activeUploadRefreshSignature = useMemo(
+    () =>
+      (Array.isArray(activeUploads) ? activeUploads : [])
+        .map((upload) => `${String(upload?.sessionId || "").trim()}:${String(upload?.state || "").trim()}:${String(upload?.twitchVodId || "").trim()}`)
+        .sort()
+        .join("|"),
+    [activeUploads]
+  );
+
+  useEffect(() => {
+    if (activeUploads.length === 0) return undefined;
+    const intervalId = setInterval(() => {
+      setVodAutoRefreshTick((tick) => tick + 1);
+    }, ACTIVE_UPLOAD_VOD_REFRESH_MS);
+    return () => clearInterval(intervalId);
+  }, [activeUploadRefreshSignature, activeUploads.length]);
+
   useEffect(() => {
     if (!isHomeRoute) return undefined;
     setPreviewVods(null);
@@ -168,7 +223,7 @@ export default function Vods() {
       });
 
     return undefined;
-  }, [isHomeRoute, previewLimit]);
+  }, [isHomeRoute, previewLimit, activeUploadRefreshSignature, vodAutoRefreshTick]);
 
   useEffect(() => {
     if (isHomeRoute) return undefined;
@@ -262,7 +317,7 @@ export default function Vods() {
 
     fetchVods();
     return undefined;
-  }, [isHomeRoute, limit, page, filter, filterStartDate, filterEndDate, filterTitle, filterGame, platform]);
+  }, [isHomeRoute, limit, page, filter, filterStartDate, filterEndDate, filterTitle, filterGame, platform, activeUploadRefreshSignature, vodAutoRefreshTick]);
 
   const changeFilter = (evt) => {
     setFilter(evt.target.value);
@@ -412,6 +467,7 @@ export default function Vods() {
       );
     }
 
+    let realVodIndex = 0;
     return (
       <Grid
         container
@@ -422,61 +478,43 @@ export default function Vods() {
           px: edgePad,
         }}
       >
-        {list.map((vod, index) => (
-          <Reveal key={vod.id} delay={Math.min(index * 40, 220)} sx={{ display: "contents" }}>
-            <Vod vod={vod} sizes={cardSizes} gridSize={2.1} sheen={index === 0} cardWidth={cardWidth} />
-          </Reveal>
-        ))}
+        {list.map((item, index) => {
+          if (item?.__type === "upload-placeholder") {
+            return (
+              <Reveal key={item.__key} delay={Math.min(index * 40, 220)} sx={{ display: "contents" }}>
+                <UploadingVodPlaceholder upload={item.upload} sizes={cardSizes} cardWidth={cardWidth} />
+              </Reveal>
+            );
+          }
+
+          const vod = item;
+          const sheen = realVodIndex === 0;
+          realVodIndex += 1;
+          return (
+            <Reveal key={vod.id} delay={Math.min(index * 40, 220)} sx={{ display: "contents" }}>
+              <Vod vod={vod} sizes={cardSizes} gridSize={2.1} sheen={sheen} cardWidth={cardWidth} />
+            </Reveal>
+          );
+        })}
       </Grid>
     );
   };
 
-  const renderUploadPlaceholderSection = ({ mt = 0, cardSizes, edgePad, cardWidth }) => {
-    if (!Array.isArray(activeUploads) || activeUploads.length === 0) return null;
+  const homePreviewDisplayList = useMemo(() => {
+    if (previewVods === null) {
+      if (!Array.isArray(activeUploads) || activeUploads.length === 0) return null;
+      return buildVodListWithUploadPlaceholders([], activeUploads);
+    }
+    return buildVodListWithUploadPlaceholders(previewVods, activeUploads);
+  }, [previewVods, activeUploads]);
 
-    return (
-      <Reveal delay={70} sx={{ mt }}>
-        <Box className="soft-glass soft-panel-ambient" sx={{ p: { xs: 1.2, md: 1.4 }, borderRadius: "24px" }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, mb: 0.65, flexWrap: "wrap" }}>
-            <Box>
-              <Typography variant="h5" className="soft-section-heading" sx={{ color: "primary.main" }}>
-                Uploading VOD{activeUploads.length === 1 ? "" : "s"}
-              </Typography>
-              <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.35, lineHeight: 1.45 }}>
-                Live upload placeholders update automatically while your archive uploads finish.
-              </Typography>
-            </Box>
-            <Chip
-              label={`${activeUploads.length} active`}
-              sx={{
-                borderRadius: "999px",
-                background: "var(--soft-surface)",
-                border: "1px solid var(--soft-border)",
-                fontWeight: 700,
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,.14)",
-              }}
-            />
-          </Box>
-
-          <Grid
-            container
-            spacing={{ xs: 1.2, sm: 1.6, md: 2 }}
-            sx={{
-              mt: 0.4,
-              justifyContent: "center",
-              px: edgePad ?? { xs: 0.12, sm: 0.16, md: 0.22 },
-            }}
-          >
-            {activeUploads.map((upload, index) => (
-              <Reveal key={upload.sessionId || `upload-${index}`} delay={Math.min(index * 40, 180)} sx={{ display: "contents" }}>
-                <UploadingVodPlaceholder upload={upload} sizes={cardSizes} cardWidth={cardWidth} />
-              </Reveal>
-            ))}
-          </Grid>
-        </Box>
-      </Reveal>
-    );
-  };
+  const archiveDisplayList = useMemo(() => {
+    if (vods === null) {
+      if (!Array.isArray(activeUploads) || activeUploads.length === 0) return null;
+      return buildVodListWithUploadPlaceholders([], activeUploads);
+    }
+    return buildVodListWithUploadPlaceholders(vods, activeUploads);
+  }, [vods, activeUploads]);
 
   return (
     <SimpleBar className="soft-vods-scroll" style={{ minHeight: 0, height: "100%" }}>
@@ -591,15 +629,6 @@ export default function Vods() {
               </Box>
             </Reveal>
 
-            <Reveal delay={120} sx={{ mt: 2 }}>
-              {renderUploadPlaceholderSection({
-                mt: 0,
-                cardSizes: { xs: 12, sm: 6, lg: 3 },
-                edgePad: { xs: 0.12, sm: 0.16, md: 0.22 },
-                cardWidth: "21.5rem",
-              })}
-            </Reveal>
-
             <Reveal delay={130} sx={{ mt: 2 }}>
               <Box className="soft-glass soft-panel-ambient" sx={{ p: { xs: 1.2, md: 1.5 }, borderRadius: "24px" }}>
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, mb: 0.7, flexWrap: "wrap" }}>
@@ -616,9 +645,9 @@ export default function Vods() {
                   </Button>
                 </Box>
 
-                {previewVods === null
+                {homePreviewDisplayList === null
                   ? <Loading />
-                  : renderVodGrid(previewVods, { xs: 12, sm: 6, lg: 3 }, { edgePad: { xs: 0.12, sm: 0.16, md: 0.22 }, cardWidth: "21.5rem" })}
+                  : renderVodGrid(homePreviewDisplayList, { xs: 12, sm: 6, lg: 3 }, { edgePad: { xs: 0.12, sm: 0.16, md: 0.22 }, cardWidth: "21.5rem" })}
               </Box>
             </Reveal>
 
@@ -647,13 +676,11 @@ export default function Vods() {
 
         {!isHomeRoute && (
           <>
-            {renderUploadPlaceholderSection({ mt: 2.25, cardSizes: { xs: 12, sm: 6, lg: 3 } })}
-
             <Reveal delay={40} sx={{ mt: 2.25 }} id="home-archive-section">
               {renderArchiveControls()}
             </Reveal>
 
-            <Box sx={{ mt: 1.2 }}>{renderVodGrid(vods, { xs: 12, sm: 6, lg: 3, xl: 3 })}</Box>
+            <Box sx={{ mt: 1.2 }}>{renderVodGrid(archiveDisplayList, { xs: 12, sm: 6, lg: 3, xl: 3 })}</Box>
 
             <Box sx={{ display: "flex", justifyContent: "center", mt: 2.5, mb: 1.2, alignItems: "center", flexDirection: isMobile ? "column" : "row" }}>
               {totalPages !== null && (
