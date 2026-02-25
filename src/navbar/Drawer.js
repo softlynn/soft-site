@@ -13,7 +13,7 @@ const mainLinks = [
 ];
 
 export default function DrawerComponent(props) {
-  const { socials } = props;
+  const { socials, activeUploadCount = 0 } = props;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -31,9 +31,32 @@ export default function DrawerComponent(props) {
               <ListItemButton onClick={() => setDrawerOpen(false)} sx={{ borderRadius: 2, mx: 1, py: 0.75 }}>
                 <ListItemIcon>{icon}</ListItemIcon>
                 <ListItemText>
-                  <CustomLink color="primary" href={path}>
-                    {title}
-                  </CustomLink>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                    <CustomLink color="primary" href={path}>
+                      {title}
+                    </CustomLink>
+                    {path === "/vods" && activeUploadCount > 0 && (
+                      <Box
+                        component="span"
+                        sx={{
+                          minWidth: 18,
+                          height: 18,
+                          px: 0.45,
+                          borderRadius: "999px",
+                          display: "grid",
+                          placeItems: "center",
+                          background: "rgba(212,107,140,0.18)",
+                          border: "1px solid rgba(212,107,140,0.28)",
+                          color: "secondary.main",
+                          fontSize: 10.5,
+                          fontWeight: 800,
+                          lineHeight: 1,
+                        }}
+                      >
+                        {activeUploadCount > 9 ? "9+" : activeUploadCount}
+                      </Box>
+                    )}
+                  </Box>
                 </ListItemText>
               </ListItemButton>
               <Divider sx={{ mx: 2 }} />

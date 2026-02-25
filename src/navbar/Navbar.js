@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AppBar, Toolbar, Typography, useMediaQuery, Box, Divider, Button, Stack, Tooltip, IconButton } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
@@ -14,6 +14,7 @@ import ReportIcon from "@mui/icons-material/Report";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import { GITHUB_ISSUES_URL, SITE_TITLE, SOCIAL_LINKS } from "../config/site";
 import { setPendingAdminPassword } from "../api/adminApi";
+import { fetchActiveVodUploads } from "../api/uploadStatusApi";
 
 const ADMIN_TAP_WINDOW_MS = 3500;
 const HOME_NAV_DELAY_MS = 900;
@@ -66,6 +67,7 @@ export default function Navbar() {
   const location = useLocation();
   const titleTapState = useRef(titleTapStateStore);
   const [logoBurstSeed, setLogoBurstSeed] = useState(0);
+  const [activeUploadCount, setActiveUploadCount] = useState(0);
 
   const mainLinks = useMemo(
     () =>
@@ -75,6 +77,32 @@ export default function Navbar() {
       ].map((item) => ({ ...item, active: location.pathname === item.path })),
     [location.pathname]
   );
+
+  useEffect(() => {
+    let alive = true;
+    let timerId = null;
+
+    const refresh = async () => {
+      try {
+        const uploads = await fetchActiveVodUploads();
+        if (!alive) return;
+        const count = uploads.filter((upload) => !["done", "error"].includes(String(upload?.state || ""))).length;
+        setActiveUploadCount(count);
+      } catch (_error) {
+        if (alive) setActiveUploadCount(0);
+      } finally {
+        if (alive) {
+          timerId = window.setTimeout(refresh, document.visibilityState === "visible" ? 12000 : 25000);
+        }
+      }
+    };
+
+    refresh();
+    return () => {
+      alive = false;
+      if (timerId) window.clearTimeout(timerId);
+    };
+  }, []);
 
   const handleSiteTitleClick = async (event) => {
     event.preventDefault();
@@ -142,7 +170,7 @@ export default function Navbar() {
       <AppBar position="static" elevation={0} sx={{ borderRadius: "20px" }}>
         <Toolbar sx={{ minHeight: { xs: 64, md: 72 }, px: { xs: 1, md: 1.5 }, gap: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
-            {isMobile && <Drawer socials={socials} />}
+            {isMobile && <Drawer socials={socials} activeUploadCount={activeUploadCount} />}
 
             <CustomLink color="inherit" href="/" onClick={handleLogoClick} sx={{ mr: 1.25 }}>
               <Box
@@ -258,29 +286,58 @@ export default function Navbar() {
             <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexShrink: 0 }}>
               {mainLinks.map((item) => (
                 <CustomLink key={item.path} href={item.path}>
-                  <Button
-                    className={`soft-nav-main-button${item.active ? " is-active" : ""}`}
-                    variant={item.active ? "contained" : "outlined"}
-                    color={item.active ? "secondary" : "primary"}
-                    startIcon={item.icon}
-                    sx={{
-                      borderRadius: "999px",
-                      px: 1.35,
-                      minWidth: 96,
-                      height: 40,
-                      fontWeight: 800,
-                      letterSpacing: "0.01em",
-                      borderColor: item.active ? "rgba(212,107,140,0.28)" : "var(--soft-border)",
-                      background: item.active ? "linear-gradient(180deg, rgba(212,107,140,0.20), rgba(212,107,140,0.10))" : "var(--soft-surface)",
-                      color: item.active ? "secondary.main" : "text.primary",
-                      boxShadow: item.active
-                        ? "0 10px 22px rgba(212,107,140,0.12), inset 0 1px 0 rgba(255,255,255,0.18)"
-                        : "inset 0 1px 0 rgba(255,255,255,0.14)",
-                      "& .MuiButton-startIcon svg": { fontSize: 18 },
-                    }}
-                  >
-                    {item.title}
-                  </Button>
+                  <Box sx={{ position: "relative", display: "inline-flex" }}>
+                    <Button
+                      className={`soft-nav-main-button${item.active ? " is-active" : ""}`}
+                      variant={item.active ? "contained" : "outlined"}
+                      color={item.active ? "secondary" : "primary"}
+                      startIcon={item.icon}
+                      sx={{
+                        borderRadius: "999px",
+                        px: 1.35,
+                        minWidth: 96,
+                        height: 40,
+                        fontWeight: 800,
+                        letterSpacing: "0.01em",
+                        borderColor: item.active ? "rgba(212,107,140,0.28)" : "var(--soft-border)",
+                        background: item.active ? "linear-gradient(180deg, rgba(212,107,140,0.20), rgba(212,107,140,0.10))" : "var(--soft-surface)",
+                        color: item.active ? "secondary.main" : "text.primary",
+                        boxShadow: item.active
+                          ? "0 10px 22px rgba(212,107,140,0.12), inset 0 1px 0 rgba(255,255,255,0.18)"
+                          : "inset 0 1px 0 rgba(255,255,255,0.14)",
+                        "& .MuiButton-startIcon svg": { fontSize: 18 },
+                      }}
+                    >
+                      {item.title}
+                    </Button>
+                    {item.path === "/vods" && activeUploadCount > 0 && (
+                      <Box
+                        component="span"
+                        sx={{
+                          position: "absolute",
+                          top: -5,
+                          right: -4,
+                          minWidth: 18,
+                          height: 18,
+                          px: 0.45,
+                          borderRadius: "999px",
+                          display: "grid",
+                          placeItems: "center",
+                          background: "linear-gradient(180deg, rgba(212,107,140,0.98), rgba(212,107,140,0.84))",
+                          color: "#fff",
+                          border: "1px solid rgba(255,255,255,0.45)",
+                          boxShadow: "0 6px 14px rgba(212,107,140,0.34)",
+                          fontSize: 10.5,
+                          fontWeight: 800,
+                          lineHeight: 1,
+                          pointerEvents: "none",
+                        }}
+                        title={`${activeUploadCount} upload${activeUploadCount === 1 ? "" : "s"} in progress`}
+                      >
+                        {activeUploadCount > 9 ? "9+" : activeUploadCount}
+                      </Box>
+                    )}
+                  </Box>
                 </CustomLink>
               ))}
 
