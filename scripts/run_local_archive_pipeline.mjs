@@ -1021,12 +1021,14 @@ const run = async () => {
           recordingFile: uploadRecording,
           title,
           description,
-          onProgress: ({ percent }) => {
+          onProgress: ({ percent, uploadedBytes, totalBytes }) => {
             void writeObsDockUploadStatus({
               visible: true,
               state: "uploading",
               message: "Uploading VOD",
               percent: Number.isFinite(percent) ? percent : null,
+              uploaded_bytes: Number.isFinite(uploadedBytes) ? Math.max(0, Math.floor(uploadedBytes)) : null,
+              total_bytes: Number.isFinite(totalBytes) ? Math.max(0, Math.floor(totalBytes)) : null,
             });
           },
         });
