@@ -62,6 +62,18 @@ const inferArchiveSiteUrl = () => {
   return DEFAULT_ARCHIVE_SITE_URL;
 };
 
+const inferUploadStatusApiBase = () => {
+  const configured = cleanUrl(process.env.UPLOAD_STATUS_API_BASE || process.env.REACT_APP_UPLOADS_API_BASE || "");
+  if (configured) return configured;
+
+  const reactionsBase = cleanUrl(process.env.REACT_APP_REACTIONS_API_BASE || "");
+  if (reactionsBase) {
+    return reactionsBase.replace(/\/v1\/reactions$/i, "/v1/uploads");
+  }
+
+  return "";
+};
+
 const config = {
   recordingsDir: process.env.LOCAL_RECORDINGS_DIR || path.join(repoRoot, "recordings"),
   twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "",
@@ -84,6 +96,8 @@ const config = {
   dryRun: (process.env.LOCAL_PIPELINE_DRY_RUN || "false").toLowerCase() === "true",
   twitchDownloaderPath: process.env.TWITCHDOWNLOADER_PATH || path.join(repoRoot, "scripts", "tools", "TwitchDownloaderCLI.exe"),
   ffmpegPath: process.env.FFMPEG_PATH || "ffmpeg",
+  uploadStatusApiBase: inferUploadStatusApiBase(),
+  uploadStatusApiSecret: process.env.UPLOAD_STATUS_API_SECRET || "",
   obsDockUploadStatusPath:
     process.env.OBS_VOD_BYPASS_UPLOAD_STATUS_PATH ||
     (process.env.APPDATA
@@ -144,6 +158,40 @@ const writeObsDockUploadStatus = async (status = {}) => {
     await writeJsonFile(outputPath, payload);
   } catch (error) {
     log(`Failed to write OBS dock upload status: ${error.message}`);
+  }
+};
+
+const postRealtimeUploadStatus = async (status = {}) => {
+  const apiBase = cleanUrl(config.uploadStatusApiBase || "");
+  const writeSecret = String(config.uploadStatusApiSecret || "").trim();
+  if (!apiBase || !writeSecret) return;
+
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), 5000);
+  if (typeof timeoutHandle?.unref === "function") timeoutHandle.unref();
+
+  try {
+    const response = await fetch(`${apiBase}/report`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Upload-Status-Secret": writeSecret,
+      },
+      body: JSON.stringify(status),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(`Upload status API ${response.status}${text ? `: ${text.slice(0, 180)}` : ""}`);
+    }
+  } catch (error) {
+    const state = String(status?.state || "").toLowerCase();
+    if (state !== "uploading" || Number(status?.percent || 0) % 10 === 0) {
+      log(`Failed to post realtime upload status${state ? ` (${state})` : ""}: ${error.message}`);
+    }
+  } finally {
+    clearTimeout(timeoutHandle);
   }
 };
 
@@ -1007,6 +1055,24 @@ const run = async () => {
       });
 
       let uploadRecording = null;
+      const uploadSessionCreatedAtMs = Date.now();
+      const uploadSessionId = `twitch-${vodId}-part-${partNumber}-${uploadSessionCreatedAtMs}`;
+      const uploadSessionBase = {
+        sessionId: uploadSessionId,
+        twitchVodId: String(vodId),
+        partNumber,
+        title,
+        recordingName: recording.name,
+        streamDate: twitchVod.created_at || null,
+        createdAtMs: uploadSessionCreatedAtMs,
+      };
+      let latestProgress = {
+        percent: 0,
+        uploadedBytes: 0,
+        totalBytes: 0,
+      };
+      let lastRealtimeUploadProgressPercent = -1;
+      let lastRealtimeUploadProgressAtMs = 0;
       try {
         await writeObsDockUploadStatus({
           visible: true,
@@ -1014,7 +1080,16 @@ const run = async () => {
           message: `Preparing VOD upload copy (track 1 audio)`,
           percent: 0,
         });
+        await postRealtimeUploadStatus({
+          ...uploadSessionBase,
+          state: "preparing",
+          message: "Preparing VOD upload copy (track 1 audio)",
+          percent: 0,
+          uploadedBytes: 0,
+          totalBytes: recording.size || null,
+        });
         uploadRecording = await createYouTubeUploadCopyTrack1(recording);
+        latestProgress.totalBytes = Number(uploadRecording.size || 0);
 
         const youtubeVideoId = await uploadRecordingToYouTube({
           youtube,
@@ -1022,6 +1097,11 @@ const run = async () => {
           title,
           description,
           onProgress: ({ percent, uploadedBytes, totalBytes }) => {
+            latestProgress = {
+              percent: Number.isFinite(percent) ? percent : latestProgress.percent,
+              uploadedBytes: Number.isFinite(uploadedBytes) ? uploadedBytes : latestProgress.uploadedBytes,
+              totalBytes: Number.isFinite(totalBytes) ? totalBytes : latestProgress.totalBytes,
+            };
             void writeObsDockUploadStatus({
               visible: true,
               state: "uploading",
@@ -1030,7 +1110,34 @@ const run = async () => {
               uploaded_bytes: Number.isFinite(uploadedBytes) ? Math.max(0, Math.floor(uploadedBytes)) : null,
               total_bytes: Number.isFinite(totalBytes) ? Math.max(0, Math.floor(totalBytes)) : null,
             });
+
+            const nowMs = Date.now();
+            const safePercent = Number.isFinite(percent) ? Math.max(0, Math.min(100, Math.floor(percent))) : null;
+            if (
+              safePercent != null &&
+              (safePercent !== lastRealtimeUploadProgressPercent || nowMs - lastRealtimeUploadProgressAtMs >= 4000)
+            ) {
+              lastRealtimeUploadProgressPercent = safePercent;
+              lastRealtimeUploadProgressAtMs = nowMs;
+              void postRealtimeUploadStatus({
+                ...uploadSessionBase,
+                state: "uploading",
+                message: "Uploading VOD",
+                percent: safePercent,
+                uploadedBytes: Number.isFinite(uploadedBytes) ? Math.floor(uploadedBytes) : null,
+                totalBytes: Number.isFinite(totalBytes) ? Math.floor(totalBytes) : null,
+              });
+            }
           },
+        });
+        await postRealtimeUploadStatus({
+          ...uploadSessionBase,
+          state: "finalizing",
+          message: "Finalizing archive metadata",
+          percent: 100,
+          uploadedBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
+          totalBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
+          youtubeVideoId,
         });
         await writeObsDockUploadStatus({
           visible: true,
@@ -1056,7 +1163,27 @@ const run = async () => {
           processedAt: new Date().toISOString(),
         };
 
+        await postRealtimeUploadStatus({
+          ...uploadSessionBase,
+          state: "done",
+          message: "VOD upload complete",
+          percent: 100,
+          uploadedBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
+          totalBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
+          youtubeVideoId,
+        });
+
         log(`Completed pipeline for Twitch VOD ${vodId} -> YouTube ${youtubeVideoId} (Part ${partNumber})`);
+      } catch (error) {
+        await postRealtimeUploadStatus({
+          ...uploadSessionBase,
+          state: "error",
+          message: `Upload failed: ${error.message}`,
+          percent: Number.isFinite(latestProgress.percent) ? Math.max(0, Math.min(100, Math.floor(latestProgress.percent))) : null,
+          uploadedBytes: Number.isFinite(latestProgress.uploadedBytes) ? Math.floor(latestProgress.uploadedBytes) : null,
+          totalBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
+        });
+        throw error;
       } finally {
         if (uploadRecording?.generatedForYouTubeUploadOnly && uploadRecording.path) {
           try {
