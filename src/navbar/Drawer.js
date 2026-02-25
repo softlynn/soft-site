@@ -3,9 +3,7 @@ import { Drawer, ListItemButton, List, ListItemText, IconButton, Divider, Box, L
 import { Menu } from "@mui/icons-material";
 import HomeIcon from "@mui/icons-material/Home";
 import OndemandVideoIcon from "@mui/icons-material/OndemandVideo";
-import ReportIcon from "@mui/icons-material/Report";
 import CustomLink from "../utils/CustomLink";
-import { GITHUB_ISSUES_URL } from "../config/site";
 
 const mainLinks = [
   { title: `Home`, path: `/`, icon: <HomeIcon color="primary" /> },
@@ -62,25 +60,6 @@ export default function DrawerComponent(props) {
               <Divider sx={{ mx: 2 }} />
             </Box>
           ))}
-          {GITHUB_ISSUES_URL && (
-            <>
-              <Box sx={{ px: 2, pt: 1.2 }}>
-                <Typography variant="caption" sx={{ color: "text.secondary", letterSpacing: "0.06em" }}>
-                  SUPPORT
-                </Typography>
-              </Box>
-              <ListItemButton onClick={() => setDrawerOpen(false)} sx={{ borderRadius: 2, mx: 1, py: 0.65 }}>
-                <ListItemIcon>
-                  <ReportIcon color="primary" />
-                </ListItemIcon>
-                <ListItemText>
-                  <CustomLink color="primary" href={GITHUB_ISSUES_URL} rel="noopener noreferrer" target="_blank">
-                    Issues
-                  </CustomLink>
-                </ListItemText>
-              </ListItemButton>
-            </>
-          )}
           {socials.length > 0 && (
             <>
               <Divider sx={{ mx: 2, mt: 0.5 }} />

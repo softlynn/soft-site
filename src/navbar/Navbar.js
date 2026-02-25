@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { AppBar, Toolbar, Typography, useMediaQuery, Box, Divider, Button, Stack, Tooltip, IconButton } from "@mui/material";
+import { AppBar, Toolbar, Typography, useMediaQuery, Box, Divider, Button, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 import Logo from "../assets/logo.png";
@@ -10,9 +10,8 @@ import RedditIcon from "@mui/icons-material/Reddit";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import Drawer from "./Drawer";
 import OndemandVideoIcon from "@mui/icons-material/OndemandVideo";
-import ReportIcon from "@mui/icons-material/Report";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import { GITHUB_ISSUES_URL, SITE_TITLE, SOCIAL_LINKS } from "../config/site";
+import { SITE_TITLE, SOCIAL_LINKS } from "../config/site";
 import { setPendingAdminPassword } from "../api/adminApi";
 import { fetchActiveVodUploads } from "../api/uploadStatusApi";
 
@@ -341,25 +340,6 @@ export default function Navbar() {
                 </CustomLink>
               ))}
 
-              {GITHUB_ISSUES_URL && (
-                <Tooltip title="Issues">
-                  <CustomLink href={GITHUB_ISSUES_URL} rel="noopener noreferrer" target="_blank" aria-label="Issues">
-                    <IconButton
-                      size="small"
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: "12px",
-                        border: "1px solid var(--soft-border)",
-                        background: "var(--soft-surface)",
-                        opacity: 0.78,
-                      }}
-                    >
-                      <ReportIcon sx={{ fontSize: 18 }} />
-                    </IconButton>
-                  </CustomLink>
-                </Tooltip>
-              )}
             </Stack>
           )}
         </Toolbar>
