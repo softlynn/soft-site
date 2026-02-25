@@ -470,6 +470,30 @@ const createYouTubeUploadCopyTrack1 = async (recordingFile) => {
   };
 };
 
+const cleanupStaleTrack1UploadCopies = async () => {
+  const tempDir = path.join(config.tmpDir, "youtube-upload-audio1");
+  if (!(await fileExists(tempDir))) return;
+
+  const entries = await fs.readdir(tempDir, { withFileTypes: true });
+  const nowMs = Date.now();
+  const staleAgeMs = 12 * 60 * 60 * 1000;
+
+  for (const entry of entries) {
+    if (!entry.isFile()) continue;
+    if (!entry.name.toLowerCase().endsWith(".track1.mkv")) continue;
+
+    const fullPath = path.join(tempDir, entry.name);
+    try {
+      const stat = await fs.stat(fullPath);
+      if (nowMs - stat.mtimeMs < staleAgeMs) continue;
+      await fs.rm(fullPath, { force: true });
+      log(`Removed stale temporary YouTube upload copy: ${fullPath}`);
+    } catch (error) {
+      log(`Failed to remove stale temp upload copy ${fullPath}: ${error.message}`);
+    }
+  }
+};
+
 const downloadTwitchChatJson = async (twitchVodId, outputPath) => {
   const exePath = await ensureTwitchDownloader();
   await ensureDirectory(path.dirname(outputPath));
@@ -827,6 +851,7 @@ const run = async () => {
   await ensureDirectory(config.emotesDir);
   await ensureDirectory(path.dirname(config.statePath));
   await ensureDirectory(config.tmpDir);
+  await cleanupStaleTrack1UploadCopies();
 
   const state = await readJsonFile(config.statePath, {
     processedFiles: {},
