@@ -9,6 +9,8 @@ const MAX_RETRIES = 2;
 const FETCH_TIMEOUT_MS = 8000;
 const PRIMARY_HEALTH_TIMEOUT_MS = 1800;
 const PRIMARY_MODE_CACHE_MS = 5 * 60 * 1000;
+const VOTE_STORAGE_KEY = "softu-vod-reaction-votes-v1";
+const MAX_STORED_VOTES = 2000;
 
 const snapshotCache = new Map();
 const inflightLoads = new Map();
@@ -20,6 +22,7 @@ let nextWriteRequestAt = 0;
 const sessionVoteMap = new Map();
 let backendModeCache = null;
 let backendModeCheckedAt = 0;
+let votesLoadedFromStorage = false;
 
 const clampCount = (value) => {
   const num = Number(value);
@@ -30,6 +33,43 @@ const clampCount = (value) => {
 const normalizeVodId = (vodId) => String(vodId || "").trim();
 
 const normalizeVote = (vote) => (vote === "like" || vote === "dislike" ? vote : null);
+
+const canUseLocalStorage = () => typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+
+const loadPersistedVotes = () => {
+  if (votesLoadedFromStorage) return;
+  votesLoadedFromStorage = true;
+  if (!canUseLocalStorage()) return;
+
+  try {
+    const raw = window.localStorage.getItem(VOTE_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return;
+
+    Object.entries(parsed).forEach(([key, value]) => {
+      const normalizedKey = normalizeVodId(key);
+      const normalized = normalizeVote(value);
+      if (normalizedKey && normalized) {
+        sessionVoteMap.set(normalizedKey, normalized);
+      }
+    });
+  } catch (_error) {
+    // Ignore malformed/blocked storage and fall back to session memory.
+  }
+};
+
+const persistVotes = () => {
+  if (!canUseLocalStorage()) return;
+  try {
+    const entries = Array.from(sessionVoteMap.entries());
+    const trimmed = entries.slice(Math.max(0, entries.length - MAX_STORED_VOTES));
+    const payload = Object.fromEntries(trimmed);
+    window.localStorage.setItem(VOTE_STORAGE_KEY, JSON.stringify(payload));
+  } catch (_error) {
+    // Storage may be blocked/full; keep in-memory behavior.
+  }
+};
 
 const sanitizeKeyPart = (value) =>
   String(value || "")
@@ -238,6 +278,7 @@ const writePrimarySnapshot = async (vodId, nextVote, previousVote) => {
 };
 
 export const getStoredVodReactionVote = (vodId) => {
+  loadPersistedVotes();
   const key = normalizeVodId(vodId);
   if (!key) return null;
   const value = sessionVoteMap.get(key);
@@ -245,6 +286,7 @@ export const getStoredVodReactionVote = (vodId) => {
 };
 
 export const setStoredVodReactionVote = (vodId, vote) => {
+  loadPersistedVotes();
   const key = normalizeVodId(vodId);
   if (!key) return;
   if (vote === "like" || vote === "dislike") {
@@ -252,6 +294,7 @@ export const setStoredVodReactionVote = (vodId, vote) => {
   } else {
     sessionVoteMap.delete(key);
   }
+  persistVotes();
 };
 
 const emitSnapshot = (vodId, snapshot) => {
