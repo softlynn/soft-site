@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import {
   Box,
   Typography,
@@ -46,7 +46,6 @@ import UploadingVodPlaceholder from "./UploadingVodPlaceholder";
 const FILTERS = ["Default", "Date", "Title", "Game"];
 const PLATFORMS = ["All", "Twitch", "Kick"];
 const SPOTIFY_PLAYLIST_EMBED_URL = "https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator";
-const ACTIVE_UPLOAD_VOD_REFRESH_MS = 8000;
 
 const normalizeUploadVodId = (upload) => {
   const id = String(upload?.twitchVodId || "").trim();
@@ -141,7 +140,7 @@ export default function Vods() {
   const [vods, setVods] = useState(null);
   const [previewVods, setPreviewVods] = useState(isHomeRoute ? null : []);
   const [activeUploads, setActiveUploads] = useState([]);
-  const [vodAutoRefreshTick, setVodAutoRefreshTick] = useState(0);
+  const [vodListRefreshNonce, setVodListRefreshNonce] = useState(0);
   const [totalVods, setTotalVods] = useState(null);
   const [filter, setFilter] = useState(FILTERS[0]);
   const [filterStartDate, setFilterStartDate] = useState(dayjs(START_DATE));
@@ -152,6 +151,10 @@ export default function Vods() {
   const page = parseInt(query.get("page") || "1", 10);
   const limit = isMobile ? 10 : 20;
   const previewLimit = isMobile ? 4 : 8;
+  const uploadCompletionRefreshStateRef = useRef({
+    trackedSessions: new Map(),
+    completionRefetchedSessionIds: new Set(),
+  });
 
   useEffect(() => {
     document.title = isHomeRoute ? `${SITE_TITLE} | Vod Archive` : `${SITE_TITLE} | Archive`;
@@ -182,26 +185,54 @@ export default function Vods() {
     };
   }, []);
 
-  const activeUploadRefreshSignature = useMemo(
-    () =>
-      (Array.isArray(activeUploads) ? activeUploads : [])
-        .map((upload) => `${String(upload?.sessionId || "").trim()}:${String(upload?.state || "").trim()}:${String(upload?.twitchVodId || "").trim()}`)
-        .sort()
-        .join("|"),
-    [activeUploads]
-  );
-
   useEffect(() => {
-    if (activeUploads.length === 0) return undefined;
-    const intervalId = setInterval(() => {
-      setVodAutoRefreshTick((tick) => tick + 1);
-    }, ACTIVE_UPLOAD_VOD_REFRESH_MS);
-    return () => clearInterval(intervalId);
-  }, [activeUploadRefreshSignature, activeUploads.length]);
+    const stateRef = uploadCompletionRefreshStateRef.current;
+    const previousSessions = stateRef.trackedSessions;
+    const nextSessions = new Map();
+    let shouldRefreshVods = false;
+
+    (Array.isArray(activeUploads) ? activeUploads : []).forEach((upload) => {
+      const sessionId = String(upload?.sessionId || "").trim();
+      if (!sessionId) return;
+
+      const normalizedState = String(upload?.state || "").trim().toLowerCase();
+      const percent = Number(upload?.percent);
+      const uploadVodId = String(upload?.twitchVodId || "").trim();
+      const previous = previousSessions.get(sessionId);
+
+      nextSessions.set(sessionId, {
+        state: normalizedState,
+        percent: Number.isFinite(percent) ? percent : null,
+        twitchVodId: uploadVodId,
+      });
+
+      const completionish = normalizedState === "finalizing" || (Number.isFinite(percent) && percent >= 99.5);
+      if (completionish && !stateRef.completionRefetchedSessionIds.has(sessionId)) {
+        stateRef.completionRefetchedSessionIds.add(sessionId);
+        shouldRefreshVods = true;
+      }
+
+      if (previous && previous.twitchVodId !== uploadVodId && uploadVodId) {
+        shouldRefreshVods = true;
+      }
+    });
+
+    for (const sessionId of previousSessions.keys()) {
+      if (!nextSessions.has(sessionId)) {
+        // Upload disappeared from the active API (done/error). Refresh once so placeholders get replaced/removed.
+        shouldRefreshVods = true;
+        stateRef.completionRefetchedSessionIds.delete(sessionId);
+      }
+    }
+
+    stateRef.trackedSessions = nextSessions;
+    if (shouldRefreshVods) {
+      setVodListRefreshNonce((nonce) => nonce + 1);
+    }
+  }, [activeUploads]);
 
   useEffect(() => {
     if (!isHomeRoute) return undefined;
-    setPreviewVods(null);
 
     vodsClient
       .service("vods")
@@ -223,11 +254,10 @@ export default function Vods() {
       });
 
     return undefined;
-  }, [isHomeRoute, previewLimit, activeUploadRefreshSignature, vodAutoRefreshTick]);
+  }, [isHomeRoute, previewLimit, vodListRefreshNonce]);
 
   useEffect(() => {
     if (isHomeRoute) return undefined;
-    setVods(null);
     const fetchVods = async () => {
       let nextQuery = {
         $limit: limit,
@@ -317,7 +347,7 @@ export default function Vods() {
 
     fetchVods();
     return undefined;
-  }, [isHomeRoute, limit, page, filter, filterStartDate, filterEndDate, filterTitle, filterGame, platform, activeUploadRefreshSignature, vodAutoRefreshTick]);
+  }, [isHomeRoute, limit, page, filter, filterStartDate, filterEndDate, filterTitle, filterGame, platform, vodListRefreshNonce]);
 
   const changeFilter = (evt) => {
     setFilter(evt.target.value);
