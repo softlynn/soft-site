@@ -448,8 +448,15 @@ const createYouTubeUploadCopyTrack1 = async (recordingFile) => {
     stdio: "inherit",
   });
 
+  if (command.error) {
+    fail(`Failed to run ffmpeg (${config.ffmpegPath}): ${command.error.message}`);
+  }
+
   if (command.status !== 0 || !(await fileExists(outputPath))) {
-    fail(`Failed to create YouTube upload copy (track 1 only) for ${recordingFile.name}`);
+    fail(
+      `Failed to create YouTube upload copy (track 1 only) for ${recordingFile.name}` +
+        (Number.isFinite(command.status) ? ` (ffmpeg exit code ${command.status})` : "")
+    );
   }
 
   const stat = await fs.stat(outputPath);
@@ -1078,17 +1085,19 @@ const run = async () => {
 };
 
 run()
-  .then(() => {
+  .then(async () => {
     log("Local archive pipeline finished.");
   })
-  .catch((error) => {
-    void writeObsDockUploadStatus({
-      visible: true,
-      state: "error",
-      message: `VOD upload error: ${error.message}`,
-      percent: null,
-      hide_after_ms: 0,
-    });
+  .catch(async (error) => {
+    try {
+      await writeObsDockUploadStatus({
+        visible: true,
+        state: "error",
+        message: `VOD upload error: ${error.message}`,
+        percent: null,
+        hide_after_ms: 0,
+      });
+    } catch {}
     console.error(error);
     process.exit(1);
   });
