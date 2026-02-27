@@ -1,0 +1,134 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2708811172",
+  "generatedAt": "2026-02-27T05:47:12.545Z",
+  "comments": [
+    {
+      "id": "da7d7298-ba3e-4990-8dfe-247f72e6ae61",
+      "created_at": "2026-02-27T05:25:49.302Z",
+      "content_offset_seconds": 1674,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "animeiceking, thank you for following!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "fb51b477-9e4d-4fc0-97ae-c9a752917216",
+      "created_at": "2026-02-27T05:32:43.439Z",
+      "content_offset_seconds": 2088,
+      "display_name": "animeiceking",
+      "user_badges": [
+        {
+          "_id": "hypershot-celestial",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF0000",
+      "message": [
+        {
+          "text": "Hello?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3804e934-846d-4ff7-9309-fcf3c9d814e9",
+      "created_at": "2026-02-27T05:33:41.117Z",
+      "content_offset_seconds": 2146,
+      "display_name": "Nebey",
+      "user_badges": [
+        {
+          "_id": "dragonscimmy",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5EB8BF",
+      "message": [
+        {
+          "text": "HANDSTAND?? WHAT",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "24fffdcc-b696-44c0-b36e-92bb397668f5",
+      "created_at": "2026-02-27T05:35:31.062Z",
+      "content_offset_seconds": 2256,
+      "display_name": "Nebey",
+      "user_badges": [
+        {
+          "_id": "dragonscimmy",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5EB8BF",
+      "message": [
+        {
+          "text": "you're very quiet compared to the music",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d2ecdf73-82cc-4900-afb6-678085540653",
+      "created_at": "2026-02-27T05:35:33.945Z",
+      "content_offset_seconds": 2259,
+      "display_name": "Nebey",
+      "user_badges": [
+        {
+          "_id": "dragonscimmy",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5EB8BF",
+      "message": [
+        {
+          "text": "but that was sick",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "520fe416-7d47-4be3-96f1-9de8ebab4ee8",
+      "created_at": "2026-02-27T05:43:08.797Z",
+      "content_offset_seconds": 2714,
+      "display_name": "Nebey",
+      "user_badges": [
+        {
+          "_id": "dragonscimmy",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5EB8BF",
+      "message": [
+        {
+          "text": "have a good night ",
+          "emoticon": null
+        },
+        {
+          "text": ":(",
+          "emote": {
+            "emoteID": "555555558"
+          },
+          "emoticon": {
+            "emoticon_id": "555555558"
+          }
+        }
+      ]
+    }
+  ]
+}
