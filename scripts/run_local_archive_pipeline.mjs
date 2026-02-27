@@ -74,6 +74,20 @@ const inferUploadStatusApiBase = () => {
   return "";
 };
 
+const inferFfprobePath = () => {
+  const explicit = String(process.env.FFPROBE_PATH || "").trim();
+  if (explicit) return explicit;
+
+  const ffmpegPath = String(process.env.FFMPEG_PATH || "ffmpeg").trim() || "ffmpeg";
+  const parsed = path.parse(ffmpegPath);
+  const lowerBase = parsed.base.toLowerCase();
+  if (lowerBase.startsWith("ffmpeg")) {
+    const nextName = parsed.name.replace(/ffmpeg/i, "ffprobe");
+    return path.join(parsed.dir, `${nextName}${parsed.ext}`);
+  }
+  return "ffprobe";
+};
+
 const config = {
   recordingsDir: process.env.LOCAL_RECORDINGS_DIR || path.join(repoRoot, "recordings"),
   twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "",
@@ -96,6 +110,7 @@ const config = {
   dryRun: (process.env.LOCAL_PIPELINE_DRY_RUN || "false").toLowerCase() === "true",
   twitchDownloaderPath: process.env.TWITCHDOWNLOADER_PATH || path.join(repoRoot, "scripts", "tools", "TwitchDownloaderCLI.exe"),
   ffmpegPath: process.env.FFMPEG_PATH || "ffmpeg",
+  ffprobePath: inferFfprobePath(),
   uploadStatusApiBase: inferUploadStatusApiBase(),
   uploadStatusApiSecret: process.env.UPLOAD_STATUS_API_SECRET || "",
   obsDockUploadStatusPath:
@@ -791,19 +806,71 @@ const stageAndPushArchiveData = (filePaths, commitMessage) => {
   if (push.status !== 0) fail("git push failed");
 };
 
+const MATCH_WINDOW_BEFORE_VOD_START_MS = 15 * 60 * 1000;
+const MATCH_WINDOW_AFTER_VOD_END_MS = 60 * 60 * 1000;
+
+const probeMediaDurationSeconds = (filePath) => {
+  const probe = spawnSync(
+    config.ffprobePath,
+    ["-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", filePath],
+    { encoding: "utf8" }
+  );
+
+  if (probe.status !== 0) {
+    return null;
+  }
+
+  const parsed = Number.parseFloat(String(probe.stdout || "").trim());
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+};
+
+const enrichRecordingTiming = (recordingFile) => {
+  const durationSeconds = probeMediaDurationSeconds(recordingFile.path);
+  const endAtMs = Number(recordingFile.modifiedAtMs);
+  const durationMs = Number.isFinite(durationSeconds) ? Math.round(durationSeconds * 1000) : null;
+  const startAtMs = Number.isFinite(durationMs) ? Math.max(0, endAtMs - durationMs) : null;
+
+  return {
+    ...recordingFile,
+    durationSeconds: Number.isFinite(durationSeconds) ? durationSeconds : null,
+    startAtMs,
+    endAtMs,
+  };
+};
+
 const selectMatchingVod = (recordingFile, twitchVods) => {
   if (twitchVods.length === 0) return null;
-  const fileTime = recordingFile.modifiedAtMs;
+  const recordingStartMs = Number.isFinite(recordingFile.startAtMs) ? recordingFile.startAtMs : Number(recordingFile.modifiedAtMs);
+  const recordingEndMs = Number.isFinite(recordingFile.endAtMs) ? recordingFile.endAtMs : Number(recordingFile.modifiedAtMs);
+  const hasAccurateStartTime = Number.isFinite(recordingFile.startAtMs);
   const candidates = twitchVods
-    .map((vod) => ({
-      vod,
-      deltaMs: Math.abs(new Date(vod.created_at).getTime() - fileTime),
-    }))
+    .map((vod) => {
+      const vodStartMs = new Date(vod.created_at).getTime();
+      if (!Number.isFinite(vodStartMs)) return null;
+
+      const vodDurationSeconds = parseTwitchDurationToSeconds(vod.duration);
+      const vodEndMs = vodStartMs + Math.max(0, vodDurationSeconds * 1000);
+      const earliestMatchMs = vodStartMs - MATCH_WINDOW_BEFORE_VOD_START_MS;
+      const latestMatchMs = vodEndMs + MATCH_WINDOW_AFTER_VOD_END_MS;
+
+      // Require overlap with this VOD lifecycle and reject recordings that start too far
+      // after this VOD ended (prevents cross-day recordings from becoming parts).
+      if (recordingEndMs < earliestMatchMs || recordingStartMs > latestMatchMs) return null;
+
+      // Prefer start-time alignment when available; otherwise fall back to end alignment.
+      const anchorMs = hasAccurateStartTime ? vodStartMs : vodEndMs;
+      const recordingAnchorMs = hasAccurateStartTime ? recordingStartMs : recordingEndMs;
+      return {
+        vod,
+        deltaMs: Math.abs(anchorMs - recordingAnchorMs),
+      };
+    })
+    .filter(Boolean)
     .sort((a, b) => a.deltaMs - b.deltaMs);
 
   const best = candidates[0];
-  const maxDeltaMs = 48 * 60 * 60 * 1000;
-  if (!best || best.deltaMs > maxDeltaMs) return null;
+  if (!best) return null;
   return best.vod;
 };
 
@@ -946,12 +1013,13 @@ const run = async () => {
   const targets = recordings.slice(0, Math.max(1, config.maxRecordingsPerRun));
   const plannedUploads = [];
   for (const recording of targets) {
-    const matchedVod = selectMatchingVod(recording, twitchVods);
+    const enrichedRecording = enrichRecordingTiming(recording);
+    const matchedVod = selectMatchingVod(enrichedRecording, twitchVods);
     if (!matchedVod) {
       log(`No Twitch VOD match found for recording: ${recording.name}`);
       continue;
     }
-    plannedUploads.push({ recording, twitchVod: matchedVod });
+    plannedUploads.push({ recording: enrichedRecording, twitchVod: matchedVod });
     log(`Matched recording "${recording.name}" -> Twitch VOD ${matchedVod.id}`);
   }
 
