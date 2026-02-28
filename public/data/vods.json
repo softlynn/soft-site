@@ -1,52 +1,8 @@
 [
   {
-    "id": "2710371739",
-    "title": "vrchat 🔥? more like... 🤔 hello-CHAT! 💭 😼 fishing map officially released... dancing later? fedex hurry up pls 🔥",
-    "duration": "01:02:19",
-    "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/b1a659456b50fd819fcd_softu1_317534076894_1772312520//thumb/thumb0-640x360.jpg",
-    "youtube": [
-      {
-        "id": "k-gGEEUpMuw",
-        "type": "vod",
-        "duration": 0,
-        "part": 1,
-        "thumbnail_url": "https://i.ytimg.com/vi/k-gGEEUpMuw/mqdefault.jpg"
-      },
-      {
-        "id": "_SxDb_wyOLc",
-        "type": "vod",
-        "duration": 0,
-        "part": 2,
-        "thumbnail_url": "https://i.ytimg.com/vi/_SxDb_wyOLc/mqdefault.jpg"
-      },
-      {
-        "id": "bvqcGca-be0",
-        "type": "vod",
-        "duration": 0,
-        "part": 3,
-        "thumbnail_url": "https://i.ytimg.com/vi/bvqcGca-be0/mqdefault.jpg"
-      }
-    ],
-    "stream_id": "317534076894",
-    "drive": [],
-    "platform": "twitch",
-    "chapters": [
-      {
-        "gameId": "499003",
-        "start": 0,
-        "end": 3739,
-        "name": "VRChat",
-        "image": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-40x53.jpg"
-      }
-    ],
-    "games": [],
-    "createdAt": "2026-02-28T21:02:05Z",
-    "updatedAt": "2026-02-28T23:21:47.463Z"
-  },
-  {
     "id": "2710310697",
     "title": "vrchat 🔥? more like... 🤔 hello-CHAT! 💭 😼 fishing map officially released... dancing later? fedex hurry up pls 🔥",
-    "duration": "00:54:48",
+    "duration": "01:57:07",
     "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/27eb7a9d84b154b081be_softu1_317533027038_1772308627//thumb/thumb0-640x360.jpg",
     "youtube": [
       {
@@ -55,6 +11,27 @@
         "duration": 0,
         "part": 1,
         "thumbnail_url": "https://i.ytimg.com/vi/4hxPSpGTNS0/mqdefault.jpg"
+      },
+      {
+        "id": "k-gGEEUpMuw",
+        "type": "vod",
+        "duration": 0,
+        "part": 2,
+        "thumbnail_url": "https://i.ytimg.com/vi/k-gGEEUpMuw/mqdefault.jpg"
+      },
+      {
+        "id": "_SxDb_wyOLc",
+        "type": "vod",
+        "duration": 0,
+        "part": 3,
+        "thumbnail_url": "https://i.ytimg.com/vi/_SxDb_wyOLc/mqdefault.jpg"
+      },
+      {
+        "id": "bvqcGca-be0",
+        "type": "vod",
+        "duration": 0,
+        "part": 4,
+        "thumbnail_url": "https://i.ytimg.com/vi/bvqcGca-be0/mqdefault.jpg"
       }
     ],
     "stream_id": "317533027038",
@@ -67,11 +44,18 @@
         "end": 3288,
         "name": "VRChat",
         "image": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-40x53.jpg"
+      },
+      {
+        "gameId": "499003",
+        "start": 3288,
+        "end": 3739,
+        "name": "VRChat",
+        "image": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-40x53.jpg"
       }
     ],
     "games": [],
     "createdAt": "2026-02-28T19:57:12Z",
-    "updatedAt": "2026-02-28T22:54:18.803Z"
+    "updatedAt": "2026-02-28T23:26:15.406Z"
   },
   {
     "id": "2708811172",
@@ -300,38 +284,6 @@
     "createdAt": "2026-02-13T00:02:31Z",
     "updatedAt": "2026-02-13T03:33:06.070Z",
     "unpublished": false
-  },
-  {
-    "id": "2695104345",
-    "title": "vrchat",
-    "duration": "00:00:50",
-    "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/1633e99235dbdbeb2f14_softu1_317193512796_1770834228//thumb/thumb0-640x360.jpg",
-    "youtube": [
-      {
-        "id": "RKqHbVlgzHI",
-        "type": "vod",
-        "duration": 50,
-        "part": 1,
-        "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/1633e99235dbdbeb2f14_softu1_317193512796_1770834228//thumb/thumb0-640x360.jpg"
-      }
-    ],
-    "stream_id": "317193512796",
-    "drive": [],
-    "platform": "twitch",
-    "chapters": [
-      {
-        "gameId": "499003",
-        "start": 0,
-        "end": 50,
-        "name": "VRChat",
-        "image": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-40x53.jpg"
-      }
-    ],
-    "games": [],
-    "createdAt": "2026-02-11T18:23:53Z",
-    "updatedAt": "2026-02-12T00:05:15.366Z",
-    "chatReplayAvailable": true,
-    "unpublished": true
   },
   {
     "id": "2693715902",

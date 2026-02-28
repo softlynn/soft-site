@@ -230,6 +230,8 @@ export default function Vod(props) {
   if (vod === null) return <NotFound />;
 
   if (youtube.length === 0) return <NotFound />;
+  const totalVodParts = youtube.filter((data) => String(data?.type || "vod") === "vod" && data?.id).length;
+  const hasMultipleVodParts = totalVodParts > 1;
   const originalTwitchVodUrl = getOriginalTwitchVodUrl(vod);
 
   return (
@@ -411,6 +413,26 @@ export default function Vod(props) {
                     </Link>
                   </Typography>
                 )}
+                {hasMultipleVodParts && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 0.45,
+                      px: 0.75,
+                      py: 0.3,
+                      mt: 0.3,
+                      borderRadius: "999px",
+                      color: "#7f2946",
+                      background: "rgba(212,107,140,0.14)",
+                      border: "1px solid rgba(212,107,140,0.32)",
+                      boxShadow: "0 0 0 1px rgba(212,107,140,0.08), 0 0 18px rgba(212,107,140,0.22)",
+                    }}
+                  >
+                    Multiple parts of this VOD. Use the Part selector.
+                  </Typography>
+                )}
               </Box>
               <Button
                 variant="outlined"
@@ -423,7 +445,18 @@ export default function Vod(props) {
               </Button>
               <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
                 <Box sx={{ ml: 0.5 }}>
-                  <FormControl variant="outlined">
+                  <FormControl
+                    variant="outlined"
+                    sx={
+                      hasMultipleVodParts
+                        ? {
+                            "& .MuiOutlinedInput-root": {
+                              boxShadow: "0 0 0 1px rgba(212,107,140,0.24), 0 0 20px rgba(212,107,140,0.26)",
+                            },
+                          }
+                        : undefined
+                    }
+                  >
                     <InputLabel id="select-label">Part</InputLabel>
                     <Select labelId="select-label" label="Part" value={part.part - 1} onChange={handlePartChange} autoWidth>
                       {youtube.map((data, i) => {

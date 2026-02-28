@@ -113,6 +113,8 @@ const config = {
   ffprobePath: inferFfprobePath(),
   uploadStatusApiBase: inferUploadStatusApiBase(),
   uploadStatusApiSecret: process.env.UPLOAD_STATUS_API_SECRET || "",
+  minArchiveVodDurationSeconds: Number(process.env.MIN_ARCHIVE_VOD_DURATION_SECONDS || "300"),
+  autoMergeVodGapSeconds: Number(process.env.AUTO_MERGE_VOD_GAP_SECONDS || "3600"),
   obsDockUploadStatusPath:
     process.env.OBS_VOD_BYPASS_UPLOAD_STATUS_PATH ||
     (process.env.APPDATA
@@ -925,6 +927,180 @@ const ensureVodEntry = (existingVods, twitchVod, chatJson) => {
   };
 };
 
+const parseArchiveDurationToSeconds = (durationText) => {
+  const normalized = String(durationText || "").trim();
+  const hms = normalized.match(/^(\d{1,3}):([0-5]\d):([0-5]\d)$/);
+  if (hms) {
+    const hours = Number(hms[1] || "0");
+    const minutes = Number(hms[2] || "0");
+    const seconds = Number(hms[3] || "0");
+    return hours * 3600 + minutes * 60 + seconds;
+  }
+  return parseTwitchDurationToSeconds(normalized);
+};
+
+const normalizeMergeTitle = (title) =>
+  String(title || "")
+    .toLowerCase()
+    .replace(/[\W_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const dedupeBy = (items, getKey) => {
+  const seen = new Set();
+  const deduped = [];
+  for (const item of items) {
+    const key = String(getKey(item) || "");
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(item);
+  }
+  return deduped;
+};
+
+const pruneShortArchiveVods = (vods, minimumDurationSeconds) => {
+  const keep = [];
+  const removedVodIds = [];
+  for (const vod of Array.isArray(vods) ? vods : []) {
+    const durationSeconds = parseArchiveDurationToSeconds(vod?.duration);
+    if (Number.isFinite(durationSeconds) && durationSeconds > 0 && durationSeconds < minimumDurationSeconds) {
+      removedVodIds.push(String(vod?.id || ""));
+      continue;
+    }
+    keep.push(vod);
+  }
+  return { vods: keep, removedVodIds: removedVodIds.filter(Boolean) };
+};
+
+const mergeAdjacentArchiveVods = (vods, maxGapMs) => {
+  const sorted = [...(Array.isArray(vods) ? vods : [])].sort(
+    (a, b) => new Date(a?.createdAt || 0).getTime() - new Date(b?.createdAt || 0).getTime()
+  );
+
+  if (sorted.length <= 1) return { vods: sorted, mergedGroups: [] };
+
+  const MERGE_OVERLAP_TOLERANCE_MS = 15 * 60 * 1000;
+  const grouped = [];
+  let currentGroup = [sorted[0]];
+
+  const shouldMerge = (left, right) => {
+    const leftTitle = normalizeMergeTitle(left?.title);
+    const rightTitle = normalizeMergeTitle(right?.title);
+    if (!leftTitle || !rightTitle || leftTitle !== rightTitle) return false;
+
+    const leftStartMs = new Date(left?.createdAt || 0).getTime();
+    const rightStartMs = new Date(right?.createdAt || 0).getTime();
+    if (!Number.isFinite(leftStartMs) || !Number.isFinite(rightStartMs)) return false;
+
+    const leftDurationSeconds = parseArchiveDurationToSeconds(left?.duration);
+    if (!Number.isFinite(leftDurationSeconds) || leftDurationSeconds <= 0) return false;
+
+    const leftEndMs = leftStartMs + Math.round(leftDurationSeconds * 1000);
+    const gapMs = rightStartMs - leftEndMs;
+    return gapMs <= maxGapMs && gapMs >= -MERGE_OVERLAP_TOLERANCE_MS;
+  };
+
+  const flushGroup = () => {
+    if (currentGroup.length > 0) {
+      grouped.push(currentGroup);
+      currentGroup = [];
+    }
+  };
+
+  for (let index = 1; index < sorted.length; index++) {
+    const current = sorted[index];
+    const previous = currentGroup[currentGroup.length - 1];
+    if (shouldMerge(previous, current)) {
+      currentGroup.push(current);
+    } else {
+      flushGroup();
+      currentGroup = [current];
+    }
+  }
+  flushGroup();
+
+  const mergedGroups = [];
+  const mergedVods = grouped.map((group) => {
+    if (group.length === 1) return group[0];
+
+    const orderedGroup = [...group].sort(
+      (a, b) => new Date(a?.createdAt || 0).getTime() - new Date(b?.createdAt || 0).getTime()
+    );
+    const primary = orderedGroup[0];
+    const totalDurationSeconds = orderedGroup.reduce(
+      (total, vod) => total + Math.max(0, parseArchiveDurationToSeconds(vod?.duration)),
+      0
+    );
+
+    const youtubePartsInOrder = [];
+    for (const vod of orderedGroup) {
+      const parts = (Array.isArray(vod?.youtube) ? vod.youtube : [])
+        .filter((part) => String(part?.type || "vod") === "vod" && part?.id)
+        .sort((a, b) => (Number(a?.part) || 0) - (Number(b?.part) || 0));
+      youtubePartsInOrder.push(...parts);
+    }
+
+    const normalizedYoutubeParts = youtubePartsInOrder.map((part, index) => ({
+      ...part,
+      type: "vod",
+      part: index + 1,
+    }));
+
+    const mergedDrive = dedupeBy(
+      orderedGroup.flatMap((vod) => (Array.isArray(vod?.drive) ? vod.drive : [])),
+      (entry) => `${entry?.type || "vod"}:${entry?.id || ""}`
+    );
+
+    const mergedChapters = [];
+    let chapterOffsetSeconds = 0;
+    for (const vod of orderedGroup) {
+      const chapters = Array.isArray(vod?.chapters) ? vod.chapters : [];
+      for (const chapter of chapters) {
+        const chapterStart = Number(chapter?.start);
+        const chapterEnd = Number(chapter?.end);
+        mergedChapters.push({
+          ...chapter,
+          start: Number.isFinite(chapterStart) ? Math.max(0, Math.round(chapterStart + chapterOffsetSeconds)) : chapter?.start,
+          end: Number.isFinite(chapterEnd) ? Math.max(0, Math.round(chapterEnd)) : chapter?.end,
+        });
+      }
+      chapterOffsetSeconds += Math.max(0, parseArchiveDurationToSeconds(vod?.duration));
+    }
+
+    const merged = {
+      ...primary,
+      duration: totalDurationSeconds > 0 ? formatDuration(totalDurationSeconds) : primary?.duration,
+      youtube: normalizedYoutubeParts.length > 0 ? normalizedYoutubeParts : Array.isArray(primary?.youtube) ? primary.youtube : [],
+      drive: mergedDrive.length > 0 ? mergedDrive : Array.isArray(primary?.drive) ? primary.drive : [],
+      chapters: mergedChapters.length > 0 ? mergedChapters : Array.isArray(primary?.chapters) ? primary.chapters : [],
+      createdAt: orderedGroup[0]?.createdAt || primary?.createdAt,
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (orderedGroup.some((vod) => vod?.chatReplayAvailable === false)) merged.chatReplayAvailable = false;
+    if (!merged?.vodNotice) {
+      merged.vodNotice = orderedGroup.map((vod) => vod?.vodNotice).find(Boolean);
+    }
+    if (orderedGroup.every((vod) => vod?.unpublished === true)) merged.unpublished = true;
+
+    const secondaryIds = orderedGroup
+      .slice(1)
+      .map((vod) => String(vod?.id || ""))
+      .filter(Boolean);
+    if (secondaryIds.length > 0) {
+      mergedGroups.push({
+        primaryId: String(primary?.id || ""),
+        mergedIds: secondaryIds,
+      });
+    }
+
+    return merged;
+  });
+
+  mergedVods.sort((a, b) => new Date(b?.createdAt || 0).getTime() - new Date(a?.createdAt || 0).getTime());
+  return { vods: mergedVods, mergedGroups };
+};
+
 const addOrUpdateYouTubePart = (vodEntry, partData) => {
   const youtubeParts = Array.isArray(vodEntry.youtube) ? [...vodEntry.youtube] : [];
   const indexByPart = youtubeParts.findIndex((part) => part.type === "vod" && Number(part.part) === Number(partData.part));
@@ -974,7 +1150,55 @@ const run = async () => {
   });
 
   const existingVods = await readJsonFile(config.vodsDataPath, []);
-  const existingVodIds = new Set(existingVods.map((vod) => String(vod.id)));
+  const stagedPaths = [];
+  let vodsUpdated = false;
+
+  const minimumArchiveVodDurationSeconds = Math.max(1, Math.floor(Number(config.minArchiveVodDurationSeconds) || 300));
+  const archiveMergeGapMs = Math.max(0, Math.floor(Number(config.autoMergeVodGapSeconds) || 3600) * 1000);
+
+  const { vods: vodsWithoutShorts, removedVodIds: removedShortVodIds } = pruneShortArchiveVods(
+    existingVods,
+    minimumArchiveVodDurationSeconds
+  );
+  const { vods: mergedArchiveVods, mergedGroups } = mergeAdjacentArchiveVods(vodsWithoutShorts, archiveMergeGapMs);
+
+  const archiveMaintenanceChanged = removedShortVodIds.length > 0 || mergedGroups.length > 0;
+  if (archiveMaintenanceChanged) {
+    existingVods.splice(0, existingVods.length, ...mergedArchiveVods);
+    vodsUpdated = true;
+
+    if (removedShortVodIds.length > 0) {
+      log(
+        `Removed ${removedShortVodIds.length} archived VOD${removedShortVodIds.length === 1 ? "" : "s"} shorter than ${Math.floor(
+          minimumArchiveVodDurationSeconds / 60
+        )} minute(s): ${removedShortVodIds.join(", ")}`
+      );
+    }
+
+    if (mergedGroups.length > 0) {
+      for (const group of mergedGroups) {
+        log(`Merged adjacent VODs into ${group.primaryId}: ${group.mergedIds.join(", ")}`);
+      }
+    }
+
+    if (!config.dryRun) {
+      for (const vodId of removedShortVodIds) {
+        const commentsPath = path.join(config.commentsDir, `${vodId}.json`);
+        const emotesPath = path.join(config.emotesDir, `${vodId}.json`);
+        if (await fileExists(commentsPath)) {
+          await fs.rm(commentsPath, { force: true });
+          stagedPaths.push(commentsPath);
+        }
+        if (await fileExists(emotesPath)) {
+          await fs.rm(emotesPath, { force: true });
+          stagedPaths.push(emotesPath);
+        }
+        if (state.processedVodIds && Object.prototype.hasOwnProperty.call(state.processedVodIds, vodId)) {
+          delete state.processedVodIds[vodId];
+        }
+      }
+    }
+  }
 
   const now = Date.now();
   const minAgeMs = config.minRecordingAgeMinutes * 60 * 1000;
@@ -996,8 +1220,26 @@ const run = async () => {
     return metadataVersion < METADATA_TEMPLATE_VERSION;
   });
 
-  if (recordings.length === 0 && missingEmoteVodIds.length === 0 && vodsNeedingMetadataSync.length === 0) {
+  if (recordings.length === 0 && missingEmoteVodIds.length === 0 && vodsNeedingMetadataSync.length === 0 && !archiveMaintenanceChanged) {
     log("No completed recordings ready for processing.");
+    return;
+  }
+
+  if (recordings.length === 0 && missingEmoteVodIds.length === 0 && vodsNeedingMetadataSync.length === 0 && archiveMaintenanceChanged) {
+    if (config.dryRun) {
+      log("[DRY RUN] Archive maintenance detected but no files were written.");
+      return;
+    }
+
+    await writeJsonFile(config.vodsDataPath, existingVods);
+    stagedPaths.push(config.vodsDataPath);
+    await writeJsonFile(config.statePath, state);
+
+    if (config.autoGitPush && stagedPaths.length > 0) {
+      stageAndPushArchiveData(stagedPaths, "chore: maintain archive vod data");
+    }
+
+    log("Applied archive maintenance updates.");
     return;
   }
 
@@ -1014,6 +1256,28 @@ const run = async () => {
   const plannedUploads = [];
   for (const recording of targets) {
     const enrichedRecording = enrichRecordingTiming(recording);
+    if (
+      Number.isFinite(enrichedRecording.durationSeconds) &&
+      enrichedRecording.durationSeconds > 0 &&
+      enrichedRecording.durationSeconds < minimumArchiveVodDurationSeconds
+    ) {
+      const durationText = formatDuration(Math.max(0, Math.floor(enrichedRecording.durationSeconds)));
+      log(
+        `Skipping short recording "${recording.name}" (${durationText}) below minimum archive duration of ${Math.floor(
+          minimumArchiveVodDurationSeconds / 60
+        )} minute(s).`
+      );
+
+      if (!config.dryRun) {
+        state.processedFiles[recording.path] = {
+          status: "ignored_short",
+          durationSeconds: Math.floor(enrichedRecording.durationSeconds),
+          processedAt: new Date().toISOString(),
+        };
+      }
+      continue;
+    }
+
     const matchedVod = selectMatchingVod(enrichedRecording, twitchVods);
     if (!matchedVod) {
       log(`No Twitch VOD match found for recording: ${recording.name}`);
@@ -1032,9 +1296,6 @@ const run = async () => {
   for (const group of uploadsByVod.values()) {
     group.sort((a, b) => a.recording.modifiedAtMs - b.recording.modifiedAtMs);
   }
-
-  const stagedPaths = [];
-  let vodsUpdated = false;
 
   if (!config.dryRun && missingEmoteVodIds.length > 0) {
     for (const vodId of missingEmoteVodIds) {
@@ -1265,7 +1526,6 @@ const run = async () => {
 
     await syncYouTubeMetadataForVod(youtube, vodEntry);
     upsertVod(existingVods, vodEntry);
-    existingVodIds.add(vodId);
     vodsUpdated = true;
 
     const existingState = state.processedVodIds?.[vodId] || {};

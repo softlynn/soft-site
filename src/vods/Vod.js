@@ -25,6 +25,14 @@ export default function Vod(props) {
     return vod.thumbnail_url || Thumbnail;
   }, [vod]);
 
+  const vodPartCount = useMemo(
+    () =>
+      (Array.isArray(vod?.youtube) ? vod.youtube : []).filter(
+        (part) => String(part?.type || "vod") === "vod" && part?.id
+      ).length,
+    [vod]
+  );
+
   const openVod = () => {
     if (vod.youtube?.length === 0) return;
     navigate(`/youtube/${vod.id}`);
@@ -98,6 +106,27 @@ export default function Vod(props) {
               </Typography>
             </Box>
           </Box>
+
+          {vodPartCount > 1 && (
+            <Box sx={{ position: "absolute", top: 10, right: 10 }}>
+              <Box
+                className="soft-vod-card__metachip"
+                sx={{
+                  px: 1,
+                  py: 0.45,
+                  borderRadius: "999px",
+                  background: "rgba(127, 41, 70, 0.86)",
+                  color: "rgba(255,255,255,0.96)",
+                  border: "1px solid rgba(255,255,255,0.25)",
+                  boxShadow: "0 10px 18px rgba(7, 10, 24, 0.28)",
+                }}
+              >
+                <Typography variant="caption" sx={{ fontWeight: 800, lineHeight: 1 }}>
+                  {vodPartCount} Parts
+                </Typography>
+              </Box>
+            </Box>
+          )}
 
           <Box sx={{ position: "absolute", bottom: 10, left: 10, right: 10, display: "flex", justifyContent: "space-between", gap: 1 }}>
             <Typography

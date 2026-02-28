@@ -57,7 +57,18 @@ const buildVodListWithUploadPlaceholders = (list, activeUploads) => {
   const uploads = Array.isArray(activeUploads) ? activeUploads : [];
   if (uploads.length === 0) return realList;
 
-  const existingVodIds = new Set(realList.map((vod) => String(vod?.id || "").trim()).filter(Boolean));
+  const existingVodPartNumbersById = new Map();
+  for (const vod of realList) {
+    const vodId = String(vod?.id || "").trim();
+    if (!vodId) continue;
+    const partSet = new Set(
+      (Array.isArray(vod?.youtube) ? vod.youtube : [])
+        .filter((part) => String(part?.type || "vod") === "vod")
+        .map((part) => Number(part?.part))
+        .filter((value) => Number.isFinite(value) && value > 0)
+    );
+    existingVodPartNumbersById.set(vodId, partSet);
+  }
   const seenSessionIds = new Set();
 
   const placeholders = uploads
@@ -70,7 +81,13 @@ const buildVodListWithUploadPlaceholders = (list, activeUploads) => {
       if (!state || state === "done" || state === "error") return false;
 
       const uploadVodId = normalizeUploadVodId(upload);
-      if (uploadVodId && existingVodIds.has(uploadVodId)) return false;
+      if (uploadVodId && existingVodPartNumbersById.has(uploadVodId)) {
+        const existingPartSet = existingVodPartNumbersById.get(uploadVodId);
+        const uploadPartNumber = Number(upload?.partNumber);
+        if (Number.isFinite(uploadPartNumber) && existingPartSet?.has(Math.max(1, Math.floor(uploadPartNumber)))) {
+          return false;
+        }
+      }
       return true;
     })
     .map((upload, index) => ({
