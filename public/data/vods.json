@@ -8,29 +8,15 @@
       {
         "id": "4hxPSpGTNS0",
         "type": "vod",
-        "duration": 0,
+        "duration": 3348,
         "part": 1,
         "thumbnail_url": "https://i.ytimg.com/vi/4hxPSpGTNS0/mqdefault.jpg"
       },
       {
-        "id": "k-gGEEUpMuw",
-        "type": "vod",
-        "duration": 0,
-        "part": 2,
-        "thumbnail_url": "https://i.ytimg.com/vi/k-gGEEUpMuw/mqdefault.jpg"
-      },
-      {
-        "id": "_SxDb_wyOLc",
-        "type": "vod",
-        "duration": 0,
-        "part": 3,
-        "thumbnail_url": "https://i.ytimg.com/vi/_SxDb_wyOLc/mqdefault.jpg"
-      },
-      {
         "id": "bvqcGca-be0",
         "type": "vod",
-        "duration": 0,
-        "part": 4,
+        "duration": 3812,
+        "part": 2,
         "thumbnail_url": "https://i.ytimg.com/vi/bvqcGca-be0/mqdefault.jpg"
       }
     ],
@@ -55,7 +41,7 @@
     ],
     "games": [],
     "createdAt": "2026-02-28T19:57:12Z",
-    "updatedAt": "2026-02-28T23:26:15.406Z"
+    "updatedAt": "2026-02-28T23:38:11.396Z"
   },
   {
     "id": "2708811172",
