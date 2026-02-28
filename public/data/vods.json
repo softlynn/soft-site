@@ -18,6 +18,13 @@
         "duration": 0,
         "part": 2,
         "thumbnail_url": "https://i.ytimg.com/vi/_SxDb_wyOLc/mqdefault.jpg"
+      },
+      {
+        "id": "bvqcGca-be0",
+        "type": "vod",
+        "duration": 0,
+        "part": 3,
+        "thumbnail_url": "https://i.ytimg.com/vi/bvqcGca-be0/mqdefault.jpg"
       }
     ],
     "stream_id": "317534076894",
@@ -34,7 +41,7 @@
     ],
     "games": [],
     "createdAt": "2026-02-28T21:02:05Z",
-    "updatedAt": "2026-02-28T22:56:13.552Z"
+    "updatedAt": "2026-02-28T23:21:47.463Z"
   },
   {
     "id": "2710310697",
