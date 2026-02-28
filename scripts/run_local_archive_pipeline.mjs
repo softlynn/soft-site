@@ -123,6 +123,12 @@ const config = {
 };
 
 const VIDEO_EXTENSIONS = new Set([".mp4", ".mkv", ".mov", ".flv", ".m4v"]);
+const TERMINAL_PROCESSED_FILE_STATUSES = new Set([
+  "completed",
+  "ignored_short",
+  "ignored_short_uploaded",
+  "ignored_unknown_duration",
+]);
 
 const log = (message) => {
   const timestamp = new Date().toISOString();
@@ -726,6 +732,41 @@ const fetchYouTubeVideoDetails = async (youtube, videoId) => {
   return { durationSeconds, thumbnailUrl };
 };
 
+const setYouTubeVideoPrivacyStatus = async (youtube, videoId, privacyStatus) => {
+  const response = await youtube.videos.list({
+    part: ["status"],
+    id: [videoId],
+  });
+  const item = response.data.items?.[0];
+  if (!item?.status) return false;
+
+  if (String(item.status.privacyStatus || "").toLowerCase() === String(privacyStatus || "").toLowerCase()) {
+    return true;
+  }
+
+  const nextStatus = {
+    privacyStatus,
+  };
+
+  if (typeof item.status.license === "string") nextStatus.license = item.status.license;
+  if (typeof item.status.embeddable === "boolean") nextStatus.embeddable = item.status.embeddable;
+  if (typeof item.status.publicStatsViewable === "boolean") nextStatus.publicStatsViewable = item.status.publicStatsViewable;
+  if (typeof item.status.publishAt === "string" && item.status.publishAt) nextStatus.publishAt = item.status.publishAt;
+  if (Object.prototype.hasOwnProperty.call(item.status, "selfDeclaredMadeForKids")) {
+    nextStatus.selfDeclaredMadeForKids = Boolean(item.status.selfDeclaredMadeForKids);
+  }
+
+  await youtube.videos.update({
+    part: ["status"],
+    requestBody: {
+      id: videoId,
+      status: nextStatus,
+    },
+  });
+
+  return true;
+};
+
 const updateYouTubeVideoMetadata = async (youtube, videoId, { title, description }) => {
   const response = await youtube.videos.list({
     part: ["snippet"],
@@ -1204,7 +1245,7 @@ const run = async () => {
   const minAgeMs = config.minRecordingAgeMinutes * 60 * 1000;
   const recordings = (await listRecordingFiles(config.recordingsDir))
     .filter((file) => now - file.modifiedAtMs >= minAgeMs)
-    .filter((file) => !(state.processedFiles?.[file.path]?.status === "completed"))
+    .filter((file) => !TERMINAL_PROCESSED_FILE_STATUSES.has(String(state.processedFiles?.[file.path]?.status || "")))
     .sort((a, b) => a.modifiedAtMs - b.modifiedAtMs);
 
   const missingEmoteVodIds = [];
@@ -1256,6 +1297,18 @@ const run = async () => {
   const plannedUploads = [];
   for (const recording of targets) {
     const enrichedRecording = enrichRecordingTiming(recording);
+    if (!Number.isFinite(enrichedRecording.durationSeconds) || enrichedRecording.durationSeconds <= 0) {
+      log(`Skipping recording "${recording.name}" because duration could not be determined.`);
+
+      if (!config.dryRun) {
+        state.processedFiles[recording.path] = {
+          status: "ignored_unknown_duration",
+          processedAt: new Date().toISOString(),
+        };
+      }
+      continue;
+    }
+
     if (
       Number.isFinite(enrichedRecording.durationSeconds) &&
       enrichedRecording.durationSeconds > 0 &&
@@ -1476,6 +1529,42 @@ const run = async () => {
           hide_after_ms: 10000,
         });
         const details = await fetchYouTubeVideoDetails(youtube, youtubeVideoId);
+
+        if (
+          Number.isFinite(details.durationSeconds) &&
+          details.durationSeconds > 0 &&
+          details.durationSeconds < minimumArchiveVodDurationSeconds
+        ) {
+          try {
+            await setYouTubeVideoPrivacyStatus(youtube, youtubeVideoId, "unlisted");
+          } catch (privacyError) {
+            log(`Failed to unlist short YouTube part ${youtubeVideoId}: ${privacyError.message}`);
+          }
+
+          state.processedFiles[recording.path] = {
+            status: "ignored_short_uploaded",
+            twitchVodId: vodId,
+            youtubeVideoId,
+            part: partNumber,
+            durationSeconds: details.durationSeconds,
+            processedAt: new Date().toISOString(),
+          };
+
+          await postRealtimeUploadStatus({
+            ...uploadSessionBase,
+            state: "done",
+            message: `Skipped short part (${details.durationSeconds}s); set video to unlisted`,
+            percent: 100,
+            uploadedBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
+            totalBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
+            youtubeVideoId,
+          });
+
+          log(
+            `Skipped archiving short uploaded part for Twitch VOD ${vodId}: ${youtubeVideoId} (${details.durationSeconds}s)`
+          );
+          continue;
+        }
 
         addOrUpdateYouTubePart(vodEntry, {
           id: youtubeVideoId,
