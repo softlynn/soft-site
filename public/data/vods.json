@@ -6,17 +6,10 @@
     "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/70a7ddcc9d6ac75844be_softu1_317489562332_1772399475//thumb/thumb0-640x360.jpg",
     "youtube": [
       {
-        "id": "iGWEN5mqiRo",
-        "type": "vod",
-        "duration": 0,
-        "part": 1,
-        "thumbnail_url": "https://i.ytimg.com/vi/iGWEN5mqiRo/mqdefault.jpg"
-      },
-      {
         "id": "WsOvzn7J1sY",
         "type": "vod",
         "duration": 0,
-        "part": 2,
+        "part": 1,
         "thumbnail_url": "https://i.ytimg.com/vi/WsOvzn7J1sY/mqdefault.jpg"
       }
     ],
@@ -34,7 +27,7 @@
     ],
     "games": [],
     "createdAt": "2026-03-01T21:11:20Z",
-    "updatedAt": "2026-03-01T23:15:02.840Z"
+    "updatedAt": "2026-03-01T23:54:00.647Z"
   },
   {
     "id": "2710647582",
