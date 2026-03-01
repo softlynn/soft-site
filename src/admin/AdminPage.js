@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Box, Button, CircularProgress, FormControlLabel, MenuItem, Select, Stack, Switch, Typography } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Stack, Switch, Typography } from "@mui/material";
 import SimpleBar from "simplebar-react";
 import Footer from "../utils/Footer";
 import {
@@ -12,6 +12,7 @@ import {
   promptAndLoginAdmin,
   republishVod,
   setVodFlags,
+  unpublishVodPart,
   unpublishVod,
   verifyAdminSession,
 } from "../api/adminApi";
@@ -34,12 +35,19 @@ const withTimeout = async (promise, label) => {
   }
 };
 
+const normalizePartNumber = (value, fallback) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(1, Math.floor(parsed));
+};
+
 export default function AdminPage() {
   const [ready, setReady] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(false);
   const [vods, setVods] = useState([]);
   const [selectedVodId, setSelectedVodId] = useState("");
+  const [selectedVodPartId, setSelectedVodPartId] = useState("");
   const [noticeEnabled, setNoticeEnabled] = useState(false);
   const [chatReplayAvailable, setChatReplayAvailable] = useState(true);
   const [message, setMessage] = useState({ type: "info", text: "Admin panel is locked." });
@@ -49,6 +57,25 @@ export default function AdminPage() {
     if (!selectedVodId) return null;
     return vods.find((vod) => String(vod.id) === String(selectedVodId)) || null;
   }, [selectedVodId, vods]);
+
+  const selectedVodParts = useMemo(() => {
+    if (!selectedVod || !Array.isArray(selectedVod.youtube)) return [];
+    return selectedVod.youtube
+      .filter((entry) => String(entry?.type || "vod") === "vod" && entry?.id)
+      .map((entry, index) => ({
+        ...entry,
+        partNumber: normalizePartNumber(entry?.part, index + 1),
+      }))
+      .sort((a, b) => {
+        if (a.partNumber !== b.partNumber) return a.partNumber - b.partNumber;
+        return String(a.id).localeCompare(String(b.id));
+      });
+  }, [selectedVod]);
+
+  const selectedVodPart = useMemo(() => {
+    if (!selectedVodPartId) return null;
+    return selectedVodParts.find((entry) => String(entry.id) === String(selectedVodPartId)) || null;
+  }, [selectedVodPartId, selectedVodParts]);
 
   const syncFlagsFromVod = (vod) => {
     if (!vod) return;
@@ -120,6 +147,17 @@ export default function AdminPage() {
   useEffect(() => {
     syncFlagsFromVod(selectedVod);
   }, [selectedVodId, selectedVod]);
+
+  useEffect(() => {
+    if (selectedVodParts.length === 0) {
+      setSelectedVodPartId("");
+      return;
+    }
+    const hasCurrent = selectedVodParts.some((entry) => String(entry.id) === String(selectedVodPartId));
+    if (!hasCurrent) {
+      setSelectedVodPartId(String(selectedVodParts[0].id));
+    }
+  }, [selectedVodPartId, selectedVodParts]);
 
   const handleUnlock = useCallback(async () => {
     userUnlockInProgressRef.current = true;
@@ -214,6 +252,34 @@ export default function AdminPage() {
     }
   };
 
+  const handleUnpublishPart = async () => {
+    if (!selectedVod || !selectedVodPart) return;
+    if (selectedVodParts.length <= 1) {
+      setMessage({ type: "warning", text: "This VOD only has one part. You cannot unpublish a single part." });
+      return;
+    }
+
+    const accepted = window.confirm(
+      `Unpublish VOD ${selectedVod.id} part ${selectedVodPart.partNumber} (${selectedVodPart.id}) on YouTube?\n\nRemaining parts will be renumbered to stay contiguous.`
+    );
+    if (!accepted) return;
+
+    setLoading(true);
+    try {
+      const payload = await unpublishVodPart(selectedVod.id, selectedVodPart.partNumber);
+      await hydrateVods();
+      const remainingCount = Array.isArray(payload?.result?.remainingParts) ? payload.result.remainingParts.length : 0;
+      setMessage({
+        type: "success",
+        text: `Unpublished VOD ${selectedVod.id} part ${selectedVodPart.partNumber}. Remaining parts: ${remainingCount}.`,
+      });
+    } catch (error) {
+      setMessage({ type: "error", text: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRepublish = async () => {
     if (!selectedVod) return;
 
@@ -302,6 +368,31 @@ export default function AdminPage() {
               ))}
             </Select>
 
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              YouTube Parts (real backend part numbers)
+            </Typography>
+            <FormControl fullWidth size="small" sx={{ mb: 0.5 }}>
+              <InputLabel id="admin-vod-part-label">Part</InputLabel>
+              <Select
+                labelId="admin-vod-part-label"
+                label="Part"
+                value={selectedVodPartId}
+                onChange={(event) => setSelectedVodPartId(event.target.value)}
+                disabled={loading || !selectedVod || selectedVod.unpublished || selectedVodParts.length === 0}
+              >
+                {selectedVodParts.map((part) => (
+                  <MenuItem key={part.id} value={String(part.id)}>
+                    {`Part ${part.partNumber} - ${part.id}`}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+              {selectedVodParts.length > 1
+                ? "Unpublishing one part will keep the VOD published and renumber remaining parts to 1..N."
+                : "Need at least 2 parts to unpublish a single part."}
+            </Typography>
+
             <FormControlLabel
               control={<Switch checked={noticeEnabled} onChange={(event) => setNoticeEnabled(event.target.checked)} />}
               label="Show Spotify muted notice on this VOD"
@@ -314,6 +405,14 @@ export default function AdminPage() {
             <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
               <Button variant="contained" onClick={handleSaveFlags} disabled={loading || !selectedVod}>
                 Save VOD Flags
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleUnpublishPart}
+                disabled={loading || !selectedVod || selectedVod.unpublished || !selectedVodPart || selectedVodParts.length <= 1}
+              >
+                Unpublish Selected Part
               </Button>
               <Button variant="contained" color="error" onClick={handleUnpublish} disabled={loading || !selectedVod || selectedVod.unpublished}>
                 Unpublish (Keep Twitch VOD)

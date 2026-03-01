@@ -332,6 +332,24 @@ export const unpublishVod = async (vodId) => {
   return payload;
 };
 
+export const unpublishVodPart = async (vodId, partNumber) => {
+  const token = readAdminToken();
+  if (!token) throw new Error("Admin session is missing");
+  const normalizedPart = Number(partNumber);
+  if (!Number.isFinite(normalizedPart) || normalizedPart < 1) {
+    throw new Error(`Part number must be a positive integer: ${partNumber}`);
+  }
+  const payload = await request(
+    `/vods/${encodeURIComponent(String(vodId))}/parts/${encodeURIComponent(String(Math.floor(normalizedPart)))}/unpublish`,
+    {
+      method: "POST",
+      token,
+    }
+  );
+  if (payload?.vod) cacheLocalVodOverrideFromVod(payload.vod);
+  return payload;
+};
+
 export const republishVod = async (vodId) => {
   const token = readAdminToken();
   if (!token) throw new Error("Admin session is missing");

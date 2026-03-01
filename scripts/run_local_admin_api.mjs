@@ -678,6 +678,16 @@ const parseVodRoute = (pathname) => {
   };
 };
 
+const parseVodPartRoute = (pathname) => {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts.length !== 5 || parts[0] !== "vods" || parts[2] !== "parts") return null;
+  return {
+    vodId: decodeURIComponent(parts[1]),
+    partRef: decodeURIComponent(parts[3]),
+    action: parts[4],
+  };
+};
+
 const validateConfig = async () => {
   if (!config.adminPassword) fail("ADMIN_PANEL_PASSWORD is required in .env.local");
   if (!config.twitchClientId || !config.twitchClientSecret) fail("TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET are required in .env.local");
@@ -686,6 +696,41 @@ const validateConfig = async () => {
 
 const sortVodsDesc = (vods) =>
   [...vods].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+
+const isYoutubeVodPart = (entry) => String(entry?.type || "vod") === "vod" && Boolean(entry?.id);
+
+const toPositiveInt = (value) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  const rounded = Math.floor(parsed);
+  if (rounded < 1) return null;
+  return rounded;
+};
+
+const listOrderedYoutubeVodParts = (vod) => {
+  const source = Array.isArray(vod?.youtube) ? vod.youtube : [];
+  const collected = source
+    .map((entry, index) => ({ entry, index }))
+    .filter(({ entry }) => isYoutubeVodPart(entry))
+    .map(({ entry, index }, filteredIndex) => ({
+      ...entry,
+      part: toPositiveInt(entry?.part) || filteredIndex + 1,
+      __sourceIndex: index,
+    }));
+
+  collected.sort((a, b) => {
+    if (a.part !== b.part) return a.part - b.part;
+    return a.__sourceIndex - b.__sourceIndex;
+  });
+
+  return collected.map(({ __sourceIndex, ...part }) => part);
+};
+
+const withReplacedYoutubeVodParts = (vod, nextVodParts) => {
+  const source = Array.isArray(vod?.youtube) ? vod.youtube : [];
+  const nonVodEntries = source.filter((entry) => !isYoutubeVodPart(entry));
+  return [...nextVodParts, ...nonVodEntries];
+};
 
 const handleRequest = async (req, res) => {
   markActivity();
@@ -854,6 +899,70 @@ const handleRequest = async (req, res) => {
         result: {
           youtube: youtubeResults,
           twitch: twitchResult,
+        },
+      });
+      return;
+    }
+  }
+
+  const vodPartRoute = parseVodPartRoute(pathname);
+  if (vodPartRoute && method === "POST") {
+    requireSession(req);
+
+    if (vodPartRoute.action === "unpublish") {
+      const requestedPartNumber = toPositiveInt(vodPartRoute.partRef);
+      if (!requestedPartNumber) {
+        throw createApiError(400, `Part number must be a positive integer: ${vodPartRoute.partRef}`);
+      }
+
+      const vods = await loadVods();
+      const vod = vods.find((entry) => String(entry.id) === String(vodPartRoute.vodId));
+      if (!vod) {
+        throw createApiError(404, `VOD ${vodPartRoute.vodId} not found`);
+      }
+
+      const orderedParts = listOrderedYoutubeVodParts(vod);
+      if (orderedParts.length <= 1) {
+        throw createApiError(400, `VOD ${vodPartRoute.vodId} has ${orderedParts.length} part. Cannot unpublish a single part.`);
+      }
+
+      const targetIndex = orderedParts.findIndex((part) => Number(part?.part) === requestedPartNumber);
+      if (targetIndex < 0) {
+        const available = orderedParts.map((part) => part.part).join(", ");
+        throw createApiError(404, `Part ${requestedPartNumber} not found for VOD ${vodPartRoute.vodId}. Available parts: ${available}`);
+      }
+
+      const targetPart = orderedParts[targetIndex];
+      const youtube = await loadYoutubeClient();
+      const youtubeResult = await setYouTubeVideoPrivacy(youtube, targetPart.id, "private");
+
+      const remainingParts = orderedParts
+        .filter((_, index) => index !== targetIndex)
+        .map((part, index) => ({
+          ...part,
+          type: "vod",
+          part: index + 1,
+        }));
+
+      const updatedVod = await updateVod(
+        vodPartRoute.vodId,
+        (entry) => ({
+          ...entry,
+          youtube: withReplacedYoutubeVodParts(entry, remainingParts),
+        }),
+        `chore: unpublish vod ${vodPartRoute.vodId} part ${requestedPartNumber}`
+      );
+
+      sendJson(req, res, 200, {
+        vod: updatedVod,
+        result: {
+          youtube: youtubeResult,
+          removedPart: requestedPartNumber,
+          removedVideoId: targetPart.id,
+          remainingParts: remainingParts.map((part) => ({
+            id: part.id,
+            part: part.part,
+          })),
         },
       });
       return;
