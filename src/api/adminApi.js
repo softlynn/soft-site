@@ -350,6 +350,19 @@ export const unpublishVodPart = async (vodId, partNumber) => {
   return payload;
 };
 
+export const republishVodPart = async (vodId, partRef) => {
+  const token = readAdminToken();
+  if (!token) throw new Error("Admin session is missing");
+  const normalizedRef = String(partRef || "").trim();
+  if (!normalizedRef) throw new Error("Part reference is required");
+  const payload = await request(`/vods/${encodeURIComponent(String(vodId))}/parts/${encodeURIComponent(normalizedRef)}/republish`, {
+    method: "POST",
+    token,
+  });
+  if (payload?.vod) cacheLocalVodOverrideFromVod(payload.vod);
+  return payload;
+};
+
 export const republishVod = async (vodId) => {
   const token = readAdminToken();
   if (!token) throw new Error("Admin session is missing");

@@ -714,16 +714,67 @@ const listOrderedYoutubeVodParts = (vod) => {
     .filter(({ entry }) => isYoutubeVodPart(entry))
     .map(({ entry, index }, filteredIndex) => ({
       ...entry,
+      unpublished: entry?.unpublished === true,
+      adminOrder: toPositiveInt(entry?.adminOrder) || null,
       part: toPositiveInt(entry?.part) || filteredIndex + 1,
       __sourceIndex: index,
     }));
 
   collected.sort((a, b) => {
+    const leftOrder = toPositiveInt(a?.adminOrder);
+    const rightOrder = toPositiveInt(b?.adminOrder);
+    if (leftOrder && rightOrder && leftOrder !== rightOrder) return leftOrder - rightOrder;
+    if (leftOrder && !rightOrder) return -1;
+    if (!leftOrder && rightOrder) return 1;
     if (a.part !== b.part) return a.part - b.part;
     return a.__sourceIndex - b.__sourceIndex;
   });
 
+  const usedOrders = new Set();
+  let nextOrder = 1;
+  for (const part of collected) {
+    let order = toPositiveInt(part?.adminOrder);
+    while (!order || usedOrders.has(order)) {
+      if (!usedOrders.has(nextOrder)) {
+        order = nextOrder;
+        break;
+      }
+      nextOrder += 1;
+    }
+    usedOrders.add(order);
+    part.adminOrder = order;
+    if (order >= nextOrder) nextOrder = order + 1;
+  }
+
+  collected.sort((a, b) => {
+    if (a.adminOrder !== b.adminOrder) return a.adminOrder - b.adminOrder;
+    return a.__sourceIndex - b.__sourceIndex;
+  });
+
   return collected.map(({ __sourceIndex, ...part }) => part);
+};
+
+const withPublishedPartNumbers = (orderedParts) => {
+  let nextPublishedPartNumber = 1;
+  return orderedParts.map((part) => ({
+    ...part,
+    publishedPartNumber: part.unpublished ? null : nextPublishedPartNumber++,
+  }));
+};
+
+const renumberVodPartsForSave = (orderedParts) => {
+  let nextPublishedPartNumber = 1;
+  return orderedParts.map((part) => {
+    const { publishedPartNumber, ...rest } = part;
+    const isUnpublished = rest?.unpublished === true;
+    return {
+      ...rest,
+      type: "vod",
+      adminOrder: toPositiveInt(rest?.adminOrder) || 1,
+      part: isUnpublished ? toPositiveInt(rest?.part) || 1 : nextPublishedPartNumber++,
+      unpublished: isUnpublished,
+    };
+  });
 };
 
 const withReplacedYoutubeVodParts = (vod, nextVodParts) => {
@@ -922,33 +973,39 @@ const handleRequest = async (req, res) => {
       }
 
       const orderedParts = listOrderedYoutubeVodParts(vod);
-      if (orderedParts.length <= 1) {
-        throw createApiError(400, `VOD ${vodPartRoute.vodId} has ${orderedParts.length} part. Cannot unpublish a single part.`);
+      const partsWithNumbers = withPublishedPartNumbers(orderedParts);
+      const publishedParts = partsWithNumbers.filter((part) => part.unpublished !== true);
+      if (publishedParts.length <= 1) {
+        throw createApiError(400, `VOD ${vodPartRoute.vodId} has ${publishedParts.length} published part. Cannot unpublish a single part.`);
       }
 
-      const targetIndex = orderedParts.findIndex((part) => Number(part?.part) === requestedPartNumber);
-      if (targetIndex < 0) {
-        const available = orderedParts.map((part) => part.part).join(", ");
+      const targetPart = publishedParts.find((part) => Number(part?.publishedPartNumber) === requestedPartNumber);
+      if (!targetPart) {
+        const available = publishedParts.map((part) => part.publishedPartNumber).join(", ");
         throw createApiError(404, `Part ${requestedPartNumber} not found for VOD ${vodPartRoute.vodId}. Available parts: ${available}`);
       }
 
-      const targetPart = orderedParts[targetIndex];
       const youtube = await loadYoutubeClient();
       const youtubeResult = await setYouTubeVideoPrivacy(youtube, targetPart.id, "private");
 
-      const remainingParts = orderedParts
-        .filter((_, index) => index !== targetIndex)
-        .map((part, index) => ({
-          ...part,
-          type: "vod",
-          part: index + 1,
-        }));
+      const updatedParts = partsWithNumbers.map((part) =>
+        String(part.id) === String(targetPart.id)
+          ? {
+              ...part,
+              unpublished: true,
+              part: toPositiveInt(part.part) || requestedPartNumber,
+            }
+          : part
+      );
+
+      const nextParts = renumberVodPartsForSave(updatedParts);
+      const remainingPublishedParts = nextParts.filter((part) => part.unpublished !== true);
 
       const updatedVod = await updateVod(
         vodPartRoute.vodId,
         (entry) => ({
           ...entry,
-          youtube: withReplacedYoutubeVodParts(entry, remainingParts),
+          youtube: withReplacedYoutubeVodParts(entry, nextParts),
         }),
         `chore: unpublish vod ${vodPartRoute.vodId} part ${requestedPartNumber}`
       );
@@ -959,9 +1016,87 @@ const handleRequest = async (req, res) => {
           youtube: youtubeResult,
           removedPart: requestedPartNumber,
           removedVideoId: targetPart.id,
-          remainingParts: remainingParts.map((part) => ({
+          remainingParts: remainingPublishedParts.map((part) => ({
             id: part.id,
             part: part.part,
+            adminOrder: part.adminOrder,
+          })),
+        },
+      });
+      return;
+    }
+
+    if (vodPartRoute.action === "republish") {
+      const vods = await loadVods();
+      const vod = vods.find((entry) => String(entry.id) === String(vodPartRoute.vodId));
+      if (!vod) {
+        throw createApiError(404, `VOD ${vodPartRoute.vodId} not found`);
+      }
+
+      const orderedParts = listOrderedYoutubeVodParts(vod);
+      if (orderedParts.length === 0) {
+        throw createApiError(400, `VOD ${vodPartRoute.vodId} has no YouTube VOD parts.`);
+      }
+
+      const partRef = String(vodPartRoute.partRef || "").trim();
+      if (!partRef) {
+        throw createApiError(400, "Part reference is required.");
+      }
+
+      let targetPart = orderedParts.find((part) => part.unpublished === true && String(part.id) === partRef);
+      if (!targetPart) {
+        const numericRef = toPositiveInt(partRef);
+        if (numericRef) {
+          targetPart = orderedParts.find(
+            (part) => part.unpublished === true && (part.adminOrder === numericRef || Number(part.part) === numericRef)
+          );
+        }
+      }
+      if (!targetPart) {
+        const available = orderedParts
+          .filter((part) => part.unpublished === true)
+          .map((part) => `${part.id} (backend #${part.adminOrder})`)
+          .join(", ");
+        throw createApiError(
+          404,
+          `Unpublished part '${partRef}' not found for VOD ${vodPartRoute.vodId}.${available ? ` Available unpublished parts: ${available}` : ""}`
+        );
+      }
+
+      const youtube = await loadYoutubeClient();
+      const youtubeResult = await setYouTubeVideoPrivacy(youtube, targetPart.id, "public");
+
+      const updatedParts = orderedParts.map((part) =>
+        String(part.id) === String(targetPart.id)
+          ? {
+              ...part,
+              unpublished: false,
+            }
+          : part
+      );
+      const nextParts = renumberVodPartsForSave(updatedParts);
+      const republishedPart = nextParts.find((part) => String(part.id) === String(targetPart.id)) || null;
+      const publishedParts = nextParts.filter((part) => part.unpublished !== true);
+
+      const updatedVod = await updateVod(
+        vodPartRoute.vodId,
+        (entry) => ({
+          ...entry,
+          youtube: withReplacedYoutubeVodParts(entry, nextParts),
+        }),
+        `chore: republish vod ${vodPartRoute.vodId} part ${targetPart.id}`
+      );
+
+      sendJson(req, res, 200, {
+        vod: updatedVod,
+        result: {
+          youtube: youtubeResult,
+          republishedVideoId: targetPart.id,
+          republishedPart: republishedPart?.part || null,
+          publishedParts: publishedParts.map((part) => ({
+            id: part.id,
+            part: part.part,
+            adminOrder: part.adminOrder,
           })),
         },
       });

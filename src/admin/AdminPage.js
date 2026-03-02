@@ -10,6 +10,7 @@ import {
   getAdminToken,
   primeAdminWake,
   promptAndLoginAdmin,
+  republishVodPart,
   republishVod,
   setVodFlags,
   unpublishVodPart,
@@ -64,11 +65,21 @@ export default function AdminPage() {
       .filter((entry) => String(entry?.type || "vod") === "vod" && entry?.id)
       .map((entry, index) => ({
         ...entry,
-        partNumber: normalizePartNumber(entry?.part, index + 1),
+        backendOrder: normalizePartNumber(entry?.adminOrder, index + 1),
+        storedPartNumber: normalizePartNumber(entry?.part, index + 1),
+        isUnpublished: entry?.unpublished === true,
       }))
       .sort((a, b) => {
-        if (a.partNumber !== b.partNumber) return a.partNumber - b.partNumber;
+        if (a.backendOrder !== b.backendOrder) return a.backendOrder - b.backendOrder;
         return String(a.id).localeCompare(String(b.id));
+      })
+      .map((entry, index, list) => {
+        const publishedPartNumber =
+          entry.isUnpublished === true ? null : list.slice(0, index + 1).filter((part) => part.isUnpublished !== true).length;
+        return {
+          ...entry,
+          partNumber: publishedPartNumber,
+        };
       });
   }, [selectedVod]);
 
@@ -76,6 +87,11 @@ export default function AdminPage() {
     if (!selectedVodPartId) return null;
     return selectedVodParts.find((entry) => String(entry.id) === String(selectedVodPartId)) || null;
   }, [selectedVodPartId, selectedVodParts]);
+
+  const publishedSelectedVodPartCount = useMemo(
+    () => selectedVodParts.filter((part) => part.isUnpublished !== true).length,
+    [selectedVodParts]
+  );
 
   const syncFlagsFromVod = (vod) => {
     if (!vod) return;
@@ -254,24 +270,61 @@ export default function AdminPage() {
 
   const handleUnpublishPart = async () => {
     if (!selectedVod || !selectedVodPart) return;
-    if (selectedVodParts.length <= 1) {
+    if (selectedVodPart.isUnpublished) {
+      setMessage({ type: "warning", text: "Selected part is already unpublished. Use Republish Selected Part." });
+      return;
+    }
+    if (publishedSelectedVodPartCount <= 1) {
       setMessage({ type: "warning", text: "This VOD only has one part. You cannot unpublish a single part." });
+      return;
+    }
+    const publishedPartNumber = selectedVodPart.partNumber;
+    if (!publishedPartNumber) {
+      setMessage({ type: "error", text: "Could not resolve the current published part number." });
       return;
     }
 
     const accepted = window.confirm(
-      `Unpublish VOD ${selectedVod.id} part ${selectedVodPart.partNumber} (${selectedVodPart.id}) on YouTube?\n\nRemaining parts will be renumbered to stay contiguous.`
+      `Unpublish VOD ${selectedVod.id} part ${publishedPartNumber} (${selectedVodPart.id}) on YouTube and hide it from the VOD site?\n\nRemaining published parts will be renumbered to stay contiguous.`
     );
     if (!accepted) return;
 
     setLoading(true);
     try {
-      const payload = await unpublishVodPart(selectedVod.id, selectedVodPart.partNumber);
+      const payload = await unpublishVodPart(selectedVod.id, publishedPartNumber);
       await hydrateVods();
       const remainingCount = Array.isArray(payload?.result?.remainingParts) ? payload.result.remainingParts.length : 0;
       setMessage({
         type: "success",
-        text: `Unpublished VOD ${selectedVod.id} part ${selectedVodPart.partNumber}. Remaining parts: ${remainingCount}.`,
+        text: `Unpublished VOD ${selectedVod.id} part ${publishedPartNumber} on YouTube and VOD site. Remaining published parts: ${remainingCount}.`,
+      });
+    } catch (error) {
+      setMessage({ type: "error", text: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRepublishPart = async () => {
+    if (!selectedVod || !selectedVodPart) return;
+    if (!selectedVodPart.isUnpublished) {
+      setMessage({ type: "warning", text: "Selected part is already published." });
+      return;
+    }
+
+    const accepted = window.confirm(
+      `Republish VOD ${selectedVod.id} part ${selectedVodPart.id} on YouTube and restore it on the VOD site?`
+    );
+    if (!accepted) return;
+
+    setLoading(true);
+    try {
+      const payload = await republishVodPart(selectedVod.id, selectedVodPart.id);
+      await hydrateVods();
+      const republishedPartNumber = payload?.result?.republishedPart ? ` as part ${payload.result.republishedPart}` : "";
+      setMessage({
+        type: "success",
+        text: `Republished part ${selectedVodPart.id}${republishedPartNumber} on YouTube and VOD site.`,
       });
     } catch (error) {
       setMessage({ type: "error", text: error.message });
@@ -369,7 +422,7 @@ export default function AdminPage() {
             </Select>
 
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              YouTube Parts (real backend part numbers)
+              YouTube Parts (published + unpublished)
             </Typography>
             <FormControl fullWidth size="small" sx={{ mb: 0.5 }}>
               <InputLabel id="admin-vod-part-label">Part</InputLabel>
@@ -382,15 +435,17 @@ export default function AdminPage() {
               >
                 {selectedVodParts.map((part) => (
                   <MenuItem key={part.id} value={String(part.id)}>
-                    {`Part ${part.partNumber} - ${part.id}`}
+                    {part.isUnpublished
+                      ? `Unpublished (backend #${part.backendOrder}, last part ${part.storedPartNumber}) - ${part.id}`
+                      : `Part ${part.partNumber} (backend #${part.backendOrder}) - ${part.id}`}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
-              {selectedVodParts.length > 1
-                ? "Unpublishing one part will keep the VOD published and renumber remaining parts to 1..N."
-                : "Need at least 2 parts to unpublish a single part."}
+              {publishedSelectedVodPartCount > 1
+                ? "Unpublishing a selected published part hides it on the VOD site and renumbers remaining published parts."
+                : "Need at least 2 published parts to unpublish a single part."}
             </Typography>
 
             <FormControlLabel
@@ -410,9 +465,24 @@ export default function AdminPage() {
                 variant="outlined"
                 color="error"
                 onClick={handleUnpublishPart}
-                disabled={loading || !selectedVod || selectedVod.unpublished || !selectedVodPart || selectedVodParts.length <= 1}
+                disabled={
+                  loading ||
+                  !selectedVod ||
+                  selectedVod.unpublished ||
+                  !selectedVodPart ||
+                  selectedVodPart.isUnpublished ||
+                  publishedSelectedVodPartCount <= 1
+                }
               >
                 Unpublish Selected Part
+              </Button>
+              <Button
+                variant="outlined"
+                color="success"
+                onClick={handleRepublishPart}
+                disabled={loading || !selectedVod || selectedVod.unpublished || !selectedVodPart || !selectedVodPart.isUnpublished}
+              >
+                Republish Selected Part
               </Button>
               <Button variant="contained" color="error" onClick={handleUnpublish} disabled={loading || !selectedVod || selectedVod.unpublished}>
                 Unpublish (Keep Twitch VOD)

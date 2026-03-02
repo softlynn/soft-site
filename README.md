@@ -139,6 +139,7 @@ Each upload now sets and syncs:
 3. After unlock, `/admin` lets you:
    - unpublish a VOD on YouTube + archive listing (Twitch VOD is preserved),
    - unpublish a single YouTube VOD part while keeping the VOD published (remaining parts are renumbered),
+   - republish a previously unpublished YouTube VOD part on both YouTube and the archive site,
    - republish an unpublished VOD on YouTube and the archive site,
    - hide the VOD from archive listings,
    - toggle Spotify-muted notice,

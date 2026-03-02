@@ -119,18 +119,43 @@ export const cacheLocalVodOverrideFromVod = (vod) => {
   writeLocalVodOverrides(overrides);
 };
 
-const normalizeVod = (vod) =>
-  normalizeVodNoticeText(
-    applyLocalVodOverride({
-      chapters: [],
-      drive: [],
-      games: [],
-      youtube: [],
-      platform: "twitch",
-      unpublished: false,
-      ...vod,
+const normalizeYouTubeEntriesForSite = (entries) => {
+  const source = Array.isArray(entries) ? entries : [];
+  const visible = source.filter((entry) => entry?.unpublished !== true);
+  const vodEntries = visible
+    .map((entry, index) => ({ entry, index }))
+    .filter(({ entry }) => String(entry?.type || "vod") === "vod" && entry?.id)
+    .map(({ entry, index }, filteredIndex) => ({
+      ...entry,
+      part: Number.isFinite(Number(entry?.part)) ? Math.max(1, Math.floor(Number(entry.part))) : filteredIndex + 1,
+      __sourceIndex: index,
+    }))
+    .sort((a, b) => {
+      if (a.part !== b.part) return a.part - b.part;
+      return a.__sourceIndex - b.__sourceIndex;
     })
-  );
+    .map(({ __sourceIndex, ...entry }, index) => ({
+      ...entry,
+      part: index + 1,
+    }));
+
+  const nonVodEntries = visible.filter((entry) => !(String(entry?.type || "vod") === "vod" && entry?.id));
+  return [...vodEntries, ...nonVodEntries];
+};
+
+const normalizeVod = (vod) => {
+  const normalized = {
+    chapters: [],
+    drive: [],
+    games: [],
+    youtube: [],
+    platform: "twitch",
+    unpublished: false,
+    ...vod,
+  };
+  normalized.youtube = normalizeYouTubeEntriesForSite(normalized.youtube);
+  return normalizeVodNoticeText(applyLocalVodOverride(normalized));
+};
 
 const loadStaticVods = async () => {
   try {
@@ -227,7 +252,10 @@ export const getVodById = async (vodId) => {
   });
   const payload = await response.json();
   if (payload?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
-  return payload;
+  return {
+    ...payload,
+    youtube: normalizeYouTubeEntriesForSite(payload?.youtube),
+  };
 };
 
 export const getBadges = async () => {
