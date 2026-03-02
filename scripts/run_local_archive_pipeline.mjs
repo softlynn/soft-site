@@ -12,7 +12,7 @@ const repoRoot = path.resolve(__dirname, "..");
 
 dotenv.config({ path: path.join(repoRoot, ".env.local") });
 
-const METADATA_TEMPLATE_VERSION = 3;
+const METADATA_TEMPLATE_VERSION = 4;
 const DEFAULT_ARCHIVE_SITE_URL = "https://softu.one";
 
 const cleanUrl = (value) => String(value || "").replace(/\/+$/, "");
@@ -336,6 +336,9 @@ const buildYouTubeDescription = ({ twitchVodId, streamTitle, streamDate, partNum
       }
     }
   }
+
+  lines.push("");
+  lines.push("#vrchat #dance #vtuber #vr #virtualreality");
 
   return lines.join("\n").trim();
 };

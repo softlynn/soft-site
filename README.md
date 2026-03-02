@@ -127,6 +127,8 @@ Each upload now sets and syncs:
 3. clickable `Original VOD` Twitch link,
 4. category via `YOUTUBE_CATEGORY_ID` (default `20`, Gaming),
 5. part links in description when a VOD has multiple YouTube parts.
+6. hashtag footer:
+   `#vrchat #dance #vtuber #vr #virtualreality`
 
 ## Frontend mode
 
