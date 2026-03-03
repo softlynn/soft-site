@@ -407,6 +407,26 @@ const fetchTwitchArchives = async (accessToken, userId) => {
   return data.data || [];
 };
 
+const fetchTwitchVodById = async (accessToken, vodId) => {
+  const url = new URL("https://api.twitch.tv/helix/videos");
+  url.searchParams.set("id", String(vodId));
+
+  const response = await fetch(url.toString(), {
+    method: "GET",
+    headers: {
+      "Client-Id": config.twitchClientId,
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    fail(`Unable to fetch Twitch VOD ${vodId} (${response.status})`);
+  }
+
+  const data = await response.json();
+  return data?.data?.[0] || null;
+};
+
 const fetchFFZEmotes = async (twitchUserId) => {
   const data = await fetchJsonSafe(`https://api.frankerfacez.com/v1/room/id/${twitchUserId}`);
   if (!data?.room?.set || !data?.sets?.[data.room.set]?.emoticons) return [];
@@ -1380,7 +1400,15 @@ const run = async () => {
   }
 
   for (const [vodId, uploads] of uploadsByVod.entries()) {
-    const twitchVod = uploads[0].twitchVod;
+    let twitchVod = uploads[0].twitchVod;
+    try {
+      const latestTwitchVod = await fetchTwitchVodById(twitchAccessToken, vodId);
+      if (latestTwitchVod) {
+        twitchVod = { ...twitchVod, ...latestTwitchVod };
+      }
+    } catch (error) {
+      log(`Failed to refresh Twitch metadata for VOD ${vodId} before upload: ${error.message}`);
+    }
     const commentsPath = path.join(config.commentsDir, `${vodId}.json`);
     const emotesPath = path.join(config.emotesDir, `${vodId}.json`);
     const rawChatPath = path.join(config.tmpDir, `${vodId}-chat-raw.json`);
@@ -1424,33 +1452,40 @@ const run = async () => {
       const { recording } = uploads[index];
       const partNumber = nextPartNumber + index;
 
-      const title = buildYouTubeTitle({
-        streamTitle: twitchVod.title || path.parse(recording.name).name,
-        streamDate: twitchVod.created_at,
-        partNumber,
-        totalParts: totalPartsAfterUpload,
-      });
-      const description = buildYouTubeDescription({
-        twitchVodId: vodId,
-        streamTitle: twitchVod.title,
-        streamDate: twitchVod.created_at,
-        partNumber,
-        totalParts: totalPartsAfterUpload,
-        youtubeParts: [],
-      });
+      let currentStreamTitle = twitchVod.title || path.parse(recording.name).name;
+      let currentStreamDate = twitchVod.created_at;
+      let currentTitle = "";
+      let currentDescription = "";
+      const rebuildUploadMetadata = () => {
+        currentTitle = buildYouTubeTitle({
+          streamTitle: currentStreamTitle || path.parse(recording.name).name,
+          streamDate: currentStreamDate,
+          partNumber,
+          totalParts: totalPartsAfterUpload,
+        });
+        currentDescription = buildYouTubeDescription({
+          twitchVodId: vodId,
+          streamTitle: currentStreamTitle,
+          streamDate: currentStreamDate,
+          partNumber,
+          totalParts: totalPartsAfterUpload,
+          youtubeParts: [],
+        });
+      };
+      rebuildUploadMetadata();
 
       let uploadRecording = null;
       const uploadSessionCreatedAtMs = Date.now();
       const uploadSessionId = `twitch-${vodId}-part-${partNumber}-${uploadSessionCreatedAtMs}`;
-      const uploadSessionBase = {
+      const buildUploadSessionBase = () => ({
         sessionId: uploadSessionId,
         twitchVodId: String(vodId),
         partNumber,
-        title,
+        title: currentTitle,
         recordingName: recording.name,
-        streamDate: twitchVod.created_at || null,
+        streamDate: currentStreamDate || null,
         createdAtMs: uploadSessionCreatedAtMs,
-      };
+      });
       let latestProgress = {
         percent: 0,
         uploadedBytes: 0,
@@ -1458,7 +1493,40 @@ const run = async () => {
       };
       let lastRealtimeUploadProgressPercent = -1;
       let lastRealtimeUploadProgressAtMs = 0;
+      let lastTwitchMetadataRefreshAtMs = 0;
+      let twitchMetadataRefreshInFlight = false;
+
+      const maybeRefreshTwitchUploadMetadata = async (force = false) => {
+        const nowMs = Date.now();
+        if (!force && nowMs - lastTwitchMetadataRefreshAtMs < 45_000) return false;
+        lastTwitchMetadataRefreshAtMs = nowMs;
+
+        const latestTwitchVod = await fetchTwitchVodById(twitchAccessToken, vodId);
+        if (!latestTwitchVod) return false;
+
+        twitchVod = { ...twitchVod, ...latestTwitchVod };
+        const nextStreamTitle = latestTwitchVod.title || currentStreamTitle;
+        const nextStreamDate = latestTwitchVod.created_at || currentStreamDate;
+        const metadataChanged = nextStreamTitle !== currentStreamTitle || nextStreamDate !== currentStreamDate;
+
+        currentStreamTitle = nextStreamTitle;
+        currentStreamDate = nextStreamDate;
+        rebuildUploadMetadata();
+
+        vodEntry.title = currentStreamTitle;
+        if (currentStreamDate) vodEntry.createdAt = currentStreamDate;
+        if (latestTwitchVod.stream_id) vodEntry.stream_id = latestTwitchVod.stream_id;
+
+        return metadataChanged;
+      };
+
       try {
+        try {
+          await maybeRefreshTwitchUploadMetadata(true);
+        } catch (error) {
+          log(`Failed to refresh Twitch metadata for upload ${vodId} part ${partNumber}: ${error.message}`);
+        }
+
         await writeObsDockUploadStatus({
           visible: true,
           state: "preparing",
@@ -1466,7 +1534,7 @@ const run = async () => {
           percent: 0,
         });
         await postRealtimeUploadStatus({
-          ...uploadSessionBase,
+          ...buildUploadSessionBase(),
           state: "preparing",
           message: "Preparing VOD upload copy (track 1 audio)",
           percent: 0,
@@ -1476,11 +1544,13 @@ const run = async () => {
         uploadRecording = await createYouTubeUploadCopyTrack1(recording);
         latestProgress.totalBytes = Number(uploadRecording.size || 0);
 
+        const insertedTitle = currentTitle;
+        const insertedDescription = currentDescription;
         const youtubeVideoId = await uploadRecordingToYouTube({
           youtube,
           recordingFile: uploadRecording,
-          title,
-          description,
+          title: insertedTitle,
+          description: insertedDescription,
           onProgress: ({ percent, uploadedBytes, totalBytes }) => {
             latestProgress = {
               percent: Number.isFinite(percent) ? percent : latestProgress.percent,
@@ -1505,7 +1575,7 @@ const run = async () => {
               lastRealtimeUploadProgressPercent = safePercent;
               lastRealtimeUploadProgressAtMs = nowMs;
               void postRealtimeUploadStatus({
-                ...uploadSessionBase,
+                ...buildUploadSessionBase(),
                 state: "uploading",
                 message: "Uploading VOD",
                 percent: safePercent,
@@ -1513,10 +1583,54 @@ const run = async () => {
                 totalBytes: Number.isFinite(totalBytes) ? Math.floor(totalBytes) : null,
               });
             }
+
+            if (!twitchMetadataRefreshInFlight && nowMs - lastTwitchMetadataRefreshAtMs >= 45_000) {
+              twitchMetadataRefreshInFlight = true;
+              void (async () => {
+                try {
+                  const changed = await maybeRefreshTwitchUploadMetadata(true);
+                  if (!changed) return;
+
+                  await postRealtimeUploadStatus({
+                    ...buildUploadSessionBase(),
+                    state: "uploading",
+                    message: "Uploading VOD",
+                    percent: Number.isFinite(latestProgress.percent)
+                      ? Math.max(0, Math.min(100, Math.floor(latestProgress.percent)))
+                      : null,
+                    uploadedBytes: Number.isFinite(latestProgress.uploadedBytes) ? Math.floor(latestProgress.uploadedBytes) : null,
+                    totalBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
+                  });
+                } catch (error) {
+                  log(`Failed to refresh Twitch metadata for active upload ${vodId}: ${error.message}`);
+                } finally {
+                  twitchMetadataRefreshInFlight = false;
+                }
+              })();
+            }
           },
         });
+
+        let refreshedAfterUpload = false;
+        try {
+          refreshedAfterUpload = await maybeRefreshTwitchUploadMetadata(true);
+        } catch (error) {
+          log(`Failed to refresh Twitch metadata after upload ${vodId} part ${partNumber}: ${error.message}`);
+        }
+
+        if (refreshedAfterUpload && (currentTitle !== insertedTitle || currentDescription !== insertedDescription)) {
+          try {
+            await updateYouTubeVideoMetadata(youtube, youtubeVideoId, {
+              title: currentTitle,
+              description: currentDescription,
+            });
+          } catch (error) {
+            log(`Failed to update YouTube metadata after title refresh for ${youtubeVideoId}: ${error.message}`);
+          }
+        }
+
         await postRealtimeUploadStatus({
-          ...uploadSessionBase,
+          ...buildUploadSessionBase(),
           state: "finalizing",
           message: "Finalizing archive metadata",
           percent: 100,
@@ -1554,7 +1668,7 @@ const run = async () => {
           };
 
           await postRealtimeUploadStatus({
-            ...uploadSessionBase,
+            ...buildUploadSessionBase(),
             state: "done",
             message: `Skipped short part (${details.durationSeconds}s); set video to unlisted`,
             percent: 100,
@@ -1585,7 +1699,7 @@ const run = async () => {
         };
 
         await postRealtimeUploadStatus({
-          ...uploadSessionBase,
+          ...buildUploadSessionBase(),
           state: "done",
           message: "VOD upload complete",
           percent: 100,
@@ -1597,7 +1711,7 @@ const run = async () => {
         log(`Completed pipeline for Twitch VOD ${vodId} -> YouTube ${youtubeVideoId} (Part ${partNumber})`);
       } catch (error) {
         await postRealtimeUploadStatus({
-          ...uploadSessionBase,
+          ...buildUploadSessionBase(),
           state: "error",
           message: `Upload failed: ${error.message}`,
           percent: Number.isFinite(latestProgress.percent) ? Math.max(0, Math.min(100, Math.floor(latestProgress.percent))) : null,
@@ -1614,6 +1728,17 @@ const run = async () => {
           }
         }
       }
+    }
+
+    try {
+      const latestTwitchVod = await fetchTwitchVodById(twitchAccessToken, vodId);
+      if (latestTwitchVod) {
+        vodEntry.title = latestTwitchVod.title || vodEntry.title;
+        vodEntry.createdAt = latestTwitchVod.created_at || vodEntry.createdAt;
+        if (latestTwitchVod.stream_id) vodEntry.stream_id = latestTwitchVod.stream_id;
+      }
+    } catch (error) {
+      log(`Failed to refresh Twitch metadata before final sync for VOD ${vodId}: ${error.message}`);
     }
 
     await syncYouTubeMetadataForVod(youtube, vodEntry);
