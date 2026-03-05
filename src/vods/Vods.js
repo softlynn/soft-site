@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { lazy, Suspense, useEffect, useState, useMemo, useRef } from "react";
 import {
   Box,
   Typography,
@@ -8,12 +8,7 @@ import {
   PaginationItem,
   TextField,
   InputAdornment,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Button,
-  Chip,
   Stack,
 } from "@mui/material";
 import SimpleBar from "simplebar-react";
@@ -23,7 +18,6 @@ import Footer from "../utils/Footer";
 import Loading from "../utils/Loading";
 import Vod from "./Vod";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import debounce from "lodash.debounce";
 import vodsClient from "./client";
@@ -46,6 +40,7 @@ import UploadingVodPlaceholder from "./UploadingVodPlaceholder";
 const FILTERS = ["Default", "Date", "Title", "Game"];
 const PLATFORMS = ["All", "Twitch", "Kick"];
 const SPOTIFY_PLAYLIST_EMBED_URL = "https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator";
+const ArchiveControls = lazy(() => import("./ArchiveControls"));
 
 const normalizeUploadVodId = (upload) => {
   const id = String(upload?.twitchVodId || "").trim();
@@ -111,12 +106,75 @@ const extractTwitchChannel = (url) => {
 function TwitchLiveEmbedCard() {
   const channel = extractTwitchChannel(SOCIAL_LINKS.twitch);
   const [hostName, setHostName] = useState("localhost");
+  const frameRef = useRef(null);
+  const [isNearViewport, setIsNearViewport] = useState(false);
+  const [shouldLoadPlayer, setShouldLoadPlayer] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const host = window.location.hostname || "localhost";
     setHostName(host);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const node = frameRef.current;
+    if (!node || typeof window.IntersectionObserver === "undefined") {
+      setIsNearViewport(true);
+      return undefined;
+    }
+
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setIsNearViewport(true);
+          observer.disconnect();
+        }
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: "240px 0px",
+      }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isNearViewport || shouldLoadPlayer || typeof window === "undefined") return undefined;
+    let canceled = false;
+    let timeoutId = null;
+
+    const activate = () => {
+      if (!canceled) setShouldLoadPlayer(true);
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      const idleId = window.requestIdleCallback(
+        () => {
+          timeoutId = window.setTimeout(activate, 80);
+        },
+        { timeout: 700 }
+      );
+      return () => {
+        canceled = true;
+        if (timeoutId) window.clearTimeout(timeoutId);
+        try {
+          window.cancelIdleCallback(idleId);
+        } catch {
+          // no-op
+        }
+      };
+    }
+
+    timeoutId = window.setTimeout(activate, 140);
+    return () => {
+      canceled = true;
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, [isNearViewport, shouldLoadPlayer]);
 
   if (!channel) {
     return (
@@ -131,18 +189,31 @@ function TwitchLiveEmbedCard() {
   const src = `https://player.twitch.tv/?channel=${encodeURIComponent(channel)}&parent=${encodeURIComponent(hostName)}&autoplay=false&muted=true`;
 
   return (
-    <Box className="soft-live-frame soft-grid-pattern" sx={{ aspectRatio: "16 / 9", width: "100%" }}>
+    <Box ref={frameRef} className="soft-live-frame soft-grid-pattern" sx={{ aspectRatio: "16 / 9", width: "100%" }}>
       <Box className="soft-star" sx={{ top: 18, right: 20, zIndex: 3 }} />
       <Box className="soft-star" sx={{ top: 48, right: 60, zIndex: 3, transform: "scale(.65)", animationDelay: "-1.8s" }} />
-      <iframe
-        title={`${channel} Twitch Live`}
-        src={src}
-        width="100%"
-        height="100%"
-        allowFullScreen
-        frameBorder="0"
-        style={{ width: "100%", height: "100%", border: 0 }}
-      />
+      {shouldLoadPlayer ? (
+        <iframe
+          title={`${channel} Twitch Live`}
+          src={src}
+          width="100%"
+          height="100%"
+          allowFullScreen
+          frameBorder="0"
+          loading="lazy"
+          style={{ width: "100%", height: "100%", border: 0 }}
+        />
+      ) : (
+        <Box
+          aria-hidden
+          sx={{
+            width: "100%",
+            height: "100%",
+            background:
+              "radial-gradient(circle at 24% 18%, rgba(212,107,140,0.22), transparent 42%), radial-gradient(circle at 78% 24%, rgba(121,163,230,0.22), transparent 44%), linear-gradient(180deg, rgba(19,33,56,0.88), rgba(14,24,42,0.96))",
+          }}
+        />
+      )}
     </Box>
   );
 }
@@ -423,85 +494,6 @@ export default function Vods() {
 
   const totalPages = Math.max(1, Math.ceil((totalVods || 0) / limit));
 
-  const renderArchiveControls = () => (
-    <Box className="soft-glass soft-grid-pattern soft-panel-ambient" sx={{ px: { xs: 1.25, md: 2 }, py: { xs: 1.25, md: 1.45 }, borderRadius: "22px" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: { xs: "flex-start", md: "center" }, gap: 1.5, flexDirection: { xs: "column", md: "row" } }}>
-        <Box>
-          <Typography variant="h5" className="soft-section-heading" sx={{ color: "primary.main", pr: 1 }}>
-            Full VOD Archive
-          </Typography>
-          <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.35, maxWidth: 520, lineHeight: 1.45 }}>
-            Search, filter, and jump into any stream with chat replay.
-          </Typography>
-        </Box>
-        {totalVods !== null && (
-          <Chip
-            icon={<VideoLibraryRoundedIcon sx={{ fontSize: 16 }} />}
-            label={`${totalVods} vod${totalVods === 1 ? "" : "s"}`}
-            sx={{
-              borderRadius: "999px",
-              background: "var(--soft-surface)",
-              border: "1px solid var(--soft-border)",
-              fontWeight: 700,
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,.14)",
-            }}
-          />
-        )}
-      </Box>
-
-      <Box
-        sx={{
-          mt: 1.35,
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "auto auto 1fr auto" },
-          gap: 1.1,
-          alignItems: "center",
-        }}
-      >
-        <FormControl sx={{ minWidth: 130 }}>
-          <InputLabel id="filter-select-label">Filter</InputLabel>
-          <Select labelId="filter-select-label" label="Filter" value={filter} onChange={changeFilter}>
-            {FILTERS.map((value) => (
-              <MenuItem key={value} value={value}>
-                {value}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        {filter === "Date" ? (
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <DatePicker
-              minDate={dayjs(START_DATE)}
-              maxDate={dayjs()}
-              label="Start Date"
-              defaultValue={filterStartDate}
-              onAccept={(newDate) => setFilterStartDate(newDate)}
-              views={["year", "month", "day"]}
-              slotProps={{ textField: { size: "small" } }}
-            />
-            <DatePicker
-              minDate={dayjs(START_DATE)}
-              maxDate={dayjs()}
-              label="End Date"
-              defaultValue={filterEndDate}
-              onAccept={(newDate) => setFilterEndDate(newDate)}
-              views={["year", "month", "day"]}
-              slotProps={{ textField: { size: "small" } }}
-            />
-          </Stack>
-        ) : filter === "Title" ? (
-          <TextField size="small" fullWidth label="Search by Title" type="text" onChange={handleTitleChange} defaultValue={filterTitle} />
-        ) : filter === "Game" ? (
-          <TextField size="small" fullWidth label="Search by Game" type="text" onChange={handleGameChange} defaultValue={filterGame} />
-        ) : (
-          <Box />
-        )}
-
-      </Box>
-    </Box>
-  );
-
   const renderVodGrid = (list, cardSizes, { edgePad = { xs: 0.05, sm: 0.15, md: 0.25 }, cardWidth } = {}) => {
     if (!list) return <Loading />;
     if (list.length === 0) {
@@ -724,7 +716,34 @@ export default function Vods() {
         {!isHomeRoute && (
           <>
             <Reveal delay={40} sx={{ mt: 2.25 }} id="home-archive-section">
-              {renderArchiveControls()}
+              <Suspense
+                fallback={
+                  <Box
+                    className="soft-glass soft-grid-pattern soft-panel-ambient"
+                    sx={{
+                      px: { xs: 1.25, md: 2 },
+                      py: { xs: 1.25, md: 1.45 },
+                      borderRadius: "22px",
+                      minHeight: 118,
+                    }}
+                  />
+                }
+              >
+                <ArchiveControls
+                  filter={filter}
+                  changeFilter={changeFilter}
+                  filters={FILTERS}
+                  totalVods={totalVods}
+                  filterStartDate={filterStartDate}
+                  filterEndDate={filterEndDate}
+                  setFilterStartDate={setFilterStartDate}
+                  setFilterEndDate={setFilterEndDate}
+                  handleTitleChange={handleTitleChange}
+                  filterTitle={filterTitle}
+                  handleGameChange={handleGameChange}
+                  filterGame={filterGame}
+                />
+              </Suspense>
             </Reveal>
 
             <Box sx={{ mt: 1.2 }}>{renderVodGrid(archiveDisplayList, { xs: 12, sm: 6, lg: 3, xl: 3 })}</Box>

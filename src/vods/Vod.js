@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat.js";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import VodReactions from "./VodReactions";
 
 dayjs.extend(localizedFormat);
@@ -16,8 +16,9 @@ const DEFAULT_CARD_WIDTH = "20.75rem";
 
 export default function Vod(props) {
   const { vod, gridSize, sizes, sheen = false, cardWidth } = props;
-  const navigate = useNavigate();
   const resolvedCardWidth = cardWidth || DEFAULT_CARD_WIDTH;
+  const hasPlayableVod = Array.isArray(vod.youtube) && vod.youtube.length > 0;
+  const watchHref = `/youtube/${vod.id}`;
 
   const thumbnail = useMemo(() => {
     if (vod.youtube?.length > 0) return vod.youtube[0].thumbnail_url;
@@ -32,11 +33,6 @@ export default function Vod(props) {
       ).length,
     [vod]
   );
-
-  const openVod = () => {
-    if (vod.youtube?.length === 0) return;
-    navigate(`/youtube/${vod.id}`);
-  };
 
   return (
     <Grid size={sizes || { xs: gridSize }} sx={{ maxWidth: resolvedCardWidth, flexBasis: resolvedCardWidth }}>
@@ -53,14 +49,15 @@ export default function Vod(props) {
       >
         <Box
           className="soft-vod-card__media"
-          onClick={openVod}
+          component={hasPlayableVod ? Link : "div"}
+          to={hasPlayableVod ? watchHref : undefined}
           sx={{
             overflow: "hidden",
             height: 0,
             paddingTop: "56.25%",
             position: "relative",
             borderRadius: "16px",
-            cursor: vod.youtube?.length ? "pointer" : "default",
+            cursor: hasPlayableVod ? "pointer" : "default",
             background: "var(--soft-surface)",
             border: "1px solid var(--soft-border)",
             boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14)",
@@ -73,7 +70,14 @@ export default function Vod(props) {
             },
           }}
         >
-          <img className="thumbnail" alt="" src={thumbnail} />
+          <img
+            className="thumbnail"
+            alt=""
+            src={thumbnail}
+            loading={sheen ? "eager" : "lazy"}
+            decoding="async"
+            fetchPriority={sheen ? "high" : "auto"}
+          />
 
           <Box
             sx={{
@@ -172,7 +176,8 @@ export default function Vod(props) {
               <CustomWidthTooltip title={vod.title} placement="top">
                 <Button
                   className="soft-vod-card__titlebtn"
-                  onClick={openVod}
+                  component={hasPlayableVod ? Link : "button"}
+                  to={hasPlayableVod ? watchHref : undefined}
                   sx={{
                     width: "auto",
                     flex: 1,
@@ -187,7 +192,7 @@ export default function Vod(props) {
                     },
                   }}
                   size="small"
-                  disabled={vod.youtube?.length === 0}
+                  disabled={!hasPlayableVod}
                 >
                   <Typography
                     fontWeight={700}
