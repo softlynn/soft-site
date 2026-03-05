@@ -3,8 +3,10 @@ import { useEffect, useRef } from "react";
 
 const STAR_COUNT = 12;
 const POINTER_DEFAULT = { x: 0.52, y: 0.44 };
-const TARGET_FPS = 22;
-const FRAME_MS = 1000 / TARGET_FPS;
+const CANVAS_TARGET_FPS = 22;
+const GPU_ASSISTED_CANVAS_FPS = 14;
+const FRAME_MS = 1000 / CANVAS_TARGET_FPS;
+const GPU_ASSISTED_FRAME_MS = 1000 / GPU_ASSISTED_CANVAS_FPS;
 
 const random = (min, max) => Math.random() * (max - min) + min;
 
@@ -339,7 +341,8 @@ export default function LiquidBackdrop() {
       ctx.save();
       ctx.globalCompositeOperation = "source-over";
       const bloomStrength = state.gpuActive ? 0.58 : 1;
-      for (let i = 0; i < 3; i += 1) {
+      const bloomLayerCount = state.gpuActive ? 2 : 3;
+      for (let i = 0; i < bloomLayerCount; i += 1) {
         const ox = width * (0.18 + i * 0.28) + Math.sin(t * (0.00014 + i * 0.00003) + i * 1.2) * (22 + i * 7);
         const oy = height * (0.22 + i * 0.2) + Math.cos(t * (0.00017 + i * 0.00004) + i * 1.5) * (18 + i * 6);
         const r = Math.max(width, height) * (0.14 + i * 0.04);
@@ -353,7 +356,8 @@ export default function LiquidBackdrop() {
       }
 
       const ribbonStrength = state.gpuActive ? 0.48 : 0.9;
-      for (let i = 0; i < 2; i += 1) {
+      const ribbonLayerCount = state.gpuActive ? 1 : 2;
+      for (let i = 0; i < ribbonLayerCount; i += 1) {
         const cx = width * (0.34 + i * 0.24) + Math.sin(t * (0.00022 + i * 0.00005) + i) * 16;
         const cy = height * (0.58 - i * 0.17) + Math.cos(t * (0.0002 + i * 0.00006) + i * 1.3) * 14;
         const ribbon = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(width, height) * 0.22);
@@ -386,7 +390,8 @@ export default function LiquidBackdrop() {
         state.rafId = window.requestAnimationFrame(loop);
         return;
       }
-      if (state.lastDrawMs && time - state.lastDrawMs < FRAME_MS) {
+      const targetFrameMs = state.gpuActive ? GPU_ASSISTED_FRAME_MS : FRAME_MS;
+      if (state.lastDrawMs && time - state.lastDrawMs < targetFrameMs) {
         state.rafId = window.requestAnimationFrame(loop);
         return;
       }
@@ -411,21 +416,44 @@ export default function LiquidBackdrop() {
   useEffect(() => {
     let disposed = false;
     let cleanup = () => {};
+    let timeoutId = null;
+    let idleId = null;
 
-    startTypeGpuBackdrop(gpuCanvasRef, stateRef)
-      .then((teardown) => {
-        if (disposed) {
-          teardown?.();
-          return;
-        }
-        cleanup = teardown || (() => {});
-      })
-      .catch((error) => {
-        console.error("TypeGPU backdrop failed, using 2D fallback only.", error);
-      });
+    const startGpu = () => {
+      startTypeGpuBackdrop(gpuCanvasRef, stateRef)
+        .then((teardown) => {
+          if (disposed) {
+            teardown?.();
+            return;
+          }
+          cleanup = teardown || (() => {});
+        })
+        .catch((error) => {
+          console.error("TypeGPU backdrop failed, using 2D fallback only.", error);
+        });
+    };
+
+    if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
+      idleId = window.requestIdleCallback(
+        () => {
+          timeoutId = window.setTimeout(startGpu, 120);
+        },
+        { timeout: 1200 }
+      );
+    } else {
+      timeoutId = setTimeout(startGpu, 220);
+    }
 
     return () => {
       disposed = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      if (idleId != null && typeof window !== "undefined" && typeof window.cancelIdleCallback === "function") {
+        try {
+          window.cancelIdleCallback(idleId);
+        } catch {
+          // no-op
+        }
+      }
       cleanup();
     };
   }, []);

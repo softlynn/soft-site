@@ -42,6 +42,38 @@ const PLATFORMS = ["All", "Twitch", "Kick"];
 const SPOTIFY_PLAYLIST_EMBED_URL = "https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator";
 const ArchiveControls = lazy(() => import("./ArchiveControls"));
 
+const normalizeUploadForCompare = (upload) => ({
+  sessionId: String(upload?.sessionId || "").trim(),
+  state: String(upload?.state || "").trim().toLowerCase(),
+  twitchVodId: String(upload?.twitchVodId || "").trim(),
+  partNumber: Number.isFinite(Number(upload?.partNumber)) ? Number(upload.partNumber) : null,
+  percent: Number.isFinite(Number(upload?.percent)) ? Math.round(Number(upload.percent) * 100) / 100 : null,
+  uploadedBytes: Number.isFinite(Number(upload?.uploadedBytes)) ? Number(upload.uploadedBytes) : null,
+  totalBytes: Number.isFinite(Number(upload?.totalBytes)) ? Number(upload.totalBytes) : null,
+  updatedAtMs: Number.isFinite(Number(upload?.updatedAtMs)) ? Number(upload.updatedAtMs) : null,
+  createdAtMs: Number.isFinite(Number(upload?.createdAtMs)) ? Number(upload.createdAtMs) : null,
+  title: String(upload?.title || ""),
+  recordingName: String(upload?.recordingName || ""),
+  message: String(upload?.message || ""),
+  streamDate: String(upload?.streamDate || ""),
+});
+
+const buildUploadCompareKey = (uploads) =>
+  (Array.isArray(uploads) ? uploads : [])
+    .map(normalizeUploadForCompare)
+    .sort((a, b) => {
+      if (a.sessionId === b.sessionId) {
+        const partA = Number.isFinite(a.partNumber) ? a.partNumber : 0;
+        const partB = Number.isFinite(b.partNumber) ? b.partNumber : 0;
+        return partA - partB;
+      }
+      return a.sessionId.localeCompare(b.sessionId);
+    })
+    .map((item) => JSON.stringify(item))
+    .join("|");
+
+const areActiveUploadsEquivalent = (a, b) => buildUploadCompareKey(a) === buildUploadCompareKey(b);
+
 const normalizeUploadVodId = (upload) => {
   const id = String(upload?.twitchVodId || "").trim();
   return id || null;
@@ -255,11 +287,14 @@ export default function Vods() {
     const loadActiveUploads = async () => {
       try {
         const uploads = await fetchActiveVodUploads();
-        if (!isDisposed) setActiveUploads(Array.isArray(uploads) ? uploads : []);
+        if (!isDisposed) {
+          const nextUploads = Array.isArray(uploads) ? uploads : [];
+          setActiveUploads((previousUploads) => (areActiveUploadsEquivalent(previousUploads, nextUploads) ? previousUploads : nextUploads));
+        }
       } catch (error) {
         if (!isDisposed) {
           console.error("Failed to load active upload placeholders:", error);
-          setActiveUploads([]);
+          setActiveUploads((previousUploads) => (previousUploads.length === 0 ? previousUploads : []));
         }
       }
     };
