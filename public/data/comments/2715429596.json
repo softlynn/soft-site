@@ -1,0 +1,626 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2715429596",
+  "generatedAt": "2026-03-06T22:42:12.017Z",
+  "comments": [
+    {
+      "id": "b5f33c16-fb80-4c97-a842-1eaa46145fe9",
+      "created_at": "2026-03-06T19:01:55.157Z",
+      "content_offset_seconds": 2378,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "sad kitty",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f702475a-957c-45ba-953f-353ee9e61038",
+      "created_at": "2026-03-06T19:01:58.972Z",
+      "content_offset_seconds": 2382,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "hii",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "dffc228d-cfc6-4db1-b618-d25f9cdad66b",
+      "created_at": "2026-03-06T19:06:13.214Z",
+      "content_offset_seconds": 2636,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "youre such a good dancer",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "65a0b4dc-5b1a-4ed2-92f0-f2a19a3bd461",
+      "created_at": "2026-03-06T19:08:55.428Z",
+      "content_offset_seconds": 2798,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "djchryJam",
+          "emote": {
+            "emoteID": "emotesv2_76f750fb27b54a339f694030a76a7140"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_76f750fb27b54a339f694030a76a7140"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c6552f07-c16b-42ef-8c67-0b3f5d9010a6",
+      "created_at": "2026-03-06T19:12:25.764Z",
+      "content_offset_seconds": 3009,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "my balls hurt just thinking about trying splits",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "62915083-2e4f-4c52-bad7-0ef3f3b01536",
+      "created_at": "2026-03-06T19:14:54.776Z",
+      "content_offset_seconds": 3158,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "selene125Party",
+          "emote": {
+            "emoteID": "emotesv2_8f6367104e904e04b050f2fd350b861f"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_8f6367104e904e04b050f2fd350b861f"
+          }
+        }
+      ]
+    },
+    {
+      "id": "77e7a0df-d9e5-4021-8c35-98afa0f5c1ea",
+      "created_at": "2026-03-06T19:16:10.407Z",
+      "content_offset_seconds": 3233,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "just do the bus driver, that's my style",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "29527785-fd9b-4484-8b8b-6cf2c8611052",
+      "created_at": "2026-03-06T19:16:54.65Z",
+      "content_offset_seconds": 3277,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "you uh turn the wheel and occasionally pull the lever to open the door",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1bd23771-a535-4056-ba68-ff91853043a2",
+      "created_at": "2026-03-06T19:17:06.16Z",
+      "content_offset_seconds": 3289,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "with a hecking stylish hip twist",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "96be0634-d8fd-49a0-8d41-e30c69d90178",
+      "created_at": "2026-03-06T19:17:59.874Z",
+      "content_offset_seconds": 3343,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "oh I gotta link the best dance video in discord",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9d0b47d7-d129-49c8-9364-e7d724af26e5",
+      "created_at": "2026-03-06T19:19:05.887Z",
+      "content_offset_seconds": 3409,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "Linked",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "28b7384b-2f39-43ab-a655-a0b48d6fd1f9",
+      "created_at": "2026-03-06T19:19:53.077Z",
+      "content_offset_seconds": 3456,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "Chernobyl kid is my favourite move",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "df19afd1-6bff-4285-906a-a0e057b3c969",
+      "created_at": "2026-03-06T19:20:36.262Z",
+      "content_offset_seconds": 3499,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "Doiiit",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ac256288-11b4-4f5c-b35b-35191cb6a0e1",
+      "created_at": "2026-03-06T19:20:59.557Z",
+      "content_offset_seconds": 3522,
+      "display_name": "MiCkEyRoTtEn",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "share-the-love",
+          "version": "1"
+        }
+      ],
+      "user_color": "#9ACD32",
+      "message": [
+        {
+          "text": "someone, just me here, oh shit",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5f2ecf04-dd66-4a4b-a7fe-abef3b0a4d73",
+      "created_at": "2026-03-06T19:26:26.282Z",
+      "content_offset_seconds": 3849,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "waga",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d4d5d1a3-e32a-4799-bd5e-4dfe67e18be8",
+      "created_at": "2026-03-06T19:35:26.792Z",
+      "content_offset_seconds": 4390,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Watch vods here! - https://softu.one/",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5395b267-344f-454e-bf15-3f725cc8a728",
+      "created_at": "2026-03-06T19:36:27.971Z",
+      "content_offset_seconds": 4451,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "urm",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c8fac98e-e02b-4465-bd05-ce477a3f9bd8",
+      "created_at": "2026-03-06T19:39:49.971Z",
+      "content_offset_seconds": 4653,
+      "display_name": "emilia_vt1",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Hey",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d0d21610-9c56-43d4-aaf0-43e129d1dee5",
+      "created_at": "2026-03-06T19:39:57.393Z",
+      "content_offset_seconds": 4660,
+      "display_name": "emilia_vt1",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "How are you",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3e483b50-5e8a-4636-8a67-c28324c46d78",
+      "created_at": "2026-03-06T19:40:42.39Z",
+      "content_offset_seconds": 4705,
+      "display_name": "emilia_vt1",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Do you stream daily?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "60f16e67-9aa5-4d0e-a5ee-bc08c7f0f3df",
+      "created_at": "2026-03-06T19:57:19.906Z",
+      "content_offset_seconds": 5703,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Join the Discord! - https://softu.one/discord",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3ffb2858-7e7c-42b3-8203-590fa49a9662",
+      "created_at": "2026-03-06T20:16:24.978Z",
+      "content_offset_seconds": 6848,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Explosion nya Explosion",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "973d0a10-d5f3-4e6a-848f-a950e64dac3d",
+      "created_at": "2026-03-06T20:40:19.158Z",
+      "content_offset_seconds": 8282,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Sturdy",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "77e8a53a-109f-490d-8696-ad408578d500",
+      "created_at": "2026-03-06T21:12:21.583Z",
+      "content_offset_seconds": 10204,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "dancin",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5e920f21-7a2e-488d-92f3-a3ee09cc3bce",
+      "created_at": "2026-03-06T21:19:02.877Z",
+      "content_offset_seconds": 10606,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#27FFD7",
+      "message": [
+        {
+          "text": "softu1Heart",
+          "emote": {
+            "emoteID": "emotesv2_087e64967e984a1ba05deaef17f4a43c"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_087e64967e984a1ba05deaef17f4a43c"
+          }
+        }
+      ]
+    }
+  ]
+}

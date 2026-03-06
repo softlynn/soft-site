@@ -12,7 +12,7 @@ const repoRoot = path.resolve(__dirname, "..");
 
 dotenv.config({ path: path.join(repoRoot, ".env.local") });
 
-const METADATA_TEMPLATE_VERSION = 4;
+const METADATA_TEMPLATE_VERSION = 5;
 const DEFAULT_ARCHIVE_SITE_URL = "https://softu.one";
 
 const cleanUrl = (value) => String(value || "").replace(/\/+$/, "");
@@ -103,6 +103,7 @@ const config = {
   commentsDir: process.env.ARCHIVE_COMMENTS_DIR || path.join(repoRoot, "public", "data", "comments"),
   emotesDir: process.env.ARCHIVE_EMOTES_DIR || path.join(repoRoot, "public", "data", "emotes"),
   statePath: process.env.PIPELINE_STATE_PATH || path.join(repoRoot, "scripts", ".state", "pipeline-state.json"),
+  runLockPath: process.env.PIPELINE_RUN_LOCK_PATH || path.join(repoRoot, "scripts", ".state", "pipeline-run.lock.json"),
   tmpDir: process.env.PIPELINE_TMP_DIR || path.join(repoRoot, "scripts", ".tmp"),
   minRecordingAgeMinutes: Number(process.env.MIN_RECORDING_AGE_MINUTES || "10"),
   maxRecordingsPerRun: Number(process.env.MAX_RECORDINGS_PER_RUN || "1"),
@@ -123,12 +124,15 @@ const config = {
 };
 
 const VIDEO_EXTENSIONS = new Set([".mp4", ".mkv", ".mov", ".flv", ".m4v"]);
+const ACTIVE_PROCESSED_FILE_STATUSES = new Set(["processing"]);
 const TERMINAL_PROCESSED_FILE_STATUSES = new Set([
   "completed",
   "ignored_short",
   "ignored_short_uploaded",
   "ignored_unknown_duration",
 ]);
+const PIPELINE_RUN_LOCK_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+const PROCESSING_RECORD_STALE_AFTER_MS = 12 * 60 * 60 * 1000;
 
 const log = (message) => {
   const timestamp = new Date().toISOString();
@@ -161,6 +165,69 @@ const readJsonFile = async (filePath, fallback) => {
 const writeJsonFile = async (filePath, value) => {
   await ensureDirectory(path.dirname(filePath));
   await fs.writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+};
+
+const parseTimestampMs = (value) => {
+  const parsed = new Date(value || "").getTime();
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const isCurrentProcessRunning = (pid) => {
+  const numericPid = Number(pid);
+  if (!Number.isInteger(numericPid) || numericPid <= 0) return false;
+  try {
+    process.kill(numericPid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const acquirePipelineRunLock = async (lockPath) => {
+  await ensureDirectory(path.dirname(lockPath));
+
+  const tryWriteLock = async () => {
+    const nowMs = Date.now();
+    const payload = {
+      pid: process.pid,
+      createdAt: new Date(nowMs).toISOString(),
+      createdAtMs: nowMs,
+      argv: process.argv.slice(1),
+    };
+    await fs.writeFile(lockPath, `${JSON.stringify(payload, null, 2)}\n`, {
+      encoding: "utf8",
+      flag: "wx",
+    });
+  };
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      await tryWriteLock();
+      return async () => {
+        try {
+          await fs.rm(lockPath, { force: true });
+        } catch {}
+      };
+    } catch (error) {
+      if (error?.code !== "EEXIST") throw error;
+
+      const existing = await readJsonFile(lockPath, null);
+      const createdAtMs = Number(existing?.createdAtMs) || parseTimestampMs(existing?.createdAt) || 0;
+      const ageMs = Math.max(0, Date.now() - createdAtMs);
+      const ownerAlive = isCurrentProcessRunning(existing?.pid);
+      const staleLock = !ownerAlive || ageMs > PIPELINE_RUN_LOCK_MAX_AGE_MS;
+
+      if (!staleLock) {
+        return null;
+      }
+
+      try {
+        await fs.rm(lockPath, { force: true });
+      } catch {}
+    }
+  }
+
+  return null;
 };
 
 const writeObsDockUploadStatus = async (status = {}) => {
@@ -317,7 +384,119 @@ const buildYouTubeTitle = ({ streamTitle, streamDate, partNumber, totalParts }) 
 const buildArchiveVodUrl = (vodId) =>
   config.archiveSiteUrl ? `${config.archiveSiteUrl}/#/youtube/${encodeURIComponent(String(vodId))}` : "";
 
-const buildYouTubeDescription = ({ twitchVodId, streamTitle, streamDate, partNumber, totalParts, youtubeParts = [] }) => {
+const toNonNegativeInteger = (value) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  const rounded = Math.floor(parsed);
+  if (rounded < 0) return null;
+  return rounded;
+};
+
+const formatYouTubeChapterTimestamp = (seconds) => {
+  const totalSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const remainingSeconds = totalSeconds % 60;
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+  }
+  return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+};
+
+const buildYouTubeCategoryChapterLines = ({ chapters = [], partNumber, youtubeParts = [] }) => {
+  const normalizedChapters = (Array.isArray(chapters) ? chapters : [])
+    .map((chapter, index) => {
+      const start = toNonNegativeInteger(chapter?.start);
+      if (start === null) return null;
+      const duration = toNonNegativeInteger(chapter?.end);
+      const fallbackName = `Category ${index + 1}`;
+      const name = sanitizeTitle(chapter?.name || fallbackName) || fallbackName;
+      return {
+        start,
+        duration,
+        name,
+        index,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => (a.start !== b.start ? a.start - b.start : a.index - b.index));
+
+  if (normalizedChapters.length === 0) return [];
+
+  const normalizedParts = (Array.isArray(youtubeParts) ? youtubeParts : [])
+    .filter((part) => toNonNegativeInteger(part?.part) !== null)
+    .map((part, index) => ({
+      part: toNonNegativeInteger(part?.part),
+      duration: toNonNegativeInteger(part?.duration),
+      index,
+    }))
+    .filter((part) => part.part !== null)
+    .sort((a, b) => (a.part !== b.part ? a.part - b.part : a.index - b.index));
+
+  const numericPartNumber = toNonNegativeInteger(partNumber) || 1;
+  let partStartSeconds = 0;
+  let partDurationSeconds = null;
+  let matchedPart = normalizedParts.length === 0;
+
+  if (normalizedParts.length > 0) {
+    let runningSeconds = 0;
+    for (const part of normalizedParts) {
+      if (part.part === numericPartNumber) {
+        partStartSeconds = runningSeconds;
+        partDurationSeconds = part.duration;
+        matchedPart = true;
+        break;
+      }
+
+      if (part.duration === null) {
+        return [];
+      }
+      runningSeconds += part.duration;
+    }
+  }
+  if (!matchedPart) return [];
+
+  const partEndSeconds = Number.isFinite(partDurationSeconds) && partDurationSeconds > 0 ? partStartSeconds + partDurationSeconds : Infinity;
+  const byTimestamp = new Map();
+
+  for (let index = 0; index < normalizedChapters.length; index++) {
+    const chapter = normalizedChapters[index];
+    const nextChapter = normalizedChapters[index + 1] || null;
+
+    let chapterEnd = chapter.duration !== null && chapter.duration > 0 ? chapter.start + chapter.duration : null;
+    if (nextChapter && (!Number.isFinite(chapterEnd) || chapterEnd > nextChapter.start)) {
+      chapterEnd = nextChapter.start;
+    }
+    if (!Number.isFinite(chapterEnd) || chapterEnd <= chapter.start) {
+      chapterEnd = chapter.start + 1;
+    }
+
+    if (chapterEnd <= partStartSeconds) continue;
+    if (chapter.start >= partEndSeconds) continue;
+
+    const clampedStart = Math.max(chapter.start, partStartSeconds);
+    const localStart = clampedStart - partStartSeconds;
+    if (!byTimestamp.has(localStart)) {
+      byTimestamp.set(localStart, chapter.name);
+    }
+  }
+
+  const chapterMarkers = [...byTimestamp.entries()]
+    .map(([start, name]) => ({ start, name }))
+    .sort((a, b) => a.start - b.start);
+
+  if (chapterMarkers.length === 0) return [];
+  if (chapterMarkers[0].start > 0) {
+    chapterMarkers.unshift({
+      start: 0,
+      name: chapterMarkers[0].name,
+    });
+  }
+
+  return chapterMarkers.map((marker) => `${formatYouTubeChapterTimestamp(marker.start)} ${marker.name}`);
+};
+
+const buildYouTubeDescription = ({ twitchVodId, streamTitle, streamDate, partNumber, totalParts, youtubeParts = [], chapters = [] }) => {
   const archiveVodUrl = buildArchiveVodUrl(twitchVodId);
   const lines = [
     archiveVodUrl ? `Chat Replay: ${archiveVodUrl}` : "Chat Replay: unavailable",
@@ -331,10 +510,21 @@ const buildYouTubeDescription = ({ twitchVodId, streamTitle, streamDate, partNum
     if (youtubeParts.length > 1) {
       lines.push("");
       lines.push("Parts:");
-      for (const part of youtubeParts.sort((a, b) => (a.part || 0) - (b.part || 0))) {
+      for (const part of [...youtubeParts].sort((a, b) => (a.part || 0) - (b.part || 0))) {
         lines.push(`PART ${part.part}: https://www.youtube.com/watch?v=${part.id}`);
       }
     }
+  }
+
+  const chapterLines = buildYouTubeCategoryChapterLines({
+    chapters,
+    partNumber,
+    youtubeParts,
+  });
+  if (chapterLines.length > 0) {
+    lines.push("");
+    lines.push("Categories:");
+    lines.push(...chapterLines);
   }
 
   lines.push("");
@@ -838,6 +1028,7 @@ const syncYouTubeMetadataForVod = async (youtube, vodEntry) => {
       partNumber: part.part || 1,
       totalParts,
       youtubeParts: vodParts,
+      chapters: vodEntry.chapters,
     });
 
     await updateYouTubeVideoMetadata(youtube, part.id, { title, description });
@@ -1199,7 +1390,7 @@ const validateConfiguration = async () => {
   if (!(await fileExists(config.recordingsDir))) fail(`Recording directory does not exist: ${config.recordingsDir}`);
 };
 
-const run = async () => {
+const runPipeline = async () => {
   await validateConfiguration();
   await ensureDirectory(path.dirname(config.vodsDataPath));
   await ensureDirectory(config.commentsDir);
@@ -1212,6 +1403,12 @@ const run = async () => {
     processedFiles: {},
     processedVodIds: {},
   });
+  if (!state.processedFiles || typeof state.processedFiles !== "object") state.processedFiles = {};
+  if (!state.processedVodIds || typeof state.processedVodIds !== "object") state.processedVodIds = {};
+  const persistState = async () => {
+    if (config.dryRun) return;
+    await writeJsonFile(config.statePath, state);
+  };
 
   const existingVods = await readJsonFile(config.vodsDataPath, []);
   const stagedPaths = [];
@@ -1265,10 +1462,32 @@ const run = async () => {
   }
 
   const now = Date.now();
+  let staleProcessingEntriesCleared = 0;
+  for (const [filePath, entry] of Object.entries(state.processedFiles)) {
+    const status = String(entry?.status || "");
+    if (!ACTIVE_PROCESSED_FILE_STATUSES.has(status)) continue;
+
+    const updatedAtMs = parseTimestampMs(entry?.updatedAt) || parseTimestampMs(entry?.startedAt) || 0;
+    const isStale = !updatedAtMs || now - updatedAtMs > PROCESSING_RECORD_STALE_AFTER_MS;
+    if (!isStale) continue;
+
+    delete state.processedFiles[filePath];
+    staleProcessingEntriesCleared += 1;
+    log(`Cleared stale in-progress upload marker for ${path.basename(filePath)}`);
+  }
+  if (staleProcessingEntriesCleared > 0) {
+    await persistState();
+  }
+
   const minAgeMs = config.minRecordingAgeMinutes * 60 * 1000;
   const recordings = (await listRecordingFiles(config.recordingsDir))
     .filter((file) => now - file.modifiedAtMs >= minAgeMs)
-    .filter((file) => !TERMINAL_PROCESSED_FILE_STATUSES.has(String(state.processedFiles?.[file.path]?.status || "")))
+    .filter((file) => {
+      const status = String(state.processedFiles?.[file.path]?.status || "");
+      if (TERMINAL_PROCESSED_FILE_STATUSES.has(status)) return false;
+      if (ACTIVE_PROCESSED_FILE_STATUSES.has(status)) return false;
+      return true;
+    })
     .sort((a, b) => a.modifiedAtMs - b.modifiedAtMs);
 
   const missingEmoteVodIds = [];
@@ -1328,6 +1547,7 @@ const run = async () => {
           status: "ignored_unknown_duration",
           processedAt: new Date().toISOString(),
         };
+        await persistState();
       }
       continue;
     }
@@ -1350,6 +1570,7 @@ const run = async () => {
           durationSeconds: Math.floor(enrichedRecording.durationSeconds),
           processedAt: new Date().toISOString(),
         };
+        await persistState();
       }
       continue;
     }
@@ -1470,6 +1691,7 @@ const run = async () => {
           partNumber,
           totalParts: totalPartsAfterUpload,
           youtubeParts: [],
+          chapters: vodEntry.chapters,
         });
       };
       rebuildUploadMetadata();
@@ -1521,6 +1743,18 @@ const run = async () => {
       };
 
       try {
+        if (!config.dryRun) {
+          const nowIso = new Date().toISOString();
+          state.processedFiles[recording.path] = {
+            status: "processing",
+            twitchVodId: vodId,
+            part: partNumber,
+            startedAt: nowIso,
+            updatedAt: nowIso,
+          };
+          await persistState();
+        }
+
         try {
           await maybeRefreshTwitchUploadMetadata(true);
         } catch (error) {
@@ -1666,6 +1900,7 @@ const run = async () => {
             durationSeconds: details.durationSeconds,
             processedAt: new Date().toISOString(),
           };
+          await persistState();
 
           await postRealtimeUploadStatus({
             ...buildUploadSessionBase(),
@@ -1697,6 +1932,7 @@ const run = async () => {
           part: partNumber,
           processedAt: new Date().toISOString(),
         };
+        await persistState();
 
         await postRealtimeUploadStatus({
           ...buildUploadSessionBase(),
@@ -1710,6 +1946,17 @@ const run = async () => {
 
         log(`Completed pipeline for Twitch VOD ${vodId} -> YouTube ${youtubeVideoId} (Part ${partNumber})`);
       } catch (error) {
+        if (!config.dryRun) {
+          state.processedFiles[recording.path] = {
+            ...state.processedFiles[recording.path],
+            status: "error",
+            twitchVodId: vodId,
+            part: partNumber,
+            updatedAt: new Date().toISOString(),
+            error: error.message,
+          };
+          await persistState();
+        }
         await postRealtimeUploadStatus({
           ...buildUploadSessionBase(),
           state: "error",
@@ -1780,6 +2027,20 @@ const run = async () => {
 
   if (!config.dryRun && config.autoGitPush && stagedPaths.length > 0) {
     stageAndPushArchiveData(stagedPaths, "chore: update archive vod data");
+  }
+};
+
+const run = async () => {
+  const releaseRunLock = await acquirePipelineRunLock(config.runLockPath);
+  if (!releaseRunLock) {
+    log("Another local archive pipeline run is already active. Skipping this invocation.");
+    return;
+  }
+
+  try {
+    await runPipeline();
+  } finally {
+    await releaseRunLock();
   }
 };
 
