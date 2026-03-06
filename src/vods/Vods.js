@@ -36,6 +36,7 @@ import Reveal from "../utils/Reveal";
 import TypeGpuButtonOverlay from "../utils/TypeGpuButtonOverlay";
 import { fetchActiveVodUploads } from "../api/uploadStatusApi";
 import UploadingVodPlaceholder from "./UploadingVodPlaceholder";
+import homeSoftuHero from "../assets/home-softu-hero.png";
 
 const FILTERS = ["Default", "Date", "Title", "Game"];
 const PLATFORMS = ["All", "Twitch", "Kick"];
@@ -609,6 +610,22 @@ export default function Vods() {
                 <Grid container spacing={{ xs: 1.5, md: 2.5 }} alignItems="stretch">
                   <Grid size={{ xs: 12, lg: 5 }}>
                     <Box sx={{ height: "100%", display: "flex", flexDirection: "column", gap: 1.25, justifyContent: "center", pr: { lg: 1 } }}>
+                      <Box
+                        component="img"
+                        src={homeSoftuHero}
+                        alt="Softu hero art"
+                        loading="lazy"
+                        sx={{
+                          width: { xs: 126, sm: 168, md: 196 },
+                          maxWidth: "58%",
+                          height: "auto",
+                          alignSelf: { xs: "flex-start", sm: "center", lg: "flex-start" },
+                          mb: { xs: 0.1, sm: 0.4 },
+                          pointerEvents: "none",
+                          userSelect: "none",
+                          filter: "drop-shadow(0 12px 24px rgba(19, 33, 56, 0.22))",
+                        }}
+                      />
                       <Box>
                         <Typography
                           variant="h2"
