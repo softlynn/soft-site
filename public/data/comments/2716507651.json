@@ -1,0 +1,285 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2716507651",
+  "generatedAt": "2026-03-08T00:32:47.340Z",
+  "comments": [
+    {
+      "id": "7a715c67-cdee-483d-811c-e0f0f009c379",
+      "created_at": "2026-03-07T21:20:34.443Z",
+      "content_offset_seconds": 658,
+      "display_name": "james_ramos9",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Hey 👋",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5e3440f9-71c7-45a2-8cbd-09405c65742d",
+      "created_at": "2026-03-07T21:20:46.28Z",
+      "content_offset_seconds": 670,
+      "display_name": "james_ramos9",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "How are you",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "75b68588-4c46-49a3-be91-07839204ff44",
+      "created_at": "2026-03-07T21:23:21.79Z",
+      "content_offset_seconds": 826,
+      "display_name": "james_ramos9",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "How's your stream going?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "332ffd3e-9610-4b49-8ad2-4a01ec1480c5",
+      "created_at": "2026-03-07T21:24:08.304Z",
+      "content_offset_seconds": 872,
+      "display_name": "james_ramos9",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Great",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "abdad186-251b-4459-b3a0-4b59a6f65702",
+      "created_at": "2026-03-07T21:24:14.922Z",
+      "content_offset_seconds": 879,
+      "display_name": "james_ramos9",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Do you have any schedule for your stream?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ea2df5a3-7e4f-4619-84fb-e626d46d4168",
+      "created_at": "2026-03-07T21:28:22.843Z",
+      "content_offset_seconds": 1127,
+      "display_name": "james_ramos9",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Btw do you only stream on twitch?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0af9141e-cd4d-4ea3-b82d-a03c138195a9",
+      "created_at": "2026-03-07T21:32:15.636Z",
+      "content_offset_seconds": 1359,
+      "display_name": "james_ramos9",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Keep it up 👍",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "fe2922c8-5c11-41ba-aa73-65321d3ecdf2",
+      "created_at": "2026-03-07T21:32:46.128Z",
+      "content_offset_seconds": 1390,
+      "display_name": "james_ramos9",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Btw I like your model Xd",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d0c24cc4-119e-4da6-80e7-7ade6667788d",
+      "created_at": "2026-03-07T21:32:53.29Z",
+      "content_offset_seconds": 1397,
+      "display_name": "james_ramos9",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Did you make it by yourself?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a6e22de9-4d48-477b-ab60-23c3cd7b81c6",
+      "created_at": "2026-03-07T21:35:04.565Z",
+      "content_offset_seconds": 1528,
+      "display_name": "james_ramos9",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "@softu1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0424aeef-ee30-4994-8890-2df07c36cf9a",
+      "created_at": "2026-03-07T21:39:28.812Z",
+      "content_offset_seconds": 1793,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "waga",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6781fd5a-744a-4eed-9136-7dea73437794",
+      "created_at": "2026-03-07T21:49:27.524Z",
+      "content_offset_seconds": 2391,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Watch vods here! - https://softu.one/",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a2b083d7-b019-45de-9226-10548fd81d36",
+      "created_at": "2026-03-07T21:49:34.295Z",
+      "content_offset_seconds": 2398,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "urm",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d989ed10-e63f-40ce-a605-6e65e6bf7d3b",
+      "created_at": "2026-03-07T21:49:48.716Z",
+      "content_offset_seconds": 2413,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Explosion nya",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7e74bdf9-49a2-4d66-b818-96d18bffa331",
+      "created_at": "2026-03-07T21:53:26.893Z",
+      "content_offset_seconds": 2631,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Join the Discord! - https://softu.one/discord",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "46058d77-f242-4464-80a7-e8bd80a00271",
+      "created_at": "2026-03-07T21:56:24.709Z",
+      "content_offset_seconds": 2809,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "dancin",
+          "emoticon": null
+        }
+      ]
+    }
+  ]
+}
