@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
 
 const POINTER_DEFAULT = { x: 0.45, y: 0.5 };
-const FPS_ACTIVE = 20;
-const FPS_IDLE = 10;
+const FPS_ACTIVE = 18;
+const FPS_IDLE = 8;
 const FRAME_MS_ACTIVE = 1000 / FPS_ACTIVE;
 const FRAME_MS_IDLE = 1000 / FPS_IDLE;
+const RENDER_SCALE = 0.76;
+const DEFERRED_START_TIMEOUT_MS = 1800;
 
 async function startButtonGpu(canvas, tone) {
   if (!canvas || typeof window === "undefined") return () => {};
@@ -167,9 +169,8 @@ fn fs(inFrag: VertexOut) -> @location(0) vec4f {
   const configure = () => {
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.max(1, Math.min(1.25, window.devicePixelRatio || 1));
-    const renderScale = 0.82;
-    const width = Math.max(1, Math.floor(rect.width * dpr * renderScale));
-    const height = Math.max(1, Math.floor(rect.height * dpr * renderScale));
+    const width = Math.max(1, Math.floor(rect.width * dpr * RENDER_SCALE));
+    const height = Math.max(1, Math.floor(rect.height * dpr * RENDER_SCALE));
     if (canvas.width !== width) canvas.width = width;
     if (canvas.height !== height) canvas.height = height;
     context.configure({ device, format, alphaMode: "premultiplied" });
@@ -276,23 +277,103 @@ export default function TypeGpuButtonOverlay({ tone = "salmon" }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    let disposed = false;
-    let teardown = () => {};
+    const canvas = canvasRef.current;
+    const host = canvas?.parentElement;
+    if (!canvas || !host || typeof window === "undefined") return undefined;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return undefined;
+    if (navigator.connection?.saveData) return undefined;
 
-    startButtonGpu(canvasRef.current, tone)
-      .then((cleanup) => {
-        if (disposed) {
-          cleanup?.();
-          return;
+    let disposed = false;
+    let started = false;
+    let teardown = () => {};
+    let visibilityObserver = null;
+    let idleId = null;
+    let timeoutId = null;
+    let isVisible = false;
+
+    const clearPendingStart = () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      if (idleId != null && typeof window.cancelIdleCallback === "function") {
+        try {
+          window.cancelIdleCallback(idleId);
+        } catch {
+          // no-op
         }
-        teardown = cleanup || (() => {});
-      })
-      .catch((error) => {
-        console.error("TypeGPU button overlay failed.", error);
-      });
+        idleId = null;
+      }
+    };
+
+    const start = () => {
+      if (started || disposed) return;
+      started = true;
+      clearPendingStart();
+
+      startButtonGpu(canvas, tone)
+        .then((cleanup) => {
+          if (disposed) {
+            cleanup?.();
+            return;
+          }
+          teardown = cleanup || (() => {});
+        })
+        .catch((error) => {
+          console.error("TypeGPU button overlay failed.", error);
+        });
+    };
+
+    const scheduleStart = () => {
+      if (started || disposed || !isVisible) return;
+      clearPendingStart();
+
+      if (typeof window.requestIdleCallback === "function") {
+        idleId = window.requestIdleCallback(
+          () => {
+            timeoutId = window.setTimeout(start, 120);
+          },
+          { timeout: DEFERRED_START_TIMEOUT_MS + 900 }
+        );
+        return;
+      }
+
+      timeoutId = window.setTimeout(start, DEFERRED_START_TIMEOUT_MS);
+    };
+
+    const handlePointerEnter = () => {
+      isVisible = true;
+      start();
+    };
+
+    host.addEventListener("pointerenter", handlePointerEnter, { passive: true });
+
+    if (typeof window.IntersectionObserver === "function") {
+      visibilityObserver = new window.IntersectionObserver(
+        ([entry]) => {
+          isVisible = Boolean(entry?.isIntersecting);
+          if (isVisible) {
+            scheduleStart();
+            return;
+          }
+          clearPendingStart();
+        },
+        {
+          threshold: 0.15,
+          rootMargin: "120px 0px",
+        }
+      );
+      visibilityObserver.observe(host);
+    } else {
+      isVisible = true;
+      scheduleStart();
+    }
 
     return () => {
       disposed = true;
+      clearPendingStart();
+      host.removeEventListener("pointerenter", handlePointerEnter);
+      visibilityObserver?.disconnect();
       teardown();
     };
   }, [tone]);

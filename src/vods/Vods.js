@@ -11,9 +11,7 @@ import {
   Button,
   Stack,
 } from "@mui/material";
-import SimpleBar from "simplebar-react";
 import ErrorBoundary from "../utils/ErrorBoundary";
-import AdSense from "react-adsense";
 import Footer from "../utils/Footer";
 import Loading from "../utils/Loading";
 import Vod from "./Vod";
@@ -33,14 +31,20 @@ import {
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import Reveal from "../utils/Reveal";
-import TypeGpuButtonOverlay from "../utils/TypeGpuButtonOverlay";
 import { fetchActiveVodUploads } from "../api/uploadStatusApi";
+import { getVodById } from "../api/vodsApi";
 import UploadingVodPlaceholder from "./UploadingVodPlaceholder";
 
 const FILTERS = ["Default", "Date", "Title", "Game"];
 const PLATFORMS = ["All", "Twitch", "Kick"];
 const SPOTIFY_PLAYLIST_EMBED_URL = "https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator";
+const READY_VOD_HIGHLIGHT_LIMIT = 3;
+const UPLOAD_READY_FETCH_ATTEMPTS = 24;
+const UPLOAD_READY_FETCH_INTERVAL_MS = 2500;
+const AdSense = lazy(() => import("react-adsense"));
 const ArchiveControls = lazy(() => import("./ArchiveControls"));
+const SimpleBar = lazy(() => import("simplebar-react"));
+const TypeGpuButtonOverlay = lazy(() => import("../utils/TypeGpuButtonOverlay"));
 
 const normalizeUploadForCompare = (upload) => ({
   sessionId: String(upload?.sessionId || "").trim(),
@@ -77,6 +81,37 @@ const areActiveUploadsEquivalent = (a, b) => buildUploadCompareKey(a) === buildU
 const normalizeUploadVodId = (upload) => {
   const id = String(upload?.twitchVodId || "").trim();
   return id || null;
+};
+
+const countPlayableVodParts = (vod) =>
+  (Array.isArray(vod?.youtube) ? vod.youtube : []).filter((part) => String(part?.type || "vod") === "vod" && part?.id).length;
+
+const waitFor = (ms) =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+
+const isVodReadyForSession = (vod, expectedPartNumber) => {
+  if (!vod || vod.unpublished) return false;
+  const playablePartCount = countPlayableVodParts(vod);
+  if (!Number.isFinite(expectedPartNumber) || expectedPartNumber <= 0) {
+    return playablePartCount > 0;
+  }
+  return playablePartCount >= Math.max(1, Math.floor(expectedPartNumber));
+};
+
+const upsertReadyVodHighlight = (items, nextItem) => {
+  const nextVodId = String(nextItem?.vod?.id || "").trim();
+  if (!nextVodId) return Array.isArray(items) ? items : [];
+
+  const nextItems = [
+    nextItem,
+    ...(Array.isArray(items) ? items : []).filter((item) => String(item?.vod?.id || "").trim() !== nextVodId),
+  ];
+
+  return nextItems
+    .sort((a, b) => (Number(b?.publishedAtMs) || 0) - (Number(a?.publishedAtMs) || 0))
+    .slice(0, READY_VOD_HIGHLIGHT_LIMIT);
 };
 
 const buildVodListWithUploadPlaceholders = (list, activeUploads) => {
@@ -260,8 +295,9 @@ export default function Vods() {
   const [vods, setVods] = useState(null);
   const [previewVods, setPreviewVods] = useState(isHomeRoute ? null : []);
   const [activeUploads, setActiveUploads] = useState([]);
-  const [vodListRefreshNonce, setVodListRefreshNonce] = useState(0);
+  const [readyVodHighlights, setReadyVodHighlights] = useState([]);
   const [totalVods, setTotalVods] = useState(null);
+  const [deferredHeroFxReady, setDeferredHeroFxReady] = useState(false);
   const [filter, setFilter] = useState(FILTERS[0]);
   const [filterStartDate, setFilterStartDate] = useState(dayjs(START_DATE));
   const [filterEndDate, setFilterEndDate] = useState(dayjs());
@@ -271,13 +307,55 @@ export default function Vods() {
   const page = parseInt(query.get("page") || "1", 10);
   const limit = isMobile ? 10 : 20;
   const previewLimit = isMobile ? 4 : 8;
-  const uploadCompletionRefreshStateRef = useRef({
-    trackedSessions: new Map(),
-    completionRefetchedSessionIds: new Set(),
+  const uploadReadyWatchStateRef = useRef({
+    activeWatchers: new Map(),
+    resolvedSessionIds: new Set(),
   });
 
   useEffect(() => {
     document.title = isHomeRoute ? `${SITE_TITLE} | Vod Archive` : `${SITE_TITLE} | Archive`;
+  }, [isHomeRoute]);
+
+  useEffect(() => {
+    if (!isHomeRoute || typeof window === "undefined") {
+      setDeferredHeroFxReady(false);
+      return undefined;
+    }
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches || navigator.connection?.saveData) {
+      setDeferredHeroFxReady(false);
+      return undefined;
+    }
+
+    let canceled = false;
+    let timeoutId = null;
+    let idleId = null;
+
+    const activate = () => {
+      if (!canceled) setDeferredHeroFxReady(true);
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      idleId = window.requestIdleCallback(
+        () => {
+          timeoutId = window.setTimeout(activate, 140);
+        },
+        { timeout: 1600 }
+      );
+    } else {
+      timeoutId = window.setTimeout(activate, 1200);
+    }
+
+    return () => {
+      canceled = true;
+      if (timeoutId) window.clearTimeout(timeoutId);
+      if (idleId != null && typeof window.cancelIdleCallback === "function") {
+        try {
+          window.cancelIdleCallback(idleId);
+        } catch {
+          // no-op
+        }
+      }
+    };
   }, [isHomeRoute]);
 
   useEffect(() => {
@@ -309,50 +387,73 @@ export default function Vods() {
   }, []);
 
   useEffect(() => {
-    const stateRef = uploadCompletionRefreshStateRef.current;
-    const previousSessions = stateRef.trackedSessions;
-    const nextSessions = new Map();
-    let shouldRefreshVods = false;
-
     (Array.isArray(activeUploads) ? activeUploads : []).forEach((upload) => {
       const sessionId = String(upload?.sessionId || "").trim();
-      if (!sessionId) return;
-
+      const twitchVodId = String(upload?.twitchVodId || "").trim();
       const normalizedState = String(upload?.state || "").trim().toLowerCase();
       const percent = Number(upload?.percent);
-      const uploadVodId = String(upload?.twitchVodId || "").trim();
-      const previous = previousSessions.get(sessionId);
+      const partNumber = Number(upload?.partNumber);
+      const shouldWatchForReadyVod =
+        sessionId &&
+        twitchVodId &&
+        normalizedState === "finalizing" &&
+        Number.isFinite(percent) &&
+        percent >= 100;
 
-      nextSessions.set(sessionId, {
-        state: normalizedState,
-        percent: Number.isFinite(percent) ? percent : null,
-        twitchVodId: uploadVodId,
-      });
+      if (!shouldWatchForReadyVod) return;
 
-      const completionish = normalizedState === "finalizing" || (Number.isFinite(percent) && percent >= 99.5);
-      if (completionish && !stateRef.completionRefetchedSessionIds.has(sessionId)) {
-        stateRef.completionRefetchedSessionIds.add(sessionId);
-        shouldRefreshVods = true;
+      const stateRef = uploadReadyWatchStateRef.current;
+      if (stateRef.resolvedSessionIds.has(sessionId) || stateRef.activeWatchers.has(sessionId)) {
+        return;
       }
 
-      if (previous && previous.twitchVodId !== uploadVodId && uploadVodId) {
-        shouldRefreshVods = true;
-      }
+      const watchToken = { canceled: false };
+      stateRef.activeWatchers.set(sessionId, watchToken);
+
+      void (async () => {
+        try {
+          for (let attempt = 0; attempt < UPLOAD_READY_FETCH_ATTEMPTS; attempt += 1) {
+            if (watchToken.canceled) return;
+
+            try {
+              const vod = await getVodById(twitchVodId);
+              if (isVodReadyForSession(vod, partNumber)) {
+                if (watchToken.canceled) return;
+
+                stateRef.resolvedSessionIds.add(sessionId);
+                setReadyVodHighlights((previousHighlights) =>
+                  upsertReadyVodHighlight(previousHighlights, {
+                    sessionId,
+                    publishedAtMs: Number.isFinite(Number(upload?.updatedAtMs)) ? Number(upload.updatedAtMs) : Date.now(),
+                    vod,
+                  })
+                );
+                return;
+              }
+            } catch (_error) {
+              // The archive data may still be landing; retry a few times before giving up.
+            }
+
+            if (attempt < UPLOAD_READY_FETCH_ATTEMPTS - 1) {
+              await waitFor(UPLOAD_READY_FETCH_INTERVAL_MS);
+            }
+          }
+        } finally {
+          stateRef.activeWatchers.delete(sessionId);
+        }
+      })();
     });
-
-    for (const sessionId of previousSessions.keys()) {
-      if (!nextSessions.has(sessionId)) {
-        // Upload disappeared from the active API (done/error). Refresh once so placeholders get replaced/removed.
-        shouldRefreshVods = true;
-        stateRef.completionRefetchedSessionIds.delete(sessionId);
-      }
-    }
-
-    stateRef.trackedSessions = nextSessions;
-    if (shouldRefreshVods) {
-      setVodListRefreshNonce((nonce) => nonce + 1);
-    }
   }, [activeUploads]);
+
+  useEffect(() => {
+    const watchState = uploadReadyWatchStateRef.current;
+    return () => {
+      for (const watchToken of watchState.activeWatchers.values()) {
+        watchToken.canceled = true;
+      }
+      watchState.activeWatchers.clear();
+    };
+  }, []);
 
   useEffect(() => {
     if (!isHomeRoute) return undefined;
@@ -377,7 +478,7 @@ export default function Vods() {
       });
 
     return undefined;
-  }, [isHomeRoute, previewLimit, vodListRefreshNonce]);
+  }, [isHomeRoute, previewLimit]);
 
   useEffect(() => {
     if (isHomeRoute) return undefined;
@@ -470,7 +571,7 @@ export default function Vods() {
 
     fetchVods();
     return undefined;
-  }, [isHomeRoute, limit, page, filter, filterStartDate, filterEndDate, filterTitle, filterGame, platform, vodListRefreshNonce]);
+  }, [isHomeRoute, limit, page, filter, filterStartDate, filterEndDate, filterTitle, filterGame, platform]);
 
   const changeFilter = (evt) => {
     setFilter(evt.target.value);
@@ -590,20 +691,52 @@ export default function Vods() {
     return buildVodListWithUploadPlaceholders(vods, activeUploads);
   }, [vods, activeUploads]);
 
-  return (
-    <SimpleBar className="soft-vods-scroll" style={{ minHeight: 0, height: "100%" }}>
+  const readyVodDisplayList = useMemo(
+    () => readyVodHighlights.map((item) => item?.vod).filter(Boolean),
+    [readyVodHighlights]
+  );
+
+  const latestReadyVod = readyVodDisplayList[0] || null;
+
+  const pageContent = (
+    <>
       <Box sx={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
       <Box sx={{ px: { xs: 1.25, sm: 2, md: 2.2 }, pb: 1, flexGrow: 1 }}>
         {ENABLE_ADSENSE && ADSENSE_CLIENT && ADSENSE_SLOT && (
           <Box sx={{ mt: 1, textAlign: "center" }}>
             <ErrorBoundary>
-              <AdSense.Google client={ADSENSE_CLIENT} slot={ADSENSE_SLOT} style={{ display: "block" }} format="auto" responsive="true" layoutKey="-gw-1+2a-9x+5c" />
+              <Suspense fallback={null}>
+                <AdSense.Google client={ADSENSE_CLIENT} slot={ADSENSE_SLOT} style={{ display: "block" }} format="auto" responsive="true" layoutKey="-gw-1+2a-9x+5c" />
+              </Suspense>
             </ErrorBoundary>
           </Box>
         )}
 
         {isHomeRoute && (
           <>
+            {readyVodDisplayList.length > 0 && (
+              <Reveal delay={30} sx={{ mt: { xs: 0.5, md: 1 } }}>
+                <Box className="soft-glass soft-panel-ambient soft-grid-pattern" sx={{ p: { xs: 1.15, md: 1.4 }, borderRadius: "24px", mb: 1.6 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, mb: 0.7, flexWrap: "wrap" }}>
+                    <Box>
+                      <Typography variant="h5" className="soft-section-heading" sx={{ color: "primary.main" }}>
+                        New VOD Ready
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.35, lineHeight: 1.45, maxWidth: 620 }}>
+                        The latest upload finished while you were on the page. Open it directly without reloading.
+                      </Typography>
+                    </Box>
+                    {latestReadyVod && (
+                      <Button component={Link} to={`/youtube/${latestReadyVod.id}`} variant="outlined" startIcon={<OpenInNewRoundedIcon />}>
+                        Open Latest VOD
+                      </Button>
+                    )}
+                  </Box>
+                  {renderVodGrid(readyVodDisplayList, { xs: 12, sm: 6, lg: 3 }, { edgePad: { xs: 0.12, sm: 0.16, md: 0.22 }, cardWidth: "21.5rem" })}
+                </Box>
+              </Reveal>
+            )}
+
             <Reveal delay={40} sx={{ mt: { xs: 0.5, md: 1 } }}>
               <Box className="soft-glass soft-grid-pattern soft-panel-ambient soft-hero-glow" sx={{ p: { xs: 1.3, sm: 1.95, md: 2.35 }, borderRadius: "28px" }}>
                 <Grid container spacing={{ xs: 1.5, md: 2.5 }} alignItems="stretch">
@@ -659,7 +792,11 @@ export default function Vods() {
                             border: "1px solid rgba(255,255,255,0.22)",
                           }}
                         >
-                          <TypeGpuButtonOverlay tone="salmon" />
+                          {deferredHeroFxReady && (
+                            <Suspense fallback={null}>
+                              <TypeGpuButtonOverlay tone="salmon" />
+                            </Suspense>
+                          )}
                           <Box component="span" sx={{ position: "relative", zIndex: 2, display: "inline-flex", alignItems: "center", gap: 0.8 }}>
                             <VideoLibraryRoundedIcon sx={{ fontSize: 20 }} />
                             Open VODs
@@ -682,7 +819,11 @@ export default function Vods() {
                               borderWidth: "1px",
                             }}
                           >
-                            <TypeGpuButtonOverlay tone="blue" />
+                            {deferredHeroFxReady && (
+                              <Suspense fallback={null}>
+                                <TypeGpuButtonOverlay tone="blue" />
+                              </Suspense>
+                            )}
                             <Box component="span" sx={{ position: "relative", zIndex: 2, display: "inline-flex", alignItems: "center", gap: 0.8 }}>
                               <OpenInNewRoundedIcon sx={{ fontSize: 20 }} />
                               Twitch
@@ -750,6 +891,29 @@ export default function Vods() {
 
         {!isHomeRoute && (
           <>
+            {readyVodDisplayList.length > 0 && (
+              <Reveal delay={30} sx={{ mt: 2.25 }}>
+                <Box className="soft-glass soft-panel-ambient soft-grid-pattern" sx={{ p: { xs: 1.15, md: 1.4 }, borderRadius: "24px", mb: 1.2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, mb: 0.7, flexWrap: "wrap" }}>
+                    <Box>
+                      <Typography variant="h5" className="soft-section-heading" sx={{ color: "primary.main" }}>
+                        New VOD Ready
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.35, lineHeight: 1.45, maxWidth: 620 }}>
+                        This upload finished while you were browsing the archive. Open the fresh VOD directly from here.
+                      </Typography>
+                    </Box>
+                    {latestReadyVod && (
+                      <Button component={Link} to={`/youtube/${latestReadyVod.id}`} variant="outlined" startIcon={<OpenInNewRoundedIcon />}>
+                        Open Latest VOD
+                      </Button>
+                    )}
+                  </Box>
+                  {renderVodGrid(readyVodDisplayList, { xs: 12, sm: 6, lg: 3, xl: 3 })}
+                </Box>
+              </Reveal>
+            )}
+
             <Reveal delay={40} sx={{ mt: 2.25 }} id="home-archive-section">
               <Suspense
                 fallback={
@@ -816,6 +980,22 @@ export default function Vods() {
       </Box>
       <Footer />
       </Box>
-    </SimpleBar>
+    </>
+  );
+
+  if (isHomeRoute) {
+    return (
+      <Box className="soft-vods-scroll soft-vods-scroll--native" sx={{ minHeight: 0, height: "100%", overflowY: "auto" }}>
+        {pageContent}
+      </Box>
+    );
+  }
+
+  return (
+    <Suspense fallback={<Box className="soft-vods-scroll soft-vods-scroll--native" sx={{ minHeight: 0, height: "100%", overflowY: "auto" }}>{pageContent}</Box>}>
+      <SimpleBar className="soft-vods-scroll" style={{ minHeight: 0, height: "100%" }}>
+        {pageContent}
+      </SimpleBar>
+    </Suspense>
   );
 }
