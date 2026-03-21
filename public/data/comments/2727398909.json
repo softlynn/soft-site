@@ -1,0 +1,1683 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2727398909",
+  "generatedAt": "2026-03-20T23:32:15.891Z",
+  "comments": [
+    {
+      "id": "2ef27598-d2e3-419e-89c9-e73820a5b2b7",
+      "created_at": "2026-03-20T21:24:02.525Z",
+      "content_offset_seconds": 6090,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "Hey hey",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ddbf74a6-b746-4e9c-8509-144a63adef10",
+      "created_at": "2026-03-20T21:24:31.468Z",
+      "content_offset_seconds": 6119,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "i am  a bit late but i was on a barbecue with friends ^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c068e512-71af-4272-bffa-f0a6f548a9e8",
+      "created_at": "2026-03-20T21:26:45.614Z",
+      "content_offset_seconds": 6253,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "yeah it was great, we played billard and had lot of fun",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bfca78eb-a810-4330-b9d5-9d045ca3629e",
+      "created_at": "2026-03-20T21:28:04.457Z",
+      "content_offset_seconds": 6332,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "have a great meal ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "854f5d90-c1cf-4790-a236-a9541e607881",
+      "created_at": "2026-03-20T21:28:50.331Z",
+      "content_offset_seconds": 6378,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "i am very bad at drawing  hands. i rework my hands 100 times and i am still not happy with it",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c55f21be-cc57-4f9f-b707-30290d039d29",
+      "created_at": "2026-03-20T21:31:30.908Z",
+      "content_offset_seconds": 6539,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "the last days i tried to draw the  hands with the 3d hand model which is integrated in studio but it is a bit uncomfortable^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "99e98d01-7796-4e1a-ad6b-fdb4aa412b94",
+      "created_at": "2026-03-20T21:32:42.967Z",
+      "content_offset_seconds": 6611,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "it takes me longer to pose the 3d model then drawing the hand freehanded^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f644e7c9-b230-4589-95f5-6e34a4afb512",
+      "created_at": "2026-03-20T21:33:46.616Z",
+      "content_offset_seconds": 6674,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "haha yeah i understand",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8806849b-45b5-4378-9bbe-3db89189c156",
+      "created_at": "2026-03-20T21:34:22.28Z",
+      "content_offset_seconds": 6710,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "i drawed a CoWorking/AFK scene for my stream and my hands are terrible xD",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6eb474ed-5322-4af5-83a9-137d54306d48",
+      "created_at": "2026-03-20T21:35:34.033Z",
+      "content_offset_seconds": 6782,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Join the Discord! - https://softu.one/discord",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "cf6acfac-e7d2-447d-855a-0f0be550cb1b",
+      "created_at": "2026-03-20T21:40:50.224Z",
+      "content_offset_seconds": 7098,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "yeah, i know what you mean, but with chuby models propotions are not  important",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f2c847ca-fda7-4a46-8ceb-c2c121bc22da",
+      "created_at": "2026-03-20T21:42:56.944Z",
+      "content_offset_seconds": 7225,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "some \"splikes\" on the eyebrows at then end tip woudl be great i think",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "19119a59-f104-4f11-8cdd-173a4bb65206",
+      "created_at": "2026-03-20T21:43:14.585Z",
+      "content_offset_seconds": 7242,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "sry i dont know the correct words for it in english^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "cebeb9aa-ca0e-4802-9286-2a8201a762b1",
+      "created_at": "2026-03-20T21:43:40.993Z",
+      "content_offset_seconds": 7269,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "hahaha no, i am from germany^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4b1bcd50-24a5-4736-9df0-ee5917346c06",
+      "created_at": "2026-03-20T21:43:47.9Z",
+      "content_offset_seconds": 7276,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "spikes",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8e81da71-526f-4ce9-bc43-a3d389f53dcc",
+      "created_at": "2026-03-20T21:43:59.242Z",
+      "content_offset_seconds": 7287,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "eyelashes i mean^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0dbdaa42-7c71-4e3f-808c-8e50ee4849d9",
+      "created_at": "2026-03-20T21:45:16.477Z",
+      "content_offset_seconds": 7364,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "yes this is what i mean^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "66a7789a-d457-4b62-a493-91564115edc4",
+      "created_at": "2026-03-20T21:46:54.427Z",
+      "content_offset_seconds": 7462,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "can i share you some of my work via discord?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "94bcd79a-1840-4857-bbf8-270bb1f8edf3",
+      "created_at": "2026-03-20T21:47:33.599Z",
+      "content_offset_seconds": 7501,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "waga",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4a24cc7c-6d5f-412c-9f5d-49d674d78155",
+      "created_at": "2026-03-20T21:49:27.114Z",
+      "content_offset_seconds": 7615,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "urm",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b898a9fd-a4f1-40db-9987-69046a1cfa9a",
+      "created_at": "2026-03-20T21:50:14.128Z",
+      "content_offset_seconds": 7662,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "take a look at DC ^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5564ea8b-b7c8-4ce5-9f9b-f69d536434a2",
+      "created_at": "2026-03-20T21:50:53.358Z",
+      "content_offset_seconds": 7701,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "thank you ",
+          "emoticon": null
+        },
+        {
+          "text": "<3",
+          "emote": {
+            "emoteID": "555555584"
+          },
+          "emoticon": {
+            "emoticon_id": "555555584"
+          }
+        }
+      ]
+    },
+    {
+      "id": "77e7205c-89dc-4a5b-81eb-21f21c55b28d",
+      "created_at": "2026-03-20T21:53:26.654Z",
+      "content_offset_seconds": 7854,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "the pc in my coworking picture is not drawn by myself, i went creazy and copyed a photo into it and added some filters^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6e1e78a3-af5a-4a25-9775-962b6065581f",
+      "created_at": "2026-03-20T21:54:33.307Z",
+      "content_offset_seconds": 7921,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Watch vods here! - https://softu.one/",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "51dcd2e4-e7ca-421d-b34b-df4dc9846cb6",
+      "created_at": "2026-03-20T21:56:24.212Z",
+      "content_offset_seconds": 8032,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "i think a kind of space would also look great at your drawing. A huge yellow-red Sun at the right top. stars and meteors in blue",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "cb5c1999-d65a-47a0-b26c-a3baa2974202",
+      "created_at": "2026-03-20T21:56:42.377Z",
+      "content_offset_seconds": 8050,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "make a space scene baground ^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f58d5b8d-866d-4554-ae19-fdc99e977622",
+      "created_at": "2026-03-20T21:57:25.496Z",
+      "content_offset_seconds": 8093,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "on oled this would be a great contrast especialy for space drawing where you have lot of dark and make a big contrast to stars and meteorides",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "631983da-5d16-497e-93a7-5e3075b1f1ff",
+      "created_at": "2026-03-20T21:58:58.134Z",
+      "content_offset_seconds": 8186,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "will be the clothing dark like your png-avatar?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "83f7bbe7-4d90-41a5-aef7-6f842d931137",
+      "created_at": "2026-03-20T22:01:21.599Z",
+      "content_offset_seconds": 8329,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "due to your clothes are dark, maybe also a huge bright moon in the background would be  great, the artefacts around more like lense effects. then you still have a lot black around for the OLED effect",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a5173afd-68e0-4a3c-b045-7543dac76dae",
+      "created_at": "2026-03-20T22:03:31.769Z",
+      "content_offset_seconds": 8460,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "i often use AI to make my ideas more visual to get better ideas. let me try something...",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "98b1ebca-6a6a-46da-be36-5f5704b2c5e6",
+      "created_at": "2026-03-20T22:04:49.981Z",
+      "content_offset_seconds": 8538,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "take a look at DC",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3ce7e548-ab5f-4b85-ab1a-114c66a642dc",
+      "created_at": "2026-03-20T22:05:17.257Z",
+      "content_offset_seconds": 8565,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "yeah this is AI generated",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "534d9f7c-29db-4473-b43c-ea334bba572c",
+      "created_at": "2026-03-20T22:12:21.358Z",
+      "content_offset_seconds": 8989,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "at my beginning with drawing i went creazy how my displays present colors different to my dawring tablet...",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bc12c4d7-af61-4f26-86a9-335c669a1ea6",
+      "created_at": "2026-03-20T22:13:48.32Z",
+      "content_offset_seconds": 9076,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "oh okay",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ec6d1ed7-0fbf-4362-8653-f5fa1a2f3c33",
+      "created_at": "2026-03-20T22:14:48.541Z",
+      "content_offset_seconds": 9136,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "i work with a \"XP-Pen Artist 15.6 Pro V2\"",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "72e96943-749d-4c20-8673-79106a8d179d",
+      "created_at": "2026-03-20T22:15:12.491Z",
+      "content_offset_seconds": 9160,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "yes",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6bea3d1e-6a80-41e6-9310-212f0ac7417b",
+      "created_at": "2026-03-20T22:15:17.148Z",
+      "content_offset_seconds": 9165,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "and the price is very great",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b21a5d2b-c121-4a29-b713-4c4ecb74c0ac",
+      "created_at": "2026-03-20T22:16:32.189Z",
+      "content_offset_seconds": 9240,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Join the Discord! - https://softu.one/discord",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "2e35cd5d-8ded-4356-a071-1679f55b6488",
+      "created_at": "2026-03-20T22:16:45.012Z",
+      "content_offset_seconds": 9253,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Sturdy",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "33ef78dd-288f-42d7-9259-883aff7f1e82",
+      "created_at": "2026-03-20T22:16:47.381Z",
+      "content_offset_seconds": 9255,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "how you make scratches into it?!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d62ab4a9-feb4-423c-b70d-a6767f25b69e",
+      "created_at": "2026-03-20T22:18:35.156Z",
+      "content_offset_seconds": 9363,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "waga",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ebee3192-859c-4934-8069-007b9fb5c927",
+      "created_at": "2026-03-20T22:18:36.517Z",
+      "content_offset_seconds": 9364,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "yeah AI is doing sometimes creazy things but i brings up some ideas",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d7e0f975-aafc-4248-b202-b250a3367364",
+      "created_at": "2026-03-20T22:21:14.829Z",
+      "content_offset_seconds": 9523,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "you realy need a 5090?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "fbd63244-9398-4bf0-8ea0-1825c6594d7d",
+      "created_at": "2026-03-20T22:21:18.767Z",
+      "content_offset_seconds": 9527,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "it is so expencive",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d2937476-ed93-4b30-aa45-bfb776007906",
+      "created_at": "2026-03-20T22:21:26.8Z",
+      "content_offset_seconds": 9535,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "i am running with a 3080ti fine",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0a48c7dd-efed-4c98-b644-a7735c93c3d3",
+      "created_at": "2026-03-20T22:21:54.471Z",
+      "content_offset_seconds": 9562,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "ah ok, i never tried so stream VR",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a249dc7d-fd8a-4ad4-b827-9d72d96aa3ef",
+      "created_at": "2026-03-20T22:24:21.801Z",
+      "content_offset_seconds": 9710,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "my brain is getting slow. I am tired. My English is getting worse  :S",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "89d6383d-d070-4a7c-b43d-afda49b4ea7a",
+      "created_at": "2026-03-20T22:24:51.287Z",
+      "content_offset_seconds": 9739,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "i have ordered me the SlimeVR tracker yesterday",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d70e92ed-4af3-4aa2-84e9-0f64a858b4cc",
+      "created_at": "2026-03-20T22:25:28.59Z",
+      "content_offset_seconds": 9776,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "yeah i got my Q3 2 weeks ago and now i am stuck to VR xD",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "12da3e05-031c-4736-95e0-7f7a61589a09",
+      "created_at": "2026-03-20T22:25:32.589Z",
+      "content_offset_seconds": 9780,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Watch vods here! - https://softu.one/",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "615f3e27-f243-4340-a82d-f250665e33fd",
+      "created_at": "2026-03-20T22:26:11.6Z",
+      "content_offset_seconds": 9819,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "Quest3 has no face tracking it was the Quest Pro",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5a47e57c-22eb-4f42-a49f-9728027e47de",
+      "created_at": "2026-03-20T22:26:35.532Z",
+      "content_offset_seconds": 9843,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "hahaha okayyy",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d86bc326-bdaf-42f4-8665-46259da3e6eb",
+      "created_at": "2026-03-20T22:34:10.759Z",
+      "content_offset_seconds": 10299,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "updates => next problems incoming xD",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "341d6e8d-a9e0-45cc-b705-1e3f03d697e5",
+      "created_at": "2026-03-20T22:35:32.367Z",
+      "content_offset_seconds": 10380,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "dancin",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "90a1d4ce-9c0d-4386-9f89-4f8f5dd4dd5e",
+      "created_at": "2026-03-20T22:36:01.396Z",
+      "content_offset_seconds": 10409,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "you dont use the Meta link feature?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c91efa0a-c3a4-4062-b933-25c4c03b4a54",
+      "created_at": "2026-03-20T22:36:16.527Z",
+      "content_offset_seconds": 10424,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "for me the meta Link is working better than the VirtualDesktop",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e5064916-e0fe-4928-909d-65fc0bfda097",
+      "created_at": "2026-03-20T22:36:46.455Z",
+      "content_offset_seconds": 10454,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "i have many crashes with virtualdesktop",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e2fa6e22-7cfb-4739-849d-fefa92b74396",
+      "created_at": "2026-03-20T22:37:21.178Z",
+      "content_offset_seconds": 10489,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "yeah i know everyone says virtualdesktop is better^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1f0f11da-f7c4-4361-91ea-22addc3d3d1f",
+      "created_at": "2026-03-20T22:38:29.144Z",
+      "content_offset_seconds": 10557,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "please demonstrate me the eyetracking, I hope i am not totaly stunned and buy me a quest pro xD",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4bbd3918-8368-4161-b7c3-080ffe1a4ed5",
+      "created_at": "2026-03-20T22:38:34.909Z",
+      "content_offset_seconds": 10563,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Explosion nya",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "fac4baaa-0570-4aad-a45a-6d34f8fb97b0",
+      "created_at": "2026-03-20T22:45:05.872Z",
+      "content_offset_seconds": 10954,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "ok, thats cool",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "355151a2-11fa-43fb-9405-fdc44acb4a65",
+      "created_at": "2026-03-20T22:47:51.49Z",
+      "content_offset_seconds": 11119,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "wow tahts awesome",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3555b592-4c84-4665-b01c-b6bb125b76c4",
+      "created_at": "2026-03-20T22:47:56.422Z",
+      "content_offset_seconds": 11124,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "ok i want it!!!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9fe492a7-1a6c-4cf8-8668-1afc48d8e6ea",
+      "created_at": "2026-03-20T22:48:15.051Z",
+      "content_offset_seconds": 11143,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "you made it by your own?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "67f2cef4-150c-4077-855c-993f0aaeb8c4",
+      "created_at": "2026-03-20T22:49:15.804Z",
+      "content_offset_seconds": 11204,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "pleeaasse show it",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "07d2ed55-40fa-4200-82dc-e9b0eee91ac3",
+      "created_at": "2026-03-20T22:49:37.298Z",
+      "content_offset_seconds": 11225,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "waga",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "526884cc-dceb-4e35-860a-f375247c7dfa",
+      "created_at": "2026-03-20T22:49:45.454Z",
+      "content_offset_seconds": 11233,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "i like the tech style",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "685a3320-3370-4e32-9703-d4d478420677",
+      "created_at": "2026-03-20T22:50:26.025Z",
+      "content_offset_seconds": 11274,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "urm",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "eb6518f1-cbf0-4ab7-aacb-f992c651aa90",
+      "created_at": "2026-03-20T22:51:00.768Z",
+      "content_offset_seconds": 11309,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "the style is great. And i have seen much more naughty avatars in VR xD",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f0c7353a-09c2-4198-acc8-ab6438bb90ae",
+      "created_at": "2026-03-20T22:51:17.065Z",
+      "content_offset_seconds": 11325,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "look  in my big eyes!! xD",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "db789196-b7a5-4312-baca-c1ccfe0d782f",
+      "created_at": "2026-03-20T22:53:05.695Z",
+      "content_offset_seconds": 11433,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "yeeah i also got the imposter model problmem with my avatart. i was not knwing that i need to upload the quest version, too",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5a90a6e7-65a6-40dc-aba0-b9620aecf115",
+      "created_at": "2026-03-20T22:55:03.58Z",
+      "content_offset_seconds": 11551,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "ohh you have the  heart traacker on the model",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3c611c6c-14a8-4465-9d77-9126d66b3700",
+      "created_at": "2026-03-20T22:55:24.86Z",
+      "content_offset_seconds": 11573,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Watch vods here! - https://softu.one/",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "2d9e8318-e028-4a0f-8901-5b611188f92f",
+      "created_at": "2026-03-20T22:55:58.488Z",
+      "content_offset_seconds": 11606,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "yeah, better position and fits very well",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d2128f87-a95b-44b7-93a2-563b470ddd3a",
+      "created_at": "2026-03-20T22:56:32.15Z",
+      "content_offset_seconds": 11640,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Join the Discord! - https://softu.one/discord",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f9f2a123-04fc-4c62-ba51-3e8c5789b9d9",
+      "created_at": "2026-03-20T22:56:38.245Z",
+      "content_offset_seconds": 11646,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "yeah so you can teach me how to work with blender and unity ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "75f32a22-5a78-45c6-be38-506526ecd115",
+      "created_at": "2026-03-20T22:59:51.98Z",
+      "content_offset_seconds": 11840,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Bad  financial decisions 😆",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b69cd736-e8d7-4835-8b16-5430704a6544",
+      "created_at": "2026-03-20T23:00:27.452Z",
+      "content_offset_seconds": 11875,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d0df8911-50b7-4fb0-9c3f-e904c9a7472e",
+      "created_at": "2026-03-20T23:00:27.667Z",
+      "content_offset_seconds": 11875,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "deav3n just cheered 60 bits! FeelsGoodMan",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9b10e635-cfb3-42c8-94a4-ea0c62842f45",
+      "created_at": "2026-03-20T23:00:58.13Z",
+      "content_offset_seconds": 11906,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1 Cheer1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e526dd6d-54be-43ab-852e-d8782cb37b61",
+      "created_at": "2026-03-20T23:11:27.258Z",
+      "content_offset_seconds": 12535,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "bits",
+          "version": "1"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "it is getting late for me. Thank you for  the nice talk I try to be here at your  next stream",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d58fc6c8-3f61-45fd-bbdd-6ddd3bda7e4d",
+      "created_at": "2026-03-20T23:11:37.533Z",
+      "content_offset_seconds": 12545,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "bits",
+          "version": "1"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "have a great night",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a58ab3dd-ab86-464a-a1ae-3578b22d8f6b",
+      "created_at": "2026-03-20T23:20:25.408Z",
+      "content_offset_seconds": 13073,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "waga",
+          "emoticon": null
+        }
+      ]
+    }
+  ]
+}
