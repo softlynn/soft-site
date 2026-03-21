@@ -1,0 +1,766 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2728418706",
+  "generatedAt": "2026-03-21T23:32:12.372Z",
+  "comments": [
+    {
+      "id": "488f1454-f692-4108-973a-97f83d0cf70c",
+      "created_at": "2026-03-21T22:10:32.895Z",
+      "content_offset_seconds": 28,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "😂",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "cf82b6b6-40c9-4540-bcc1-518da83f04e6",
+      "created_at": "2026-03-21T22:10:52.781Z",
+      "content_offset_seconds": 48,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Sure",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9adac84c-67ea-4009-af7a-14b253a03ba0",
+      "created_at": "2026-03-21T22:11:28.168Z",
+      "content_offset_seconds": 83,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "You don't gotta join enjoy yourself 😜 dw",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5da749f8-9089-4828-b862-54f52eb743a7",
+      "created_at": "2026-03-21T22:12:28.351Z",
+      "content_offset_seconds": 143,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Jamming",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7400e10a-4a55-4d3f-9494-04d154a9ef95",
+      "created_at": "2026-03-21T22:12:53.472Z",
+      "content_offset_seconds": 168,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer78",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5d5ac19a-8c73-4a05-996f-0a73b257dbfb",
+      "created_at": "2026-03-21T22:12:53.642Z",
+      "content_offset_seconds": 168,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "deav3n just cheered 78 bits! FeelsGoodMan",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "67607831-87f3-4176-9c36-6ed1debcebb5",
+      "created_at": "2026-03-21T22:13:15.132Z",
+      "content_offset_seconds": 190,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ccf2280e-ca6b-4489-8807-1ba15115e8b0",
+      "created_at": "2026-03-21T22:13:17.62Z",
+      "content_offset_seconds": 192,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e7ffc9f3-3680-438f-9334-da64f2eea74b",
+      "created_at": "2026-03-21T22:13:19.826Z",
+      "content_offset_seconds": 195,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4f7ca325-dae9-413b-9be8-ebe912789aee",
+      "created_at": "2026-03-21T22:13:22.655Z",
+      "content_offset_seconds": 197,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d734c0c1-dd42-487d-9646-0e4f9eb8e81a",
+      "created_at": "2026-03-21T22:13:24.412Z",
+      "content_offset_seconds": 199,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "28bf02ad-79e6-4f1c-850b-822ceb4c3815",
+      "created_at": "2026-03-21T22:13:25.975Z",
+      "content_offset_seconds": 201,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "fcad0ac9-e4ca-4987-8e84-739855ce9333",
+      "created_at": "2026-03-21T22:13:30.241Z",
+      "content_offset_seconds": 205,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "No no I'm sorry",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ad0b241b-169a-44d0-aaff-3038b0e98a6b",
+      "created_at": "2026-03-21T22:14:16.454Z",
+      "content_offset_seconds": 251,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "😂 booo",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7d56ddf8-8e82-417a-8c36-ec25ba2babac",
+      "created_at": "2026-03-21T22:14:18.476Z",
+      "content_offset_seconds": 253,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9702413c-40ad-4535-86e7-c4f07646c2f4",
+      "created_at": "2026-03-21T22:14:24.048Z",
+      "content_offset_seconds": 259,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Boop",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "74599ca2-3c65-410f-9e7d-6a12fa8b7da7",
+      "created_at": "2026-03-21T22:14:31.082Z",
+      "content_offset_seconds": 266,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7e7a5258-54a6-4f07-bed1-29d3a5864688",
+      "created_at": "2026-03-21T22:14:33.138Z",
+      "content_offset_seconds": 268,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer1",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e1737a70-6a90-4355-af3d-e1756198d126",
+      "created_at": "2026-03-21T22:14:38.935Z",
+      "content_offset_seconds": 274,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Boop",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "43afd45a-3bb0-4bc7-b549-c70a6b389639",
+      "created_at": "2026-03-21T22:14:41.652Z",
+      "content_offset_seconds": 276,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Yeah",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "81484951-79b7-4558-a95b-4202e4f7585e",
+      "created_at": "2026-03-21T22:15:07.492Z",
+      "content_offset_seconds": 302,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "I'm sorry to leave early but I'ma go eat",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d18ecd94-1e53-4636-af26-30f05a85cfef",
+      "created_at": "2026-03-21T22:15:12.036Z",
+      "content_offset_seconds": 307,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "I'll ttyl 👋👋",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "075475c0-a3d7-4ca2-acb4-d61730309ccc",
+      "created_at": "2026-03-21T22:18:34.623Z",
+      "content_offset_seconds": 509,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "dancin",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "352ea7df-3e98-46a3-a46f-5044cbf94bdd",
+      "created_at": "2026-03-21T22:24:26.354Z",
+      "content_offset_seconds": 861,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "2"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "hey hey",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "19a7ac84-12c0-4dbc-873e-3785f90cf090",
+      "created_at": "2026-03-21T22:49:26.247Z",
+      "content_offset_seconds": 2361,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Join the Discord! - https://softu.one/discord",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "12597e0a-a0f5-48cf-b249-34f6e4e0ce05",
+      "created_at": "2026-03-21T23:08:34.552Z",
+      "content_offset_seconds": 3509,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Watch vods here! - https://softu.one/",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "faef87ea-d13d-48ca-9994-ef0e2964476c",
+      "created_at": "2026-03-21T23:08:38.692Z",
+      "content_offset_seconds": 3513,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "urm",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "cab9318f-551e-4132-940f-624ca0f38a6c",
+      "created_at": "2026-03-21T23:08:48.408Z",
+      "content_offset_seconds": 3523,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Sturdy",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "073b4623-6e6d-4053-b9c0-1537601ca43b",
+      "created_at": "2026-03-21T23:09:00.461Z",
+      "content_offset_seconds": 3535,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "waga",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d7ef1ae1-e927-4fd0-8908-82a6d922dda5",
+      "created_at": "2026-03-21T23:15:08.359Z",
+      "content_offset_seconds": 3903,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "Cheer100",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ef352268-a7b3-4820-a4f9-1e2a3e15124f",
+      "created_at": "2026-03-21T23:15:08.6Z",
+      "content_offset_seconds": 3903,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "deav3n just cheered 100 bits! FeelsGoodMan",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "af22e69d-84c2-4b3e-b6f3-43fc6e7329eb",
+      "created_at": "2026-03-21T23:15:21.779Z",
+      "content_offset_seconds": 3917,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "😂",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "dd1d7f88-0218-4a83-bdfd-478aeddad558",
+      "created_at": "2026-03-21T23:15:27.608Z",
+      "content_offset_seconds": 3922,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits-leader",
+          "version": "1"
+        }
+      ],
+      "user_color": "#0000FF",
+      "message": [
+        {
+          "text": "I need to stop",
+          "emoticon": null
+        }
+      ]
+    }
+  ]
+}
