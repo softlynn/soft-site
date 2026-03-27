@@ -858,6 +858,39 @@ const normalizeChatComments = (rawChat) => {
   return normalized;
 };
 
+const buildCommentsPayload = (twitchVodId, comments, generatedAt = new Date().toISOString()) => ({
+  source: "twitchdownloader",
+  twitchVodId: String(twitchVodId),
+  generatedAt,
+  comments: Array.isArray(comments) ? comments : [],
+});
+
+const buildEmotePayload = (twitchVodId, channelEmoteSets, embeddedEmotes, generatedAt = new Date().toISOString()) => ({
+  source: "local-archive-pipeline",
+  twitchVodId: String(twitchVodId),
+  generatedAt,
+  ...channelEmoteSets,
+  embedded_emotes: Array.isArray(embeddedEmotes) ? embeddedEmotes : [],
+});
+
+const prepareChatArchivePayloads = async (twitchVodId, channelEmoteSets) => {
+  const rawChatPath = path.join(config.tmpDir, `${twitchVodId}-chat-raw.json`);
+  await downloadTwitchChatJson(twitchVodId, rawChatPath);
+
+  const rawChat = await readJsonFile(rawChatPath, {});
+  const generatedAt = new Date().toISOString();
+  const comments = normalizeChatComments(rawChat);
+  const embeddedEmotes = extractEmbeddedThirdPartyEmotes(rawChat);
+
+  return {
+    rawChat,
+    comments,
+    embeddedEmotes,
+    commentsPayload: buildCommentsPayload(twitchVodId, comments, generatedAt),
+    emotePayload: buildEmotePayload(twitchVodId, channelEmoteSets, embeddedEmotes, generatedAt),
+  };
+};
+
 const loadYoutubeClient = async () => {
   if (!(await fileExists(config.youtubeClientSecretPath))) {
     fail(`Missing YouTube OAuth client file at ${config.youtubeClientSecretPath}`);
@@ -1508,8 +1541,14 @@ const runPipeline = async () => {
     })
     .sort((a, b) => a.modifiedAtMs - b.modifiedAtMs);
 
+  const missingCommentVodIds = [];
   const missingEmoteVodIds = [];
   for (const vod of existingVods) {
+    const youtubeParts = Array.isArray(vod?.youtube) ? vod.youtube.filter((part) => part?.id) : [];
+    if (youtubeParts.length > 0) {
+      const commentsPath = path.join(config.commentsDir, `${vod.id}.json`);
+      if (!(await fileExists(commentsPath))) missingCommentVodIds.push(String(vod.id));
+    }
     const emotePath = path.join(config.emotesDir, `${vod.id}.json`);
     if (!(await fileExists(emotePath))) missingEmoteVodIds.push(String(vod.id));
   }
@@ -1521,12 +1560,24 @@ const runPipeline = async () => {
     return metadataVersion < METADATA_TEMPLATE_VERSION;
   });
 
-  if (recordings.length === 0 && missingEmoteVodIds.length === 0 && vodsNeedingMetadataSync.length === 0 && !archiveMaintenanceChanged) {
+  if (
+    recordings.length === 0 &&
+    missingCommentVodIds.length === 0 &&
+    missingEmoteVodIds.length === 0 &&
+    vodsNeedingMetadataSync.length === 0 &&
+    !archiveMaintenanceChanged
+  ) {
     log("No completed recordings ready for processing.");
     return;
   }
 
-  if (recordings.length === 0 && missingEmoteVodIds.length === 0 && vodsNeedingMetadataSync.length === 0 && archiveMaintenanceChanged) {
+  if (
+    recordings.length === 0 &&
+    missingCommentVodIds.length === 0 &&
+    missingEmoteVodIds.length === 0 &&
+    vodsNeedingMetadataSync.length === 0 &&
+    archiveMaintenanceChanged
+  ) {
     if (config.dryRun) {
       log("[DRY RUN] Archive maintenance detected but no files were written.");
       return;
@@ -1612,9 +1663,39 @@ const runPipeline = async () => {
     group.sort((a, b) => a.recording.modifiedAtMs - b.recording.modifiedAtMs);
   }
 
+  const uploadVodIds = new Set(uploadsByVod.keys());
+  if (!config.dryRun && missingCommentVodIds.length > 0) {
+    for (const vodId of missingCommentVodIds) {
+      if (uploadVodIds.has(String(vodId))) continue;
+
+      const commentsPath = path.join(config.commentsDir, `${vodId}.json`);
+      const emotesPath = path.join(config.emotesDir, `${vodId}.json`);
+      const archiveData = await prepareChatArchivePayloads(vodId, channelEmoteSets);
+
+      await writeJsonFile(commentsPath, archiveData.commentsPayload);
+      stagedPaths.push(commentsPath);
+
+      if (!(await fileExists(emotesPath))) {
+        await writeJsonFile(emotesPath, archiveData.emotePayload);
+        stagedPaths.push(emotesPath);
+      }
+
+      const previous = state.processedVodIds?.[vodId] || {};
+      state.processedVodIds[vodId] = {
+        ...previous,
+        commentsBackfilledAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      log(
+        `Backfilled chat replay for VOD ${vodId} (${archiveData.comments.length} comments, ${archiveData.embeddedEmotes.length} embedded emotes).`
+      );
+    }
+  }
+
   if (!config.dryRun && missingEmoteVodIds.length > 0) {
     for (const vodId of missingEmoteVodIds) {
       const emotesPath = path.join(config.emotesDir, `${vodId}.json`);
+      if (await fileExists(emotesPath)) continue;
       await writeJsonFile(emotesPath, {
         source: "local-archive-pipeline",
         twitchVodId: vodId,
@@ -1650,32 +1731,18 @@ const runPipeline = async () => {
     }
     const commentsPath = path.join(config.commentsDir, `${vodId}.json`);
     const emotesPath = path.join(config.emotesDir, `${vodId}.json`);
-    const rawChatPath = path.join(config.tmpDir, `${vodId}-chat-raw.json`);
-
-    await downloadTwitchChatJson(vodId, rawChatPath);
-
-    const rawChat = await readJsonFile(rawChatPath, {});
-    const comments = normalizeChatComments(rawChat);
-    const embeddedEmotes = extractEmbeddedThirdPartyEmotes(rawChat);
-    const emotePayload = {
-      source: "local-archive-pipeline",
-      twitchVodId: vodId,
-      generatedAt: new Date().toISOString(),
-      ...channelEmoteSets,
-      embedded_emotes: embeddedEmotes,
-    };
+    const archiveData = await prepareChatArchivePayloads(vodId, channelEmoteSets);
+    const rawChat = archiveData.rawChat;
+    const comments = archiveData.comments;
+    const embeddedEmotes = archiveData.embeddedEmotes;
+    const emotePayload = archiveData.emotePayload;
 
     if (config.dryRun) {
       log(`[DRY RUN] Chat export succeeded for VOD ${vodId} (${comments.length} comments, ${embeddedEmotes.length} embedded emotes).`);
       continue;
     }
 
-    await writeJsonFile(commentsPath, {
-      source: "twitchdownloader",
-      twitchVodId: vodId,
-      generatedAt: new Date().toISOString(),
-      comments,
-    });
+    await writeJsonFile(commentsPath, archiveData.commentsPayload);
     await writeJsonFile(emotesPath, emotePayload);
     stagedPaths.push(commentsPath);
     stagedPaths.push(emotesPath);
