@@ -14,6 +14,8 @@ dotenv.config({ path: path.join(repoRoot, ".env.local") });
 
 const METADATA_TEMPLATE_VERSION = 5;
 const DEFAULT_ARCHIVE_SITE_URL = "https://softu.one";
+const DEFAULT_GIT_COMMIT_AUTHOR_NAME = "softu archive bot";
+const DEFAULT_GIT_COMMIT_AUTHOR_EMAIL = "archive-bot@softu.one";
 
 const cleanUrl = (value) => String(value || "").replace(/\/+$/, "");
 
@@ -108,6 +110,12 @@ const config = {
   minRecordingAgeMinutes: Number(process.env.MIN_RECORDING_AGE_MINUTES || "10"),
   maxRecordingsPerRun: Number(process.env.MAX_RECORDINGS_PER_RUN || "1"),
   autoGitPush: (process.env.AUTO_GIT_PUSH || "true").toLowerCase() === "true",
+  gitCommitAuthorName:
+    String(process.env.GIT_COMMIT_AUTHOR_NAME || process.env.GIT_AUTHOR_NAME || DEFAULT_GIT_COMMIT_AUTHOR_NAME).trim() ||
+    DEFAULT_GIT_COMMIT_AUTHOR_NAME,
+  gitCommitAuthorEmail:
+    String(process.env.GIT_COMMIT_AUTHOR_EMAIL || process.env.GIT_AUTHOR_EMAIL || DEFAULT_GIT_COMMIT_AUTHOR_EMAIL).trim() ||
+    DEFAULT_GIT_COMMIT_AUTHOR_EMAIL,
   dryRun: (process.env.LOCAL_PIPELINE_DRY_RUN || "false").toLowerCase() === "true",
   twitchDownloaderPath: process.env.TWITCHDOWNLOADER_PATH || path.join(repoRoot, "scripts", "tools", "TwitchDownloaderCLI.exe"),
   ffmpegPath: process.env.FFMPEG_PATH || "ffmpeg",
@@ -142,6 +150,13 @@ const log = (message) => {
 const fail = (message) => {
   throw new Error(message);
 };
+
+const gitCommitIdentityArgs = () => [
+  "-c",
+  `user.name=${config.gitCommitAuthorName}`,
+  "-c",
+  `user.email=${config.gitCommitAuthorEmail}`,
+];
 
 const ensureDirectory = async (dirPath) => {
   await fs.mkdir(dirPath, { recursive: true });
@@ -1056,7 +1071,10 @@ const stageAndPushArchiveData = (filePaths, commitMessage) => {
     return;
   }
 
-  const commit = spawnSync("git", ["commit", "-m", commitMessage], { cwd: repoRoot, stdio: "inherit" });
+  const commit = spawnSync("git", [...gitCommitIdentityArgs(), "commit", "-m", commitMessage], {
+    cwd: repoRoot,
+    stdio: "inherit",
+  });
   if (commit.status !== 0) fail("git commit failed");
 
   const push = spawnSync("git", ["push", "origin", "main"], { cwd: repoRoot, stdio: "inherit" });

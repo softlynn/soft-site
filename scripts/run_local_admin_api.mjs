@@ -9,6 +9,8 @@ import dotenv from "dotenv";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
+const DEFAULT_GIT_COMMIT_AUTHOR_NAME = "softu archive bot";
+const DEFAULT_GIT_COMMIT_AUTHOR_EMAIL = "archive-bot@softu.one";
 
 dotenv.config({ path: path.join(repoRoot, ".env.local") });
 
@@ -21,6 +23,12 @@ const config = {
   adminAllowedOrigins: String(process.env.ADMIN_ALLOWED_ORIGINS || ""),
   adminPassword: String(process.env.ADMIN_PANEL_PASSWORD || ""),
   autoGitPush: (process.env.AUTO_GIT_PUSH || "true").toLowerCase() === "true",
+  gitCommitAuthorName:
+    String(process.env.GIT_COMMIT_AUTHOR_NAME || process.env.GIT_AUTHOR_NAME || DEFAULT_GIT_COMMIT_AUTHOR_NAME).trim() ||
+    DEFAULT_GIT_COMMIT_AUTHOR_NAME,
+  gitCommitAuthorEmail:
+    String(process.env.GIT_COMMIT_AUTHOR_EMAIL || process.env.GIT_AUTHOR_EMAIL || DEFAULT_GIT_COMMIT_AUTHOR_EMAIL).trim() ||
+    DEFAULT_GIT_COMMIT_AUTHOR_EMAIL,
   vodsDataPath: process.env.ARCHIVE_VODS_PATH || path.join(repoRoot, "public", "data", "vods.json"),
   twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "",
   twitchClientId: process.env.TWITCH_CLIENT_ID || "",
@@ -50,6 +58,13 @@ const log = (message) => {
 const fail = (message) => {
   throw new Error(message);
 };
+
+const gitCommitIdentityArgs = () => [
+  "-c",
+  `user.name=${config.gitCommitAuthorName}`,
+  "-c",
+  `user.email=${config.gitCommitAuthorEmail}`,
+];
 
 const createApiError = (status, message, details = {}) => Object.assign(new Error(message), { status, ...details });
 
@@ -224,7 +239,10 @@ const stageAndPushVodData = (commitMessage) => {
     return;
   }
 
-  const commit = spawnSync("git", ["commit", "-m", commitMessage], { cwd: repoRoot, stdio: "inherit" });
+  const commit = spawnSync("git", [...gitCommitIdentityArgs(), "commit", "-m", commitMessage], {
+    cwd: repoRoot,
+    stdio: "inherit",
+  });
   if (commit.status !== 0) fail("git commit failed");
 
   if (!config.autoGitPush) return;
