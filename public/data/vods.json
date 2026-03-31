@@ -57,7 +57,8 @@
     ],
     "games": [],
     "createdAt": "2026-03-27T21:13:59Z",
-    "updatedAt": "2026-03-27T21:26:48.034Z"
+    "updatedAt": "2026-03-31T00:30:23.184Z",
+    "unpublished": true
   },
   {
     "id": "2732567512",
@@ -68,7 +69,7 @@
       {
         "id": "ccuCAZhGGx8",
         "type": "vod",
-        "duration": 7694,
+        "duration": 0,
         "part": 1,
         "thumbnail_url": "https://i.ytimg.com/vi/ccuCAZhGGx8/mqdefault.jpg"
       }
@@ -87,7 +88,7 @@
     ],
     "games": [],
     "createdAt": "2026-03-26T23:06:07Z",
-    "updatedAt": "2026-03-27T02:11:39.000Z"
+    "updatedAt": "2026-03-27T01:59:26.199Z"
   },
   {
     "id": "2728418706",
