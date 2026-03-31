@@ -1,0 +1,70 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2733305559",
+  "generatedAt": "2026-03-27T21:25:09.743Z",
+  "comments": [
+    {
+      "id": "7012f966-3147-4aa0-bba2-ea9b29da059c",
+      "created_at": "2026-03-27T21:16:30.104Z",
+      "content_offset_seconds": 149,
+      "display_name": "goodman_303",
+      "user_badges": [
+        {
+          "_id": "marathon-silkworm",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "finch6Boogy",
+          "emote": {
+            "emoteID": "emotesv2_5f408cbd3ad64cfcb496a36569937f29"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_5f408cbd3ad64cfcb496a36569937f29"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "finch6Boogy",
+          "emote": {
+            "emoteID": "emotesv2_5f408cbd3ad64cfcb496a36569937f29"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_5f408cbd3ad64cfcb496a36569937f29"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "finch6Boogy",
+          "emote": {
+            "emoteID": "emotesv2_5f408cbd3ad64cfcb496a36569937f29"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_5f408cbd3ad64cfcb496a36569937f29"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "finch6Boogy",
+          "emote": {
+            "emoteID": "emotesv2_5f408cbd3ad64cfcb496a36569937f29"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_5f408cbd3ad64cfcb496a36569937f29"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2735832509",
+  "generatedAt": "2026-03-30T22:51:57.462Z",
+  "comments": [
+    {
+      "id": "215423ec-d89a-4a12-9558-5d0b221ac2ed",
+      "created_at": "2026-03-30T20:19:19.153Z",
+      "content_offset_seconds": 56,
+      "display_name": "BarneyOldman",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        }
+      ],
+      "user_color": "#00FF34",
+      "message": [
+        {
+          "text": "hey hey",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a9c59c87-a07d-4716-8ee9-6294cbeef808",
+      "created_at": "2026-03-30T20:40:10.787Z",
+      "content_offset_seconds": 1308,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#27FFD7",
+      "message": [
+        {
+          "text": "sumo1Hi",
+          "emote": {
+            "emoteID": "emotesv2_e6db221bea8640e1979eb846b5d9c50b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_e6db221bea8640e1979eb846b5d9c50b"
+          }
+        }
+      ]
+    },
+    {
+      "id": "eee7a53a-11e3-41bb-960f-082b37c2b4c8",
+      "created_at": "2026-03-30T20:49:58.279Z",
+      "content_offset_seconds": 1895,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#27FFD7",
+      "message": [
+        {
+          "text": "rip foot",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "43d365b0-a012-4080-91ca-e017dec4852e",
+      "created_at": "2026-03-30T20:56:13.283Z",
+      "content_offset_seconds": 2270,
+      "display_name": "sienna_sky07",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "my messages are not sent because of automod",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8a6bc206-eb99-4251-a12c-1dee0dc4f951",
+      "created_at": "2026-03-30T20:56:25.331Z",
+      "content_offset_seconds": 2282,
+      "display_name": "sienna_sky07",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "See it",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8f1d32b0-93f5-4864-bce0-6a0928454eab",
+      "created_at": "2026-03-30T20:56:33.333Z",
+      "content_offset_seconds": 2290,
+      "display_name": "sienna_sky07",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Here is my discord (sienna-",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8790c50d-5a86-47b6-95e5-8b26ce44f4f1",
+      "created_at": "2026-03-30T20:56:40.396Z",
+      "content_offset_seconds": 2297,
+      "display_name": "sienna_sky07",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "sienna_sky",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ba1686f1-1757-4829-bc00-320490241354",
+      "created_at": "2026-03-30T21:08:29.935Z",
+      "content_offset_seconds": 3007,
+      "display_name": "studbunnyyyy",
+      "user_badges": [
+        {
+          "_id": "glhf-pledge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "dwelflMayoPancakes2",
+          "emote": {
+            "emoteID": "emotesv2_6303eb655d394f6a8b39547fcddfe1c9"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_6303eb655d394f6a8b39547fcddfe1c9"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "dwelflMayopancakes",
+          "emote": {
+            "emoteID": "301965052"
+          },
+          "emoticon": {
+            "emoticon_id": "301965052"
+          }
+        }
+      ]
+    },
+    {
+      "id": "b6f7a052-2ce4-4f13-9cdd-7d1f15bb585e",
+      "created_at": "2026-03-30T21:13:34.889Z",
+      "content_offset_seconds": 3312,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Explosion nya",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "df8cadcd-a2b0-4545-8152-0368017831a9",
+      "created_at": "2026-03-30T21:37:56.168Z",
+      "content_offset_seconds": 4773,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "MikeAyel, thank you for following! :33",
+          "emoticon": null
+        }
+      ]
+    }
+  ]
+}
