@@ -26,4 +26,14 @@ if ($LASTEXITCODE -ne 0) {
   throw "Failed to create scheduled task '$TaskName'."
 }
 
-Write-Host "Installed scheduled task '$TaskName' to run every $EveryMinutes minutes (hidden launcher)."
+$settings = New-ScheduledTaskSettingsSet `
+  -AllowStartIfOnBatteries `
+  -DontStopIfGoingOnBatteries `
+  -StartWhenAvailable `
+  -ExecutionTimeLimit (New-TimeSpan -Hours 72) `
+  -MultipleInstances IgnoreNew `
+  -Priority 7
+
+Set-ScheduledTask -TaskName $TaskName -Settings $settings | Out-Null
+
+Write-Host "Installed scheduled task '$TaskName' to run every $EveryMinutes minutes (hidden launcher, battery-safe)."
