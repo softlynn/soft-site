@@ -1,0 +1,595 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2740913489",
+  "generatedAt": "2026-04-05T23:10:10.485Z",
+  "comments": [
+    {
+      "id": "3ff270c9-01e5-4e3f-a12e-553f95a45739",
+      "created_at": "2026-04-05T21:57:18.772Z",
+      "content_offset_seconds": 933,
+      "display_name": "lesandalye_",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Goodnight nerd",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5bf86385-8919-48fc-81ac-cc4e0758efc5",
+      "created_at": "2026-04-05T21:59:01.541Z",
+      "content_offset_seconds": 1035,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "chonky40ChonkyWiggle",
+          "emote": {
+            "emoteID": "emotesv2_74caf69f0d8c4b4ebcdb8a05567f47b8"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_74caf69f0d8c4b4ebcdb8a05567f47b8"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "chonky40Wiggle",
+          "emote": {
+            "emoteID": "emotesv2_b6db87413da14a07a65d30f5aa377140"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_b6db87413da14a07a65d30f5aa377140"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "chonky40ChonkyWiggle",
+          "emote": {
+            "emoteID": "emotesv2_74caf69f0d8c4b4ebcdb8a05567f47b8"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_74caf69f0d8c4b4ebcdb8a05567f47b8"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "chonky40Wiggle",
+          "emote": {
+            "emoteID": "emotesv2_b6db87413da14a07a65d30f5aa377140"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_b6db87413da14a07a65d30f5aa377140"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "chonky40ChonkyWiggle",
+          "emote": {
+            "emoteID": "emotesv2_74caf69f0d8c4b4ebcdb8a05567f47b8"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_74caf69f0d8c4b4ebcdb8a05567f47b8"
+          }
+        }
+      ]
+    },
+    {
+      "id": "a51e51f4-20f1-421c-8b02-b9f8ab0a14ba",
+      "created_at": "2026-04-05T22:03:26.138Z",
+      "content_offset_seconds": 1300,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "T",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "41e45436-333e-42d6-ad8c-cf6f7657ff92",
+      "created_at": "2026-04-05T22:03:59.208Z",
+      "content_offset_seconds": 1333,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#27FFD7",
+      "message": [
+        {
+          "text": "knee strap kaboom",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "29d01271-d7a9-434e-b0a3-12590c80feaf",
+      "created_at": "2026-04-05T22:08:11.337Z",
+      "content_offset_seconds": 1585,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "sayaguBop",
+          "emote": {
+            "emoteID": "emotesv2_e794fd5c5b104063a72f2c91ecec115a"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_e794fd5c5b104063a72f2c91ecec115a"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "sayaguBop",
+          "emote": {
+            "emoteID": "emotesv2_e794fd5c5b104063a72f2c91ecec115a"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_e794fd5c5b104063a72f2c91ecec115a"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "sayaguBop",
+          "emote": {
+            "emoteID": "emotesv2_e794fd5c5b104063a72f2c91ecec115a"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_e794fd5c5b104063a72f2c91ecec115a"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "sayaguBop",
+          "emote": {
+            "emoteID": "emotesv2_e794fd5c5b104063a72f2c91ecec115a"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_e794fd5c5b104063a72f2c91ecec115a"
+          }
+        }
+      ]
+    },
+    {
+      "id": "6636df9b-2966-4ef6-9bab-dbfaf6aa8206",
+      "created_at": "2026-04-05T22:16:41.557Z",
+      "content_offset_seconds": 2095,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "BrickieVR, thank you for following! :33",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1e962e5f-8988-4c93-8fd9-08f8b6c25995",
+      "created_at": "2026-04-05T22:17:08.75Z",
+      "content_offset_seconds": 2123,
+      "display_name": "BrickieVR",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2023",
+          "version": "1"
+        }
+      ],
+      "user_color": "#B22222",
+      "message": [
+        {
+          "text": "I see dancing I drop follow, I hope you have an amazing practice",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0d623641-0e67-4669-b8fe-a684b5c73114",
+      "created_at": "2026-04-05T22:22:52.396Z",
+      "content_offset_seconds": 2466,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "veyvey1Jammies",
+          "emote": {
+            "emoteID": "emotesv2_a2da18e25938452c8baf7294ed9f7358"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_a2da18e25938452c8baf7294ed9f7358"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "veyvey1Jammies",
+          "emote": {
+            "emoteID": "emotesv2_a2da18e25938452c8baf7294ed9f7358"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_a2da18e25938452c8baf7294ed9f7358"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "veyvey1Jammies",
+          "emote": {
+            "emoteID": "emotesv2_a2da18e25938452c8baf7294ed9f7358"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_a2da18e25938452c8baf7294ed9f7358"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "veyvey1Jammies",
+          "emote": {
+            "emoteID": "emotesv2_a2da18e25938452c8baf7294ed9f7358"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_a2da18e25938452c8baf7294ed9f7358"
+          }
+        }
+      ]
+    },
+    {
+      "id": "49d4b00f-f098-4fd5-a9bd-2d46bcd9cf4a",
+      "created_at": "2026-04-05T22:37:44.913Z",
+      "content_offset_seconds": 3359,
+      "display_name": "poutlokk",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Hey, this stream is amazing! I’d love to collab and play together sometime  let’s connect on Discord 👉👉 witwix2",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "00ecf32a-5134-49e1-a709-fbb212354c42",
+      "created_at": "2026-04-05T22:37:48.234Z",
+      "content_offset_seconds": 3362,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "poutlokk, thank you for following! :33",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "af975bf2-608b-4349-9329-e2cf1e1669a2",
+      "created_at": "2026-04-05T22:38:19.638Z",
+      "content_offset_seconds": 3393,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "slypyvJam",
+          "emote": {
+            "emoteID": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "slypyvJam",
+          "emote": {
+            "emoteID": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "slypyvJam",
+          "emote": {
+            "emoteID": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "slypyvJam",
+          "emote": {
+            "emoteID": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          }
+        }
+      ]
+    },
+    {
+      "id": "1dd5c7b2-4096-4101-9963-b795193489b8",
+      "created_at": "2026-04-05T22:39:02.234Z",
+      "content_offset_seconds": 3436,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "Explosion nya",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ff11f7e9-1468-4d2f-9dbe-63c0307245e0",
+      "created_at": "2026-04-05T22:54:15.969Z",
+      "content_offset_seconds": 4350,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Good job ",
+          "emoticon": null
+        },
+        {
+          "text": "yulindPat",
+          "emote": {
+            "emoteID": "emotesv2_0289c97a754c4f05af2bc5a18e7eef50"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_0289c97a754c4f05af2bc5a18e7eef50"
+          }
+        }
+      ]
+    },
+    {
+      "id": "01e3dbbe-56b9-49fd-ade5-c35f5912280d",
+      "created_at": "2026-04-05T22:56:40.989Z",
+      "content_offset_seconds": 4495,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "the puzzle locking squares?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3989604b-13b0-4d9b-a759-77c5c44c6d39",
+      "created_at": "2026-04-05T22:59:00.637Z",
+      "content_offset_seconds": 4634,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "what is it called?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7c537d37-5dbd-43d9-a7b7-c6aec07880d6",
+      "created_at": "2026-04-05T23:00:41.198Z",
+      "content_offset_seconds": 4735,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "thanks",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "55559843-463e-4a6f-b912-02fbcba29344",
+      "created_at": "2026-04-05T23:01:00.876Z",
+      "content_offset_seconds": 4755,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "frostedNotes",
+          "emote": {
+            "emoteID": "emotesv2_b0d90465bd494126b62731199c7092b0"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_b0d90465bd494126b62731199c7092b0"
+          }
+        }
+      ]
+    },
+    {
+      "id": "b7739885-fd99-455d-98a9-299eb37d790f",
+      "created_at": "2026-04-05T23:03:30.521Z",
+      "content_offset_seconds": 4904,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Thanks for stream ",
+          "emoticon": null
+        },
+        {
+          "text": "chonky40Heart",
+          "emote": {
+            "emoteID": "emotesv2_134875bae5b14b5783a82c5bdaa9e9ec"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_134875bae5b14b5783a82c5bdaa9e9ec"
+          }
+        }
+      ]
+    },
+    {
+      "id": "6e3c51dc-4d55-4a32-9ec1-1483dcbb1f9e",
+      "created_at": "2026-04-05T23:04:01.228Z",
+      "content_offset_seconds": 4935,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#27FFD7",
+      "message": [
+        {
+          "text": "softu1Gold",
+          "emote": {
+            "emoteID": "emotesv2_18248f6d9b5c414595b9112817db9f19"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_18248f6d9b5c414595b9112817db9f19"
+          }
+        }
+      ]
+    }
+  ]
+}
