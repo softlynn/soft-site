@@ -1,0 +1,572 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2751449640",
+  "generatedAt": "2026-04-18T23:30:09.661Z",
+  "comments": [
+    {
+      "id": "64321447-4bce-4584-a9dd-cce9604f0127",
+      "created_at": "2026-04-18T21:57:32.078Z",
+      "content_offset_seconds": 51,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "cyberf32WaveAnim",
+          "emote": {
+            "emoteID": "emotesv2_4e5589474d3045b8a4a879c3db67fca7"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_4e5589474d3045b8a4a879c3db67fca7"
+          }
+        }
+      ]
+    },
+    {
+      "id": "a5251a74-4b95-45a9-a71f-34e45046b0b9",
+      "created_at": "2026-04-18T21:58:37.336Z",
+      "content_offset_seconds": 116,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "TheOtherJoe watched 5 consecutive streams and sparked a watch streak! ",
+          "emoticon": null
+        },
+        {
+          "text": "xdsxbuPidgeondance",
+          "emote": {
+            "emoteID": "emotesv2_faba6bc3ce1346fba2cd1f38d6756d41"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_faba6bc3ce1346fba2cd1f38d6756d41"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "xdsxbuPidgeondance",
+          "emote": {
+            "emoteID": "emotesv2_faba6bc3ce1346fba2cd1f38d6756d41"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_faba6bc3ce1346fba2cd1f38d6756d41"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "xdsxbuPidgeondance",
+          "emote": {
+            "emoteID": "emotesv2_faba6bc3ce1346fba2cd1f38d6756d41"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_faba6bc3ce1346fba2cd1f38d6756d41"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "xdsxbuPidgeondance",
+          "emote": {
+            "emoteID": "emotesv2_faba6bc3ce1346fba2cd1f38d6756d41"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_faba6bc3ce1346fba2cd1f38d6756d41"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "xdsxbuPidgeondance",
+          "emote": {
+            "emoteID": "emotesv2_faba6bc3ce1346fba2cd1f38d6756d41"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_faba6bc3ce1346fba2cd1f38d6756d41"
+          }
+        }
+      ]
+    },
+    {
+      "id": "3ace1c1d-625a-4231-89f1-8e9463fbcdbb",
+      "created_at": "2026-04-18T22:10:47.009Z",
+      "content_offset_seconds": 846,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "xdsxbuCheer",
+          "emote": {
+            "emoteID": "emotesv2_2ce994ecbeb442fabba6ec6643871243"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_2ce994ecbeb442fabba6ec6643871243"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "xdsxbuCheer",
+          "emote": {
+            "emoteID": "emotesv2_2ce994ecbeb442fabba6ec6643871243"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_2ce994ecbeb442fabba6ec6643871243"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "xdsxbuCheer",
+          "emote": {
+            "emoteID": "emotesv2_2ce994ecbeb442fabba6ec6643871243"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_2ce994ecbeb442fabba6ec6643871243"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "xdsxbuCheer",
+          "emote": {
+            "emoteID": "emotesv2_2ce994ecbeb442fabba6ec6643871243"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_2ce994ecbeb442fabba6ec6643871243"
+          }
+        }
+      ]
+    },
+    {
+      "id": "83f761b1-6171-421e-a2c9-e95107f3f2dc",
+      "created_at": "2026-04-18T22:31:11.144Z",
+      "content_offset_seconds": 2070,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "cutewo1Vibeeee",
+          "emote": {
+            "emoteID": "emotesv2_7ab01d7eacce449e91847f7259dfb3ea"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_7ab01d7eacce449e91847f7259dfb3ea"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "cutewo1Vibeeee",
+          "emote": {
+            "emoteID": "emotesv2_7ab01d7eacce449e91847f7259dfb3ea"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_7ab01d7eacce449e91847f7259dfb3ea"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "cutewo1Vibeeee",
+          "emote": {
+            "emoteID": "emotesv2_7ab01d7eacce449e91847f7259dfb3ea"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_7ab01d7eacce449e91847f7259dfb3ea"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "cutewo1Vibeeee",
+          "emote": {
+            "emoteID": "emotesv2_7ab01d7eacce449e91847f7259dfb3ea"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_7ab01d7eacce449e91847f7259dfb3ea"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c4d42b36-84d4-4cbd-b695-0bbad6904cd7",
+      "created_at": "2026-04-18T22:39:01.136Z",
+      "content_offset_seconds": 2540,
+      "display_name": "realman_644",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Hey! You stream really well 👑 I'll love to become your dedicated fan and support you",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5319d06e-23b7-426f-89bb-d5af74d2d43c",
+      "created_at": "2026-04-18T22:39:03.56Z",
+      "content_offset_seconds": 2542,
+      "display_name": "realman_644",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "mind connecting me on discord thefoxi_99",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b76d30ac-f73e-45a2-99e4-5f326b4fa24f",
+      "created_at": "2026-04-18T22:46:18.336Z",
+      "content_offset_seconds": 2977,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "karasu21Rave",
+          "emote": {
+            "emoteID": "emotesv2_ab5893f6388a49499c5f0a03354685b1"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_ab5893f6388a49499c5f0a03354685b1"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "karasu21Rave",
+          "emote": {
+            "emoteID": "emotesv2_ab5893f6388a49499c5f0a03354685b1"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_ab5893f6388a49499c5f0a03354685b1"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "karasu21Rave",
+          "emote": {
+            "emoteID": "emotesv2_ab5893f6388a49499c5f0a03354685b1"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_ab5893f6388a49499c5f0a03354685b1"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "karasu21Rave",
+          "emote": {
+            "emoteID": "emotesv2_ab5893f6388a49499c5f0a03354685b1"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_ab5893f6388a49499c5f0a03354685b1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "5fedf7d2-3a2f-49c2-8486-d3609795c2a9",
+      "created_at": "2026-04-18T22:53:56.941Z",
+      "content_offset_seconds": 3436,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "frostedDrive",
+          "emote": {
+            "emoteID": "emotesv2_0a6e40e721fe4e0f8b12f7e068b3d502"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_0a6e40e721fe4e0f8b12f7e068b3d502"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "frostedDrive",
+          "emote": {
+            "emoteID": "emotesv2_0a6e40e721fe4e0f8b12f7e068b3d502"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_0a6e40e721fe4e0f8b12f7e068b3d502"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "frostedDrive",
+          "emote": {
+            "emoteID": "emotesv2_0a6e40e721fe4e0f8b12f7e068b3d502"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_0a6e40e721fe4e0f8b12f7e068b3d502"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "frostedDrive",
+          "emote": {
+            "emoteID": "emotesv2_0a6e40e721fe4e0f8b12f7e068b3d502"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_0a6e40e721fe4e0f8b12f7e068b3d502"
+          }
+        }
+      ]
+    },
+    {
+      "id": "6f544a03-14e9-4e26-b111-b5b96f461a74",
+      "created_at": "2026-04-18T23:04:41.256Z",
+      "content_offset_seconds": 4080,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "bricki11Sip",
+          "emote": {
+            "emoteID": "emotesv2_b4848b518bb141c6b897679f32b02ce8"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_b4848b518bb141c6b897679f32b02ce8"
+          }
+        }
+      ]
+    },
+    {
+      "id": "00aa094b-d540-44a4-8493-b5059cf42a56",
+      "created_at": "2026-04-18T23:08:26.741Z",
+      "content_offset_seconds": 4306,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "welcome back",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "099a5294-e0d9-4e0f-beb7-1de775608241",
+      "created_at": "2026-04-18T23:14:18.885Z",
+      "content_offset_seconds": 4658,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "slypyvJam",
+          "emote": {
+            "emoteID": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "slypyvJam",
+          "emote": {
+            "emoteID": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "slypyvJam",
+          "emote": {
+            "emoteID": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "slypyvJam",
+          "emote": {
+            "emoteID": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_1208d26788ef48028faf8075dee080ff"
+          }
+        }
+      ]
+    },
+    {
+      "id": "8ce5ad60-2736-4d2a-932c-4fc898b3ebd2",
+      "created_at": "2026-04-18T23:17:16.999Z",
+      "content_offset_seconds": 4836,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "EDM",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1ca39e94-69f7-4e9f-83f1-93d4398856ef",
+      "created_at": "2026-04-18T23:22:11.131Z",
+      "content_offset_seconds": 5130,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "maruka3Sit",
+          "emote": {
+            "emoteID": "emotesv2_d063da88785e42ba84d3ddd8ac591869"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_d063da88785e42ba84d3ddd8ac591869"
+          }
+        }
+      ]
+    },
+    {
+      "id": "b4e2edbe-90f3-437a-9a31-4db20f540f6f",
+      "created_at": "2026-04-18T23:22:33.412Z",
+      "content_offset_seconds": 5152,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Thanks for stream ",
+          "emoticon": null
+        },
+        {
+          "text": "bricki11Heart",
+          "emote": {
+            "emoteID": "emotesv2_7342049c76e0423ab35605d2c553dbb0"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_7342049c76e0423ab35605d2c553dbb0"
+          }
+        }
+      ]
+    }
+  ]
+}
