@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-04-30T19:44:03.543Z",
+  "generatedAt": "2026-05-01T20:59:03.770Z",
   "channelLogin": "softu1",
   "channelId": "218908733",
   "global": [
@@ -4939,6 +4939,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/995ff00f-c16c-4782-86ba-f2d7668dc6a2/3",
           "title": "Umbrella Corporation",
           "description": "This badge was earned by subscribing or gifting a sub to a Resident Evil: Requiem streamer.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "unicorn-tachanka",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/dc23d5e0-b9ec-4729-9d53-ca1a8328add0/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/dc23d5e0-b9ec-4729-9d53-ca1a8328add0/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/dc23d5e0-b9ec-4729-9d53-ca1a8328add0/3",
+          "title": "Unicorn Tachanka",
+          "description": "This badge was earned by subscribing or gifting a sub to a Rainbow Six Siege streamer!",
           "click_action": null,
           "click_url": null
         }
