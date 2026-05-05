@@ -46,6 +46,23 @@ export function DesignProvider({ children }) {
     reloadDesign();
   }, [reloadDesign]);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const settings = design?.settings || {};
+    const root = document.documentElement;
+    const setVar = (name, value, fallback) => {
+      root.style.setProperty(name, String(value || fallback));
+    };
+
+    setVar("--soft-body-font", settings.bodyFontFamily, "\"Manrope\", \"Segoe UI\", sans-serif");
+    setVar("--soft-heading-font", settings.headingFontFamily, "\"Space Grotesk\", \"Manrope\", sans-serif");
+    setVar("--soft-button-font", settings.buttonFontFamily, "\"Manrope\", \"Segoe UI\", sans-serif");
+    setVar("--soft-salmon", settings.accentColor, "#d46b8c");
+    setVar("--soft-salmon-deep", settings.accentColor, "#c05779");
+    setVar("--soft-blue", settings.secondaryAccentColor, "#79a3e6");
+    setVar("--soft-blue-deep", settings.secondaryAccentColor, "#5a84cf");
+  }, [design]);
+
   const value = useMemo(
     () => ({
       design,
@@ -61,4 +78,3 @@ export function DesignProvider({ children }) {
 }
 
 export const useSiteDesign = () => useContext(DesignContext);
-

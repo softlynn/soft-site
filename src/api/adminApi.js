@@ -29,6 +29,14 @@ const sleep = (ms) =>
     setTimeout(resolve, ms);
   });
 
+const readFileAsDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Failed to read image file"));
+    reader.readAsDataURL(file);
+  });
+
 const isNetworkStartupError = (error) => {
   const message = String(error?.message || "").toLowerCase();
   if (!message) return false;
@@ -295,6 +303,23 @@ export const publishSiteDesign = async (design) => {
     method: "POST",
     token,
     body: { design },
+  });
+};
+
+export const uploadDesignAsset = async (file) => {
+  const token = readAdminToken();
+  if (!token) throw new Error("Unlock admin before uploading images");
+  if (!file) throw new Error("Choose an image to upload");
+
+  const dataUrl = await readFileAsDataUrl(file);
+  return request("/design-assets", {
+    method: "POST",
+    token,
+    body: {
+      fileName: file.name,
+      contentType: file.type,
+      dataUrl,
+    },
   });
 };
 

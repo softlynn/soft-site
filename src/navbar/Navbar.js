@@ -218,6 +218,16 @@ export default function Navbar() {
                 background: "var(--soft-surface-strong)",
                 backdropFilter: "none",
               }
+            : headerSurface === "bubble"
+              ? {
+                  background: "var(--soft-surface-bubble)",
+                  boxShadow: "var(--soft-shadow), inset 0 1px 0 rgba(255,255,255,0.18)",
+                }
+              : headerSurface === "pearl"
+                ? {
+                    background: "var(--soft-surface-pearl)",
+                    boxShadow: "var(--soft-shadow), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  }
             : headerSurface === "transparent"
               ? {
                   background: "transparent",

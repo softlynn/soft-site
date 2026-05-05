@@ -32,6 +32,7 @@ const config = {
     DEFAULT_GIT_COMMIT_AUTHOR_EMAIL,
   vodsDataPath: process.env.ARCHIVE_VODS_PATH || path.join(repoRoot, "public", "data", "vods.json"),
   siteDesignPath: process.env.SITE_DESIGN_PATH || path.join(repoRoot, "public", "data", "site-design.json"),
+  designAssetsPath: process.env.SITE_DESIGN_ASSETS_PATH || path.join(repoRoot, "public", "uploads", "design"),
   twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "",
   twitchClientId: process.env.TWITCH_CLIENT_ID || "",
   twitchClientSecret: process.env.TWITCH_CLIENT_SECRET || "",
@@ -44,7 +45,14 @@ const config = {
 };
 
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
-const MAX_BODY_BYTES = 2 * 1024 * 1024;
+const MAX_BODY_BYTES = 8 * 1024 * 1024;
+const MAX_DESIGN_ASSET_BYTES = 5 * 1024 * 1024;
+const DESIGN_ASSET_EXTENSIONS = new Map([
+  ["image/png", ".png"],
+  ["image/jpeg", ".jpg"],
+  ["image/webp", ".webp"],
+  ["image/gif", ".gif"],
+]);
 const sessions = new Map();
 let twitchBootstrapState = null;
 const TWITCH_AUTH_SCOPES = ["channel:manage:videos"];
@@ -239,6 +247,50 @@ const loadSiteDesign = async () => {
 
 const saveSiteDesign = async (design) => {
   await writeJsonFile(config.siteDesignPath, design);
+};
+
+const sanitizeAssetBaseName = (value) => {
+  const rawName = path.basename(String(value || "image"));
+  const withoutExtension = rawName.replace(/\.[^.]+$/, "");
+  const cleaned = withoutExtension
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+  return cleaned || "image";
+};
+
+const parseDesignAssetUpload = (body) => {
+  const dataUrl = String(body?.dataUrl || "");
+  const match = dataUrl.match(/^data:([^;,]+);base64,(.+)$/);
+  if (!match) throw createApiError(400, "Upload must be a base64 image data URL.");
+
+  const mimeType = String(body?.contentType || match[1] || "").toLowerCase();
+  const extension = DESIGN_ASSET_EXTENSIONS.get(mimeType);
+  if (!extension) throw createApiError(400, "Design images must be PNG, JPEG, WebP, or GIF.");
+
+  const buffer = Buffer.from(match[2], "base64");
+  if (!buffer.length) throw createApiError(400, "Uploaded image is empty.");
+  if (buffer.length > MAX_DESIGN_ASSET_BYTES) throw createApiError(413, "Uploaded image must be 5 MB or smaller.");
+
+  return {
+    buffer,
+    extension,
+    baseName: sanitizeAssetBaseName(body?.fileName),
+  };
+};
+
+const saveDesignAsset = async (body) => {
+  const { buffer, extension, baseName } = parseDesignAssetUpload(body);
+  await ensureDirectory(config.designAssetsPath);
+  const fileName = `${baseName}-${Date.now().toString(36)}${extension}`;
+  const filePath = path.join(config.designAssetsPath, fileName);
+  await fs.writeFile(filePath, buffer);
+
+  return {
+    filePath,
+    url: `/uploads/design/${fileName}`,
+  };
 };
 
 const getPublishBranch = () => {
@@ -786,6 +838,7 @@ const validateConfig = async () => {
   if (!config.adminPassword) fail("ADMIN_PANEL_PASSWORD is required in .env.local");
   await ensureDirectory(path.dirname(config.vodsDataPath));
   await ensureDirectory(path.dirname(config.siteDesignPath));
+  await ensureDirectory(config.designAssetsPath);
 };
 
 const sortVodsDesc = (vods) =>
@@ -943,6 +996,15 @@ const handleRequest = async (req, res) => {
     await saveSiteDesign(nextDesign);
     await stageAndPushSiteDesign("chore: update site design");
     sendJson(req, res, 200, { design: nextDesign });
+    return;
+  }
+
+  if (method === "POST" && pathname === "/design-assets") {
+    requireSession(req);
+    const body = await readBodyJson(req);
+    const asset = await saveDesignAsset(body);
+    await stageAndPushPaths(asset.filePath, "chore: upload design asset", "design asset");
+    sendJson(req, res, 200, { url: asset.url });
     return;
   }
 

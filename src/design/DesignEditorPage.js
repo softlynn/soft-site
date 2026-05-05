@@ -32,6 +32,7 @@ import {
   primeAdminWake,
   promptAndLoginAdmin,
   publishSiteDesign,
+  uploadDesignAsset,
   verifyAdminSession,
 } from "../api/adminApi";
 import Footer from "../utils/Footer";
@@ -51,9 +52,112 @@ const ICON_OPTIONS = [
   { label: "Heart", value: "heart" },
 ];
 
+const SETTINGS_FONT_OPTIONS = [
+  { label: "Manrope", value: "\"Manrope\", \"Segoe UI\", sans-serif" },
+  { label: "Space Grotesk", value: "\"Space Grotesk\", \"Manrope\", sans-serif" },
+  { label: "Rounded cute", value: "\"Nunito\", \"Quicksand\", \"Manrope\", sans-serif" },
+  { label: "Soft display", value: "\"Baloo 2\", \"Nunito\", \"Manrope\", sans-serif" },
+  { label: "Classic serif", value: "Georgia, \"Times New Roman\", serif" },
+  { label: "Mono", value: "\"Cascadia Code\", \"Consolas\", monospace" },
+];
+
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
 const getMaxNavOrder = (pages) => Math.max(0, ...pages.map((page) => Number(page.navOrder) || 0));
+
+const PAGE_TEMPLATE_OPTIONS = [
+  { label: "Starter page", value: "starter" },
+  { label: "Directory page", value: "directory" },
+  { label: "Gallery page", value: "gallery" },
+  { label: "Embeds page", value: "embeds" },
+];
+
+const createTemplatePuckData = (title, template) => {
+  const data = createBlankPuckData(title);
+  if (template === "directory") {
+    data.content = [
+      {
+        type: "TextBlock",
+        props: {
+          id: `intro-${Date.now().toString(36)}`,
+          eyebrow: title,
+          title,
+          body: "Add cards that point to your pages, socials, projects, references, or favorite things.",
+          align: "center",
+          width: "normal",
+          surface: "transparent",
+          animation: "fade",
+        },
+      },
+      {
+        type: "DirectoryGrid",
+        props: {
+          id: `directory-${Date.now().toString(36)}`,
+          title: "Directory",
+          subtitle: "Add image cards and links here.",
+          columns: "3",
+          cardStyle: "bubble",
+          animation: "lift",
+          items: [],
+        },
+      },
+    ];
+  }
+  if (template === "gallery") {
+    data.content = [
+      {
+        type: "TextBlock",
+        props: {
+          id: `intro-${Date.now().toString(36)}`,
+          title,
+          body: "Upload images and arrange them into a gallery.",
+          align: "center",
+          width: "normal",
+          surface: "transparent",
+          animation: "fade",
+        },
+      },
+      {
+        type: "ImageBoard",
+        props: {
+          id: `gallery-${Date.now().toString(36)}`,
+          title: "Gallery",
+          subtitle: "",
+          columns: "3",
+          images: [],
+        },
+      },
+    ];
+  }
+  if (template === "embeds") {
+    data.content = [
+      {
+        type: "TextBlock",
+        props: {
+          id: `intro-${Date.now().toString(36)}`,
+          title,
+          body: "Add Twitch, YouTube, Spotify, Discord, or custom iframe embeds.",
+          align: "center",
+          width: "normal",
+          surface: "transparent",
+          animation: "fade",
+        },
+      },
+      {
+        type: "EmbedGrid",
+        props: {
+          id: `embeds-${Date.now().toString(36)}`,
+          title: "Embeds",
+          subtitle: "",
+          columns: "2",
+          surface: "bubble",
+          embeds: [],
+        },
+      },
+    ];
+  }
+  return data;
+};
 
 const makeUniquePath = (path, pages, currentPageId = "") => {
   const base = slugifyPagePath(path);
@@ -91,6 +195,10 @@ export default function DesignEditorPage() {
   const [componentsPanelOpen, setComponentsPanelOpen] = useState(true);
   const [fieldsPanelOpen, setFieldsPanelOpen] = useState(true);
   const [pageSettingsOpen, setPageSettingsOpen] = useState(false);
+  const [newPageTitle, setNewPageTitle] = useState("New Page");
+  const [newPagePath, setNewPagePath] = useState("");
+  const [newPageTemplate, setNewPageTemplate] = useState("starter");
+  const [uploadingAsset, setUploadingAsset] = useState(false);
   const [message, setMessage] = useState({ type: "info", text: "Unlock admin to edit the live site design." });
 
   useEffect(() => {
@@ -258,22 +366,41 @@ export default function DesignEditorPage() {
   };
 
   const handleAddPage = () => {
-    const title = window.prompt("New page title", "New Page");
-    if (title == null) return;
-    const cleanTitle = String(title).trim() || "New Page";
+    const cleanTitle = String(newPageTitle || "New Page").trim() || "New Page";
     setDraftDesign((current) => {
       const nextPage = createPage({
         title: cleanTitle,
-        path: makeUniquePath(cleanTitle, current.pages),
+        path: makeUniquePath(newPagePath || cleanTitle, current.pages),
         navOrder: getMaxNavOrder(current.pages) + 10,
       });
+      nextPage.puck = createTemplatePuckData(cleanTitle, newPageTemplate);
       setSelectedPageId(nextPage.id);
       setEditorRevision((value) => value + 1);
+      setNewPageTitle("New Page");
+      setNewPagePath("");
       return normalizeSiteDesign({
         ...current,
         pages: [...current.pages, nextPage],
       });
     });
+  };
+
+  const handleHeaderLogoUpload = async (event) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file) return;
+
+    setUploadingAsset(true);
+    try {
+      const payload = await uploadDesignAsset(file);
+      if (!payload?.url) throw new Error("Upload did not return an image URL");
+      handleSettingsField("headerLogoUrl", payload.url);
+      setMessage({ type: "success", text: "Uploaded logo. Publish the design to use it on the live site." });
+    } catch (error) {
+      setMessage({ type: "error", text: error.message });
+    } finally {
+      setUploadingAsset(false);
+    }
   };
 
   const handleDuplicatePage = () => {
@@ -383,9 +510,6 @@ export default function DesignEditorPage() {
                 </MenuItem>
               ))}
             </Select>
-            <Button startIcon={<AddRoundedIcon />} onClick={handleAddPage} disabled={!authorized || saving}>
-              Add Page
-            </Button>
             <Button startIcon={<ContentCopyRoundedIcon />} onClick={handleDuplicatePage} disabled={!authorized || saving || selectedPage?.type !== "puck"}>
               Duplicate
             </Button>
@@ -398,6 +522,34 @@ export default function DesignEditorPage() {
               Delete
             </Button>
           </Stack>
+
+          <Box className="soft-design-editor-new-page" sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1.4fr 1fr 1fr auto" }, gap: 1 }}>
+            <TextField
+              size="small"
+              label="New page title"
+              value={newPageTitle}
+              onChange={(event) => setNewPageTitle(event.target.value)}
+              disabled={!authorized || saving}
+            />
+            <TextField
+              size="small"
+              label="Path"
+              placeholder="/gallery"
+              value={newPagePath}
+              onChange={(event) => setNewPagePath(event.target.value)}
+              disabled={!authorized || saving}
+            />
+            <Select size="small" value={newPageTemplate} onChange={(event) => setNewPageTemplate(event.target.value)} disabled={!authorized || saving}>
+              {PAGE_TEMPLATE_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+            <Button startIcon={<AddRoundedIcon />} onClick={handleAddPage} disabled={!authorized || saving || !newPageTitle.trim()}>
+              Create
+            </Button>
+          </Box>
 
           <Divider />
 
@@ -488,9 +640,27 @@ export default function DesignEditorPage() {
               disabled={!authorized}
             >
               <MenuItem value="glass">Glass header</MenuItem>
+              <MenuItem value="bubble">Bubble header</MenuItem>
+              <MenuItem value="pearl">Pearl header</MenuItem>
               <MenuItem value="solid">Solid header</MenuItem>
               <MenuItem value="transparent">Transparent header</MenuItem>
             </Select>
+            <TextField
+              size="small"
+              label="Accent color"
+              type="color"
+              value={draftDesign.settings.accentColor || "#d46b8c"}
+              onChange={(event) => handleSettingsField("accentColor", event.target.value)}
+              disabled={!authorized}
+            />
+            <TextField
+              size="small"
+              label="Second color"
+              type="color"
+              value={draftDesign.settings.secondaryAccentColor || "#79a3e6"}
+              onChange={(event) => handleSettingsField("secondaryAccentColor", event.target.value)}
+              disabled={!authorized}
+            />
             <TextField
               size="small"
               label="Logo URL"
@@ -499,6 +669,10 @@ export default function DesignEditorPage() {
               disabled={!authorized}
               sx={{ gridColumn: { md: "span 2" } }}
             />
+            <Button component="label" disabled={!authorized || uploadingAsset} sx={{ alignSelf: "stretch" }}>
+              {uploadingAsset ? "Uploading..." : "Upload logo"}
+              <input hidden type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={handleHeaderLogoUpload} />
+            </Button>
             <TextField
               size="small"
               label="Logo size"
@@ -546,6 +720,112 @@ export default function DesignEditorPage() {
                 />
               }
               label="Show socials in header"
+              sx={{ mx: 0 }}
+            />
+            <Select
+              size="small"
+              value={draftDesign.settings.bodyFontFamily || SETTINGS_FONT_OPTIONS[0].value}
+              onChange={(event) => handleSettingsField("bodyFontFamily", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 2" } }}
+            >
+              {SETTINGS_FONT_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  Body: {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+            <Select
+              size="small"
+              value={draftDesign.settings.headingFontFamily || SETTINGS_FONT_OPTIONS[1].value}
+              onChange={(event) => handleSettingsField("headingFontFamily", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 2" } }}
+            >
+              {SETTINGS_FONT_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  Headings: {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+            <Select
+              size="small"
+              value={draftDesign.settings.buttonFontFamily || SETTINGS_FONT_OPTIONS[0].value}
+              onChange={(event) => handleSettingsField("buttonFontFamily", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 2" } }}
+            >
+              {SETTINGS_FONT_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  Buttons: {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+
+          <Typography variant="subtitle2" sx={{ fontWeight: 800, mt: 0.5 }}>
+            VOD Cards
+          </Typography>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(6, minmax(0, 1fr))" }, gap: 1 }}>
+            <Select
+              size="small"
+              value={draftDesign.settings.vodCardStyle || "bubble"}
+              onChange={(event) => handleSettingsField("vodCardStyle", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 2" } }}
+            >
+              <MenuItem value="glass">Liquid glass</MenuItem>
+              <MenuItem value="bubble">Bubbly</MenuItem>
+              <MenuItem value="pearl">Pearl cute</MenuItem>
+            </Select>
+            <Select
+              size="small"
+              value={draftDesign.settings.vodThumbnailShape || "soft"}
+              onChange={(event) => handleSettingsField("vodThumbnailShape", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 1" } }}
+            >
+              <MenuItem value="soft">Soft</MenuItem>
+              <MenuItem value="round">Rounder</MenuItem>
+              <MenuItem value="bubble">Bubble</MenuItem>
+            </Select>
+            <Select
+              size="small"
+              value={draftDesign.settings.vodThumbnailOverlay || "clean"}
+              onChange={(event) => handleSettingsField("vodThumbnailOverlay", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 1" } }}
+            >
+              <MenuItem value="clean">Clean</MenuItem>
+              <MenuItem value="glow">Glow</MenuItem>
+              <MenuItem value="minimal">Minimal</MenuItem>
+            </Select>
+            <TextField
+              size="small"
+              label="Watch label"
+              value={draftDesign.settings.vodWatchLabel || "Watch"}
+              onChange={(event) => handleSettingsField("vodWatchLabel", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 1" } }}
+            />
+            <TextField
+              size="small"
+              label="VOD accent"
+              type="color"
+              value={draftDesign.settings.vodAccentColor || "#d46b8c"}
+              onChange={(event) => handleSettingsField("vodAccentColor", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 1" } }}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={draftDesign.settings.vodShowGame !== false}
+                  onChange={(event) => handleSettingsField("vodShowGame", event.target.checked)}
+                  disabled={!authorized}
+                />
+              }
+              label="Show game"
               sx={{ mx: 0 }}
             />
           </Box>

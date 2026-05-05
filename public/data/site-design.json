@@ -12,6 +12,11 @@
     "showHeaderTitle": true,
     "showSocials": true,
     "navStyle": "pill",
+    "bodyFontFamily": "\"Manrope\", \"Segoe UI\", sans-serif",
+    "headingFontFamily": "\"Space Grotesk\", \"Manrope\", sans-serif",
+    "buttonFontFamily": "\"Manrope\", \"Segoe UI\", sans-serif",
+    "accentColor": "#d46b8c",
+    "secondaryAccentColor": "#79a3e6",
     "footerEnabled": true,
     "footerText": "softu © 2026",
     "footerLink1Label": "Backend by OP",
@@ -22,7 +27,13 @@
     "footerLink3Href": "",
     "footerShowBuild": true,
     "footerRadius": 20,
-    "footerSurface": "glass"
+    "footerSurface": "glass",
+    "vodCardStyle": "bubble",
+    "vodThumbnailShape": "soft",
+    "vodThumbnailOverlay": "clean",
+    "vodWatchLabel": "Watch",
+    "vodShowGame": true,
+    "vodAccentColor": "#d46b8c"
   },
   "pages": [
     {
@@ -43,7 +54,17 @@
             "backgroundColor": "#e2e9f3",
             "backgroundGradient": "radial-gradient(circle at 13% 14%, rgba(212,107,140,0.14), transparent 34%), radial-gradient(circle at 88% 10%, rgba(121,163,230,0.16), transparent 42%), linear-gradient(180deg, #eef4fb 0%, #dde7f2 100%)",
             "backgroundImage": "",
+            "backgroundPosition": "center center",
+            "backgroundSize": "cover",
+            "backgroundAttachment": "scroll",
+            "darkBackgroundMode": "auto",
+            "darkBackgroundColor": "#0f172a",
+            "darkBackgroundGradient": "radial-gradient(circle at 14% 12%, rgba(212,107,140,0.14), transparent 36%), radial-gradient(circle at 86% 14%, rgba(121,163,230,0.14), transparent 44%), linear-gradient(180deg, #101827 0%, #0f172a 100%)",
+            "darkBackgroundImage": "",
             "textColor": "",
+            "darkTextColor": "",
+            "fontFamily": "inherit",
+            "headingFontFamily": "inherit",
             "maxWidth": "1180px",
             "pagePaddingTop": 12,
             "pagePaddingBottom": 24,
@@ -64,7 +85,7 @@
               "imageAlt": "",
               "mediaMode": "twitch",
               "layout": "text-left",
-              "surface": "glass",
+              "surface": "bubble",
               "backgroundColor": "",
               "accentColor": "#d46b8c",
               "animation": "fade",
@@ -102,7 +123,7 @@
               "subtitle": "latest streams in 1440p with chat!",
               "count": 4,
               "showButton": true,
-              "surface": "glass"
+              "surface": "bubble"
             }
           },
           {
@@ -119,7 +140,7 @@
               "title": "",
               "subtitle": "",
               "columns": "2",
-              "surface": "glass",
+              "surface": "pearl",
               "embeds": [
                 {
                   "title": "spotify",
