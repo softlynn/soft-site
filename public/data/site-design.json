@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-05T20:58:54.672Z",
+  "updatedAt": "2026-05-05T21:47:40.357Z",
   "settings": {
     "headerBrandText": "softu",
     "headerTagline": "directory and vods",
@@ -85,7 +85,7 @@
               "imageAlt": "",
               "mediaMode": "twitch",
               "layout": "text-left",
-              "surface": "bubble",
+              "surface": "transparent",
               "backgroundColor": "",
               "accentColor": "#d46b8c",
               "animation": "fade",
@@ -123,7 +123,8 @@
               "subtitle": "latest streams in 1440p with chat!",
               "count": 4,
               "showButton": true,
-              "surface": "bubble"
+              "surface": "bubble",
+              "backgroundSize": "cover"
             }
           },
           {
@@ -140,7 +141,7 @@
               "title": "",
               "subtitle": "",
               "columns": "2",
-              "surface": "pearl",
+              "surface": "transparent",
               "embeds": [
                 {
                   "title": "spotify",
