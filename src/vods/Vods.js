@@ -38,6 +38,7 @@ import UploadingVodPlaceholder from "./UploadingVodPlaceholder";
 const FILTERS = ["Default", "Date", "Title", "Game"];
 const PLATFORMS = ["All", "Twitch", "Kick"];
 const SPOTIFY_PLAYLIST_EMBED_URL = "https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator";
+const DISCORD_WIDGET_EMBED_URL = "https://discord.com/widget?id=1470662936950210601&theme=dark";
 const READY_VOD_HIGHLIGHT_LIMIT = 3;
 const UPLOAD_READY_FETCH_ATTEMPTS = 24;
 const UPLOAD_READY_FETCH_INTERVAL_MS = 2500;
@@ -867,22 +868,52 @@ export default function Vods() {
             </Reveal>
 
             <Reveal delay={150} sx={{ mt: 1.9, display: "flex", justifyContent: "center" }}>
-              <Box className="soft-glass soft-panel-ambient" sx={{ p: { xs: 0.95, md: 1.1 }, borderRadius: "20px", width: "100%", maxWidth: "430px" }}>
-                <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.75, px: 0.35, letterSpacing: "0.05em", fontWeight: 700 }}>
-                  stream playlist
-                </Typography>
-                <Box sx={{ borderRadius: "14px", overflow: "hidden", mx: "auto" }}>
-                  <iframe
-                    data-testid="embed-iframe"
-                    title="softu stream playlist"
-                    src={SPOTIFY_PLAYLIST_EMBED_URL}
-                    width="100%"
-                    height="352"
-                    frameBorder="0"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    style={{ border: 0, display: "block", borderRadius: "12px" }}
-                  />
+              <Box className="soft-glass soft-panel-ambient" sx={{ p: { xs: 0.95, md: 1.1 }, borderRadius: "20px", width: "100%", maxWidth: "820px" }}>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: { xs: "1fr", md: "minmax(0, 430px) minmax(300px, 350px)" },
+                    gap: { xs: 1, md: 1.15 },
+                    justifyContent: "center",
+                    alignItems: "start",
+                  }}
+                >
+                  <Box>
+                    <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.75, px: 0.35, letterSpacing: "0.05em", fontWeight: 700 }}>
+                      stream playlist
+                    </Typography>
+                    <Box sx={{ borderRadius: "14px", overflow: "hidden", mx: "auto" }}>
+                      <iframe
+                        data-testid="embed-iframe"
+                        title="softu stream playlist"
+                        src={SPOTIFY_PLAYLIST_EMBED_URL}
+                        width="100%"
+                        height="352"
+                        frameBorder="0"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy"
+                        style={{ border: 0, display: "block", borderRadius: "12px" }}
+                      />
+                    </Box>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.75, px: 0.35, letterSpacing: "0.05em", fontWeight: 700 }}>
+                      discord
+                    </Typography>
+                    <Box sx={{ borderRadius: "14px", overflow: "hidden", mx: "auto", maxWidth: "350px" }}>
+                      <iframe
+                        title="softu discord server"
+                        src={DISCORD_WIDGET_EMBED_URL}
+                        width="100%"
+                        height="352"
+                        allowTransparency="true"
+                        frameBorder="0"
+                        sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+                        loading="lazy"
+                        style={{ border: 0, display: "block", borderRadius: "12px" }}
+                      />
+                    </Box>
+                  </Box>
                 </Box>
               </Box>
             </Reveal>
