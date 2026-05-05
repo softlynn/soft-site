@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-05T21:52:30.381Z",
+  "updatedAt": "2026-05-05T21:58:44.044Z",
   "settings": {
     "headerBrandText": "softu",
     "headerTagline": "directory and vods",
@@ -114,8 +114,8 @@
               "eyebrow": "",
               "title": "Artist Credits!",
               "body": "sub badges/art/overlays ✦ me\nvrchat avatar ✦ ask me\ntwitch emotes ✦ W. I. P\n",
-              "align": "left",
-              "width": "normal",
+              "align": "center",
+              "width": "full",
               "surface": "transparent",
               "animation": "fade",
               "fontFamily": "inherit",
@@ -126,9 +126,9 @@
               "titleFontFamily": "inherit",
               "titleFontSize": 0,
               "backgroundColor": "",
-              "sideImageUrl": "",
+              "sideImageUrl": "/uploads/design/ref-origin-2-mot6306y.png",
               "sideImageAlt": "",
-              "sideImagePosition": "none",
+              "sideImagePosition": "left",
               "sideImageWidth": 220,
               "customClassName": "",
               "id": "TextBlock-562126e6-7ca2-4494-bf43-6645570a69df"
@@ -184,8 +184,17 @@
                   "aspectRatio": "custom",
                   "allow": "",
                   "sandbox": "allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+                },
+                {
+                  "title": "kick",
+                  "src": "",
+                  "height": 352,
+                  "aspectRatio": "custom",
+                  "allow": "<iframe \n     src=\"https://player.kick.com/softu1\" \n     height=\"720\" \n     width=\"1280\"\n     frameborder=\"0\" \n     scrolling=\"no\" \n     allowfullscreen=\"true\"> \n</iframe>",
+                  "sandbox": ""
                 }
-              ]
+              ],
+              "width": "wide"
             }
           }
         ],
