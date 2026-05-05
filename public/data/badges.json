@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-05-01T20:59:03.770Z",
+  "generatedAt": "2026-05-05T21:14:04.308Z",
   "channelLogin": "softu1",
   "channelId": "218908733",
   "global": [
@@ -3604,6 +3604,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/81d89508-850c-45ae-b0e2-dbbe6e531b8d/3",
           "title": "Speedons 5 Badge",
           "description": "This badge was earned by watching Speedons 5!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "speedons-6",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/00fff6f2-8ac0-4001-b736-c02654756697/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/00fff6f2-8ac0-4001-b736-c02654756697/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/00fff6f2-8ac0-4001-b736-c02654756697/3",
+          "title": "SpeeDons 6",
+          "description": "This badge was earned by watching 60 minutes of any of the SpeeDons 6 channels during the SpeeDons 6 event.",
           "click_action": null,
           "click_url": null
         }
