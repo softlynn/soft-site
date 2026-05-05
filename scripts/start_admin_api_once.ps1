@@ -10,7 +10,7 @@ $logDir = Join-Path $scriptDir ".state"
 $stdoutLog = Join-Path $logDir "admin-api-stdout.log"
 $stderrLog = Join-Path $logDir "admin-api-stderr.log"
 $port = 49731
-$host = "127.0.0.1"
+$apiHost = "127.0.0.1"
 $fallbackPort = 49721
 
 function Test-AdminApiHealth {
@@ -67,7 +67,7 @@ if (Test-Path $envFilePath) {
       if ($line -match '^\s*ADMIN_API_HOST\s*=\s*(.+)\s*$') {
         $parsedHost = [string](($matches[1] -replace '\s+', '').Trim('"').Trim("'"))
         if ($parsedHost) {
-          $host = $parsedHost
+          $apiHost = $parsedHost
         }
       }
     }
@@ -76,10 +76,10 @@ if (Test-Path $envFilePath) {
   }
 }
 
-if (Test-AdminApiHealth -ApiHost $host -ApiPort $port) {
+if (Test-AdminApiHealth -ApiHost $apiHost -ApiPort $port) {
   exit 0
 }
-if ($fallbackPort -ne $port -and (Test-AdminApiHealth -ApiHost $host -ApiPort $fallbackPort)) {
+if ($fallbackPort -ne $port -and (Test-AdminApiHealth -ApiHost $apiHost -ApiPort $fallbackPort)) {
   exit 0
 }
 
