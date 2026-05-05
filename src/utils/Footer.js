@@ -2,12 +2,10 @@ import { Box, Stack, SvgIcon, Typography } from "@mui/material";
 import GitInfo from "react-git-info/macro";
 import CustomLink from "./CustomLink";
 import { BRAND_NAME, GITHUB_REPO } from "../config/site";
+import { useSiteDesign } from "../design/DesignContext";
 
 const gitInfo = GitInfo();
 const COPYRIGHT_YEAR = 2026;
-const OP_ARCHIVES_URL = "https://github.com/OP-Archives";
-const TYPEGPU_REPO_URL = "https://github.com/software-mansion/TypeGPU";
-const TYPEGPU_DOCS_URL = "https://docs.swmansion.com/TypeGPU/examples";
 
 function TypeGpuMark(props) {
   return (
@@ -27,7 +25,17 @@ function TypeGpuMark(props) {
 }
 
 export default function Footer() {
+  const { design } = useSiteDesign();
+  const settings = design.settings || {};
   const brandLabel = String(BRAND_NAME || "Softu").toLowerCase();
+  const footerText = settings.footerText || `${brandLabel} © ${COPYRIGHT_YEAR}`;
+  const footerLinks = [
+    { label: settings.footerLink1Label, href: settings.footerLink1Href },
+    { label: settings.footerLink2Label, href: settings.footerLink2Href, icon: <TypeGpuMark sx={{ fontSize: 16, color: "#395473" }} /> },
+    { label: settings.footerLink3Label, href: settings.footerLink3Href },
+  ].filter((item) => item.label && item.href);
+
+  if (settings.footerEnabled === false) return null;
 
   return (
     <Box
@@ -39,37 +47,40 @@ export default function Footer() {
         mb: 2,
         px: { xs: 1.55, sm: 2.4 },
         py: { xs: 1.35, sm: 1.45 },
-        borderRadius: "20px",
+        borderRadius: `${Math.max(0, Number(settings.footerRadius) || 20)}px`,
+        ...(settings.footerSurface === "solid"
+          ? {
+              background: "var(--soft-surface-strong)",
+              backdropFilter: "none",
+            }
+          : settings.footerSurface === "transparent"
+            ? {
+                background: "transparent",
+                borderColor: "transparent",
+                boxShadow: "none",
+                backdropFilter: "none",
+              }
+            : {}),
       }}
     >
       <Stack direction={{ xs: "column", md: "row" }} spacing={{ xs: 0.9, md: 2 }} alignItems={{ xs: "flex-start", md: "center" }} justifyContent="space-between">
         <Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 0.45, sm: 1.5 }} alignItems={{ xs: "flex-start", sm: "center" }} sx={{ minWidth: 0 }}>
           <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700, letterSpacing: "0.02em" }}>
-            {`${brandLabel} © ${COPYRIGHT_YEAR}`}
+            {footerText}
           </Typography>
-          <CustomLink href={OP_ARCHIVES_URL} rel="noopener noreferrer" target="_blank">
-            <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
-              Backend by OP
-            </Typography>
-          </CustomLink>
-          <Stack direction="row" spacing={0.75} alignItems="center">
-            <CustomLink href={TYPEGPU_REPO_URL} rel="noopener noreferrer" target="_blank">
+          {footerLinks.map((item, index) => (
+            <CustomLink key={`${item.href}-${index}`} href={item.href} rel="noopener noreferrer" target="_blank">
               <Stack direction="row" spacing={0.5} alignItems="center">
-                <TypeGpuMark sx={{ fontSize: 16, color: "#395473" }} />
-                <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
-                  made with TypeGPU
+                {item.icon}
+                <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: index === 2 ? 500 : 600, opacity: index === 2 ? 0.72 : 1 }}>
+                  {item.label}
                 </Typography>
               </Stack>
             </CustomLink>
-            <CustomLink href={TYPEGPU_DOCS_URL} rel="noopener noreferrer" target="_blank">
-              <Typography variant="caption" sx={{ color: "text.secondary", opacity: 0.72 }}>
-                docs
-              </Typography>
-            </CustomLink>
-          </Stack>
+          ))}
         </Stack>
 
-        {GITHUB_REPO && (
+        {settings.footerShowBuild !== false && GITHUB_REPO && (
           <CustomLink href={`${GITHUB_REPO}/commit/${gitInfo.commit.shortHash}`} rel="noopener noreferrer" target="_blank">
             <Typography variant="caption" sx={{ color: "text.secondary", opacity: 0.44, fontSize: "0.68rem", letterSpacing: "0.04em" }}>
               {`build ${gitInfo.commit.shortHash}`}

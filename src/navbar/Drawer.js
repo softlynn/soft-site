@@ -1,17 +1,10 @@
 import { useState } from "react";
 import { Drawer, ListItemButton, List, ListItemText, IconButton, Divider, Box, ListItemIcon, Typography } from "@mui/material";
 import { Menu } from "@mui/icons-material";
-import HomeIcon from "@mui/icons-material/Home";
-import OndemandVideoIcon from "@mui/icons-material/OndemandVideo";
 import CustomLink from "../utils/CustomLink";
 
-const mainLinks = [
-  { title: `Home`, path: `/`, icon: <HomeIcon color="primary" /> },
-  { title: `Vods`, path: `/vods`, icon: <OndemandVideoIcon color="primary" /> },
-];
-
 export default function DrawerComponent(props) {
-  const { socials, activeUploadCount = 0 } = props;
+  const { socials, mainLinks = [], activeUploadCount = 0 } = props;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -27,7 +20,7 @@ export default function DrawerComponent(props) {
           {mainLinks.map(({ title, path, icon }) => (
             <Box key={title}>
               <ListItemButton onClick={() => setDrawerOpen(false)} sx={{ borderRadius: 2, mx: 1, py: 0.75 }}>
-                <ListItemIcon>{icon}</ListItemIcon>
+                <ListItemIcon sx={{ color: "primary.main" }}>{icon}</ListItemIcon>
                 <ListItemText>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                     <CustomLink color="primary" href={path}>

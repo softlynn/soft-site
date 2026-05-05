@@ -11,9 +11,17 @@ import YouTubeIcon from "@mui/icons-material/YouTube";
 import Drawer from "./Drawer";
 import OndemandVideoIcon from "@mui/icons-material/OndemandVideo";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import ArticleRoundedIcon from "@mui/icons-material/ArticleRounded";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
+import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
+import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
+import MusicNoteRoundedIcon from "@mui/icons-material/MusicNoteRounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import { SITE_TITLE, SOCIAL_LINKS } from "../config/site";
 import { setPendingAdminPassword } from "../api/adminApi";
 import { fetchActiveVodUploads } from "../api/uploadStatusApi";
+import { useSiteDesign } from "../design/DesignContext";
+import { getVisibleNavPages } from "../design/defaultDesign";
 
 const ADMIN_TAP_WINDOW_MS = 3500;
 const HOME_NAV_DELAY_MS = 900;
@@ -59,22 +67,56 @@ const navChipSx = {
   },
 };
 
+const navIconFor = (icon) => {
+  const sx = { fontSize: 16 };
+  switch (icon) {
+    case "home":
+      return <HomeRoundedIcon sx={sx} />;
+    case "vods":
+      return <OndemandVideoIcon sx={sx} />;
+    case "image":
+      return <ImageRoundedIcon sx={sx} />;
+    case "link":
+      return <LinkRoundedIcon sx={sx} />;
+    case "music":
+      return <MusicNoteRoundedIcon sx={sx} />;
+    case "star":
+      return <StarRoundedIcon sx={sx} />;
+    case "heart":
+      return <FavoriteRoundedIcon sx={sx} />;
+    default:
+      return <ArticleRoundedIcon sx={sx} />;
+  }
+};
+
 export default function Navbar() {
   const isMobile = useMediaQuery("(max-width: 900px)");
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const { design } = useSiteDesign();
   const titleTapState = useRef(titleTapStateStore);
   const [logoBurstSeed, setLogoBurstSeed] = useState(0);
   const [activeUploadCount, setActiveUploadCount] = useState(0);
+  const showSocials = design.settings?.showSocials !== false;
+  const showHeaderLogo = design.settings?.showHeaderLogo !== false;
+  const showHeaderTitle = design.settings?.showHeaderTitle !== false;
+  const navStyle = design.settings?.navStyle || "pill";
+  const headerLogoSize = Math.max(36, Math.min(86, Number(design.settings?.headerLogoSize) || 52));
+  const headerRadius = Math.max(0, Math.min(36, Number(design.settings?.headerRadius) || 20));
+  const headerLogoSrc = String(design.settings?.headerLogoUrl || "").trim() || Logo;
+  const headerBrandText = String(design.settings?.headerBrandText || SITE_TITLE || "softu").trim() || "softu";
+  const headerSurface = design.settings?.headerSurface || "glass";
 
   const mainLinks = useMemo(
     () =>
-      [
-        { title: "Home", path: "/", icon: <HomeRoundedIcon sx={{ fontSize: 16 }} /> },
-        { title: "VODs", path: "/vods", icon: <OndemandVideoIcon sx={{ fontSize: 16 }} /> },
-      ].map((item) => ({ ...item, active: location.pathname === item.path })),
-    [location.pathname]
+      getVisibleNavPages(design).map((page) => ({
+        title: page.navLabel || page.title,
+        path: page.path,
+        icon: navIconFor(page.icon),
+        active: location.pathname === page.path,
+      })),
+    [design, location.pathname]
   );
 
   useEffect(() => {
@@ -166,70 +208,91 @@ export default function Navbar() {
 
   return (
     <Box sx={{ px: { xs: 1, sm: 1.5 }, pt: { xs: 1, sm: 1.25 }, pb: 0.5 }}>
-      <AppBar position="static" elevation={0} sx={{ borderRadius: "20px" }}>
+      <AppBar
+        position="static"
+        elevation={0}
+        sx={{
+          borderRadius: `${headerRadius}px`,
+          ...(headerSurface === "solid"
+            ? {
+                background: "var(--soft-surface-strong)",
+                backdropFilter: "none",
+              }
+            : headerSurface === "transparent"
+              ? {
+                  background: "transparent",
+                  borderColor: "transparent",
+                  boxShadow: "none",
+                  backdropFilter: "none",
+                }
+              : {}),
+        }}
+      >
         <Toolbar sx={{ minHeight: { xs: 64, md: 72 }, px: { xs: 1, md: 1.5 }, gap: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
-            {isMobile && <Drawer socials={socials} activeUploadCount={activeUploadCount} />}
+            {isMobile && <Drawer socials={showSocials ? socials : []} mainLinks={mainLinks} activeUploadCount={activeUploadCount} />}
 
-            <CustomLink color="inherit" href="/" onClick={handleLogoClick} sx={{ mr: 1.25 }}>
-              <Box
-                className="soft-logo-shell"
-                sx={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: "16px",
-                  background: theme.palette.mode === "dark" ? "rgba(23,31,47,0.76)" : "var(--soft-surface)",
-                  border: "1px solid var(--soft-border)",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 6px 14px rgba(19,33,56,.08)",
-                  display: "grid",
-                  placeItems: "center",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
-              >
+            {showHeaderLogo && (
+              <CustomLink color="inherit" href="/" onClick={handleLogoClick} sx={{ mr: 1.25 }}>
                 <Box
-                  component="img"
-                  alt=""
-                  src={Logo}
+                  className="soft-logo-shell"
                   sx={{
-                    width: 40,
-                    height: 40,
-                    p: 0.45,
-                    borderRadius: "12px",
-                    background: "rgba(255,255,255,0.98)",
-                    objectFit: "contain",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,.95), 0 0 0 1px rgba(19,33,56,0.03)",
-                    display: "block",
+                    width: headerLogoSize,
+                    height: headerLogoSize,
+                    borderRadius: `${Math.max(8, Math.round(headerLogoSize * 0.31))}px`,
+                    background: theme.palette.mode === "dark" ? "rgba(23,31,47,0.76)" : "var(--soft-surface)",
+                    border: "1px solid var(--soft-border)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 6px 14px rgba(19,33,56,.08)",
+                    display: "grid",
+                    placeItems: "center",
+                    position: "relative",
+                    overflow: "hidden",
                   }}
-                />
-                {logoBurstSeed > 0 &&
-                  Array.from({ length: 11 }, (_, i) => {
-                    const spread = Math.PI * 1.7;
-                    const baseAngle = -Math.PI / 2 - spread / 2 + (spread * i) / 10;
-                    const jitter = Math.sin((logoBurstSeed + i) * 1.73) * 0.16;
-                    const angle = baseAngle + jitter;
-                    const radius = 10 + (i % 4) * 3 + ((logoBurstSeed + i) % 2);
-                    const dx = Math.cos(angle) * radius;
-                    const dy = Math.sin(angle) * radius - 4 - Math.abs(Math.cos(angle)) * 2.5;
-                    return (
-                      <Box
-                        key={`${logoBurstSeed}-${i}`}
-                        className="soft-logo-bubble"
-                        sx={{
-                          "--dx": `${dx}px`,
-                          "--dy": `${dy}px`,
-                          "--delay": `${i * 10}ms`,
-                          "--size": `${i % 4 === 0 ? 7 : i % 3 === 0 ? 6 : 5}px`,
-                          "--rot": `${(i * 29 + logoBurstSeed * 13) % 360}deg`,
-                          "--blur": `${i % 5 === 0 ? 0.45 : 0}px`,
-                        }}
-                      />
-                    );
-                  })}
-              </Box>
-            </CustomLink>
+                >
+                  <Box
+                    component="img"
+                    alt=""
+                    src={headerLogoSrc}
+                    sx={{
+                      width: Math.max(28, headerLogoSize - 12),
+                      height: Math.max(28, headerLogoSize - 12),
+                      p: 0.45,
+                      borderRadius: `${Math.max(6, Math.round(headerLogoSize * 0.23))}px`,
+                      background: "rgba(255,255,255,0.98)",
+                      objectFit: "contain",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,.95), 0 0 0 1px rgba(19,33,56,0.03)",
+                      display: "block",
+                    }}
+                  />
+                  {logoBurstSeed > 0 &&
+                    Array.from({ length: 11 }, (_, i) => {
+                      const spread = Math.PI * 1.7;
+                      const baseAngle = -Math.PI / 2 - spread / 2 + (spread * i) / 10;
+                      const jitter = Math.sin((logoBurstSeed + i) * 1.73) * 0.16;
+                      const angle = baseAngle + jitter;
+                      const radius = 10 + (i % 4) * 3 + ((logoBurstSeed + i) % 2);
+                      const dx = Math.cos(angle) * radius;
+                      const dy = Math.sin(angle) * radius - 4 - Math.abs(Math.cos(angle)) * 2.5;
+                      return (
+                        <Box
+                          key={`${logoBurstSeed}-${i}`}
+                          className="soft-logo-bubble"
+                          sx={{
+                            "--dx": `${dx}px`,
+                            "--dy": `${dy}px`,
+                            "--delay": `${i * 10}ms`,
+                            "--size": `${i % 4 === 0 ? 7 : i % 3 === 0 ? 6 : 5}px`,
+                            "--rot": `${(i * 29 + logoBurstSeed * 13) % 360}deg`,
+                            "--blur": `${i % 5 === 0 ? 0.45 : 0}px`,
+                          }}
+                        />
+                      );
+                    })}
+                </Box>
+              </CustomLink>
+            )}
 
-            <Box sx={{ minWidth: 0 }}>
+            {showHeaderTitle && <Box sx={{ minWidth: 0 }}>
               <Typography
                 color="primary"
                 variant="h6"
@@ -248,16 +311,16 @@ export default function Navbar() {
                   "&:hover": { opacity: 0.84 },
                 }}
               >
-                {String(SITE_TITLE || "softu").toLowerCase()}
+                {headerBrandText.toLowerCase()}
               </Typography>
               {!isMobile && (
                 <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 0.1, letterSpacing: "0.03em" }}>
-                  vod archives with chat replay
+                  {design.settings?.headerTagline || "vod archives with chat replay"}
                 </Typography>
               )}
-            </Box>
+            </Box>}
 
-            {!isMobile && socials.length > 0 && (
+            {!isMobile && showSocials && socials.length > 0 && (
               <>
                 <Divider orientation="vertical" flexItem variant="middle" sx={{ mx: 1.5, borderColor: "rgba(19,33,56,0.08)" }} />
                 <Stack direction="row" spacing={0.75} sx={{ alignItems: "center", flexWrap: "wrap" }}>
@@ -298,12 +361,18 @@ export default function Navbar() {
                         height: 40,
                         fontWeight: 800,
                         letterSpacing: "0.01em",
-                        borderColor: item.active ? "rgba(212,107,140,0.28)" : "var(--soft-border)",
-                        background: item.active ? "linear-gradient(180deg, rgba(212,107,140,0.20), rgba(212,107,140,0.10))" : "var(--soft-surface)",
+                        borderColor: item.active ? "rgba(212,107,140,0.28)" : navStyle === "plain" ? "transparent" : "var(--soft-border)",
+                        background: item.active
+                          ? "linear-gradient(180deg, rgba(212,107,140,0.20), rgba(212,107,140,0.10))"
+                          : navStyle === "plain"
+                            ? "transparent"
+                            : "var(--soft-surface)",
                         color: item.active ? "secondary.main" : "text.primary",
                         boxShadow: item.active
                           ? "0 10px 22px rgba(212,107,140,0.12), inset 0 1px 0 rgba(255,255,255,0.18)"
-                          : "inset 0 1px 0 rgba(255,255,255,0.14)",
+                          : navStyle === "plain"
+                            ? "none"
+                            : "inset 0 1px 0 rgba(255,255,255,0.14)",
                         "& .MuiButton-startIcon svg": { fontSize: 18 },
                       }}
                     >

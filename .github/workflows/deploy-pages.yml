@@ -32,6 +32,8 @@ jobs:
         run: npm ci --include=dev
 
       - name: Build site
+        env:
+          GENERATE_SOURCEMAP: "false"
         run: npm run build
 
       - name: Upload Pages artifact

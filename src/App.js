@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { HashRouter, Route, Routes, useLocation } from "react-router-dom";
+import { HashRouter, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
 import { CssBaseline, styled } from "@mui/material";
 import Loading from "./utils/Loading";
@@ -7,6 +7,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ThemeModeToggle from "./utils/ThemeModeToggle";
 import { ThemeModeContext } from "./utils/ThemeModeContext";
+import { DesignProvider } from "./design/DesignContext";
 
 const Vods = lazy(() => import("./vods/Vods"));
 const YoutubeVod = lazy(() => import("./vods/YoutubeVod"));
@@ -15,6 +16,8 @@ const Games = lazy(() => import("./games/Games"));
 const Navbar = lazy(() => import("./navbar/Navbar"));
 const NotFound = lazy(() => import("./utils/NotFound"));
 const AdminPage = lazy(() => import("./admin/AdminPage"));
+const EditablePage = lazy(() => import("./design/EditablePage"));
+const DesignEditorPage = lazy(() => import("./design/DesignEditorPage"));
 const THEME_STORAGE_KEY = "softu-theme-mode";
 const getInitialThemeMode = () => {
   if (typeof window === "undefined") return "light";
@@ -240,54 +243,81 @@ export default function App() {
     <ThemeModeContext.Provider value={{ themeMode: effectiveThemeMode, toggleThemeMode }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <HashRouter>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Parent>
-              <RouteAwareOverlays />
-              <Suspense fallback={<Loading />}>
-                <Routes>
-                <Route path="*" element={<NotFound />} />
-                <Route
-                  exact
-                  path="/"
-                  element={
-                    <>
-                      <Navbar />
-                      <Vods />
-                    </>
-                  }
-                />
-                <Route
-                  exact
-                  path="/vods"
-                  element={
-                    <>
-                      <Navbar />
-                      <Vods />
-                    </>
-                  }
-                />
-                <Route exact path="/youtube/:vodId" element={<YoutubeVod />} />
-                <Route exact path="/cdn/:vodId" element={<CustomVod type="cdn" />} />
-                <Route exact path="/games/:vodId" element={<Games />} />
-                <Route
-                  exact
-                  path="/admin"
-                  element={
-                    <>
-                      <Navbar />
-                      <AdminPage />
-                    </>
-                  }
-                />
-                </Routes>
-              </Suspense>
-            </Parent>
-          </LocalizationProvider>
-        </HashRouter>
+        <DesignProvider>
+          <HashRouter>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <Parent>
+                <RouteAwareOverlays />
+                <Suspense fallback={<Loading />}>
+                  <Routes>
+                  <Route
+                    exact
+                    path="/"
+                    element={
+                      <>
+                        <Navbar />
+                        <EditablePage path="/" />
+                      </>
+                    }
+                  />
+                  <Route
+                    exact
+                    path="/vods"
+                    element={
+                      <>
+                        <Navbar />
+                        <Vods />
+                      </>
+                    }
+                  />
+                  <Route exact path="/youtube/:vodId" element={<YoutubeVod />} />
+                  <Route exact path="/cdn/:vodId" element={<CustomVod type="cdn" />} />
+                  <Route exact path="/games/:vodId" element={<Games />} />
+                  <Route
+                    exact
+                    path="/admin/design"
+                    element={
+                      <>
+                        <Navbar />
+                        <DesignEditorPage />
+                      </>
+                    }
+                  />
+                  <Route
+                    exact
+                    path="/admin"
+                    element={
+                      <>
+                        <Navbar />
+                        <AdminPage />
+                      </>
+                    }
+                  />
+                  <Route
+                    exact
+                    path="/:pageSlug"
+                    element={
+                      <>
+                        <Navbar />
+                        <DynamicEditablePage />
+                      </>
+                    }
+                  />
+                  <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </Parent>
+            </LocalizationProvider>
+          </HashRouter>
+        </DesignProvider>
       </ThemeProvider>
     </ThemeModeContext.Provider>
   );
+}
+
+function DynamicEditablePage() {
+  const { pageSlug } = useParams();
+  return <EditablePage path={`/${pageSlug || ""}`} />;
 }
 
 function RouteAwareOverlays() {

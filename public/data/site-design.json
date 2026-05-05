@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "updatedAt": "2026-05-05T20:58:54.672Z",
+  "settings": {
+    "headerBrandText": "softu",
+    "headerTagline": "directory and vods",
+    "headerLogoUrl": "",
+    "headerLogoSize": 52,
+    "headerRadius": 20,
+    "headerSurface": "glass",
+    "showHeaderLogo": true,
+    "showHeaderTitle": true,
+    "showSocials": true,
+    "navStyle": "pill",
+    "footerEnabled": true,
+    "footerText": "softu © 2026",
+    "footerLink1Label": "Backend by OP",
+    "footerLink1Href": "https://github.com/OP-Archives",
+    "footerLink2Label": "",
+    "footerLink2Href": "",
+    "footerLink3Label": "",
+    "footerLink3Href": "",
+    "footerShowBuild": true,
+    "footerRadius": 20,
+    "footerSurface": "glass"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "type": "puck",
+      "title": "Home",
+      "path": "/",
+      "navLabel": "Home",
+      "navVisible": true,
+      "navOrder": 0,
+      "icon": "home",
+      "puck": {
+        "root": {
+          "props": {
+            "pageTitle": "Softu",
+            "pageDescription": "Streams and links!",
+            "backgroundMode": "gradient",
+            "backgroundColor": "#e2e9f3",
+            "backgroundGradient": "radial-gradient(circle at 13% 14%, rgba(212,107,140,0.14), transparent 34%), radial-gradient(circle at 88% 10%, rgba(121,163,230,0.16), transparent 42%), linear-gradient(180deg, #eef4fb 0%, #dde7f2 100%)",
+            "backgroundImage": "",
+            "textColor": "",
+            "maxWidth": "1180px",
+            "pagePaddingTop": 12,
+            "pagePaddingBottom": 24,
+            "sectionGap": 18,
+            "customCss": ""
+          }
+        },
+        "content": [
+          {
+            "type": "HeroDirectory",
+            "props": {
+              "id": "home-hero",
+              "eyebrow": "",
+              "title": "softu",
+              "subtitle": "",
+              "body": "vods, links, credits!",
+              "imageUrl": "",
+              "imageAlt": "",
+              "mediaMode": "twitch",
+              "layout": "text-left",
+              "surface": "glass",
+              "backgroundColor": "",
+              "accentColor": "#d46b8c",
+              "animation": "fade",
+              "minHeight": 360,
+              "buttons": [
+                {
+                  "label": "Open VODs",
+                  "href": "/vods",
+                  "variant": "contained",
+                  "tone": "accent",
+                  "animation": "sheen"
+                },
+                {
+                  "label": "Twitch",
+                  "href": "configured:twitch",
+                  "variant": "outlined",
+                  "tone": "blue",
+                  "animation": "lift"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Spacer",
+            "props": {
+              "height": 24,
+              "id": "Spacer-916ed704-f4ed-4dd8-8215-c837154cfae0"
+            }
+          },
+          {
+            "type": "RecentVods",
+            "props": {
+              "id": "home-recent-vods",
+              "title": "stream vods!~",
+              "subtitle": "latest streams in 1440p with chat!",
+              "count": 4,
+              "showButton": true,
+              "surface": "glass"
+            }
+          },
+          {
+            "type": "Spacer",
+            "props": {
+              "height": 24,
+              "id": "Spacer-79c4f70f-623b-4a3f-8c87-374b2e848822"
+            }
+          },
+          {
+            "type": "EmbedGrid",
+            "props": {
+              "id": "home-embeds",
+              "title": "",
+              "subtitle": "",
+              "columns": "2",
+              "surface": "glass",
+              "embeds": [
+                {
+                  "title": "spotify",
+                  "src": "https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator",
+                  "height": 352,
+                  "aspectRatio": "custom",
+                  "allow": "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
+                  "sandbox": ""
+                },
+                {
+                  "title": "softucord",
+                  "src": "https://discord.com/widget?id=1470662936950210601&theme=dark",
+                  "height": 352,
+                  "aspectRatio": "custom",
+                  "allow": "",
+                  "sandbox": "allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+                }
+              ]
+            }
+          }
+        ],
+        "zones": {}
+      }
+    },
+    {
+      "id": "vods",
+      "type": "system",
+      "title": "VODs",
+      "path": "/vods",
+      "navLabel": "VODs",
+      "navVisible": true,
+      "navOrder": 10,
+      "icon": "vods",
+      "systemType": "vods"
+    }
+  ]
+}

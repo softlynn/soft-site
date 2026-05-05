@@ -1,6 +1,7 @@
 import http from "node:http";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn, spawnSync } from "node:child_process";
@@ -30,6 +31,7 @@ const config = {
     String(process.env.GIT_COMMIT_AUTHOR_EMAIL || process.env.GIT_AUTHOR_EMAIL || DEFAULT_GIT_COMMIT_AUTHOR_EMAIL).trim() ||
     DEFAULT_GIT_COMMIT_AUTHOR_EMAIL,
   vodsDataPath: process.env.ARCHIVE_VODS_PATH || path.join(repoRoot, "public", "data", "vods.json"),
+  siteDesignPath: process.env.SITE_DESIGN_PATH || path.join(repoRoot, "public", "data", "site-design.json"),
   twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "",
   twitchClientId: process.env.TWITCH_CLIENT_ID || "",
   twitchClientSecret: process.env.TWITCH_CLIENT_SECRET || "",
@@ -37,12 +39,12 @@ const config = {
   youtubeClientSecretPath: process.env.YOUTUBE_CLIENT_SECRET_PATH || path.join(repoRoot, "secrets", "youtube_client_secret.json"),
   youtubeTokenPath: process.env.YOUTUBE_TOKEN_PATH || path.join(repoRoot, "secrets", "youtube_token.json"),
   twitchAuthTimeoutSeconds: Number(process.env.TWITCH_AUTH_TIMEOUT_SECONDS || "180"),
-  adminIdleTimeoutMinutes: Number(process.env.ADMIN_API_IDLE_TIMEOUT_MINUTES || "30"),
+  adminIdleTimeoutMinutes: Number(process.env.ADMIN_API_IDLE_TIMEOUT_MINUTES || "240"),
   spotifyNoticeText: process.env.ADMIN_SPOTIFY_NOTICE_TEXT || "Spotify audio may be muted on this VOD.",
 };
 
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
-const MAX_BODY_BYTES = 128 * 1024;
+const MAX_BODY_BYTES = 2 * 1024 * 1024;
 const sessions = new Map();
 let twitchBootstrapState = null;
 const TWITCH_AUTH_SCOPES = ["channel:manage:videos"];
@@ -217,6 +219,7 @@ const requireSession = (req) => {
     sessions.delete(token);
     fail("Admin session expired");
   }
+  sessions.set(token, Date.now() + SESSION_TTL_MS);
   return token;
 };
 
@@ -229,25 +232,98 @@ const saveVods = async (vods) => {
   await writeJsonFile(config.vodsDataPath, vods);
 };
 
-const stageAndPushVodData = (commitMessage) => {
-  const stage = spawnSync("git", ["add", config.vodsDataPath], { cwd: repoRoot, stdio: "inherit" });
-  if (stage.status !== 0) fail("git add failed for VOD data");
+const loadSiteDesign = async () => {
+  const design = await readJsonFile(config.siteDesignPath, {});
+  return design && typeof design === "object" ? design : {};
+};
 
-  const checkDiff = spawnSync("git", ["diff", "--cached", "--quiet", "--", config.vodsDataPath], { cwd: repoRoot });
+const saveSiteDesign = async (design) => {
+  await writeJsonFile(config.siteDesignPath, design);
+};
+
+const getPublishBranch = () => {
+  const configured = String(process.env.GIT_PUBLISH_BRANCH || "main").trim();
+  return configured || "main";
+};
+
+const toRepoRelativeGitPath = (filePath) => {
+  const resolvedPath = path.resolve(filePath);
+  const relativePath = path.relative(repoRoot, resolvedPath);
+  if (!relativePath || relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+    fail(`Cannot publish ${filePath}; it is outside the repository.`);
+  }
+  return relativePath.replace(/\\/g, "/");
+};
+
+const commitPathsInWorktree = (worktreeRoot, gitPaths, commitMessage, label) => {
+  const stage = spawnSync("git", ["add", "--", ...gitPaths], { cwd: worktreeRoot, stdio: "inherit" });
+  if (stage.status !== 0) fail(`git add failed for ${label}`);
+
+  const checkDiff = spawnSync("git", ["diff", "--cached", "--quiet", "--", ...gitPaths], { cwd: worktreeRoot });
   if (checkDiff.status === 0) {
-    log("No VOD data changes to commit.");
-    return;
+    log(`No ${label} changes to commit.`);
+    return false;
+  }
+  if (checkDiff.status !== 1) {
+    fail(`git diff failed for ${label}`);
   }
 
   const commit = spawnSync("git", [...gitCommitIdentityArgs(), "commit", "-m", commitMessage], {
-    cwd: repoRoot,
+    cwd: worktreeRoot,
     stdio: "inherit",
   });
   if (commit.status !== 0) fail("git commit failed");
+  return true;
+};
 
-  if (!config.autoGitPush) return;
-  const push = spawnSync("git", ["push", "origin", "main"], { cwd: repoRoot, stdio: "inherit" });
-  if (push.status !== 0) fail("git push failed");
+const publishPathsFromFreshOrigin = async (paths, commitMessage, label) => {
+  const sourcePaths = Array.isArray(paths) ? paths : [paths];
+  const gitPaths = sourcePaths.map(toRepoRelativeGitPath);
+
+  if (!config.autoGitPush) {
+    commitPathsInWorktree(repoRoot, gitPaths, commitMessage, label);
+    return;
+  }
+
+  const branch = getPublishBranch();
+  const publishRoot = path.join(os.tmpdir(), `soft-site-publish-${Date.now()}-${process.pid}`);
+  const fetch = spawnSync("git", ["fetch", "origin", branch], { cwd: repoRoot, stdio: "inherit" });
+  if (fetch.status !== 0) fail(`git fetch origin ${branch} failed`);
+
+  const addWorktree = spawnSync("git", ["worktree", "add", "--detach", publishRoot, `origin/${branch}`], {
+    cwd: repoRoot,
+    stdio: "inherit",
+  });
+  if (addWorktree.status !== 0) fail("git worktree add failed");
+
+  try {
+    for (let index = 0; index < sourcePaths.length; index += 1) {
+      const targetPath = path.join(publishRoot, gitPaths[index]);
+      await ensureDirectory(path.dirname(targetPath));
+      await fs.copyFile(sourcePaths[index], targetPath);
+    }
+
+    const hasCommit = commitPathsInWorktree(publishRoot, gitPaths, commitMessage, label);
+    if (!hasCommit) return;
+
+    const push = spawnSync("git", ["push", "origin", `HEAD:${branch}`], { cwd: publishRoot, stdio: "inherit" });
+    if (push.status !== 0) fail("git push failed");
+  } finally {
+    spawnSync("git", ["worktree", "remove", "--force", publishRoot], { cwd: repoRoot, stdio: "ignore" });
+  }
+};
+
+const stageAndPushPaths = async (paths, commitMessage, label) => {
+  const sourcePaths = Array.isArray(paths) ? paths : [paths];
+  await publishPathsFromFreshOrigin(sourcePaths, commitMessage, label);
+};
+
+const stageAndPushVodData = async (commitMessage) => {
+  await stageAndPushPaths(config.vodsDataPath, commitMessage, "VOD data");
+};
+
+const stageAndPushSiteDesign = async (commitMessage) => {
+  await stageAndPushPaths(config.siteDesignPath, commitMessage, "site design data");
 };
 
 const updateVod = async (vodId, updater, commitMessage) => {
@@ -260,7 +336,7 @@ const updateVod = async (vodId, updater, commitMessage) => {
   vods[index] = updatedVod;
 
   await saveVods(vods);
-  stageAndPushVodData(commitMessage);
+  await stageAndPushVodData(commitMessage);
   return updatedVod;
 };
 
@@ -708,8 +784,8 @@ const parseVodPartRoute = (pathname) => {
 
 const validateConfig = async () => {
   if (!config.adminPassword) fail("ADMIN_PANEL_PASSWORD is required in .env.local");
-  if (!config.twitchClientId || !config.twitchClientSecret) fail("TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET are required in .env.local");
   await ensureDirectory(path.dirname(config.vodsDataPath));
+  await ensureDirectory(path.dirname(config.siteDesignPath));
 };
 
 const sortVodsDesc = (vods) =>
@@ -840,6 +916,33 @@ const handleRequest = async (req, res) => {
     requireSession(req);
     const vods = await loadVods();
     sendJson(req, res, 200, { vods: sortVodsDesc(vods) });
+    return;
+  }
+
+  if (method === "GET" && pathname === "/site-design") {
+    requireSession(req);
+    const design = await loadSiteDesign();
+    sendJson(req, res, 200, { design });
+    return;
+  }
+
+  if (method === "POST" && pathname === "/site-design") {
+    requireSession(req);
+    const body = await readBodyJson(req);
+    const design = body?.design;
+    if (!design || typeof design !== "object" || Array.isArray(design)) {
+      throw createApiError(400, "Site design payload must be an object.");
+    }
+
+    const nextDesign = {
+      ...design,
+      version: Number(design.version) || 1,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await saveSiteDesign(nextDesign);
+    await stageAndPushSiteDesign("chore: update site design");
+    sendJson(req, res, 200, { design: nextDesign });
     return;
   }
 

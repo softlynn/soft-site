@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Box, Button, CircularProgress, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Stack, Switch, Typography } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import SimpleBar from "simplebar-react";
 import Footer from "../utils/Footer";
 import {
@@ -391,6 +392,9 @@ export default function AdminPage() {
             <>
               <Button variant="outlined" onClick={handleRefresh} disabled={loading}>
                 Refresh
+              </Button>
+              <Button component={RouterLink} to="/admin/design" variant="contained" disabled={loading}>
+                Design Editor
               </Button>
               <Button variant="outlined" color="warning" onClick={handleLock} disabled={loading}>
                 Lock

@@ -282,6 +282,22 @@ export const getAdminVods = async () => {
   return request("/vods", { token });
 };
 
+export const getSiteDesignAdmin = async () => {
+  const token = readAdminToken();
+  if (!token) throw new Error("Admin session is missing");
+  return request("/site-design", { token });
+};
+
+export const publishSiteDesign = async (design) => {
+  const token = readAdminToken();
+  if (!token) throw new Error("Admin session is missing");
+  return request("/site-design", {
+    method: "POST",
+    token,
+    body: { design },
+  });
+};
+
 export const setVodNotice = async (vodId, enabled) => {
   const token = readAdminToken();
   if (!token) throw new Error("Admin session is missing");
