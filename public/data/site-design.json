@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-05T21:58:44.044Z",
+  "updatedAt": "2026-05-05T22:00:34.918Z",
   "settings": {
     "headerBrandText": "softu",
     "headerTagline": "directory and vods",
@@ -166,13 +166,13 @@
               "id": "home-embeds",
               "title": "",
               "subtitle": "",
-              "columns": "2",
+              "columns": "3",
               "surface": "transparent",
               "embeds": [
                 {
                   "title": "spotify",
                   "src": "https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator",
-                  "height": 352,
+                  "height": 425,
                   "aspectRatio": "custom",
                   "allow": "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
                   "sandbox": ""
@@ -180,21 +180,22 @@
                 {
                   "title": "softucord",
                   "src": "https://discord.com/widget?id=1470662936950210601&theme=dark",
-                  "height": 352,
+                  "height": 400,
                   "aspectRatio": "custom",
                   "allow": "",
                   "sandbox": "allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
                 },
                 {
                   "title": "kick",
-                  "src": "",
+                  "src": "https://player.kick.com/softu1",
                   "height": 352,
-                  "aspectRatio": "custom",
+                  "aspectRatio": "16 / 9",
                   "allow": "<iframe \n     src=\"https://player.kick.com/softu1\" \n     height=\"720\" \n     width=\"1280\"\n     frameborder=\"0\" \n     scrolling=\"no\" \n     allowfullscreen=\"true\"> \n</iframe>",
                   "sandbox": ""
                 }
               ],
-              "width": "wide"
+              "width": "full",
+              "padding": "small"
             }
           }
         ],
