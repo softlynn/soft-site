@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-05-06T20:44:04.313Z",
+  "generatedAt": "2026-05-06T23:44:04.287Z",
   "channelLogin": "softu1",
   "channelId": "218908733",
   "global": [
@@ -1181,6 +1181,21 @@
           "description": "Deceit",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/directory/game/Deceit/details"
+        }
+      ]
+    },
+    {
+      "set_id": "default-creator-campaign-reward",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/072f22ee-9efb-486d-997c-2a5b575b4845/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/072f22ee-9efb-486d-997c-2a5b575b4845/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/072f22ee-9efb-486d-997c-2a5b575b4845/3",
+          "title": "Creator Campaign Reward",
+          "description": "This badge was earned for participating in a creator campaign.",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
