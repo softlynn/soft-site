@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-05-05T21:14:04.308Z",
+  "generatedAt": "2026-05-06T16:44:05.404Z",
   "channelLogin": "softu1",
   "channelId": "218908733",
   "global": [
@@ -5071,6 +5071,21 @@
           "description": "For the Horde!",
           "click_action": "visit_url",
           "click_url": "http://warcraftontwitch.tv/"
+        }
+      ]
+    },
+    {
+      "set_id": "went-outside",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/544b6594-e11e-4230-8d42-d81c84002524/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/544b6594-e11e-4230-8d42-d81c84002524/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/544b6594-e11e-4230-8d42-d81c84002524/3",
+          "title": "Went Outside",
+          "description": "This badge was earned for tuning into 15 mins of IRL Takeover streams.",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
