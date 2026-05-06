@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-05-06T16:44:05.404Z",
+  "generatedAt": "2026-05-06T20:44:04.313Z",
   "channelLogin": "softu1",
   "channelId": "218908733",
   "global": [
@@ -1059,6 +1059,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/fb838633-6ff6-46df-98b4-9e53fcff84f6/3",
           "title": "Clips Leader 3",
           "description": "Ranked as a top clipper in this community",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "crash",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/c194a433-5fb4-4f57-a5e7-64ff9f02bf24/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/c194a433-5fb4-4f57-a5e7-64ff9f02bf24/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/c194a433-5fb4-4f57-a5e7-64ff9f02bf24/3",
+          "title": "CRASH",
+          "description": "This badge was earned by watching /PlaqueBoyMax during his CRASH THE PARTY live streams.",
           "click_action": null,
           "click_url": null
         }
