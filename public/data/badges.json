@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-05-06T23:44:04.287Z",
+  "generatedAt": "2026-05-11T22:44:04.864Z",
   "channelLogin": "softu1",
   "channelId": "218908733",
   "global": [
@@ -2081,6 +2081,21 @@
           "description": "Hello Neighbor",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/directory/game/Hello%20Neighbor/details"
+        }
+      ]
+    },
+    {
+      "set_id": "hime",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/20098028-701d-49c5-a5b6-22763ce23dd9/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/20098028-701d-49c5-a5b6-22763ce23dd9/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/20098028-701d-49c5-a5b6-22763ce23dd9/3",
+          "title": "Hime",
+          "description": "This badge was earned by signing up for a Turbo free trial or purchasing a Turbo subscription during Ani-May with Crunchyroll on Twitch from May 14 - 20.",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -5144,6 +5159,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/d87a78f5-76d9-451f-8f31-752a369e6045/3",
           "title": "Yellow Noob",
           "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Roblox category during Bloxfest.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "yuzu",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/bc590afa-de5e-4202-96ff-fe4bdff3e04e/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/bc590afa-de5e-4202-96ff-fe4bdff3e04e/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/bc590afa-de5e-4202-96ff-fe4bdff3e04e/3",
+          "title": "Yuzu",
+          "description": "This badge was earned by signing up for a Turbo free trial or purchasing a Turbo subscription during Ani-May with Crunchyroll on Twitch from May 14 - 20.",
           "click_action": null,
           "click_url": null
         }
