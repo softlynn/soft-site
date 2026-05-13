@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Redirecting to the Latest VOD...</title>
+    <script>
+      (async () => {
+        const fallbackUrl = "https://softu.one/#/vods";
+        const pageStatus = document.getElementById("latestvod-status");
+        const manualLink = document.getElementById("latestvod-link");
+
+        const setFallback = () => {
+          if (manualLink) manualLink.href = fallbackUrl;
+          if (pageStatus) pageStatus.textContent = "Redirecting to VODs...";
+          window.location.replace(fallbackUrl);
+        };
+
+        const isPublishedVodPart = (entry) =>
+          entry &&
+          entry.unpublished !== true &&
+          String(entry.type || "vod") === "vod" &&
+          String(entry.id || "").trim();
+
+        const getCreatedTime = (vod) => {
+          const time = Date.parse(vod?.createdAt || "");
+          return Number.isFinite(time) ? time : 0;
+        };
+
+        try {
+          const response = await fetch(new URL("../data/vods.json", window.location.href), {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            cache: "no-store",
+          });
+
+          if (!response.ok) throw new Error(`VOD data failed to load: ${response.status}`);
+
+          const vods = await response.json();
+          const latestVod = Array.isArray(vods)
+            ? vods
+                .filter((vod) => vod?.unpublished !== true && Array.isArray(vod?.youtube) && vod.youtube.some(isPublishedVodPart))
+                .sort((a, b) => getCreatedTime(b) - getCreatedTime(a))[0]
+            : null;
+
+          if (!latestVod?.id) {
+            setFallback();
+            return;
+          }
+
+          const redirectUrl = `https://softu.one/#/youtube/${encodeURIComponent(String(latestVod.id))}`;
+          if (manualLink) manualLink.href = redirectUrl;
+          window.location.replace(redirectUrl);
+        } catch {
+          setFallback();
+        }
+      })();
+    </script>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: system-ui, sans-serif;
+        background: #e2e9f3;
+        color: #132138;
+      }
+
+      a {
+        color: #d46b8c;
+      }
+    </style>
+  </head>
+  <body>
+    <p><span id="latestvod-status">Redirecting to the latest VOD...</span> <a id="latestvod-link" href="https://softu.one/#/vods">Click here if needed</a>.</p>
+  </body>
+</html>
