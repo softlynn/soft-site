@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-05-11T22:44:04.864Z",
+  "generatedAt": "2026-05-14T16:14:04.938Z",
   "channelLogin": "softu1",
   "channelId": "218908733",
   "global": [
@@ -5116,6 +5116,21 @@
           "description": "For the Horde!",
           "click_action": "visit_url",
           "click_url": "http://warcraftontwitch.tv/"
+        }
+      ]
+    },
+    {
+      "set_id": "waterslug",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/7c98905d-49ed-44f0-886e-ab6983268db6/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/7c98905d-49ed-44f0-886e-ab6983268db6/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/7c98905d-49ed-44f0-886e-ab6983268db6/3",
+          "title": "Waterslug",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Subnautica 2 category during week 1 of launch.",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
