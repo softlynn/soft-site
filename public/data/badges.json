@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-05-14T16:14:04.938Z",
+  "generatedAt": "2026-05-14T21:59:05.365Z",
   "channelLogin": "softu1",
   "channelId": "218908733",
   "global": [
@@ -876,6 +876,21 @@
           "description": "Brawlhalla",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/directory/game/Brawlhalla/details"
+        }
+      ]
+    },
+    {
+      "set_id": "brawlhallawoo",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/a3e4f5e7-a6c9-4458-b8c4-f83a0f725566/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/a3e4f5e7-a6c9-4458-b8c4-f83a0f725566/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/a3e4f5e7-a6c9-4458-b8c4-f83a0f725566/3",
+          "title": "BrawlhallAwoo",
+          "description": "This badge was earned by subscribing or gifting a sub to a Brawlhalla streamer during Brawlhalla Fest 2026!",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
