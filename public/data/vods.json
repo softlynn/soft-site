@@ -10,7 +10,9 @@
         "type": "vod",
         "duration": 0,
         "part": 1,
-        "thumbnail_url": "https://i.ytimg.com/vi/gFedMwXvBeE/mqdefault.jpg"
+        "thumbnail_url": "https://i.ytimg.com/vi/gFedMwXvBeE/mqdefault.jpg",
+        "unpublished": true,
+        "adminOrder": 1
       }
     ],
     "stream_id": "318599664092",
@@ -27,7 +29,7 @@
     ],
     "games": [],
     "createdAt": "2026-05-14T20:46:25Z",
-    "updatedAt": "2026-05-15T09:49:25.855Z",
+    "updatedAt": "2026-05-15T09:59:03.237Z",
     "unpublished": true
   },
   {
