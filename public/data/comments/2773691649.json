@@ -1,0 +1,4217 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2773691649",
+  "generatedAt": "2026-05-17T08:59:11.498Z",
+  "comments": [
+    {
+      "id": "f72059d1-45ca-4252-8d2e-9ac13ceb39ce",
+      "created_at": "2026-05-16T20:04:13.034Z",
+      "content_offset_seconds": 8,
+      "display_name": "Sery_Bot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "Sery_Bot is here ",
+          "emoticon": null
+        },
+        {
+          "text": "seryboArrive",
+          "emote": {
+            "emoteID": "emotesv2_a4648bf8dbbd4b8380c59c8c761427c1"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_a4648bf8dbbd4b8380c59c8c761427c1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "3e246f40-f6f3-4f4f-b848-1e853d92c712",
+      "created_at": "2026-05-16T20:04:17.812Z",
+      "content_offset_seconds": 13,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "softu1 is live! ~ hello",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bb5f48b7-6275-4130-9be2-14a4dab31152",
+      "created_at": "2026-05-16T20:05:28.667Z",
+      "content_offset_seconds": 83,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "bricki11Wave",
+          "emote": {
+            "emoteID": "emotesv2_6e3c47068eac417b84cc753c5da6ac70"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_6e3c47068eac417b84cc753c5da6ac70"
+          }
+        }
+      ]
+    },
+    {
+      "id": "d70023d6-2972-41a9-a34f-e51051135b31",
+      "created_at": "2026-05-16T20:05:35.196Z",
+      "content_offset_seconds": 90,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0f469528-5f4a-45be-bfd4-420d40bb3c4b",
+      "created_at": "2026-05-16T20:05:52.166Z",
+      "content_offset_seconds": 107,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "hii",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c8e4952f-821f-4256-9c30-f111134c38e6",
+      "created_at": "2026-05-16T20:05:59.371Z",
+      "content_offset_seconds": 114,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@TheOtherJoe you caught an Epic ⭐ Leatherback Turtle (393kg) worth 138g! You now have 4,675g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3a26ca4a-f790-4258-889e-831aa82fd227",
+      "created_at": "2026-05-16T20:09:02.973Z",
+      "content_offset_seconds": 298,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b0b53cd2-868c-4469-874a-3fbb2d9184b0",
+      "created_at": "2026-05-16T20:09:24.739Z",
+      "content_offset_seconds": 320,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@TheOtherJoe you caught a Common ⭐⭐ Black Spotted Grunt (5.0kg) worth 20g! You now have 4,695g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d0dd3180-461b-4ebc-8e44-6d86a554bb46",
+      "created_at": "2026-05-16T20:10:55.218Z",
+      "content_offset_seconds": 410,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "overclocking causing instability, no way",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b0766ee8-83c5-4316-9a78-0c3bdd1dc982",
+      "created_at": "2026-05-16T20:15:00.48Z",
+      "content_offset_seconds": 655,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "They have bright colors on those connectors that get covered only when they are fully inserted now",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "2651a651-12a8-457e-8caf-d27efcf42806",
+      "created_at": "2026-05-16T20:15:24.799Z",
+      "content_offset_seconds": 680,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "yo yo",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3135b08e-16c8-4606-b542-a6b60e6e6f0e",
+      "created_at": "2026-05-16T20:16:51.092Z",
+      "content_offset_seconds": 766,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "you got good gear, and so young nice !",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bfd7103c-24a0-456b-ac86-76a16dde08e2",
+      "created_at": "2026-05-16T20:17:00.248Z",
+      "content_offset_seconds": 775,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "my gut says 3.5k",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7b170450-a093-4f07-b32f-9596984355aa",
+      "created_at": "2026-05-16T20:18:28.011Z",
+      "content_offset_seconds": 863,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "doing great, making some dinner so running back and forth kitchen D",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "93e0b7a8-b7b4-491f-9454-8cb40e38dbaf",
+      "created_at": "2026-05-16T20:18:31.019Z",
+      "content_offset_seconds": 866,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "4185ffe5-5124-42ef-904a-0cf41e9657ae",
+      "created_at": "2026-05-16T20:18:41.952Z",
+      "content_offset_seconds": 877,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "you know room yes ?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "77675ddc-bed6-40ea-a502-6269ee404589",
+      "created_at": "2026-05-16T20:18:58.526Z",
+      "content_offset_seconds": 893,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "they told me to check you out ",
+          "emoticon": null
+        },
+        {
+          "text": ":)",
+          "emote": {
+            "emoteID": "1"
+          },
+          "emoticon": {
+            "emoticon_id": "1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "10ab4454-899e-48a9-ae07-d59f8c2830c8",
+      "created_at": "2026-05-16T20:19:56.717Z",
+      "content_offset_seconds": 952,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "Im in Norway and time is 10:20 pm , went to bed 14 pm woke up 4,5 hours , and here we are. Dance break tonight but VR or not is the question after dinner ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "2d91a3ed-9cf6-40ff-8c37-918cb12d2714",
+      "created_at": "2026-05-16T20:20:27.335Z",
+      "content_offset_seconds": 982,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "did 13,5 hours vr last night lol oops ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "11d3d9dd-52bc-40ee-8f07-fb9ad96f6cc2",
+      "created_at": "2026-05-16T20:20:43.292Z",
+      "content_offset_seconds": 998,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "cant sleep now , must stay up until 02 am or so so I get back on track for monday morning",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "15898169-7d6e-4c48-b74c-f1d8554c6d6d",
+      "created_at": "2026-05-16T20:20:49.276Z",
+      "content_offset_seconds": 1004,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "yes I dance",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e4e8f168-1af9-4d04-9b75-555050d01d83",
+      "created_at": "2026-05-16T20:21:06.178Z",
+      "content_offset_seconds": 1021,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "x, yt, tiktok, pick ur poison ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "1314c1e0-64bc-45fc-908b-789b5fadd106",
+      "created_at": "2026-05-16T20:21:06.393Z",
+      "content_offset_seconds": 1021,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "looks like starting price is now 4k for 5090",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ebf042b9-c154-4593-981e-847d69bd70a2",
+      "created_at": "2026-05-16T20:21:27.626Z",
+      "content_offset_seconds": 1042,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "shuffling/footwork as base gogo Freestyle dancer",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "14788e46-6ede-4003-8fbc-7ce2bd323031",
+      "created_at": "2026-05-16T20:21:39.048Z",
+      "content_offset_seconds": 1054,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "not famous",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "68410d71-9318-453e-af4a-38f9945f152e",
+      "created_at": "2026-05-16T20:22:04.351Z",
+      "content_offset_seconds": 1079,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "good footwork goes good in all styles, since foiundation ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        },
+        {
+          "text": "   but most give up running man and such",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a8969578-7a1e-45e6-8bad-05e8839af5fd",
+      "created_at": "2026-05-16T20:22:52.92Z",
+      "content_offset_seconds": 1128,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "i did dual o kkick and tiktok , but tiktok bans my from dual . so only done tiktok streams last 5 months.. but serisously considering twitch + kick and just post tiktok..",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a9033d87-bb48-4ab0-8a49-dc246a1fc7b6",
+      "created_at": "2026-05-16T20:23:24.239Z",
+      "content_offset_seconds": 1159,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "Come from karate (ex insturctor) but only done basic moves and freestyle   I love freestyle ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "f5180e4e-a0b9-430d-8229-9e4dae4306a1",
+      "created_at": "2026-05-16T20:23:40.829Z",
+      "content_offset_seconds": 1176,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "should hav account on all if not even piosting just to have linktree or url to main place",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "26d9a468-de08-4bc6-b52d-496376d484d3",
+      "created_at": "2026-05-16T20:23:58.73Z",
+      "content_offset_seconds": 1194,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "sub-gifter",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "yoooo",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "db8699c2-3414-458d-aecd-1931be4aa6cc",
+      "created_at": "2026-05-16T20:24:03.527Z",
+      "content_offset_seconds": 1198,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "started out with shorts on yt yes ",
+          "emoticon": null
+        },
+        {
+          "text": ":)",
+          "emote": {
+            "emoteID": "1"
+          },
+          "emoticon": {
+            "emoticon_id": "1"
+          }
+        },
+        {
+          "text": "  1,9k subs now but post here and there",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9b65d7ed-e1ec-4e56-bdc5-dbc2948872ea",
+      "created_at": "2026-05-16T20:24:39.122Z",
+      "content_offset_seconds": 1234,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "wanna be betyter at streaming , watch others stream ( i am now) and stream a lot ! ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        },
+        {
+          "text": "  the more u do the better it gets.",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "39383fdd-0fa5-4e9e-9ae5-31ee1071f094",
+      "created_at": "2026-05-16T20:24:59.921Z",
+      "content_offset_seconds": 1255,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "But u as I male voice still takes time for most ppl to get used to lol",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4f571ae9-e9b9-4b1b-bf29-b66340d08cbc",
+      "created_at": "2026-05-16T20:25:06.958Z",
+      "content_offset_seconds": 1262,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "or dark voice",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "cbbee0eb-738e-4af6-8904-dcae2dcf81af",
+      "created_at": "2026-05-16T20:25:14.808Z",
+      "content_offset_seconds": 1270,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "its a good voice dont get me wrong ",
+          "emoticon": null
+        },
+        {
+          "text": ";)",
+          "emote": {
+            "emoteID": "555555589"
+          },
+          "emoticon": {
+            "emoticon_id": "555555589"
+          }
+        }
+      ]
+    },
+    {
+      "id": "5ba207f2-2474-4943-8f68-8bda700096df",
+      "created_at": "2026-05-16T20:25:27.901Z",
+      "content_offset_seconds": 1283,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "dark",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1f4f4f64-469d-4c63-8818-eb0f750a543d",
+      "created_at": "2026-05-16T20:25:52.798Z",
+      "content_offset_seconds": 1308,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "catWait",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a898dafa-5856-4339-8898-099824edecbd",
+      "created_at": "2026-05-16T20:25:57.594Z",
+      "content_offset_seconds": 1312,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "male oriented",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "aebaea3c-9744-4a3b-bba3-a305837682a2",
+      "created_at": "2026-05-16T20:26:31.516Z",
+      "content_offset_seconds": 1346,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "yes deep !  sorry   english 4th language",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bcbe9d40-d54b-4fc0-8ea7-5450840e414e",
+      "created_at": "2026-05-16T20:26:40.102Z",
+      "content_offset_seconds": 1355,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "we call it dark in norwegian directly translated",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "df2f3236-cfa8-428c-8ed4-5a337e4c58ce",
+      "created_at": "2026-05-16T20:27:17.86Z",
+      "content_offset_seconds": 1393,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "Norwegian, Danish, Swedish, English   in that order",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "269fe12a-5b7e-4473-b9bf-bebc0b97e247",
+      "created_at": "2026-05-16T20:27:34.174Z",
+      "content_offset_seconds": 1409,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "FIrst three very similar so not hard to learn but most dont",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5a64c766-2eef-4068-8ab0-b0d74a146898",
+      "created_at": "2026-05-16T20:28:52.948Z",
+      "content_offset_seconds": 1488,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "portog.. spanish..  ?   Vietnam.. Thai...",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7eea3d99-871e-4c66-a368-c78e1ef5bd0e",
+      "created_at": "2026-05-16T20:28:59.702Z",
+      "content_offset_seconds": 1495,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "sub-gifter",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "i wanna learn German for when I go to the German techno raves",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "55610a42-5576-461d-bdca-5b49eb5f4cae",
+      "created_at": "2026-05-16T20:29:52.363Z",
+      "content_offset_seconds": 1547,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "sub-gifter",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "I know Italian, Spanish and English",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "aa4e6494-3efe-4337-a82c-dccee293c384",
+      "created_at": "2026-05-16T20:29:53.374Z",
+      "content_offset_seconds": 1548,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "where you hang in vrc ? like what community ? or just stream solo like this ?    We hang in the VR Dj scene (mostly EU timezones)",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7a867bea-c9e8-4b16-80cd-696d0b2df325",
+      "created_at": "2026-05-16T20:30:03.284Z",
+      "content_offset_seconds": 1558,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "German techno every night if ya want in vrchat haha",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bdf3c4a3-51a9-4ad9-804a-44bce8f6e2d2",
+      "created_at": "2026-05-16T20:30:13.423Z",
+      "content_offset_seconds": 1568,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "@opafex nice, where u live?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "640c02f2-9716-4dc3-8146-7c09040ada70",
+      "created_at": "2026-05-16T20:31:12.009Z",
+      "content_offset_seconds": 1627,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "sub-gifter",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "@sniTChie_VR New York",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "04834cd4-202a-499a-97bc-69a81fbb51f3",
+      "created_at": "2026-05-16T20:31:52.828Z",
+      "content_offset_seconds": 1668,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "sub-gifter",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "The Bronx tho",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3ca3c063-0148-4cc4-990e-b2890d30a6bc",
+      "created_at": "2026-05-16T20:32:15.68Z",
+      "content_offset_seconds": 1690,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "dancing community is big and splitted kinda, but many go over in all communities.   (18+ dancers, poledancers, gogo dancers SFW, freestyl hip hop battlers, theather acting dancers, dancing world with fitness marshal and so on .. I dance for Ministry Promotion (we get booked to events and dance)",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c8695854-763b-4a92-b02f-e0caab94d452",
+      "created_at": "2026-05-16T20:32:23.548Z",
+      "content_offset_seconds": 1698,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "sub-gifter",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "Im an Italian living in The Bronx",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0c7558d9-cc8c-4c9f-900d-6eb1a1eaab08",
+      "created_at": "2026-05-16T20:33:09.413Z",
+      "content_offset_seconds": 1744,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "i dance(stream) 5/ days every week 2-6(10) hours ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        },
+        {
+          "text": "   its my gym, dancefloor and 2nd social life",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3e32091d-272b-49f1-9ba5-92c4b359d38b",
+      "created_at": "2026-05-16T20:33:31.813Z",
+      "content_offset_seconds": 1767,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "@opafex now I picture you like a sopranos dude  . no offense hehe",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "89976b77-081d-40bb-a69c-e993d8428552",
+      "created_at": "2026-05-16T20:34:30.292Z",
+      "content_offset_seconds": 1825,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "sub-gifter",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "@sniTChie_VR Im not fat tho",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5494f986-53bd-4b8b-98c9-bfdfc538659e",
+      "created_at": "2026-05-16T20:34:39.903Z",
+      "content_offset_seconds": 1835,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "joined ur disord . saw ur shorts, like ur style. and if wanna learn from each other im down",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e3922015-ac09-4792-8eb5-8f23cd1591ea",
+      "created_at": "2026-05-16T20:35:44.035Z",
+      "content_offset_seconds": 1899,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "lol ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        },
+        {
+          "text": " dancing next to ppl inspires me and pushes me , but I Getya. its all in ur head.. ( i dance irl at buss stops and post em so I give F ) and others do to , so just do as long as not hurting anyone .",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "535aa1b3-75f2-4191-8d1a-624e71656353",
+      "created_at": "2026-05-16T20:35:53.934Z",
+      "content_offset_seconds": 1909,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "clubbing in VR is the best !!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7677d015-444e-4ff5-af91-b3316cedf367",
+      "created_at": "2026-05-16T20:37:11.637Z",
+      "content_offset_seconds": 1986,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "opafex = sopranos dude image ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "51e1ef0b-91e4-4c43-9f7c-5027416fb7c0",
+      "created_at": "2026-05-16T20:37:48.99Z",
+      "content_offset_seconds": 2024,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "irl ppl told me in clubs are u crazy , slow donw (no skill just energy) in VRC clubbing noone told me to slow donw, ppl just cheer if u dance. so eventually skills came.",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4475f05a-8dd0-4651-8fda-3415b8ef70ae",
+      "created_at": "2026-05-16T20:38:22.531Z",
+      "content_offset_seconds": 2057,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "I drag stream with me clubbing , but is not so good many times, since hard to talk with ppl both worlds. solo like u do is best for communicating and interacting",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1c13085d-9c34-495d-93e8-c44ab9c430c5",
+      "created_at": "2026-05-16T20:38:30.296Z",
+      "content_offset_seconds": 2065,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "ye they thought I was on drugs etc",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6c018705-20a7-40ce-87fc-0b91540348fc",
+      "created_at": "2026-05-16T20:38:35.964Z",
+      "content_offset_seconds": 2071,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "sub-gifter",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "Im going to a rave tomorrow",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5873e598-38a4-4c71-a060-9b6d87722074",
+      "created_at": "2026-05-16T20:38:39.946Z",
+      "content_offset_seconds": 2075,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "but now they like wtf happend",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1a3786c0-a1f3-4ce8-a07b-5aa6aebd8c86",
+      "created_at": "2026-05-16T20:39:04.625Z",
+      "content_offset_seconds": 2099,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "308400d2-4dfc-46bd-816c-91fb58f0219d",
+      "created_at": "2026-05-16T20:39:06.546Z",
+      "content_offset_seconds": 2101,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "I can show ya ",
+          "emoticon": null
+        },
+        {
+          "text": ":)",
+          "emote": {
+            "emoteID": "1"
+          },
+          "emoticon": {
+            "emoticon_id": "1"
+          }
+        },
+        {
+          "text": "   super nice community and got ppl from ALL other places in vrc",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3da524f2-721a-47a4-82e9-8507ac7bfc7e",
+      "created_at": "2026-05-16T20:39:26.024Z",
+      "content_offset_seconds": 2121,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@DamS_DmS you caught a Junk ⭐ Fish Cracker (0.42kg) worth 4g! You now have 1,055g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b3ef4d09-2f3a-4a3a-9d95-ac4f1d943b76",
+      "created_at": "2026-05-16T20:39:27.18Z",
+      "content_offset_seconds": 2122,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "hihi",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8eedcebf-1036-4375-9844-475ba5ebab3a",
+      "created_at": "2026-05-16T20:40:33.484Z",
+      "content_offset_seconds": 2188,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "just turn on earmuff mode, silence(deaffen) all voice outside circle, and then just take in the music and move.. lights music ppl its magical !",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "efd5611b-42df-4a01-b769-4149a3915ba8",
+      "created_at": "2026-05-16T20:40:43.207Z",
+      "content_offset_seconds": 2198,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "i mute all voices and record clips",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0db9dd7e-ffa4-4681-8690-ad2d3ca291ee",
+      "created_at": "2026-05-16T20:40:48.961Z",
+      "content_offset_seconds": 2204,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "crazy i need to get in vr more",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4e288f8e-187d-4742-a9f6-8347952c53d7",
+      "created_at": "2026-05-16T20:41:42.671Z",
+      "content_offset_seconds": 2257,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "damn",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bda9a85d-8b1c-423b-b858-cc52df28dce0",
+      "created_at": "2026-05-16T20:42:00.962Z",
+      "content_offset_seconds": 2276,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "yes dam ^^",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "180080f6-9eed-4f75-8790-46255efc6326",
+      "created_at": "2026-05-16T20:42:07.631Z",
+      "content_offset_seconds": 2282,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "hours you guys got ?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8883d001-7c4d-4711-852a-8d35e02b6b7f",
+      "created_at": "2026-05-16T20:42:30.544Z",
+      "content_offset_seconds": 2305,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "lol",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "45f456d7-4ba2-41da-b105-fcac67ad7d4f",
+      "created_at": "2026-05-16T20:42:43.355Z",
+      "content_offset_seconds": 2318,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "started Dec 2022 and 4155 hours in now.. (80% = pure dancing)",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "62d19d91-7569-4463-8b8b-b97960986898",
+      "created_at": "2026-05-16T20:42:47.104Z",
+      "content_offset_seconds": 2322,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "how lol",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9760bc53-cc68-4dbd-bb37-33558af4bdac",
+      "created_at": "2026-05-16T20:43:15.349Z",
+      "content_offset_seconds": 2350,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "we good shape haha. never been this fit ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "674940a6-2806-4683-9448-52cd9d2226f3",
+      "created_at": "2026-05-16T20:43:57.994Z",
+      "content_offset_seconds": 2393,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "running man practice also give staminia",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4903c9e8-2e33-4585-9928-eb8e966e7988",
+      "created_at": "2026-05-16T20:43:59.683Z",
+      "content_offset_seconds": 2394,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": ";)",
+          "emote": {
+            "emoteID": "555555589"
+          },
+          "emoticon": {
+            "emoticon_id": "555555589"
+          }
+        }
+      ]
+    },
+    {
+      "id": "4a5f0403-d4db-4ac7-9497-71a3a841805c",
+      "created_at": "2026-05-16T20:44:48.292Z",
+      "content_offset_seconds": 2443,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "i only run if 1 of 3 things occur",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bc151254-65ce-4412-b5aa-ffd9d2d95358",
+      "created_at": "2026-05-16T20:45:02.391Z",
+      "content_offset_seconds": 2457,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "1. someone after me 2. im after someone 3. im late",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "19e2b142-e4ae-4c47-8cf3-3232b59a21aa",
+      "created_at": "2026-05-16T20:46:00.181Z",
+      "content_offset_seconds": 2515,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "skill issue",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "037a7a96-eb2c-4d63-9bc3-328237df1507",
+      "created_at": "2026-05-16T20:46:41.639Z",
+      "content_offset_seconds": 2556,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "lmao",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c5dec1f9-45d6-4049-a927-ddbcfa89b3b4",
+      "created_at": "2026-05-16T20:50:15.181Z",
+      "content_offset_seconds": 2770,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "is it a switch with capture card or pc u play (harvest moon?)",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "86f7d6a5-5965-4340-af61-1ff790eec00f",
+      "created_at": "2026-05-16T20:51:09.965Z",
+      "content_offset_seconds": 2825,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "its so worth getting one",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8afce3a6-d8a7-40c9-ba35-09e542ed154a",
+      "created_at": "2026-05-16T20:51:14.874Z",
+      "content_offset_seconds": 2830,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "would love a streaming pc.. but so costly now",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "42834053-2ac2-44af-b80f-6b9f3489481f",
+      "created_at": "2026-05-16T20:51:22.421Z",
+      "content_offset_seconds": 2837,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "pci-e capture card yes",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "dc6981c6-4abc-459a-99ff-1a1e7838ace8",
+      "created_at": "2026-05-16T20:51:53.453Z",
+      "content_offset_seconds": 2868,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "i tried tekken 8 overlayed in vrchat , 25 fps lol",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0fcf4e4d-f8be-4abc-ab8f-199d5284ae11",
+      "created_at": "2026-05-16T20:52:36.905Z",
+      "content_offset_seconds": 2912,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "im just glad i can play vrc with more then 20fps now lmao",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1b9e9435-02ff-4e81-a4d0-e390cef2067c",
+      "created_at": "2026-05-16T20:52:49.649Z",
+      "content_offset_seconds": 2924,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "https://x.com/softu_ - I post",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b78fca09-3107-4631-8945-a82ccdcc3a46",
+      "created_at": "2026-05-16T20:53:43.826Z",
+      "content_offset_seconds": 2979,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0b3f3f3c-c849-4987-a140-501babf89270",
+      "created_at": "2026-05-16T20:53:47.849Z",
+      "content_offset_seconds": 2983,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "ok pc myself but sometime since upgraded, but vrchat with to many very poor avatars shown and every gpu kneels eventually",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "620166bd-ba3c-4718-96d8-e58ee630af25",
+      "created_at": "2026-05-16T20:54:06.618Z",
+      "content_offset_seconds": 3001,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@DamS_DmS you caught a Rare ⭐ Clownfish (0.16kg) worth 72g! You now have 1,127g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3a4588d2-d762-461e-9039-5c800ee420ba",
+      "created_at": "2026-05-16T20:54:07.879Z",
+      "content_offset_seconds": 3003,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "x3D ryzen CPU is a MUST for vrc imo",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3bcab6aa-fb14-47eb-994a-375237271e9f",
+      "created_at": "2026-05-16T20:54:39.45Z",
+      "content_offset_seconds": 3034,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "fr",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "463108d0-b06e-4d1e-ae08-7b2eb315656c",
+      "created_at": "2026-05-16T20:54:56.815Z",
+      "content_offset_seconds": 3052,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "like 40 of my avatar in an instances need 12GB vram now  haha",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4dacb3c2-271e-4bea-bbcf-68c0ef50691d",
+      "created_at": "2026-05-16T20:55:18.98Z",
+      "content_offset_seconds": 3074,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "a reaon why they should sell more optimized avatass, since noone sees ur very poor fanxy (most likely)",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1fb00cec-83ba-4492-809a-78a41c64d336",
+      "created_at": "2026-05-16T20:55:51.096Z",
+      "content_offset_seconds": 3106,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "i do 2k or 1k textures, but loads of assets , love swapping outfits on the fly ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "b3f27129-dead-4642-b721-5b74b22a8e9c",
+      "created_at": "2026-05-16T20:56:47.288Z",
+      "content_offset_seconds": 3162,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "hug streamelements",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4ae4a870-ddc4-45f2-919a-6d4e4dc8a2fb",
+      "created_at": "2026-05-16T20:56:47.455Z",
+      "content_offset_seconds": 3162,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "planning on getting the steam frame",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d4166d7b-2135-4b02-af36-b94424c879f6",
+      "created_at": "2026-05-16T20:56:58.294Z",
+      "content_offset_seconds": 3173,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "when my 60+ mum can put on a pair of glasses push the side and boom she is where u are now. then we sold",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5e465ead-dabe-4f4f-a7c1-0dbbea72d65a",
+      "created_at": "2026-05-16T20:57:33.457Z",
+      "content_offset_seconds": 3208,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "u draw ?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bfcde48f-b784-470b-b30f-7f80970b71c5",
+      "created_at": "2026-05-16T20:57:43.619Z",
+      "content_offset_seconds": 3218,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "i used to but only video edit now",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9c8de6e9-30d9-4a89-8dc2-7ad0c3ca4897",
+      "created_at": "2026-05-16T20:57:47.291Z",
+      "content_offset_seconds": 3222,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "Cozy",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c584b130-133e-4e21-8561-e6993de26b08",
+      "created_at": "2026-05-16T20:57:53.098Z",
+      "content_offset_seconds": 3228,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "grafitti and characters my stykes  manga",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5071c413-3279-44e4-8c29-1f04c3d102b6",
+      "created_at": "2026-05-16T21:00:15.516Z",
+      "content_offset_seconds": 3370,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "hihi your channels was a bit empty, so posted two clips from last night dancing vr ",
+          "emoticon": null
+        },
+        {
+          "text": ";)",
+          "emote": {
+            "emoteID": "555555589"
+          },
+          "emoticon": {
+            "emoticon_id": "555555589"
+          }
+        }
+      ]
+    },
+    {
+      "id": "39e91949-96c5-41a6-825f-4eca6b01d7d4",
+      "created_at": "2026-05-16T21:02:12.959Z",
+      "content_offset_seconds": 3488,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "cowJAM",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "db9aeb00-121b-4497-9fda-451748a6c75a",
+      "created_at": "2026-05-16T21:02:52.593Z",
+      "content_offset_seconds": 3527,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "https://softu.one/ .. write it down.. Noted",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "11bb25bc-7a75-4b36-b006-3d9a2613e28b",
+      "created_at": "2026-05-16T21:04:07.51Z",
+      "content_offset_seconds": 3602,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "European Role PlayingGame ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "43401a0b-9bd1-476e-bb2a-f7aee57357ea",
+      "created_at": "2026-05-16T21:04:48.757Z",
+      "content_offset_seconds": 3644,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "JOIN FOR FUN TIMES!! ~ https://softu.one/discord",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e5f4fa08-ca03-498d-89d9-d342b660d52d",
+      "created_at": "2026-05-16T21:08:10.127Z",
+      "content_offset_seconds": 3845,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "34891fce-39cf-452d-8a90-46e8f047f4e9",
+      "created_at": "2026-05-16T21:08:31.607Z",
+      "content_offset_seconds": 3866,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@TheOtherJoe you caught a Junk ⭐⭐ Can (0.51kg) worth 5g! You now have 4,700g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "46a8c634-ef80-4522-94ee-a76747721460",
+      "created_at": "2026-05-16T21:08:53.019Z",
+      "content_offset_seconds": 3888,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6f253bb6-8517-4443-b984-719bc7741b28",
+      "created_at": "2026-05-16T21:09:14.951Z",
+      "content_offset_seconds": 3910,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@softu1 you caught a Common ⭐ Barracuda (8.9kg) worth 30g! You now have 1,412g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "45c1fe7a-f317-41d9-ae03-39e5806db179",
+      "created_at": "2026-05-16T21:11:45.787Z",
+      "content_offset_seconds": 4061,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "295e1c96-ca73-416b-807f-60fda876fa5a",
+      "created_at": "2026-05-16T21:12:08.937Z",
+      "content_offset_seconds": 4084,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@DamS_DmS you caught a Rare ⭐⭐⭐ Mahi Mahi (16.9kg) worth 90g! You now have 1,217g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "10bfbf36-ce0a-45fd-9ad0-03ae0de834ff",
+      "created_at": "2026-05-16T21:12:36.028Z",
+      "content_offset_seconds": 4111,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "pizza done, so semi lurking doing stuf",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3074103d-a26b-41f7-a22b-76cf4a991623",
+      "created_at": "2026-05-16T21:13:37.833Z",
+      "content_offset_seconds": 4173,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "3 meats it was, peperoni was one of em ",
+          "emoticon": null
+        },
+        {
+          "text": ":D",
+          "emote": {
+            "emoteID": "555555560"
+          },
+          "emoticon": {
+            "emoticon_id": "555555560"
+          }
+        }
+      ]
+    },
+    {
+      "id": "0b07fc63-8ffd-42b2-b5f9-9211b8c77a57",
+      "created_at": "2026-05-16T21:13:47.744Z",
+      "content_offset_seconds": 4183,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "55d1df07-1353-4e99-8da7-78ef883f2df3",
+      "created_at": "2026-05-16T21:14:05.805Z",
+      "content_offset_seconds": 4201,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "i also love pineapple on em  ",
+          "emoticon": null
+        },
+        {
+          "text": "LUL",
+          "emote": {
+            "emoteID": "425618"
+          },
+          "emoticon": {
+            "emoticon_id": "425618"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "MegaConsume",
+          "emote": {
+            "emoteID": "emotesv2_aa8db3de21e1465dab81bedfa47e29f2"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_aa8db3de21e1465dab81bedfa47e29f2"
+          }
+        },
+        {
+          "text": " ",
+          "emoticon": null
+        },
+        {
+          "text": "snitch1LyriaCheers",
+          "emote": {
+            "emoteID": "emotesv2_250f2f2ada7b4fe7802a71adea8d1def"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_250f2f2ada7b4fe7802a71adea8d1def"
+          }
+        }
+      ]
+    },
+    {
+      "id": "23056efd-3a34-4023-8c49-9bd1a78e1322",
+      "created_at": "2026-05-16T21:14:09.711Z",
+      "content_offset_seconds": 4205,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@TheOtherJoe you caught a Common ⭐⭐ Perch (3.06kg) worth 31g! You now have 4,731g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "98965de5-b0ab-4c5d-843f-1ae193e744b6",
+      "created_at": "2026-05-16T21:15:35.79Z",
+      "content_offset_seconds": 4291,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "my palate makes my chef bf cry lmao",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8884f468-0d48-4cb0-a19a-5a66157ad4c0",
+      "created_at": "2026-05-16T21:18:20.026Z",
+      "content_offset_seconds": 4455,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "DamS_DmS has eaten 1 popsicles!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5dcb4c9a-9f12-4d20-b3ec-78df1a36dc00",
+      "created_at": "2026-05-16T21:21:25.846Z",
+      "content_offset_seconds": 4641,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "TheOtherJoe has eaten 2 popsicles!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "42e92404-2206-434b-a28f-f69c71c51519",
+      "created_at": "2026-05-16T21:21:33.424Z",
+      "content_offset_seconds": 4648,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f36d98fe-08db-4e7d-ad60-5f4487d91349",
+      "created_at": "2026-05-16T21:21:54.89Z",
+      "content_offset_seconds": 4670,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@TheOtherJoe you caught a Junk ⭐ Fish Cracker (0.47kg) worth 5g! You now have 4,736g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9c62496e-320d-46fd-b4da-21af3f66b79b",
+      "created_at": "2026-05-16T21:26:12.561Z",
+      "content_offset_seconds": 4927,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8d73efee-b36c-40b0-9bf0-fa82c9f3b9e7",
+      "created_at": "2026-05-16T21:26:34.771Z",
+      "content_offset_seconds": 4950,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@softu1 you caught an Uncommon ⭐⭐⭐ Rabbitfish (2.21kg) worth 39g! You now have 1,451g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bca3e63e-71d2-4fa7-ba33-e5ad547b3ee2",
+      "created_at": "2026-05-16T21:27:04.232Z",
+      "content_offset_seconds": 4979,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "366aa406-441a-468c-92bb-06ce9d941bad",
+      "created_at": "2026-05-16T21:27:25.817Z",
+      "content_offset_seconds": 5001,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@TheOtherJoe you caught a Junk ⭐⭐⭐ Tire (34kg) worth 11g! You now have 4,747g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7d6aa3e4-34de-4e28-8d47-c5a8763e8b60",
+      "created_at": "2026-05-16T21:30:36.812Z",
+      "content_offset_seconds": 5192,
+      "display_name": "sniTChie_VR",
+      "user_badges": [],
+      "user_color": "#8A2BE2",
+      "message": [
+        {
+          "text": "gotta run , either vrc or discord call with some friends. gl with stream and nice meeting ya, going lurker moe.",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "085cd5f0-e02b-4b0d-977d-71e95cc0fb1e",
+      "created_at": "2026-05-16T21:40:12.123Z",
+      "content_offset_seconds": 5767,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5f8d7dd1-1658-4ee4-b517-7ca520f0c4fa",
+      "created_at": "2026-05-16T21:40:39.682Z",
+      "content_offset_seconds": 5794,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@TheOtherJoe you caught a Legendary ⭐⭐ Tiger Shark (512kg) worth 307g! You now have 5,054g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4ea8ddb8-fce0-464d-8f73-8a6d96249146",
+      "created_at": "2026-05-16T21:42:15.857Z",
+      "content_offset_seconds": 5891,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "yo",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3f7e011d-3357-4bc4-9176-7290873cfef4",
+      "created_at": "2026-05-16T21:42:17.577Z",
+      "content_offset_seconds": 5892,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c4dd33c2-095b-4c61-b000-5c9b7afa784d",
+      "created_at": "2026-05-16T21:42:32.13Z",
+      "content_offset_seconds": 5907,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "i got no notification sadly",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ee97e2fe-0bca-4ebf-a837-eda93d1f09be",
+      "created_at": "2026-05-16T21:42:39.559Z",
+      "content_offset_seconds": 5914,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@DamS_DmS you caught a Common ⭐⭐ Black Redeye (42kg) worth 31g! You now have 1,248g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "749aa346-b63c-4eeb-97c4-527b9fa6ae3c",
+      "created_at": "2026-05-16T21:42:40.779Z",
+      "content_offset_seconds": 5916,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "twich always pmo",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "01627259-6b10-42ff-b2c5-c2c464609abb",
+      "created_at": "2026-05-16T21:42:46.001Z",
+      "content_offset_seconds": 5921,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "twitch*",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c1a6faa5-5abd-456b-b45c-4b1446f64ddd",
+      "created_at": "2026-05-16T21:42:52.419Z",
+      "content_offset_seconds": 5927,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "anyway",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b26cd200-f8e1-472d-a441-0ca6869208c3",
+      "created_at": "2026-05-16T21:42:55.836Z",
+      "content_offset_seconds": 5931,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "how r u",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "57a3f479-f707-4fad-98b2-0bbf6d40ae06",
+      "created_at": "2026-05-16T21:42:59.814Z",
+      "content_offset_seconds": 5935,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "now u been",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b6bc1b66-1d5b-41cf-92e7-ca5f550eaf11",
+      "created_at": "2026-05-16T21:43:02.519Z",
+      "content_offset_seconds": 5937,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "how",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bdaf36cd-e0eb-49fe-a9cc-31346c7b119d",
+      "created_at": "2026-05-16T21:43:35.184Z",
+      "content_offset_seconds": 5970,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "ok ok",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6b640007-079d-41bc-ac78-ad4fad5fd5bf",
+      "created_at": "2026-05-16T21:44:37.906Z",
+      "content_offset_seconds": 6033,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "fr",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ac47c9fc-98dc-4445-a96b-0d7798b59670",
+      "created_at": "2026-05-16T21:45:51.117Z",
+      "content_offset_seconds": 6106,
+      "display_name": "DamS_DmS",
+      "user_badges": [
+        {
+          "_id": "hype-train",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "lmao dork",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a0ff22d7-38eb-4c54-8ae2-3d8486da19b6",
+      "created_at": "2026-05-16T21:59:04.469Z",
+      "content_offset_seconds": 6899,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "FaeMoonFyre, thank you for following! :33",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "fb9c5778-b824-4b05-bd71-512e4632edc4",
+      "created_at": "2026-05-16T21:59:18.661Z",
+      "content_offset_seconds": 6913,
+      "display_name": "FaeMoonFyre",
+      "user_badges": [
+        {
+          "_id": "turbo",
+          "version": "1"
+        }
+      ],
+      "user_color": "#C1B0F4",
+      "message": [
+        {
+          "text": "hiii 💜",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "37b13684-aee7-43ff-9053-fc2c4ad599ad",
+      "created_at": "2026-05-16T21:59:39.801Z",
+      "content_offset_seconds": 6935,
+      "display_name": "FaeMoonFyre",
+      "user_badges": [
+        {
+          "_id": "turbo",
+          "version": "1"
+        }
+      ],
+      "user_color": "#C1B0F4",
+      "message": [
+        {
+          "text": "im good! how are you?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8744f0b7-9137-408b-8a2a-db0d2f1e9a68",
+      "created_at": "2026-05-16T22:00:27.507Z",
+      "content_offset_seconds": 6982,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "pyonniii, thank you for following! :33",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "57e779d9-8a01-442c-919c-573ad98c645b",
+      "created_at": "2026-05-16T22:00:52.288Z",
+      "content_offset_seconds": 7007,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "catWait",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "14f97aa3-5b35-406f-9bdc-6c591ac3099f",
+      "created_at": "2026-05-16T22:00:56.466Z",
+      "content_offset_seconds": 7011,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "fih",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "cf2c3a34-b4fa-4e41-96eb-68365d93a0bf",
+      "created_at": "2026-05-16T22:01:16.34Z",
+      "content_offset_seconds": 7031,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "!fisj",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "758a800b-2f81-4598-87ec-0fb4b92bdd98",
+      "created_at": "2026-05-16T22:02:35.888Z",
+      "content_offset_seconds": 7111,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d4d8eaf4-3f11-4160-a6a9-94b30fb0044a",
+      "created_at": "2026-05-16T22:02:57.344Z",
+      "content_offset_seconds": 7132,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@TheOtherJoe you caught an Uncommon ⭐ Fish Fillet Burger (0.83kg) worth 4g! You now have 5,058g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "82f4e202-bf84-4cd8-a042-a8b485835a08",
+      "created_at": "2026-05-16T22:03:17.23Z",
+      "content_offset_seconds": 7152,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "borgor",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "264c30b9-6a61-41df-8b3c-751d89f79adf",
+      "created_at": "2026-05-16T22:03:22.8Z",
+      "content_offset_seconds": 7158,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "bogir",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "45b99e1b-77aa-42fc-a8e3-ec01b89fc9ee",
+      "created_at": "2026-05-16T22:04:07.213Z",
+      "content_offset_seconds": 7202,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "yulindLOL",
+          "emote": {
+            "emoteID": "emotesv2_8976944821a9486bbbed4de0d2de0c3d"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_8976944821a9486bbbed4de0d2de0c3d"
+          }
+        }
+      ]
+    },
+    {
+      "id": "e3abb05e-4148-4ebb-96fb-58f5d5b3d69f",
+      "created_at": "2026-05-16T22:04:27.879Z",
+      "content_offset_seconds": 7223,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "ru playin in vr on switch? LOL ive been trying to figure it out",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "86457351-0da5-4874-809f-aa51996856e1",
+      "created_at": "2026-05-16T22:05:21.811Z",
+      "content_offset_seconds": 7277,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "does your head not like explode",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "85ae26a0-a08d-4f09-86ac-f44ce22b6cf9",
+      "created_at": "2026-05-16T22:05:45.077Z",
+      "content_offset_seconds": 7300,
+      "display_name": "Fossabot",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#1976D2",
+      "message": [
+        {
+          "text": "JOIN FOR FUN TIMES!! ~ https://softu.one/discord",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "91b41ff1-2569-4d49-a662-d9c8044f82df",
+      "created_at": "2026-05-16T22:07:41.083Z",
+      "content_offset_seconds": 7416,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "sorry im back my internet crashed",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0511d3ce-c39b-4432-8bd1-f74fd59e3d12",
+      "created_at": "2026-05-16T22:07:47.193Z",
+      "content_offset_seconds": 7422,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "it is important to take break",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "50ff85b2-ae08-4185-a41d-1ae93dc99d4b",
+      "created_at": "2026-05-16T22:07:47.332Z",
+      "content_offset_seconds": 7422,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "Cozy",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1a5bffc8-88f4-4a2a-a682-fcba5fc98644",
+      "created_at": "2026-05-16T22:08:07.925Z",
+      "content_offset_seconds": 7443,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "i love ur stream starting LOL",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "336448d0-db44-4061-91c7-9138c89173c4",
+      "created_at": "2026-05-16T22:08:40.863Z",
+      "content_offset_seconds": 7476,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "OOP",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "173a9fc9-b3f6-4bee-a934-97ae1bcf81de",
+      "created_at": "2026-05-16T22:08:55.894Z",
+      "content_offset_seconds": 7491,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "got scammed",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "00b54c2f-f214-4865-a41a-445b4c0748ca",
+      "created_at": "2026-05-16T22:10:29.881Z",
+      "content_offset_seconds": 7585,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "umm GUYS",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3d2c49af-6285-4e2e-b900-25bb40ce62c8",
+      "created_at": "2026-05-16T22:10:34.734Z",
+      "content_offset_seconds": 7590,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "my internet crashed too",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "fbc3ca66-0c93-44d5-aff7-4c9c61884d70",
+      "created_at": "2026-05-16T22:10:36.192Z",
+      "content_offset_seconds": 7591,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "DED",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "56084da9-bb94-4b89-881d-299ab6970571",
+      "created_at": "2026-05-16T22:10:38.104Z",
+      "content_offset_seconds": 7593,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "LOL",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a8b3ccc1-b9e4-4f4a-b6f6-4774e6fa4bd3",
+      "created_at": "2026-05-16T22:10:51.107Z",
+      "content_offset_seconds": 7606,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "no way",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "01169fe2-b7f4-4da4-a34d-688b63785080",
+      "created_at": "2026-05-16T22:11:09.673Z",
+      "content_offset_seconds": 7624,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "is stream back",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "116a1079-297f-43f7-852d-b5cd02decdab",
+      "created_at": "2026-05-16T22:11:20.761Z",
+      "content_offset_seconds": 7636,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "lemme brush my teeth rq hold on",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "2a3f0ed8-ac73-410a-ab7e-ff9bd2af19a1",
+      "created_at": "2026-05-16T22:11:25.667Z",
+      "content_offset_seconds": 7640,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "i think its back but it be switching over",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9861a96f-7d2b-4b30-ad1b-e44066fefed5",
+      "created_at": "2026-05-16T22:12:24.755Z",
+      "content_offset_seconds": 7700,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "oh no T_T",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7705b82d-3423-4327-9d77-4d431b827690",
+      "created_at": "2026-05-16T22:12:29.995Z",
+      "content_offset_seconds": 7705,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "everything breaky breaky",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c43fa4ef-0629-4ae7-8c1b-8355feb3f3ed",
+      "created_at": "2026-05-16T22:14:25.92Z",
+      "content_offset_seconds": 7821,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "ok my teeth are clean",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "fc88b318-0eec-4134-817f-d1d84a7f0771",
+      "created_at": "2026-05-16T22:14:49.214Z",
+      "content_offset_seconds": 7844,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "whats funny?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4f7c1f4f-a817-4a52-b995-9f1f65bca588",
+      "created_at": "2026-05-16T22:15:21.521Z",
+      "content_offset_seconds": 7876,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "ecvil shark",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "173416fe-b51d-407b-acaf-5e69f90713fd",
+      "created_at": "2026-05-16T22:15:39.37Z",
+      "content_offset_seconds": 7894,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "do u ever go in public servers?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ed39d431-d7fe-4f81-89a7-f2d236587df8",
+      "created_at": "2026-05-16T22:15:53.513Z",
+      "content_offset_seconds": 7908,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "on stream?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "2bb173e9-3d1c-4df2-94ec-aab5690b42b2",
+      "created_at": "2026-05-16T22:16:13.552Z",
+      "content_offset_seconds": 7928,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "it rlly doesnt LOL",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9ac4e07f-4da7-4259-8853-b419ba6e41fe",
+      "created_at": "2026-05-16T22:16:16.463Z",
+      "content_offset_seconds": 7931,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "ok then nvm",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9844d283-6501-4c65-ad13-787dd1b7cfdb",
+      "created_at": "2026-05-16T22:17:00.583Z",
+      "content_offset_seconds": 7975,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "ok i will be there",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "826394d8-6559-4286-8cbc-2710d2dbd644",
+      "created_at": "2026-05-16T22:17:03.16Z",
+      "content_offset_seconds": 7978,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "i promise",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8625aa31-51f5-49ec-81e8-fc76b8ac52a1",
+      "created_at": "2026-05-16T22:17:06.002Z",
+      "content_offset_seconds": 7981,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "maybe",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "83735e78-d347-4166-914d-e4dc0934c952",
+      "created_at": "2026-05-16T22:17:13.21Z",
+      "content_offset_seconds": 7988,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "around what time will u stream tmr o:",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "be2dfe43-27e9-4dec-9d8e-472455555564",
+      "created_at": "2026-05-16T22:17:27.608Z",
+      "content_offset_seconds": 8002,
+      "display_name": "pyonniii",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "dude that shrimp has better posture then me",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9f202f69-de25-45a5-be50-2dc61351a7e9",
+      "created_at": "2026-05-16T22:17:28.255Z",
+      "content_offset_seconds": 8003,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5145e6d8-c2f4-4d52-baae-d5043f3b29db",
+      "created_at": "2026-05-16T22:17:50.728Z",
+      "content_offset_seconds": 8026,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@TheOtherJoe you caught a Junk ⭐⭐⭐ Skateboard (3.33kg) worth 56g! You now have 5,114g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "33c8a9f1-b92f-4f63-94da-d21fff66e695",
+      "created_at": "2026-05-16T22:17:52.685Z",
+      "content_offset_seconds": 8027,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "omg",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "87bc2509-66f3-476c-85fe-63327b8c57bf",
+      "created_at": "2026-05-16T22:17:59.08Z",
+      "content_offset_seconds": 8034,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "its Saturday today",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8340e01d-d7b6-4a49-87f1-a42e0efaeb73",
+      "created_at": "2026-05-16T22:18:09.028Z",
+      "content_offset_seconds": 8044,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "i thought it was Sunday",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "39e9e11a-c655-41df-9fba-ea1ac1e5b6bc",
+      "created_at": "2026-05-16T22:18:58.589Z",
+      "content_offset_seconds": 8093,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "if u ever need help in subnautica 2 just dm me or something",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "59468a26-a2cc-4452-8966-c55e0ed44614",
+      "created_at": "2026-05-16T22:19:06.617Z",
+      "content_offset_seconds": 8101,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "i know too much abt it",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3c605945-bad4-4aa7-904a-35c095560921",
+      "created_at": "2026-05-16T22:19:37.037Z",
+      "content_offset_seconds": 8132,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "i dont have kick tho",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "72b82409-0053-49da-8757-98d450fb5325",
+      "created_at": "2026-05-16T22:20:25.865Z",
+      "content_offset_seconds": 8181,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "can u stream on twitch for me or no?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "2ef605c3-998e-4773-9504-bf184e2fc7bc",
+      "created_at": "2026-05-16T22:21:08.577Z",
+      "content_offset_seconds": 8223,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "when will u stream full time 😔",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4468bd23-ea3c-4184-94bd-e98db759cefa",
+      "created_at": "2026-05-16T22:21:52.909Z",
+      "content_offset_seconds": 8268,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "better bc im here definitely",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "82bdb4a6-c446-434e-8bbb-060e66db9490",
+      "created_at": "2026-05-16T22:22:19.046Z",
+      "content_offset_seconds": 8294,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "ok ok",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "07655eec-5f29-4560-8731-22b4be7d4743",
+      "created_at": "2026-05-16T22:22:47.42Z",
+      "content_offset_seconds": 8322,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "hug faemoonfyre",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "fb3bc5df-eb54-4497-8732-356e58d707db",
+      "created_at": "2026-05-16T22:24:57.506Z",
+      "content_offset_seconds": 8452,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "Thanks for stream ",
+          "emoticon": null
+        },
+        {
+          "text": "softu1Heart",
+          "emote": {
+            "emoteID": "emotesv2_5eef8456d5d144f895f12a5614065dad"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_5eef8456d5d144f895f12a5614065dad"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ed43cdaa-7c58-421f-a7f1-15b04a61f496",
+      "created_at": "2026-05-16T22:26:12.226Z",
+      "content_offset_seconds": 8527,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "byee",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ccb8fa7a-7fb8-4b30-9643-72e19109da59",
+      "created_at": "2026-05-16T22:26:22.227Z",
+      "content_offset_seconds": 8537,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "20d4bea8-d2a3-4279-a5ef-8e0ac4603e34",
+      "created_at": "2026-05-16T22:26:25.091Z",
+      "content_offset_seconds": 8540,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "baii",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "44ffe1b5-5ee0-45e6-b2c2-3b6c882149c0",
+      "created_at": "2026-05-16T22:26:28.806Z",
+      "content_offset_seconds": 8544,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7df4c72e-870e-452b-81eb-650efb7a6f30",
+      "created_at": "2026-05-16T22:26:28.963Z",
+      "content_offset_seconds": 8544,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "2a9553f8-02b8-4519-b1bd-618853648336",
+      "created_at": "2026-05-16T22:26:34.085Z",
+      "content_offset_seconds": 8549,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "bye bye",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "659fde6d-8402-46cc-a364-ae8b60dd6f8a",
+      "created_at": "2026-05-16T22:26:36.178Z",
+      "content_offset_seconds": 8551,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "!fish",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4bf45973-6d0d-43ea-b12a-ca133619d7d9",
+      "created_at": "2026-05-16T22:26:50.81Z",
+      "content_offset_seconds": 8566,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@FazeOspray_ you caught an Uncommon ⭐ Frontosa Cichlid (0.49kg) worth 34g! You now have 1,303g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5d88478e-4856-453a-b8a9-0d0f3e4a4428",
+      "created_at": "2026-05-16T22:27:08.59Z",
+      "content_offset_seconds": 8583,
+      "display_name": "TheOtherJoe",
+      "user_badges": [
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "elden-ring-recluse",
+          "version": "1"
+        }
+      ],
+      "user_color": null,
+      "message": [
+        {
+          "text": "frogxyPeek",
+          "emote": {
+            "emoteID": "emotesv2_b12aa79c95f341e48aa30be8d447af6d"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_b12aa79c95f341e48aa30be8d447af6d"
+          }
+        }
+      ]
+    },
+    {
+      "id": "09206c04-9b9b-45fe-b1d1-6e36d73c5b38",
+      "created_at": "2026-05-16T22:27:12.864Z",
+      "content_offset_seconds": 8588,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@TheOtherJoe you caught an Uncommon ⭐ Koi (11.5kg) worth 45g! You now have 5,159g!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c3c64e9d-0f6f-4ab9-ada0-f920cabd9261",
+      "created_at": "2026-05-16T22:27:17.97Z",
+      "content_offset_seconds": 8593,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "are u lurking in your own stream?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ed845f62-2c34-48ad-8937-26f24b55d742",
+      "created_at": "2026-05-16T22:27:34.636Z",
+      "content_offset_seconds": 8609,
+      "display_name": "softu1",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "glitchcon2020",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FEFFD2",
+      "message": [
+        {
+          "text": "@softu1 you caught a Junk ⭐⭐ Bike (10.8kg) worth 32g! You now have 1,483g!",
+          "emoticon": null
+        }
+      ]
+    }
+  ]
+}
