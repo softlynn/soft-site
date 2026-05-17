@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-05T22:00:34.918Z",
+  "updatedAt": "2026-05-17T09:22:45.257Z",
   "settings": {
     "headerBrandText": "softu",
     "headerTagline": "directory and vods",
@@ -109,32 +109,6 @@
             }
           },
           {
-            "type": "TextBlock",
-            "props": {
-              "eyebrow": "",
-              "title": "Artist Credits!",
-              "body": "sub badges/art/overlays ✦ me\nvrchat avatar ✦ ask me\ntwitch emotes ✦ W. I. P\n",
-              "align": "center",
-              "width": "full",
-              "surface": "transparent",
-              "animation": "fade",
-              "fontFamily": "inherit",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 1.58,
-              "titleColor": "",
-              "titleFontFamily": "inherit",
-              "titleFontSize": 0,
-              "backgroundColor": "",
-              "sideImageUrl": "/uploads/design/ref-origin-2-mot6306y.png",
-              "sideImageAlt": "",
-              "sideImagePosition": "left",
-              "sideImageWidth": 220,
-              "customClassName": "",
-              "id": "TextBlock-562126e6-7ca2-4494-bf43-6645570a69df"
-            }
-          },
-          {
             "type": "Spacer",
             "props": {
               "height": 24,
@@ -158,6 +132,32 @@
             "props": {
               "height": 24,
               "id": "Spacer-79c4f70f-623b-4a3f-8c87-374b2e848822"
+            }
+          },
+          {
+            "type": "TextBlock",
+            "props": {
+              "eyebrow": "",
+              "title": "Artist Credits",
+              "body": "twitch emotes ✦ n/a\n",
+              "align": "center",
+              "width": "full",
+              "surface": "transparent",
+              "animation": "fade",
+              "fontFamily": "inherit",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 1.58,
+              "titleColor": "",
+              "titleFontFamily": "inherit",
+              "titleFontSize": 0,
+              "backgroundColor": "",
+              "sideImageUrl": "/uploads/design/ref-origin-2-mot6306y.png",
+              "sideImageAlt": "",
+              "sideImagePosition": "left",
+              "sideImageWidth": 220,
+              "customClassName": "",
+              "id": "TextBlock-562126e6-7ca2-4494-bf43-6645570a69df"
             }
           },
           {
