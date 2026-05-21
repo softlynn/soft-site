@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-17T09:25:05.695Z",
+  "updatedAt": "2026-05-21T05:23:43.580Z",
   "settings": {
     "headerBrandText": "softu",
     "headerTagline": "directory and vods",
@@ -138,8 +138,8 @@
             "type": "TextBlock",
             "props": {
               "eyebrow": "",
-              "title": "Artist Credits",
-              "body": "twitch emotes ✦ n/a\n",
+              "title": "credits!",
+              "body": "keyart ✦ [soft](https://x.com/softuwo)\nemotes ✦ [yam](https://x.com/no_7error)",
               "align": "center",
               "width": "full",
               "surface": "transparent",
@@ -187,10 +187,10 @@
                 },
                 {
                   "title": "kick",
-                  "src": "https://player.kick.com/softu1",
+                  "src": "https://player.kick.com/softuwo",
                   "height": 352,
                   "aspectRatio": "16 / 9",
-                  "allow": "<iframe \n     src=\"https://player.kick.com/softu1\" \n     height=\"720\" \n     width=\"1280\"\n     frameborder=\"0\" \n     scrolling=\"no\" \n     allowfullscreen=\"true\"> \n</iframe>",
+                  "allow": "<iframe \n     src=\"https://player.kick.com/softuwo\" \n     height=\"720\" \n     width=\"1280\"\n     frameborder=\"0\" \n     scrolling=\"no\" \n     allowfullscreen=\"true\"> \n</iframe>",
                   "sandbox": ""
                 }
               ],
