@@ -10,7 +10,9 @@
         "type": "vod",
         "duration": 0,
         "part": 1,
-        "thumbnail_url": "https://i9.ytimg.com/vi/NPxa2MD4S9M/mqdefault.jpg?sqp=CPiCw9AG&rs=AOn4CLBtM8waZI3bvbraTAdfDY9E1SbA4g"
+        "thumbnail_url": "https://i9.ytimg.com/vi/NPxa2MD4S9M/mqdefault.jpg?sqp=CPiCw9AG&rs=AOn4CLBtM8waZI3bvbraTAdfDY9E1SbA4g",
+        "unpublished": true,
+        "adminOrder": 1
       }
     ],
     "stream_id": "318655648990",
@@ -27,7 +29,8 @@
     ],
     "games": [],
     "createdAt": "2026-05-22T20:04:18Z",
-    "updatedAt": "2026-05-22T20:55:00.319Z"
+    "updatedAt": "2026-05-23T01:29:03.521Z",
+    "unpublished": true
   },
   {
     "id": "2777355439",
