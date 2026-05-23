@@ -1,9 +1,24 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-05-14T21:59:05.365Z",
+  "generatedAt": "2026-05-23T22:14:03.808Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
+    {
+      "set_id": "007-gun-barrel",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/6ae7ce40-99e6-4d83-8487-f8b990bf5f32/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/6ae7ce40-99e6-4d83-8487-f8b990bf5f32/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/6ae7ce40-99e6-4d83-8487-f8b990bf5f32/3",
+          "title": "007 Gun Barrel",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the 007 First Light category during the game launch!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
     {
       "set_id": "10-years-as-twitch-staff",
       "versions": [
@@ -179,6 +194,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/10ba11a2-0171-42b6-9bba-8f2f14248172/3",
           "title": "Alone",
           "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Little Nightmares III category during launch.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "alterra-corporation",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/18d8ad18-788e-4b47-9c9b-783a41c13ec3/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/18d8ad18-788e-4b47-9c9b-783a41c13ec3/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/18d8ad18-788e-4b47-9c9b-783a41c13ec3/3",
+          "title": "Alterra Corporation",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Subnautica 2 category during week 2 of launch.",
           "click_action": null,
           "click_url": null
         }
@@ -925,6 +955,21 @@
       ]
     },
     {
+      "set_id": "bubsy-4d",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/0652a149-9fc6-4a9b-82c4-31793c0e384a/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/0652a149-9fc6-4a9b-82c4-31793c0e384a/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/0652a149-9fc6-4a9b-82c4-31793c0e384a/3",
+          "title": "Bubsy 4D!",
+          "description": "This badge was earned by watching Bubsy 4D on launch!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "bubsy-the-woolies_1",
       "versions": [
         {
@@ -994,6 +1039,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/57b6bd6b-a1b5-4204-9e6c-eb8ed5831603/3",
           "title": "CS:GO Week Brazil 2022",
           "description": "Chatted during CS:GO Week Brazil 2022",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "civ-vii---test-of-time",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/eae24f68-7b45-4cf0-8854-d3e419006238/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/eae24f68-7b45-4cf0-8854-d3e419006238/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/eae24f68-7b45-4cf0-8854-d3e419006238/3",
+          "title": "Civ VII - Test of Time",
+          "description": "This badge was earned by subscribing or gifting a sub to a Civilization VII streamer during the Test of Time release!",
           "click_action": null,
           "click_url": null
         }
@@ -2425,6 +2485,21 @@
       ]
     },
     {
+      "set_id": "lego-batman-legacy-of-the-dark-knight",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/4d54795e-5f6c-4b5b-9a30-0d78e6d0d67b/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/4d54795e-5f6c-4b5b-9a30-0d78e6d0d67b/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/4d54795e-5f6c-4b5b-9a30-0d78e6d0d67b/3",
+          "title": "LEGO® Batman™: Legacy of the Dark Knight",
+          "description": "This badge was earned by subscribing or gifting a sub to a LEGO® Batman™: Legacy of the Dark Knight streamer!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "lol-worlds-2025",
       "versions": [
         {
@@ -3470,6 +3545,21 @@
       ]
     },
     {
+      "set_id": "road-to-twitchcon-26",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/03eeb136-3249-49cc-b45a-569edea04907/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/03eeb136-3249-49cc-b45a-569edea04907/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/03eeb136-3249-49cc-b45a-569edea04907/3",
+          "title": "RoadToTwitchCon26",
+          "description": "This badge was earned by watching 60 minutes of any of the participating Road to TwitchCon Rotterdam 2026 channels.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "rplace-2023",
       "versions": [
         {
@@ -3601,6 +3691,21 @@
           "description": "This lovely badge was earned by users who shared their favorite Twitch clips in February 2025.",
           "click_action": "visit_url",
           "click_url": "https://blog.twitch.tv/2025/02/14/share-the-love-this-valentine-s-day/"
+        }
+      ]
+    },
+    {
+      "set_id": "skulls-10th-anniversary",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/682bdd23-f49d-4c5b-bd82-2c00a65ea22a/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/682bdd23-f49d-4c5b-bd82-2c00a65ea22a/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/682bdd23-f49d-4c5b-bd82-2c00a65ea22a/3",
+          "title": "Skulls 10th Anniversary",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Warhammer 40,000 Darktide category during Skulls 2026!",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
