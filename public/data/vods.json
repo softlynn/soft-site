@@ -448,14 +448,18 @@
         "type": "vod",
         "duration": 0,
         "part": 1,
-        "thumbnail_url": "https://i.ytimg.com/vi/McNRGigakfo/mqdefault.jpg"
+        "thumbnail_url": "https://i.ytimg.com/vi/McNRGigakfo/mqdefault.jpg",
+        "unpublished": true,
+        "adminOrder": 1
       },
       {
         "id": "qHLqXeMzhQ0",
         "type": "vod",
         "duration": 0,
         "part": 2,
-        "thumbnail_url": "https://i.ytimg.com/vi/qHLqXeMzhQ0/mqdefault.jpg"
+        "thumbnail_url": "https://i.ytimg.com/vi/qHLqXeMzhQ0/mqdefault.jpg",
+        "unpublished": true,
+        "adminOrder": 2
       }
     ],
     "stream_id": "318550146398",
@@ -479,7 +483,8 @@
     ],
     "games": [],
     "createdAt": "2026-05-14T14:32:08Z",
-    "updatedAt": "2026-05-14T19:44:03.286Z"
+    "updatedAt": "2026-06-03T20:11:52.551Z",
+    "unpublished": true
   },
   {
     "id": "2771147946",
@@ -492,7 +497,9 @@
         "type": "vod",
         "duration": 0,
         "part": 1,
-        "thumbnail_url": "https://i.ytimg.com/vi/FKwuzS7ZDiM/mqdefault.jpg"
+        "thumbnail_url": "https://i.ytimg.com/vi/FKwuzS7ZDiM/mqdefault.jpg",
+        "unpublished": true,
+        "adminOrder": 1
       }
     ],
     "stream_id": "318539713886",
@@ -509,7 +516,8 @@
     ],
     "games": [],
     "createdAt": "2026-05-13T18:39:27Z",
-    "updatedAt": "2026-05-14T00:11:01.277Z"
+    "updatedAt": "2026-06-03T20:11:52.551Z",
+    "unpublished": true
   },
   {
     "id": "2768162828",
@@ -559,7 +567,9 @@
         "type": "vod",
         "duration": 0,
         "part": 1,
-        "thumbnail_url": "https://i.ytimg.com/vi/cEv_GjsxUl0/mqdefault.jpg"
+        "thumbnail_url": "https://i.ytimg.com/vi/cEv_GjsxUl0/mqdefault.jpg",
+        "unpublished": true,
+        "adminOrder": 1
       }
     ],
     "stream_id": "318491536348",
@@ -576,7 +586,8 @@
     ],
     "games": [],
     "createdAt": "2026-05-08T21:47:44Z",
-    "updatedAt": "2026-05-09T02:17:26.121Z"
+    "updatedAt": "2026-06-03T20:11:52.551Z",
+    "unpublished": true
   },
   {
     "id": "2766367541",
@@ -620,7 +631,8 @@
         "duration": 0,
         "part": 1,
         "thumbnail_url": "https://i.ytimg.com/vi/CLQba4iDbsY/mqdefault.jpg",
-        "adminOrder": 1
+        "adminOrder": 1,
+        "unpublished": true
       },
       {
         "id": "4eNQfGisKko",
@@ -653,7 +665,8 @@
     ],
     "games": [],
     "createdAt": "2026-05-03T21:09:57Z",
-    "updatedAt": "2026-05-21T17:29:03.181Z"
+    "updatedAt": "2026-06-03T20:11:52.551Z",
+    "unpublished": true
   },
   {
     "id": "2762809647",
@@ -699,7 +712,9 @@
         "type": "vod",
         "duration": 0,
         "part": 1,
-        "thumbnail_url": "https://i.ytimg.com/vi/KPeuUpPl-3c/mqdefault.jpg"
+        "thumbnail_url": "https://i.ytimg.com/vi/KPeuUpPl-3c/mqdefault.jpg",
+        "unpublished": true,
+        "adminOrder": 1
       }
     ],
     "stream_id": "318440669278",
@@ -716,7 +731,8 @@
     ],
     "games": [],
     "createdAt": "2026-05-01T22:39:02Z",
-    "updatedAt": "2026-05-02T05:13:51.859Z"
+    "updatedAt": "2026-06-03T20:11:52.551Z",
+    "unpublished": true
   },
   {
     "id": "2758554720",
@@ -795,7 +811,9 @@
         "type": "vod",
         "duration": 0,
         "part": 1,
-        "thumbnail_url": "https://i.ytimg.com/vi/DFsIFwduGYQ/mqdefault.jpg"
+        "thumbnail_url": "https://i.ytimg.com/vi/DFsIFwduGYQ/mqdefault.jpg",
+        "unpublished": true,
+        "adminOrder": 1
       }
     ],
     "stream_id": "318400795616",
@@ -812,7 +830,8 @@
     ],
     "games": [],
     "createdAt": "2026-04-24T21:08:02Z",
-    "updatedAt": "2026-04-25T19:26:26.320Z"
+    "updatedAt": "2026-06-03T20:11:52.551Z",
+    "unpublished": true
   },
   {
     "id": "2753112222",
