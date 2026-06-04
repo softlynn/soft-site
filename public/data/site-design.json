@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-04T19:56:03.514Z",
+  "updatedAt": "2026-06-04T20:13:05.393Z",
   "settings": {
     "headerBrandText": "soft",
     "headerTagline": "",
@@ -13,7 +13,7 @@
     "showSocials": true,
     "headerShowVodsButton": false,
     "navStyle": "pill",
-    "backgroundColor": "#fff3a3",
+    "backgroundColor": "#ffe1ad",
     "faviconUrl": "/favicon.png",
     "bodyFontFamily": "\"Poppins\", \"Manrope\", \"Segoe UI\", sans-serif",
     "headingFontFamily": "\"Poppins\", \"Manrope\", sans-serif",
@@ -103,19 +103,23 @@
               "fontFamily": "inherit",
               "fontSize": 14,
               "fontWeight": "400",
-              "lineHeight": 1.58,
+              "lineHeight": 1.8,
               "titleColor": "",
               "titleFontFamily": "inherit",
               "titleFontSize": 12,
               "backgroundColor": "",
-              "sideImageUrl": "/uploads/design/5-20-26-pfp-mpzwylu2.png",
+              "sideImageUrl": "/uploads/design/5-20-26-pfp-mpzxmt1v.png",
               "sideImageAlt": "",
               "sideImagePosition": "left",
-              "sideImageWidth": 301,
+              "sideImageWidth": 265,
               "customClassName": "",
               "id": "TextBlock-22687c0d-1e4d-4096-9c05-d6882ef08394",
               "padding": "none",
-              "backgroundSize": "cover"
+              "backgroundSize": "auto",
+              "backgroundPosition": "",
+              "backgroundImageOpacity": 0,
+              "minHeight": 0,
+              "borderRadius": 0
             }
           },
           {
