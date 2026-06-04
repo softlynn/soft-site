@@ -9,6 +9,7 @@ import Vod from "../vods/Vod";
 import { uploadDesignAsset } from "../api/adminApi";
 import vodsClient from "../vods/client";
 import Logo from "../assets/logo.png";
+import MarkdownText from "../utils/MarkdownText";
 import { SITE_DESCRIPTION, SOCIAL_LINKS } from "../config/site";
 
 const SURFACE_OPTIONS = [
@@ -688,9 +689,19 @@ const sectionHeading = (title, subtitle, align = "left") => (
       </Typography>
     )}
     {subtitle && (
-      <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.55, maxWidth: align === "center" ? 700 : 760, mx: align === "center" ? "auto" : 0 }}>
+      <MarkdownText
+        sx={{
+          color: "text.secondary",
+          mt: 0.55,
+          maxWidth: align === "center" ? 700 : 760,
+          mx: align === "center" ? "auto" : 0,
+          fontSize: "0.875rem",
+          lineHeight: 1.45,
+          "& > *": { color: "inherit" },
+        }}
+      >
         {subtitle}
-      </Typography>
+      </MarkdownText>
     )}
   </Box>
 );
@@ -884,14 +895,33 @@ export const designConfig = {
               {cleanText(props.title, "soft")}
             </Typography>
             {props.subtitle && (
-              <Typography variant="h5" sx={{ mt: 0.85, color: props.bodyColor || "text.secondary", fontFamily: getFontFamily(props.bodyFontFamily), fontSize: { xs: "1rem", md: "1.2rem" }, lineHeight: 1.3 }}>
+              <MarkdownText
+                sx={{
+                  mt: 0.85,
+                  color: props.bodyColor || "text.secondary",
+                  fontFamily: getFontFamily(props.bodyFontFamily),
+                  fontSize: { xs: "1rem", md: "1.2rem" },
+                  lineHeight: 1.3,
+                  "& > *": { color: "inherit" },
+                }}
+              >
                 {props.subtitle}
-              </Typography>
+              </MarkdownText>
             )}
             {props.body && (
-              <Typography variant="body1" sx={{ mt: 1.25, color: props.bodyColor || "text.secondary", fontFamily: getFontFamily(props.bodyFontFamily), maxWidth: isCentered ? 760 : 560, mx: isCentered ? "auto" : 0, lineHeight: 1.55 }}>
+              <MarkdownText
+                sx={{
+                  mt: 1.25,
+                  color: props.bodyColor || "text.secondary",
+                  fontFamily: getFontFamily(props.bodyFontFamily),
+                  maxWidth: isCentered ? 760 : 560,
+                  mx: isCentered ? "auto" : 0,
+                  lineHeight: 1.55,
+                  "& > *": { color: "inherit" },
+                }}
+              >
                 {props.body}
-              </Typography>
+              </MarkdownText>
             )}
             {Array.isArray(props.buttons) && props.buttons.length > 0 && (
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1} justifyContent={isCentered ? "center" : "flex-start"} sx={{ mt: 1.55 }}>
@@ -1004,9 +1034,16 @@ export const designConfig = {
                           {cleanText(item.title, "Card")}
                         </Typography>
                         {item.description && (
-                          <Typography variant="body2" sx={{ color: "text.secondary", lineHeight: 1.45, flex: 1 }}>
+                          <MarkdownText
+                            sx={{
+                              color: "text.secondary",
+                              lineHeight: 1.45,
+                              flex: 1,
+                              "& > *": { color: "inherit" },
+                            }}
+                          >
                             {item.description}
-                          </Typography>
+                          </MarkdownText>
                         )}
                         {resolveConfiguredHref(item.href) && (
                           <Button {...hrefProps} variant="outlined" size="small" endIcon={<OpenInNewRoundedIcon />} sx={{ alignSelf: "flex-start", borderColor: item.accentColor, color: item.accentColor }}>
@@ -1108,9 +1145,15 @@ export const designConfig = {
               </Typography>
             )}
             {props.body && (
-              <Typography component="div" variant="body1" sx={{ ...getTextFormattingSx(props), whiteSpace: "pre-line", mt: props.title ? 1 : 0 }}>
+              <MarkdownText
+                sx={{
+                  ...getTextFormattingSx(props),
+                  mt: props.title ? 1 : 0,
+                  "& > *": { color: "inherit" },
+                }}
+              >
                 {props.body}
-              </Typography>
+              </MarkdownText>
             )}
           </Box>
         );
@@ -1193,9 +1236,9 @@ export const designConfig = {
             textAlign: props.align,
           }}
         >
-          <Typography component="div" sx={{ ...getTextFormattingSx(props, "var(--soft-text)"), whiteSpace: "pre-line" }}>
+          <MarkdownText sx={{ ...getTextFormattingSx(props, "var(--soft-text)"), "& > *": { color: "inherit" } }}>
             {cleanText(props.body, "Add text here.")}
-          </Typography>
+          </MarkdownText>
         </Box>
       ),
     },
@@ -1326,8 +1369,12 @@ export const designConfig = {
                     <ImageFrame src={item.imageUrl} alt={item.title} aspectRatio="4 / 3" className="soft-design-image-board-media" />
                     {(item.title || item.caption) && (
                       <Box sx={{ mt: 0.7 }}>
-                        {item.title && <Typography variant="subtitle1" sx={{ color: "primary.main", fontWeight: 800 }}>{item.title}</Typography>}
-                        {item.caption && <Typography variant="body2" sx={{ color: "text.secondary" }}>{item.caption}</Typography>}
+                {item.title && <Typography variant="subtitle1" sx={{ color: "primary.main", fontWeight: 800 }}>{item.title}</Typography>}
+                        {item.caption && (
+                          <MarkdownText sx={{ color: "text.secondary", fontSize: "0.875rem", lineHeight: 1.5, "& > *": { color: "inherit" } }}>
+                            {item.caption}
+                          </MarkdownText>
+                        )}
                       </Box>
                     )}
                   </>
