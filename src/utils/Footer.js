@@ -1,22 +1,15 @@
 import { Box, Typography } from "@mui/material";
-import { useLocation } from "react-router-dom";
-import CustomLink from "./CustomLink";
 import { setPendingAdminPassword } from "../api/adminApi";
 import { BRAND_NAME } from "../config/site";
 import { useSiteDesign } from "../design/DesignContext";
 
 const COPYRIGHT_YEAR = 2026;
-const viewerRoutePattern = /^\/(youtube|cdn|games)\/|^\/\d+$/;
 
 export default function Footer() {
   const { design } = useSiteDesign();
-  const location = useLocation();
   const settings = design.settings || {};
-  const brandLabel = String(BRAND_NAME || "Softu").toLowerCase();
+  const brandLabel = String(BRAND_NAME || "soft").toLowerCase();
   const baseText = settings.footerText || `${brandLabel} © ${COPYRIGHT_YEAR}`;
-  const isVodRoute = location.pathname === "/vods" || viewerRoutePattern.test(location.pathname || "");
-  const creditLabel = settings.footerVodCreditLabel || "backend by op";
-  const creditHref = settings.footerVodCreditHref || "https://github.com/OP-Archives";
 
   if (settings.footerEnabled === false) return null;
 
@@ -30,7 +23,7 @@ export default function Footer() {
       return;
     }
     setPendingAdminPassword(normalizedPassword);
-    window.location.assign(`${window.location.pathname}${window.location.search}#/admin`);
+    window.location.assign("/admin");
   };
 
   return (
@@ -73,32 +66,6 @@ export default function Footer() {
       >
         {baseText}
       </Typography>
-
-      {isVodRoute && creditLabel && creditHref && (
-        <>
-          <Typography variant="caption" sx={{ color: "inherit", fontWeight: 600 }}>
-            ✦
-          </Typography>
-          <CustomLink href={creditHref} rel="noopener noreferrer" target="_blank">
-            <Typography
-              component="span"
-              variant="caption"
-              sx={{
-                color: "inherit",
-                fontWeight: 600,
-                letterSpacing: 0,
-                transition: "color 140ms ease, opacity 140ms ease",
-                "&:hover": {
-                  color: "var(--soft-text)",
-                  opacity: 0.82,
-                },
-              }}
-            >
-              {creditLabel}
-            </Typography>
-          </CustomLink>
-        </>
-      )}
     </Box>
   );
 }

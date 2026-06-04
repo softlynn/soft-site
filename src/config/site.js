@@ -1,6 +1,6 @@
 const cleanUrl = (url) => (url ? url.replace(/\/+$/, "") : "");
 
-export const BRAND_NAME = process.env.REACT_APP_BRAND_NAME || "Softu";
+export const BRAND_NAME = process.env.REACT_APP_BRAND_NAME || "soft";
 export const SITE_TITLE = process.env.REACT_APP_SITE_TITLE || BRAND_NAME;
 export const SITE_DESCRIPTION = process.env.REACT_APP_SITE_DESCRIPTION || `Watch ${BRAND_NAME}'s VOD archive with chat replay.`;
 export const SITE_URL = cleanUrl(process.env.REACT_APP_SITE_URL || "https://softu.one");

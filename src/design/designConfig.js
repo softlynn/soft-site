@@ -149,7 +149,7 @@ function ImageUploadFieldControl({ id, label, value, onChange, readOnly }) {
             background: readOnly ? "#f1f5f9" : "#fff",
             cursor: readOnly ? "not-allowed" : "pointer",
             fontSize: 13,
-            fontWeight: 700,
+            fontWeight: 600,
           }}
         >
           Upload image
@@ -833,7 +833,7 @@ export const designConfig = {
         ...advancedFields,
       },
       defaultProps: {
-        eyebrow: "softu",
+        eyebrow: "soft",
         title: "New hero",
         subtitle: "A flexible intro block",
         body: SITE_DESCRIPTION,
@@ -877,10 +877,11 @@ export const designConfig = {
                 lineHeight: 0.95,
                 color: props.titleColor || "primary.main",
                 fontFamily: getFontFamily(props.titleFontFamily),
+                fontWeight: 500,
                 textTransform: "lowercase",
               }}
             >
-              {cleanText(props.title, "softu")}
+              {cleanText(props.title, "soft")}
             </Typography>
             {props.subtitle && (
               <Typography variant="h5" sx={{ mt: 0.85, color: props.bodyColor || "text.secondary", fontFamily: getFontFamily(props.bodyFontFamily), fontSize: { xs: "1rem", md: "1.2rem" }, lineHeight: 1.3 }}>
@@ -1556,7 +1557,7 @@ export const designConfig = {
 
 function createDefaultRootProps() {
   return {
-    pageTitle: "Softu",
+    pageTitle: "soft",
     pageDescription: "",
     backgroundMode: "theme",
     backgroundColor: "#fff1a8",

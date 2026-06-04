@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, InputLabel, Select, IconButton, Collapse, Divider, Button, Link } from "@mui/material";
+import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, InputLabel, Select, IconButton, Collapse, Divider, Button } from "@mui/material";
 import Loading from "../utils/Loading";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import YoutubePlayer from "./YoutubePlayer";
@@ -41,7 +41,8 @@ export default function Vod(props) {
   const navigate = useNavigate();
   const isPortrait = useMediaQuery("(orientation: portrait)");
   const isMobile = useMediaQuery("(max-width:1024px), (hover: none) and (pointer: coarse)");
-  const { vodId } = useParams();
+  const params = useParams();
+  const vodId = props.vodId || params.vodId || params.pageSlug;
   const { type } = props;
   const [vod, setVod] = useState(undefined);
   const [youtube, setYoutube] = useState(undefined);
@@ -223,7 +224,7 @@ export default function Vod(props) {
   }, [userChatDelay]);
 
   const copyTimestamp = () => {
-    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#${location.pathname}?t=${toHMS(currentTime)}`);
+    navigator.clipboard.writeText(`${window.location.origin}${location.pathname}?t=${toHMS(currentTime)}`);
   };
 
   if (vod === undefined || drive === undefined || part === undefined || delay === undefined) return <Loading />;
@@ -269,6 +270,29 @@ export default function Vod(props) {
             gap: 0.5,
           }}
         >
+          <Tooltip title="home">
+            <IconButton
+              onClick={() => navigate("/")}
+              aria-label="home"
+              sx={{
+                position: "absolute",
+                top: { xs: 10, md: 12 },
+                left: { xs: 10, md: 12 },
+                zIndex: 6,
+                width: 36,
+                height: 36,
+                color: "var(--soft-text-primary)",
+                background: "var(--soft-control-strip-bg)",
+                border: "1px solid var(--soft-control-strip-border)",
+                boxShadow: "var(--soft-control-strip-inset), 0 6px 16px rgba(2,6,18,0.12)",
+                "&:hover": {
+                  background: "var(--soft-control-strip-bg)",
+                },
+              }}
+            >
+              <HomeIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Box
             className="soft-player-stage"
             sx={{
@@ -406,69 +430,43 @@ export default function Vod(props) {
                   </Typography>
                 )}
                 {originalTwitchVodUrl && (
-                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mt: 0.25 }}>
-                    Original Twitch VOD:{" "}
-                    <Link href={originalTwitchVodUrl} target="_blank" rel="noopener noreferrer" underline="hover" color="secondary">
-                      open
-                    </Link>
-                  </Typography>
-                )}
-                {hasMultipleVodParts && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 0.45,
-                      px: 0.75,
-                      py: 0.3,
-                      mt: 0.3,
-                      borderRadius: "999px",
-                      color: "#7f2946",
-                      background: "rgba(212,107,140,0.14)",
-                      border: "1px solid rgba(212,107,140,0.32)",
-                      boxShadow: "0 0 0 1px rgba(212,107,140,0.08), 0 0 18px rgba(212,107,140,0.22)",
-                    }}
+                  <Button
+                    component="a"
+                    href={originalTwitchVodUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    size="small"
+                    variant="text"
+                    sx={{ display: "inline-flex", minWidth: 0, mt: 0.2, px: 0, py: 0, color: "text.secondary", fontSize: "0.75rem", fontWeight: 600 }}
                   >
-                    Multiple parts of this VOD. Use the Part selector.
-                  </Typography>
+                    [open twitch vod]
+                  </Button>
                 )}
               </Box>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<HomeIcon />}
-                onClick={() => navigate("/vods")}
-                sx={{ ml: 1, whiteSpace: "nowrap", borderRadius: "12px" }}
-              >
-                Home
-              </Button>
               <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
-                <Box sx={{ ml: 0.5 }}>
-                  <FormControl
-                    variant="outlined"
-                    sx={
-                      hasMultipleVodParts
-                        ? {
-                            "& .MuiOutlinedInput-root": {
-                              boxShadow: "0 0 0 1px rgba(212,107,140,0.24), 0 0 20px rgba(212,107,140,0.26)",
-                            },
-                          }
-                        : undefined
-                    }
-                  >
-                    <InputLabel id="select-label">Part</InputLabel>
-                    <Select labelId="select-label" label="Part" value={part.part - 1} onChange={handlePartChange} autoWidth>
-                      {youtube.map((data, i) => {
-                        return (
-                          <MenuItem key={data.id} value={i}>
-                            {data?.part || i + 1}
-                          </MenuItem>
-                        );
-                      })}
-                    </Select>
-                  </FormControl>
-                </Box>
+                {hasMultipleVodParts && (
+                  <Box sx={{ ml: 0.5 }}>
+                    <FormControl
+                      variant="outlined"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          boxShadow: "0 0 0 1px rgba(212,107,140,0.18), 0 0 16px rgba(212,107,140,0.18)",
+                        },
+                      }}
+                    >
+                      <InputLabel id="select-label">Part</InputLabel>
+                      <Select labelId="select-label" label="Part" value={part.part - 1} onChange={handlePartChange} autoWidth>
+                        {youtube.map((data, i) => {
+                          return (
+                            <MenuItem key={data.id} value={i}>
+                              {data?.part || i + 1}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                )}
                 <Box sx={{ ml: 0.5 }}>
                   {drive && drive[0] && (
                     <Tooltip title={`Download Vod`}>

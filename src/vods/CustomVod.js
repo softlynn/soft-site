@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Box, Typography, Tooltip, useMediaQuery, IconButton, Collapse, Divider, Button, Link } from "@mui/material";
+import { Box, Typography, Tooltip, useMediaQuery, IconButton, Collapse, Divider, Button } from "@mui/material";
 import Loading from "../utils/Loading";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -41,7 +41,8 @@ export default function Vod(props) {
   const navigate = useNavigate();
   const isPortrait = useMediaQuery("(orientation: portrait)");
   const isMobile = useMediaQuery("(max-width:1024px), (hover: none) and (pointer: coarse)");
-  const { vodId } = useParams();
+  const params = useParams();
+  const vodId = props.vodId || params.vodId || params.pageSlug;
   const { type } = props;
   const [vod, setVod] = useState(undefined);
   const [drive, setDrive] = useState(undefined);
@@ -193,7 +194,7 @@ export default function Vod(props) {
   }, [timestamp, playerRef]);
 
   const copyTimestamp = () => {
-    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#${location.pathname}?t=${toHMS(currentTime)}`);
+    navigator.clipboard.writeText(`${window.location.origin}${location.pathname}?t=${toHMS(currentTime)}`);
   };
 
   if (vod === undefined || drive === undefined) return <Loading />;
@@ -235,6 +236,29 @@ export default function Vod(props) {
             gap: 0.5,
           }}
         >
+          <Tooltip title="home">
+            <IconButton
+              onClick={() => navigate("/")}
+              aria-label="home"
+              sx={{
+                position: "absolute",
+                top: { xs: 10, md: 12 },
+                left: { xs: 10, md: 12 },
+                zIndex: 6,
+                width: 36,
+                height: 36,
+                color: "var(--soft-text-primary)",
+                background: "var(--soft-control-strip-bg)",
+                border: "1px solid var(--soft-control-strip-border)",
+                boxShadow: "var(--soft-control-strip-inset), 0 6px 16px rgba(2,6,18,0.12)",
+                "&:hover": {
+                  background: "var(--soft-control-strip-bg)",
+                },
+              }}
+            >
+              <HomeIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Box
             className="soft-player-stage"
             sx={{
@@ -366,23 +390,19 @@ export default function Vod(props) {
                   </Typography>
                 )}
                 {originalTwitchVodUrl && (
-                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mt: 0.25 }}>
-                    Original Twitch VOD:{" "}
-                    <Link href={originalTwitchVodUrl} target="_blank" rel="noopener noreferrer" underline="hover" color="secondary">
-                      open
-                    </Link>
-                  </Typography>
+                  <Button
+                    component="a"
+                    href={originalTwitchVodUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    size="small"
+                    variant="text"
+                    sx={{ display: "inline-flex", minWidth: 0, mt: 0.2, px: 0, py: 0, color: "text.secondary", fontSize: "0.75rem", fontWeight: 600 }}
+                  >
+                    [open twitch vod]
+                  </Button>
                 )}
               </Box>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<HomeIcon />}
-                onClick={() => navigate("/vods")}
-                sx={{ ml: 1, whiteSpace: "nowrap", borderRadius: "12px" }}
-              >
-                Home
-              </Button>
               <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
                 <Box sx={{ ml: 0.5 }}>
                   {drive && drive[0] && (

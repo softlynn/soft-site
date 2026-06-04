@@ -2,7 +2,7 @@
   "version": 1,
   "updatedAt": "2026-05-21T22:08:19.951Z",
   "settings": {
-    "headerBrandText": "softu",
+    "headerBrandText": "soft",
     "headerTagline": "",
     "headerLogoUrl": "/uploads/design/hairpin-mp9kjpey.png",
     "headerLogoSize": 52,
@@ -22,9 +22,9 @@
     "accentColor": "#d38f38",
     "secondaryAccentColor": "#607fca",
     "footerEnabled": true,
-    "footerText": "softu © 2026",
-    "footerLink1Label": "Backend by OP",
-    "footerLink1Href": "https://github.com/OP-Archives",
+    "footerText": "soft © 2026",
+    "footerLink1Label": "",
+    "footerLink1Href": "",
     "footerLink2Label": "",
     "footerLink2Href": "",
     "footerLink3Label": "",
@@ -32,8 +32,8 @@
     "footerShowBuild": true,
     "footerRadius": 20,
     "footerSurface": "transparent",
-    "footerVodCreditLabel": "backend by op",
-    "footerVodCreditHref": "https://github.com/OP-Archives",
+    "footerVodCreditLabel": "",
+    "footerVodCreditHref": "",
     "vodCardStyle": "bubble",
     "vodThumbnailShape": "soft",
     "vodThumbnailOverlay": "clean",
@@ -58,8 +58,8 @@
       "puck": {
         "root": {
           "props": {
-            "pageTitle": "Softu",
-            "pageDescription": "Streams and links!",
+            "pageTitle": "soft",
+            "pageDescription": "Streams and links.",
             "backgroundMode": "gradient",
             "backgroundColor": "#fff1a8",
             "backgroundGradient": "#fff1a8",
@@ -76,9 +76,9 @@
             "fontFamily": "inherit",
             "headingFontFamily": "inherit",
             "maxWidth": "1180px",
-            "pagePaddingTop": 12,
-            "pagePaddingBottom": 24,
-            "sectionGap": 18,
+            "pagePaddingTop": 0,
+            "pagePaddingBottom": 0,
+            "sectionGap": 0,
             "customCss": ""
           }
         },
@@ -88,9 +88,9 @@
             "props": {
               "id": "home-hero",
               "eyebrow": "",
-              "title": "softu",
+              "title": "soft",
               "subtitle": "",
-              "body": "vods, links, credits!",
+              "body": "",
               "imageUrl": "",
               "imageAlt": "",
               "mediaMode": "twitch",
@@ -98,8 +98,8 @@
               "surface": "transparent",
               "backgroundColor": "",
               "accentColor": "#d38f38",
-              "animation": "fade",
-              "minHeight": 360,
+              "animation": "none",
+              "minHeight": 430,
               "buttons": [
                 {
                   "label": "Open VODs",
@@ -116,96 +116,6 @@
                   "animation": "lift"
                 }
               ]
-            }
-          },
-          {
-            "type": "Spacer",
-            "props": {
-              "height": 24,
-              "id": "Spacer-916ed704-f4ed-4dd8-8215-c837154cfae0"
-            }
-          },
-          {
-            "type": "RecentVods",
-            "props": {
-              "id": "home-recent-vods",
-              "title": "stream vods!~",
-              "subtitle": "latest streams in 1440p with chat!",
-              "count": 4,
-              "showButton": true,
-              "surface": "bubble",
-              "backgroundSize": "cover"
-            }
-          },
-          {
-            "type": "Spacer",
-            "props": {
-              "height": 24,
-              "id": "Spacer-79c4f70f-623b-4a3f-8c87-374b2e848822"
-            }
-          },
-          {
-            "type": "TextBlock",
-            "props": {
-              "eyebrow": "",
-              "title": "credits!",
-              "body": "keyart ✦ [soft](https://x.com/softuwo)\nemotes ✦ [yam](https://x.com/no_7error)",
-              "align": "center",
-              "width": "full",
-              "surface": "transparent",
-              "animation": "fade",
-              "fontFamily": "inherit",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 1.58,
-              "titleColor": "",
-              "titleFontFamily": "inherit",
-              "titleFontSize": 0,
-              "backgroundColor": "",
-              "sideImageUrl": "/uploads/design/5-20-26-pfp-mpg1kxb9.png",
-              "sideImageAlt": "",
-              "sideImagePosition": "left",
-              "sideImageWidth": 220,
-              "customClassName": "",
-              "id": "TextBlock-562126e6-7ca2-4494-bf43-6645570a69df"
-            }
-          },
-          {
-            "type": "EmbedGrid",
-            "props": {
-              "id": "home-embeds",
-              "title": "",
-              "subtitle": "",
-              "columns": "3",
-              "surface": "transparent",
-              "embeds": [
-                {
-                  "title": "spotify",
-                  "src": "https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator",
-                  "height": 425,
-                  "aspectRatio": "custom",
-                  "allow": "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
-                  "sandbox": ""
-                },
-                {
-                  "title": "softucord",
-                  "src": "https://discord.com/widget?id=1470662936950210601&theme=dark",
-                  "height": 400,
-                  "aspectRatio": "custom",
-                  "allow": "",
-                  "sandbox": "allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-                },
-                {
-                  "title": "kick",
-                  "src": "https://player.kick.com/softuwo",
-                  "height": 352,
-                  "aspectRatio": "16 / 9",
-                  "allow": "<iframe \n     src=\"https://player.kick.com/softuwo\" \n     height=\"720\" \n     width=\"1280\"\n     frameborder=\"0\" \n     scrolling=\"no\" \n     allowfullscreen=\"true\"> \n</iframe>",
-                  "sandbox": ""
-                }
-              ],
-              "width": "full",
-              "padding": "small"
             }
           }
         ],

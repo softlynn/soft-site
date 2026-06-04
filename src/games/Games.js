@@ -342,9 +342,8 @@ export default function Games(props) {
                 )}
                 {originalTwitchVodUrl && (
                   <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mt: 0.25 }}>
-                    Original Twitch VOD:{" "}
                     <Link href={originalTwitchVodUrl} target="_blank" rel="noopener noreferrer" underline="hover" color="secondary">
-                      open
+                      [open twitch vod]
                     </Link>
                   </Typography>
                 )}
