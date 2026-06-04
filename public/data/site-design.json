@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-04T19:41:29.037Z",
+  "updatedAt": "2026-06-04T19:43:02.697Z",
   "settings": {
     "headerBrandText": "soft",
     "headerTagline": "",
@@ -94,19 +94,21 @@
               "surface": "transparent",
               "animation": "float",
               "fontFamily": "inherit",
-              "fontSize": 16,
+              "fontSize": 14,
               "fontWeight": "400",
               "lineHeight": 1.58,
               "titleColor": "",
               "titleFontFamily": "inherit",
-              "titleFontSize": 0,
+              "titleFontSize": 12,
               "backgroundColor": "",
               "sideImageUrl": "/uploads/design/5-20-26-softucord-mpzwgzv0.png",
               "sideImageAlt": "",
               "sideImagePosition": "left",
               "sideImageWidth": 220,
               "customClassName": "",
-              "id": "TextBlock-22687c0d-1e4d-4096-9c05-d6882ef08394"
+              "id": "TextBlock-22687c0d-1e4d-4096-9c05-d6882ef08394",
+              "padding": "none",
+              "backgroundSize": "cover"
             }
           }
         ],
