@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-04T19:44:36.749Z",
+  "updatedAt": "2026-06-04T19:45:08.426Z",
   "settings": {
     "headerBrandText": "soft",
     "headerTagline": "",
@@ -13,7 +13,7 @@
     "showSocials": true,
     "headerShowVodsButton": false,
     "navStyle": "pill",
-    "backgroundColor": "#ffd894",
+    "backgroundColor": "#fff3a3",
     "faviconUrl": "/favicon.png",
     "bodyFontFamily": "\"Poppins\", \"Manrope\", \"Segoe UI\", sans-serif",
     "headingFontFamily": "\"Poppins\", \"Manrope\", sans-serif",
