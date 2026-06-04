@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-21T22:08:19.951Z",
+  "updatedAt": "2026-06-04T19:40:33.644Z",
   "settings": {
     "headerBrandText": "soft",
     "headerTagline": "",
@@ -13,14 +13,14 @@
     "showSocials": true,
     "headerShowVodsButton": false,
     "navStyle": "pill",
-    "backgroundColor": "#fff1a8",
+    "backgroundColor": "#fef3cd",
     "faviconUrl": "/favicon.png",
     "bodyFontFamily": "\"Poppins\", \"Manrope\", \"Segoe UI\", sans-serif",
     "headingFontFamily": "\"Poppins\", \"Manrope\", sans-serif",
     "brandFontFamily": "\"Poppins\", \"Manrope\", sans-serif",
     "buttonFontFamily": "\"Poppins\", \"Manrope\", \"Segoe UI\", sans-serif",
-    "accentColor": "#d38f38",
-    "secondaryAccentColor": "#607fca",
+    "accentColor": "#ffb980",
+    "secondaryAccentColor": "#fe9aec",
     "footerEnabled": true,
     "footerText": "soft © 2026",
     "footerLink1Label": "",
@@ -29,7 +29,7 @@
     "footerLink2Href": "",
     "footerLink3Label": "",
     "footerLink3Href": "",
-    "footerShowBuild": true,
+    "footerShowBuild": false,
     "footerRadius": 20,
     "footerSurface": "transparent",
     "footerVodCreditLabel": "",
@@ -39,7 +39,7 @@
     "vodThumbnailOverlay": "clean",
     "vodWatchLabel": "Watch",
     "vodShowGame": true,
-    "vodAccentColor": "#d38f38",
+    "vodAccentColor": "#eeab53",
     "notFoundTitle": "404",
     "notFoundBody": "this page is not here",
     "notFoundButtonLabel": "return home",
@@ -60,7 +60,7 @@
           "props": {
             "pageTitle": "soft",
             "pageDescription": "Streams and links.",
-            "backgroundMode": "gradient",
+            "backgroundMode": "theme",
             "backgroundColor": "#fff1a8",
             "backgroundGradient": "#fff1a8",
             "backgroundImage": "",
@@ -84,38 +84,29 @@
         },
         "content": [
           {
-            "type": "HeroDirectory",
+            "type": "TextBlock",
             "props": {
-              "id": "home-hero",
               "eyebrow": "",
-              "title": "soft",
-              "subtitle": "",
-              "body": "",
-              "imageUrl": "",
-              "imageAlt": "",
-              "mediaMode": "twitch",
-              "layout": "text-left",
+              "title": "Text block",
+              "body": "Write something here.",
+              "align": "left",
+              "width": "normal",
               "surface": "transparent",
+              "animation": "fade",
+              "fontFamily": "inherit",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 1.58,
+              "titleColor": "",
+              "titleFontFamily": "inherit",
+              "titleFontSize": 0,
               "backgroundColor": "",
-              "accentColor": "#d38f38",
-              "animation": "none",
-              "minHeight": 430,
-              "buttons": [
-                {
-                  "label": "Open VODs",
-                  "href": "/vods",
-                  "variant": "contained",
-                  "tone": "accent",
-                  "animation": "sheen"
-                },
-                {
-                  "label": "Twitch",
-                  "href": "configured:twitch",
-                  "variant": "outlined",
-                  "tone": "blue",
-                  "animation": "lift"
-                }
-              ]
+              "sideImageUrl": "/uploads/design/5-20-26-softucord-mpzwgzv0.png",
+              "sideImageAlt": "",
+              "sideImagePosition": "none",
+              "sideImageWidth": 220,
+              "customClassName": "",
+              "id": "TextBlock-22687c0d-1e4d-4096-9c05-d6882ef08394"
             }
           }
         ],
