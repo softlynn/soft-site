@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-04T19:55:10.866Z",
+  "updatedAt": "2026-06-04T19:56:03.514Z",
   "settings": {
     "headerBrandText": "soft",
     "headerTagline": "",
@@ -84,6 +84,13 @@
         },
         "content": [
           {
+            "type": "Spacer",
+            "props": {
+              "height": 60,
+              "id": "Spacer-50c1732d-0172-48e0-a92e-ce1abac6bf29"
+            }
+          },
+          {
             "type": "TextBlock",
             "props": {
               "eyebrow": "",
@@ -112,13 +119,20 @@
             }
           },
           {
+            "type": "Spacer",
+            "props": {
+              "height": 24,
+              "id": "Spacer-066d45e5-23df-489c-8ba6-215b90b08a2a"
+            }
+          },
+          {
             "type": "RecentVods",
             "props": {
               "title": "vods",
               "subtitle": "",
               "count": 4,
               "showButton": true,
-              "surface": "glass",
+              "surface": "transparent",
               "backgroundColor": "",
               "width": "full",
               "customMaxWidth": "",
