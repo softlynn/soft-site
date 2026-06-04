@@ -1,5 +1,5 @@
 :root {
-  --soft-bg: #e2e9f3;
+  --soft-bg: #fff1a8;
   --soft-surface: rgba(255, 255, 255, 0.66);
   --soft-surface-strong: rgba(255, 255, 255, 0.82);
   --soft-surface-soft: rgba(255, 255, 255, 0.58);
@@ -17,19 +17,20 @@
   --soft-border-subtle: rgba(19, 33, 56, 0.1);
   --soft-shadow: 0 18px 40px rgba(19, 33, 56, 0.11);
   --soft-shadow-hover: 0 22px 48px rgba(19, 33, 56, 0.16);
-  --soft-text: #132138;
-  --soft-muted: #395473;
-  --soft-salmon: #d46b8c;
-  --soft-salmon-deep: #c05779;
-  --soft-blue: #79a3e6;
-  --soft-blue-deep: #5a84cf;
-  --soft-body-font: "Manrope", "Segoe UI", sans-serif;
-  --soft-heading-font: "Space Grotesk", "Manrope", sans-serif;
-  --soft-button-font: "Manrope", "Segoe UI", sans-serif;
+  --soft-text: #1f1a12;
+  --soft-muted: #6f5533;
+  --soft-salmon: #d38f38;
+  --soft-salmon-deep: #b97425;
+  --soft-blue: #607fca;
+  --soft-blue-deep: #4568b6;
+  --soft-body-font: "Poppins", "Manrope", "Segoe UI", sans-serif;
+  --soft-heading-font: "Poppins", "Manrope", sans-serif;
+  --soft-brand-font: "Poppins", "Manrope", sans-serif;
+  --soft-button-font: "Poppins", "Manrope", "Segoe UI", sans-serif;
   --soft-page-dark-gradient:
     radial-gradient(circle at 14% 12%, rgba(212,107,140,0.14), transparent 36%),
     radial-gradient(circle at 86% 14%, rgba(121,163,230,0.14), transparent 44%),
-    #0f172a;
+    #101010;
   --soft-radius-xl: 26px;
   --soft-radius-lg: 18px;
   --soft-radius-md: 14px;
@@ -50,7 +51,7 @@
 
 html[data-soft-theme="dark"],
 body[data-soft-theme="dark"] {
-  --soft-bg: #0f172a;
+  --soft-bg: #101010;
   --soft-surface: rgba(16, 22, 36, 0.68);
   --soft-surface-strong: rgba(21, 29, 46, 0.84);
   --soft-surface-soft: rgba(18, 24, 39, 0.6);
@@ -68,8 +69,8 @@ body[data-soft-theme="dark"] {
   --soft-border-subtle: rgba(167, 187, 219, 0.12);
   --soft-shadow: 0 20px 46px rgba(2, 6, 18, 0.34);
   --soft-shadow-hover: 0 24px 56px rgba(2, 6, 18, 0.45);
-  --soft-text: #e7effa;
-  --soft-muted: #a9b8d1;
+  --soft-text: #f4f1e7;
+  --soft-muted: #c9c2b2;
   --soft-control-strip-bg: rgba(17, 24, 39, 0.78);
   --soft-control-strip-border: rgba(167, 187, 219, 0.12);
   --soft-control-strip-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
@@ -370,12 +371,12 @@ button,
 }
 
 .soft-surface-float {
-  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
 }
 
 .soft-surface-float:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--soft-shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transform: translateY(-1px);
+  box-shadow: var(--soft-shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
 .soft-vod-card {
@@ -571,42 +572,22 @@ button,
   position: relative;
   isolation: isolate;
   overflow: visible;
-  border-radius: 14px;
-  border: 1px solid var(--soft-border);
-  background: var(--soft-surface);
-  box-shadow: var(--soft-shadow);
-  backdrop-filter: blur(14px) saturate(130%);
-  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  color: var(--soft-text);
+  transition: transform 140ms ease, background-color 140ms ease, color 140ms ease;
 }
 
 .soft-theme-toggle:hover {
-  transform: translateY(-1px) scale(1.02);
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.35);
 }
 
 .soft-theme-toggle--inline {
   border-radius: 12px;
-}
-
-.soft-theme-toggle.is-announce {
-  animation: soft-theme-toggle-pop 1320ms cubic-bezier(.18,.86,.22,1) 180ms both;
-}
-
-.soft-theme-toggle.is-announce::before,
-.soft-theme-toggle.is-announce::after {
-  content: "";
-  position: absolute;
-  inset: -12px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: -1;
-  border: 1px solid rgba(212, 107, 140, 0.24);
-  box-shadow: 0 0 0 1px rgba(121,163,230,0.08) inset;
-  animation: soft-theme-toggle-ripple 1320ms cubic-bezier(.16,.8,.22,1) both;
-}
-
-.soft-theme-toggle.is-announce::after {
-  animation-delay: 230ms;
-  border-color: rgba(121, 163, 230, 0.22);
 }
 
 .soft-nav-main-button {

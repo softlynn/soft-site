@@ -53,6 +53,7 @@ const ICON_OPTIONS = [
 ];
 
 const SETTINGS_FONT_OPTIONS = [
+  { label: "Poppins", value: "\"Poppins\", \"Manrope\", \"Segoe UI\", sans-serif" },
   { label: "Manrope", value: "\"Manrope\", \"Segoe UI\", sans-serif" },
   { label: "Space Grotesk", value: "\"Space Grotesk\", \"Manrope\", sans-serif" },
   { label: "Rounded cute", value: "\"Nunito\", \"Quicksand\", \"Manrope\", sans-serif" },
@@ -403,6 +404,24 @@ export default function DesignEditorPage() {
     }
   };
 
+  const handleFaviconUpload = async (event) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file) return;
+
+    setUploadingAsset(true);
+    try {
+      const payload = await uploadDesignAsset(file);
+      if (!payload?.url) throw new Error("Upload did not return an image URL");
+      handleSettingsField("faviconUrl", payload.url);
+      setMessage({ type: "success", text: "Uploaded favicon. Publish the design to use it on the live site." });
+    } catch (error) {
+      setMessage({ type: "error", text: error.message });
+    } finally {
+      setUploadingAsset(false);
+    }
+  };
+
   const handleDuplicatePage = () => {
     if (!selectedPage || selectedPage.type !== "puck") return;
     setDraftDesign((current) => {
@@ -605,12 +624,12 @@ export default function DesignEditorPage() {
           </Box>
 
           <Typography variant="subtitle2" sx={{ fontWeight: 800, mt: 0.5 }}>
-            Header
+            Site Shell
           </Typography>
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(6, minmax(0, 1fr))" }, gap: 1 }}>
             <TextField
               size="small"
-              label="Header title"
+              label="Top-left name"
               value={draftDesign.settings.headerBrandText || ""}
               onChange={(event) => handleSettingsField("headerBrandText", event.target.value)}
               disabled={!authorized}
@@ -623,6 +642,14 @@ export default function DesignEditorPage() {
               onChange={(event) => handleSettingsField("headerTagline", event.target.value)}
               disabled={!authorized}
               sx={{ gridColumn: { md: "span 2" } }}
+            />
+            <TextField
+              size="small"
+              label="Site background"
+              type="color"
+              value={draftDesign.settings.backgroundColor || "#fff1a8"}
+              onChange={(event) => handleSettingsField("backgroundColor", event.target.value)}
+              disabled={!authorized}
             />
             <Select
               size="small"
@@ -649,7 +676,7 @@ export default function DesignEditorPage() {
               size="small"
               label="Accent color"
               type="color"
-              value={draftDesign.settings.accentColor || "#d46b8c"}
+              value={draftDesign.settings.accentColor || "#d38f38"}
               onChange={(event) => handleSettingsField("accentColor", event.target.value)}
               disabled={!authorized}
             />
@@ -657,10 +684,22 @@ export default function DesignEditorPage() {
               size="small"
               label="Second color"
               type="color"
-              value={draftDesign.settings.secondaryAccentColor || "#79a3e6"}
+              value={draftDesign.settings.secondaryAccentColor || "#607fca"}
               onChange={(event) => handleSettingsField("secondaryAccentColor", event.target.value)}
               disabled={!authorized}
             />
+            <TextField
+              size="small"
+              label="Favicon URL"
+              value={draftDesign.settings.faviconUrl || "/favicon.png"}
+              onChange={(event) => handleSettingsField("faviconUrl", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 2" } }}
+            />
+            <Button component="label" disabled={!authorized || uploadingAsset} sx={{ alignSelf: "stretch" }}>
+              {uploadingAsset ? "Uploading..." : "Upload favicon"}
+              <input hidden type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/x-icon" onChange={handleFaviconUpload} />
+            </Button>
             <TextField
               size="small"
               label="Logo URL"
@@ -722,6 +761,30 @@ export default function DesignEditorPage() {
               label="Show socials in header"
               sx={{ mx: 0 }}
             />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={draftDesign.settings.headerShowVodsButton === true}
+                  onChange={(event) => handleSettingsField("headerShowVodsButton", event.target.checked)}
+                  disabled={!authorized}
+                />
+              }
+              label="VOD icon"
+              sx={{ mx: 0 }}
+            />
+            <Select
+              size="small"
+              value={draftDesign.settings.brandFontFamily || SETTINGS_FONT_OPTIONS[0].value}
+              onChange={(event) => handleSettingsField("brandFontFamily", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 2" } }}
+            >
+              {SETTINGS_FONT_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  Name: {option.label}
+                </MenuItem>
+              ))}
+            </Select>
             <Select
               size="small"
               value={draftDesign.settings.bodyFontFamily || SETTINGS_FONT_OPTIONS[0].value}
@@ -737,7 +800,7 @@ export default function DesignEditorPage() {
             </Select>
             <Select
               size="small"
-              value={draftDesign.settings.headingFontFamily || SETTINGS_FONT_OPTIONS[1].value}
+              value={draftDesign.settings.headingFontFamily || SETTINGS_FONT_OPTIONS[0].value}
               onChange={(event) => handleSettingsField("headingFontFamily", event.target.value)}
               disabled={!authorized}
               sx={{ gridColumn: { md: "span 2" } }}
@@ -812,7 +875,7 @@ export default function DesignEditorPage() {
               size="small"
               label="VOD accent"
               type="color"
-              value={draftDesign.settings.vodAccentColor || "#d46b8c"}
+              value={draftDesign.settings.vodAccentColor || "#d38f38"}
               onChange={(event) => handleSettingsField("vodAccentColor", event.target.value)}
               disabled={!authorized}
               sx={{ gridColumn: { md: "span 1" } }}
@@ -902,6 +965,43 @@ export default function DesignEditorPage() {
                 />
               </Box>
             ))}
+          </Box>
+
+          <Typography variant="subtitle2" sx={{ fontWeight: 800, mt: 0.5 }}>
+            404 Page
+          </Typography>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(6, minmax(0, 1fr))" }, gap: 1 }}>
+            <TextField
+              size="small"
+              label="404 title"
+              value={draftDesign.settings.notFoundTitle || "404"}
+              onChange={(event) => handleSettingsField("notFoundTitle", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 2" } }}
+            />
+            <TextField
+              size="small"
+              label="404 body"
+              value={draftDesign.settings.notFoundBody || ""}
+              onChange={(event) => handleSettingsField("notFoundBody", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 3" } }}
+            />
+            <TextField
+              size="small"
+              label="404 button"
+              value={draftDesign.settings.notFoundButtonLabel || "return home"}
+              onChange={(event) => handleSettingsField("notFoundButtonLabel", event.target.value)}
+              disabled={!authorized}
+            />
+            <TextField
+              size="small"
+              label="404 image URL"
+              value={draftDesign.settings.notFoundImageUrl || ""}
+              onChange={(event) => handleSettingsField("notFoundImageUrl", event.target.value)}
+              disabled={!authorized}
+              sx={{ gridColumn: { md: "span 4" } }}
+            />
           </Box>
         </Box>
       </SimpleBar>

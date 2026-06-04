@@ -2,7 +2,7 @@ import { Box, Typography, Grid, Button } from "@mui/material";
 import Thumbnail from "../assets/default_thumbnail.png";
 import Chapters from "./ChaptersMenu";
 import CustomWidthTooltip from "../utils/CustomToolTip";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat.js";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
@@ -16,25 +16,55 @@ dayjs.extend(localizedFormat);
 
 const DEFAULT_CARD_WIDTH = "20.75rem";
 
+const safeUrl = (value) => {
+  const raw = String(value || "").trim();
+  if (!raw || /^javascript:/i.test(raw)) return "";
+  return raw;
+};
+
+const youtubeThumbnailCandidates = (entry) => {
+  const id = String(entry?.id || "").trim();
+  if (!id) return [];
+  return [
+    `https://i.ytimg.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`,
+    `https://i.ytimg.com/vi/${encodeURIComponent(id)}/mqdefault.jpg`,
+    safeUrl(entry?.thumbnail_url),
+  ].filter(Boolean);
+};
+
+const getThumbnailCandidates = (vod) => {
+  const youtube = Array.isArray(vod?.youtube) ? vod.youtube : [];
+  const games = Array.isArray(vod?.games) ? vod.games : [];
+  const candidates = [
+    ...youtube.flatMap(youtubeThumbnailCandidates),
+    safeUrl(vod?.thumbnail_url),
+    ...games.map((game) => safeUrl(game?.thumbnail_url)),
+    Thumbnail,
+  ].filter(Boolean);
+
+  return Array.from(new Set(candidates));
+};
+
 export default function Vod(props) {
   const { vod, gridSize, sizes, sheen = false, cardWidth } = props;
   const { design } = useSiteDesign();
   const settings = design?.settings || {};
   const resolvedCardWidth = cardWidth || DEFAULT_CARD_WIDTH;
   const hasPlayableVod = Array.isArray(vod.youtube) && vod.youtube.length > 0;
-  const watchHref = `/youtube/${vod.id}`;
-  const vodAccent = String(settings.vodAccentColor || settings.accentColor || "#d46b8c");
+  const watchHref = `/${vod.id}`;
+  const vodAccent = String(settings.vodAccentColor || settings.accentColor || "#d38f38");
   const vodCardStyle = String(settings.vodCardStyle || "bubble");
   const thumbnailShape = String(settings.vodThumbnailShape || "soft");
   const thumbnailOverlay = String(settings.vodThumbnailOverlay || "clean");
   const thumbnailRadius = thumbnailShape === "bubble" ? 26 : thumbnailShape === "round" ? 22 : 18;
   const watchLabel = String(settings.vodWatchLabel || "Watch").trim() || "Watch";
+  const thumbnailCandidates = useMemo(() => getThumbnailCandidates(vod), [vod]);
+  const [thumbnailIndex, setThumbnailIndex] = useState(0);
+  const thumbnail = thumbnailCandidates[thumbnailIndex] || Thumbnail;
 
-  const thumbnail = useMemo(() => {
-    if (vod.youtube?.length > 0) return vod.youtube[0].thumbnail_url;
-    if (vod.games?.length > 0) return vod.games[0].thumbnail_url;
-    return vod.thumbnail_url || Thumbnail;
-  }, [vod]);
+  useEffect(() => {
+    setThumbnailIndex(0);
+  }, [vod?.id, thumbnailCandidates]);
 
   const vodPartCount = useMemo(
     () =>
@@ -52,7 +82,7 @@ export default function Vod(props) {
   return (
     <Grid size={sizes || { xs: gridSize }} sx={{ maxWidth: resolvedCardWidth, flexBasis: resolvedCardWidth }}>
       <Box
-        className={`soft-glass soft-surface-float soft-vod-card soft-vod-card--${vodCardStyle} soft-vod-card--overlay-${thumbnailOverlay}${sheen ? " soft-shimmer" : ""}`}
+        className={`soft-glass soft-surface-float soft-vod-card soft-vod-card--${vodCardStyle} soft-vod-card--overlay-${thumbnailOverlay}`}
         sx={{
           borderRadius: vodCardStyle === "bubble" ? "28px" : "22px",
           p: vodCardStyle === "pearl" ? 0.85 : 0.95,
@@ -89,6 +119,7 @@ export default function Vod(props) {
             className="thumbnail"
             alt=""
             src={thumbnail}
+            onError={() => setThumbnailIndex((index) => Math.min(index + 1, thumbnailCandidates.length - 1))}
             loading={sheen ? "eager" : "lazy"}
             decoding="async"
             fetchPriority={sheen ? "high" : "auto"}

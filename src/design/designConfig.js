@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Grid, Link, Stack, Typography } from "@mui/material";
+import { Box, Button, Grid, Stack, Typography } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { FieldLabel } from "@puckeditor/core";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
@@ -49,6 +49,7 @@ const PADDING_OPTIONS = [
 
 const FONT_OPTIONS = [
   { label: "Use site font", value: "inherit" },
+  { label: "Poppins", value: "\"Poppins\", \"Manrope\", \"Segoe UI\", sans-serif" },
   { label: "Manrope", value: "\"Manrope\", \"Segoe UI\", sans-serif" },
   { label: "Space Grotesk", value: "\"Space Grotesk\", \"Manrope\", sans-serif" },
   { label: "Rounded cute", value: "\"Nunito\", \"Quicksand\", \"Manrope\", sans-serif" },
@@ -89,14 +90,14 @@ const colorField = (label) => ({
             disabled={readOnly}
             id={id}
             type="color"
-            value={/^#[0-9a-f]{6}$/i.test(normalized) ? normalized : "#d46b8c"}
+            value={/^#[0-9a-f]{6}$/i.test(normalized) ? normalized : "#d38f38"}
             onChange={(event) => onChange(event.currentTarget.value)}
             style={{ width: 44, height: 34, padding: 2, border: "1px solid #d7dce5", borderRadius: 8, background: "transparent" }}
           />
           <input
             disabled={readOnly}
             value={normalized}
-            placeholder="#d46b8c or rgba(...)"
+            placeholder="#d38f38 or rgba(...)"
             onChange={(event) => onChange(event.currentTarget.value)}
             style={{ minWidth: 0, height: 34, border: "1px solid #d7dce5", borderRadius: 8, padding: "0 10px" }}
           />
@@ -191,7 +192,6 @@ const advancedFields = {
   borderRadius: numberField("Roundness", 0, 72),
   borderColor: colorField("Border color"),
   textColor: colorField("Text color"),
-  linkColor: colorField("Link color"),
   backgroundImage: imageField("Block background image"),
   backgroundImageOpacity: numberField("Background image opacity", 0, 100),
   backgroundPosition: textField("Background position", "center center"),
@@ -265,98 +265,6 @@ const getLinkProps = (href) => {
   }
   return { component: "a", href: resolved, target: "_blank", rel: "noopener noreferrer" };
 };
-
-const renderInlineMarkdown = (value, linkColor = "", keyPrefix = "md") => {
-  const source = String(value || "");
-  const pattern = /\[([^\]\n]+)\]\(([^)\s]+)\)|`([^`\n]+)`|\*\*([^*\n]+)\*\*|__([^_\n]+)__|\*([^*\n]+)\*|_([^_\n]+)_/g;
-  const nodes = [];
-  let lastIndex = 0;
-  let match;
-
-  const pushText = (text) => {
-    if (text) nodes.push(text);
-  };
-
-  while ((match = pattern.exec(source)) !== null) {
-    pushText(source.slice(lastIndex, match.index));
-    const key = `${keyPrefix}-${nodes.length}`;
-    const [, linkLabel, linkHref, code, boldStars, boldUnderscores, italicStars, italicUnderscores] = match;
-
-    if (linkLabel && linkHref) {
-      const resolved = resolveConfiguredHref(linkHref);
-      const safeMarkdownHref = /^(https?:|mailto:|tel:|\/|#)/i.test(resolved);
-      const linkProps = safeMarkdownHref ? getLinkProps(linkHref) : {};
-      if (safeMarkdownHref) {
-        nodes.push(
-          <Link
-            key={key}
-            {...linkProps}
-            underline="always"
-            sx={{
-              color: linkColor || "secondary.main",
-              fontWeight: 750,
-              textDecorationColor: "currentColor",
-              textUnderlineOffset: "0.16em",
-              "&:hover": {
-                color: linkColor || "primary.main",
-                opacity: 0.82,
-              },
-            }}
-          >
-            {renderInlineMarkdown(linkLabel, linkColor, `${key}-label`)}
-          </Link>
-        );
-      } else {
-        nodes.push(match[0]);
-      }
-    } else if (code) {
-      nodes.push(
-        <Box
-          key={key}
-          component="code"
-          sx={{
-            px: 0.35,
-            py: 0.1,
-            borderRadius: "5px",
-            backgroundColor: "rgba(121, 163, 230, 0.14)",
-            fontFamily: "\"Cascadia Code\", \"Consolas\", monospace",
-            fontSize: "0.92em",
-          }}
-        >
-          {code}
-        </Box>
-      );
-    } else if (boldStars || boldUnderscores) {
-      nodes.push(
-        <Box key={key} component="strong" sx={{ fontWeight: 800 }}>
-          {boldStars || boldUnderscores}
-        </Box>
-      );
-    } else if (italicStars || italicUnderscores) {
-      nodes.push(
-        <Box key={key} component="em">
-          {italicStars || italicUnderscores}
-        </Box>
-      );
-    }
-
-    lastIndex = pattern.lastIndex;
-  }
-
-  pushText(source.slice(lastIndex));
-  return nodes;
-};
-
-function MarkdownText({ value, fallback = "", linkColor = "", variant = "body2", sx = {}, ...typographyProps }) {
-  const text = cleanText(value, fallback);
-  if (!text) return null;
-
-  return (
-    <Typography component="div" variant={variant} {...typographyProps} sx={{ whiteSpace: "pre-line", ...sx }}>
-      {renderInlineMarkdown(text, linkColor)}
-    </Typography>
-  );
-}
 
 const getFontFamily = (fontFamily, fallback = undefined) => {
   const value = String(fontFamily || "").trim();
@@ -524,13 +432,13 @@ const getResizeSx = (props = {}) => ({
 const getAnimationClass = (animation, extra = "") =>
   ["soft-design-block", animation && animation !== "none" ? `soft-design-anim--${animation}` : "", extra].filter(Boolean).join(" ");
 
-const getToneColor = (tone, fallback = "#d46b8c") => {
-  if (tone === "blue") return "#79a3e6";
+const getToneColor = (tone, fallback = "#d38f38") => {
+  if (tone === "blue") return "#607fca";
   if (tone === "neutral") return "var(--soft-text)";
   return fallback;
 };
 
-function DesignButton({ button, accentColor = "#d46b8c" }) {
+function DesignButton({ button, accentColor = "#d38f38" }) {
   const hrefProps = getLinkProps(button?.href);
   const toneColor = getToneColor(button?.tone, accentColor);
   const variant = button?.variant || "contained";
@@ -560,7 +468,7 @@ function DesignButton({ button, accentColor = "#d46b8c" }) {
   );
 }
 
-function PlaceholderMedia({ icon = "image", accentColor = "#d46b8c" }) {
+function PlaceholderMedia({ icon = "image", accentColor = "#d38f38" }) {
   return (
     <Box
       sx={{
@@ -590,7 +498,7 @@ function PlaceholderMedia({ icon = "image", accentColor = "#d46b8c" }) {
   );
 }
 
-function ImageFrame({ src, alt, aspectRatio = "16 / 10", accentColor = "#d46b8c", className = "" }) {
+function ImageFrame({ src, alt, aspectRatio = "16 / 10", accentColor = "#d38f38", className = "" }) {
   const cleanSrc = safeUrl(src);
   return (
     <Box
@@ -742,7 +650,11 @@ function RecentVodsRenderer({ title, subtitle, count = 4, showButton = true, sur
           <Typography variant="h5" className="soft-section-heading" sx={{ color: "primary.main" }}>
             {cleanText(title, "Recent VODs")}
           </Typography>
-          <MarkdownText value={subtitle} linkColor={styleProps.linkColor} sx={{ color: "text.secondary", mt: 0.55, maxWidth: 620 }} />
+          {subtitle && (
+            <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.55, maxWidth: 620 }}>
+              {subtitle}
+            </Typography>
+          )}
         </Box>
         {showButton && (
           <Button variant="outlined" startIcon={<VideoLibraryRoundedIcon />} onClick={() => navigate("/vods")}>
@@ -768,14 +680,18 @@ function RecentVodsRenderer({ title, subtitle, count = 4, showButton = true, sur
   );
 }
 
-const sectionHeading = (title, subtitle, align = "left", linkColor = "") => (
+const sectionHeading = (title, subtitle, align = "left") => (
   <Box sx={{ textAlign: align, mb: title || subtitle ? 1.15 : 0 }}>
     {title && (
       <Typography variant="h5" className="soft-section-heading" sx={{ color: "primary.main" }}>
         {title}
       </Typography>
     )}
-    <MarkdownText value={subtitle} linkColor={linkColor} sx={{ color: "text.secondary", mt: 0.55, maxWidth: align === "center" ? 700 : 760, mx: align === "center" ? "auto" : 0 }} />
+    {subtitle && (
+      <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.55, maxWidth: align === "center" ? 700 : 760, mx: align === "center" ? "auto" : 0 }}>
+        {subtitle}
+      </Typography>
+    )}
   </Box>
 );
 
@@ -927,7 +843,7 @@ export const designConfig = {
         layout: "text-left",
         surface: "glass",
         backgroundColor: "",
-        accentColor: "#d46b8c",
+        accentColor: "#d38f38",
         titleFontFamily: "inherit",
         bodyFontFamily: "inherit",
         titleColor: "",
@@ -966,8 +882,16 @@ export const designConfig = {
             >
               {cleanText(props.title, "softu")}
             </Typography>
-            <MarkdownText value={props.subtitle} variant="h5" linkColor={props.linkColor} sx={{ mt: 0.85, color: props.bodyColor || "text.secondary", fontFamily: getFontFamily(props.bodyFontFamily), fontSize: { xs: "1rem", md: "1.2rem" }, lineHeight: 1.3 }} />
-            <MarkdownText value={props.body} variant="body1" linkColor={props.linkColor} sx={{ mt: 1.25, color: props.bodyColor || "text.secondary", fontFamily: getFontFamily(props.bodyFontFamily), maxWidth: isCentered ? 760 : 560, mx: isCentered ? "auto" : 0, lineHeight: 1.55 }} />
+            {props.subtitle && (
+              <Typography variant="h5" sx={{ mt: 0.85, color: props.bodyColor || "text.secondary", fontFamily: getFontFamily(props.bodyFontFamily), fontSize: { xs: "1rem", md: "1.2rem" }, lineHeight: 1.3 }}>
+                {props.subtitle}
+              </Typography>
+            )}
+            {props.body && (
+              <Typography variant="body1" sx={{ mt: 1.25, color: props.bodyColor || "text.secondary", fontFamily: getFontFamily(props.bodyFontFamily), maxWidth: isCentered ? 760 : 560, mx: isCentered ? "auto" : 0, lineHeight: 1.55 }}>
+                {props.body}
+              </Typography>
+            )}
             {Array.isArray(props.buttons) && props.buttons.length > 0 && (
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1} justifyContent={isCentered ? "center" : "flex-start"} sx={{ mt: 1.55 }}>
                 {props.buttons.map((button, index) => (
@@ -1023,7 +947,7 @@ export const designConfig = {
             backgroundImage: "",
             href: "",
             buttonLabel: "Open",
-            accentColor: "#d46b8c",
+            accentColor: "#d38f38",
           },
           arrayFields: {
             title: textField("Title"),
@@ -1050,7 +974,7 @@ export const designConfig = {
         const columnSize = props.columns === "4" ? { xs: 12, sm: 6, lg: 3 } : props.columns === "2" ? { xs: 12, md: 6 } : { xs: 12, sm: 6, lg: 4 };
         return (
           <Box className={props.customClassName} sx={{ ...getResizeSx(props), ...getBlockBackgroundSx(props) }}>
-            {sectionHeading(props.title, props.subtitle, "left", props.linkColor)}
+            {sectionHeading(props.title, props.subtitle)}
             <Grid container spacing={{ xs: 1.2, md: 1.6 }}>
               {(Array.isArray(props.items) ? props.items : []).map((item, index) => {
                 const hrefProps = getLinkProps(item.href);
@@ -1078,7 +1002,11 @@ export const designConfig = {
                         <Typography variant="h6" sx={{ color: "primary.main", lineHeight: 1.1 }}>
                           {cleanText(item.title, "Card")}
                         </Typography>
-                        <MarkdownText value={item.description} linkColor={props.linkColor || item.accentColor} sx={{ color: "text.secondary", lineHeight: 1.45, flex: 1 }} />
+                        {item.description && (
+                          <Typography variant="body2" sx={{ color: "text.secondary", lineHeight: 1.45, flex: 1 }}>
+                            {item.description}
+                          </Typography>
+                        )}
                         {resolveConfiguredHref(item.href) && (
                           <Button {...hrefProps} variant="outlined" size="small" endIcon={<OpenInNewRoundedIcon />} sx={{ alignSelf: "flex-start", borderColor: item.accentColor, color: item.accentColor }}>
                             {cleanText(item.buttonLabel, "Open")}
@@ -1178,7 +1106,11 @@ export const designConfig = {
                 {props.title}
               </Typography>
             )}
-            <MarkdownText value={props.body} variant="body1" linkColor={props.linkColor} sx={{ ...getTextFormattingSx(props), mt: props.title ? 1 : 0 }} />
+            {props.body && (
+              <Typography component="div" variant="body1" sx={{ ...getTextFormattingSx(props), whiteSpace: "pre-line", mt: props.title ? 1 : 0 }}>
+                {props.body}
+              </Typography>
+            )}
           </Box>
         );
 
@@ -1260,7 +1192,9 @@ export const designConfig = {
             textAlign: props.align,
           }}
         >
-          <MarkdownText value={props.body} fallback="Add text here." linkColor={props.linkColor} sx={{ ...getTextFormattingSx(props, "var(--soft-text)") }} />
+          <Typography component="div" sx={{ ...getTextFormattingSx(props, "var(--soft-text)"), whiteSpace: "pre-line" }}>
+            {cleanText(props.body, "Add text here.")}
+          </Typography>
         </Box>
       ),
     },
@@ -1280,7 +1214,7 @@ export const designConfig = {
       },
       defaultProps: {
         align: "left",
-        accentColor: "#d46b8c",
+        accentColor: "#d38f38",
         surface: "transparent",
         backgroundColor: "",
         buttons: [{ label: "Open VODs", href: "/vods", variant: "contained", tone: "accent", animation: "lift" }],
@@ -1337,7 +1271,7 @@ export const designConfig = {
       },
       render: (props) => (
         <Box className={getAnimationClass(props.animation, props.customClassName)} sx={{ ...getWidthSx(props.width, props.customMaxWidth), minHeight: Number(props.minHeight) > 0 ? Number(props.minHeight) : undefined, mx: "auto", ...getBlockBackgroundSx(props) }}>
-          {sectionHeading(props.title, props.subtitle, "left", props.linkColor)}
+          {sectionHeading(props.title, props.subtitle)}
           <ImageFrame src={props.imageUrl} alt={props.imageAlt} aspectRatio={props.aspectRatio} />
         </Box>
       ),
@@ -1382,7 +1316,7 @@ export const designConfig = {
         const columnSize = props.columns === "4" ? { xs: 12, sm: 6, lg: 3 } : props.columns === "2" ? { xs: 12, md: 6 } : { xs: 12, sm: 6, lg: 4 };
         return (
           <Box className={props.customClassName} sx={{ ...getResizeSx(props), ...getBlockBackgroundSx(props) }}>
-            {sectionHeading(props.title, props.subtitle, "left", props.linkColor)}
+            {sectionHeading(props.title, props.subtitle)}
             <Grid container spacing={{ xs: 1.1, md: 1.5 }}>
               {(Array.isArray(props.images) ? props.images : []).map((item, index) => {
                 const linkProps = getLinkProps(item.href);
@@ -1392,7 +1326,7 @@ export const designConfig = {
                     {(item.title || item.caption) && (
                       <Box sx={{ mt: 0.7 }}>
                         {item.title && <Typography variant="subtitle1" sx={{ color: "primary.main", fontWeight: 800 }}>{item.title}</Typography>}
-                        <MarkdownText value={item.caption} linkColor={props.linkColor} sx={{ color: "text.secondary" }} />
+                        {item.caption && <Typography variant="body2" sx={{ color: "text.secondary" }}>{item.caption}</Typography>}
                       </Box>
                     )}
                   </>
@@ -1449,7 +1383,7 @@ export const designConfig = {
             ...getBlockBackgroundSx(props),
           }}
         >
-          {sectionHeading(props.title, props.subtitle, "left", props.linkColor)}
+          {sectionHeading(props.title, props.subtitle)}
           <TwitchLiveFrame channelSource={props.channelSource} customChannel={props.customChannel} height={props.height} />
         </Box>
       ),
@@ -1495,7 +1429,7 @@ export const designConfig = {
             ...getBlockBackgroundSx(props),
           }}
         >
-          {sectionHeading(props.title, props.subtitle, "left", props.linkColor)}
+          {sectionHeading(props.title, props.subtitle)}
           <GenericEmbedFrame {...props} />
         </Box>
       ),
@@ -1561,7 +1495,7 @@ export const designConfig = {
             ...getBlockBackgroundSx(props),
           }}
           >
-            {sectionHeading(props.title, props.subtitle, "left", props.linkColor)}
+            {sectionHeading(props.title, props.subtitle)}
             <Grid container spacing={{ xs: 1.1, md: 1.4 }}>
               {(Array.isArray(props.embeds) ? props.embeds : []).map((embed, index) => (
                 <Grid key={`${embed.title || "embed"}-${index}`} size={columnSize}>
@@ -1625,16 +1559,15 @@ function createDefaultRootProps() {
     pageTitle: "Softu",
     pageDescription: "",
     backgroundMode: "theme",
-    backgroundColor: "#e2e9f3",
+    backgroundColor: "#fff1a8",
     backgroundGradient: "",
     backgroundImage: "",
     backgroundPosition: "center center",
     backgroundSize: "cover",
     backgroundAttachment: "scroll",
     darkBackgroundMode: "auto",
-    darkBackgroundColor: "#0f172a",
-    darkBackgroundGradient:
-      "radial-gradient(circle at 14% 12%, rgba(212,107,140,0.14), transparent 36%), radial-gradient(circle at 86% 14%, rgba(121,163,230,0.14), transparent 44%), #0f172a",
+    darkBackgroundColor: "#101010",
+    darkBackgroundGradient: "#101010",
     darkBackgroundImage: "",
     textColor: "",
     darkTextColor: "",

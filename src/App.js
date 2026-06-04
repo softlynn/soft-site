@@ -1,11 +1,10 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { HashRouter, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { HashRouter, Route, Routes, useParams } from "react-router-dom";
 import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
 import { CssBaseline, styled } from "@mui/material";
 import Loading from "./utils/Loading";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import ThemeModeToggle from "./utils/ThemeModeToggle";
 import { ThemeModeContext } from "./utils/ThemeModeContext";
 import { DesignProvider } from "./design/DesignContext";
 
@@ -33,18 +32,18 @@ const buildTheme = (mode) => {
     palette: {
       mode,
       background: {
-        default: isDark ? "#0F172A" : "#E2E9F3",
+        default: "var(--soft-bg)",
         paper: isDark ? "rgba(20,28,44,0.72)" : "rgba(255,255,255,0.72)",
       },
       primary: {
-        main: isDark ? "#E7EFFA" : "#132138",
+        main: isDark ? "#f4f1e7" : "#1f1a12",
       },
       secondary: {
-        main: "#D46B8C",
+        main: "#d38f38",
       },
       text: {
-        primary: isDark ? "#E7EFFA" : "#132138",
-        secondary: isDark ? "#A9B8D1" : "#395473",
+        primary: isDark ? "#f4f1e7" : "#1f1a12",
+        secondary: isDark ? "#c9c2b2" : "#6f5533",
       },
       divider: isDark ? "rgba(167,187,219,0.12)" : "rgba(19,33,56,0.10)",
       warning: {
@@ -55,27 +54,25 @@ const buildTheme = (mode) => {
       borderRadius: 18,
     },
     typography: {
-      fontFamily: '"Manrope", "Segoe UI", sans-serif',
-      h1: { fontFamily: '"Space Grotesk", "Manrope", sans-serif', fontWeight: 700 },
-      h2: { fontFamily: '"Space Grotesk", "Manrope", sans-serif', fontWeight: 700 },
-      h3: { fontFamily: '"Space Grotesk", "Manrope", sans-serif', fontWeight: 700 },
-      h4: { fontFamily: '"Space Grotesk", "Manrope", sans-serif', fontWeight: 700 },
-      h5: { fontFamily: '"Space Grotesk", "Manrope", sans-serif', fontWeight: 700 },
-      h6: { fontFamily: '"Space Grotesk", "Manrope", sans-serif', fontWeight: 700 },
-      button: { textTransform: "none", fontWeight: 700, letterSpacing: "0.01em" },
+      fontFamily: '"Poppins", "Manrope", "Segoe UI", sans-serif',
+      h1: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
+      h2: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
+      h3: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
+      h4: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
+      h5: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
+      h6: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
+      button: { textTransform: "none", fontWeight: 700, letterSpacing: 0 },
     },
     components: {
       MuiCssBaseline: {
         styleOverrides: {
           body: {
-            background: isDark
-              ? "radial-gradient(circle at 14% 10%, rgba(212,107,140,0.10), transparent 38%), radial-gradient(circle at 86% 14%, rgba(89,145,226,0.16), transparent 46%), #0F172A"
-              : "radial-gradient(circle at 15% 18%, rgba(212,107,140,0.14), transparent 38%), radial-gradient(circle at 82% 12%, rgba(89,145,226,0.16), transparent 46%), #E2E9F3",
-            color: isDark ? "#E7EFFA" : "#132138",
+            background: "var(--soft-bg)",
+            color: isDark ? "#f4f1e7" : "#1f1a12",
           },
           "::selection": {
-            backgroundColor: alpha("#D46B8C", isDark ? 0.34 : 0.26),
-            color: isDark ? "#F8FBFF" : "#132138",
+            backgroundColor: alpha("#d38f38", isDark ? 0.34 : 0.28),
+            color: isDark ? "#f8f4ea" : "#1f1a12",
           },
         },
       },
@@ -247,7 +244,6 @@ export default function App() {
           <HashRouter>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <Parent>
-                <RouteAwareOverlays />
                 <Suspense fallback={<Loading />}>
                   <Routes>
                   <Route
@@ -296,12 +292,7 @@ export default function App() {
                   <Route
                     exact
                     path="/:pageSlug"
-                    element={
-                      <>
-                        <Navbar />
-                        <DynamicEditablePage />
-                      </>
-                    }
+                    element={<DynamicPageOrVod />}
                   />
                   <Route path="*" element={<NotFound />} />
                   </Routes>
@@ -315,81 +306,15 @@ export default function App() {
   );
 }
 
-function DynamicEditablePage() {
+function DynamicPageOrVod() {
   const { pageSlug } = useParams();
-  return <EditablePage path={`/${pageSlug || ""}`} />;
-}
-
-function RouteAwareOverlays() {
-  const location = useLocation();
-  const path = location.pathname || "/";
-  const isViewerRoute = path.startsWith("/youtube/") || path.startsWith("/cdn/") || path.startsWith("/games/");
-  const showFloatingToggle = !isViewerRoute;
-  const [liftFloatingToggle, setLiftFloatingToggle] = useState(false);
-
-  useEffect(() => {
-    if (!showFloatingToggle || typeof document === "undefined") {
-      setLiftFloatingToggle(false);
-      return undefined;
-    }
-
-    let observer = null;
-    let retryTimer = null;
-    let retries = 0;
-    let disposed = false;
-
-    const attachObserver = () => {
-      if (disposed || typeof window === "undefined" || typeof window.IntersectionObserver === "undefined") return;
-      const footer = document.querySelector("footer");
-      if (!footer) {
-        if (retries < 12) {
-          retries += 1;
-          retryTimer = window.setTimeout(attachObserver, 250);
-        }
-        return;
-      }
-
-      observer = new window.IntersectionObserver(
-        (entries) => {
-          const entry = entries[0];
-          setLiftFloatingToggle(Boolean(entry?.isIntersecting));
-        },
-        {
-          root: null,
-          threshold: 0,
-          rootMargin: "0px 0px 96px 0px",
-        }
-      );
-      observer.observe(footer);
-    };
-
-    setLiftFloatingToggle(false);
-    attachObserver();
-
-    return () => {
-      disposed = true;
-      if (retryTimer) window.clearTimeout(retryTimer);
-      if (observer) observer.disconnect();
-    };
-  }, [path, showFloatingToggle]);
-
-  const footerAwareBottom = liftFloatingToggle ? { xs: 52, md: 62 } : { xs: 10, md: 14 };
-
+  if (/^\d+$/.test(String(pageSlug || ""))) {
+    return <YoutubeVod />;
+  }
   return (
     <>
-      {showFloatingToggle && (
-        <ThemeModeToggle
-          announceKey={`floating-${path}`}
-          sx={{
-            position: "fixed",
-            bottom: footerAwareBottom,
-            left: { xs: 10, md: 14 },
-            zIndex: 1500,
-            width: 42,
-            height: 42,
-          }}
-        />
-      )}
+      <Navbar />
+      <EditablePage path={`/${pageSlug || ""}`} />
     </>
   );
 }

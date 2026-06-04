@@ -1,38 +1,68 @@
-import { styled, Typography, Box } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import CustomLink from "./CustomLink";
-import Logo from "../assets/logo.png";
 import { BRAND_NAME } from "../config/site";
+import { useSiteDesign } from "../design/DesignContext";
 
-const NotFound = styled((props) => {
+export default function NotFound() {
+  const { design } = useSiteDesign();
+  const settings = design.settings || {};
+  const imageUrl = String(settings.notFoundImageUrl || "").trim();
+  const title = settings.notFoundTitle || "404";
+  const body = settings.notFoundBody || "this page is not here";
+  const buttonLabel = settings.notFoundButtonLabel || "return home";
+
   document.title = `Not Found - ${BRAND_NAME}`;
-  return (
-    <div {...props}>
-      <Box className="soft-glass soft-shimmer" sx={{ px: 3, py: 2.5, borderRadius: "24px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <img src={Logo} alt="" style={{ height: "auto", maxWidth: "160px" }} />
-        <Typography variant="h6" sx={{ mt: 1.2, color: "text.primary" }}>
-          lost in the clouds
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 0.5, color: "text.secondary" }}>
-          this route is not in the archive
-        </Typography>
-      </Box>
-      <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
-        <CustomLink href="/">
-          <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 700 }}>
-            Return Home
-          </Typography>
-        </CustomLink>
-      </div>
-    </div>
-  );
-})`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  width: 100%;
-  padding: 1rem;
-`;
 
-export default NotFound;
+  return (
+    <Box
+      sx={{
+        minHeight: "100%",
+        width: "100%",
+        display: "grid",
+        placeItems: "center",
+        px: 2,
+        py: 5,
+        background: "var(--soft-bg)",
+      }}
+    >
+      <Box sx={{ textAlign: "center", maxWidth: 560 }}>
+        {imageUrl && (
+          <Box
+            component="img"
+            src={imageUrl}
+            alt=""
+            sx={{
+              display: "block",
+              width: "min(220px, 58vw)",
+              height: "auto",
+              mx: "auto",
+              mb: 2,
+              borderRadius: "18px",
+            }}
+          />
+        )}
+        <Typography
+          variant="h1"
+          sx={{
+            color: "var(--soft-text)",
+            fontFamily: "var(--soft-brand-font)",
+            fontSize: { xs: "3rem", sm: "4rem" },
+            lineHeight: 1,
+            letterSpacing: 0,
+            textTransform: "lowercase",
+          }}
+        >
+          {title}
+        </Typography>
+        <Typography variant="body1" sx={{ color: "var(--soft-muted)", mt: 1, mb: 2 }}>
+          {body}
+        </Typography>
+        <CustomLink href="/">
+          <Button variant="outlined" sx={{ borderRadius: "999px", px: 2 }}>
+            {buttonLabel}
+          </Button>
+        </CustomLink>
+      </Box>
+    </Box>
+  );
+}

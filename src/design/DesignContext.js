@@ -54,13 +54,28 @@ export function DesignProvider({ children }) {
       root.style.setProperty(name, String(value || fallback));
     };
 
-    setVar("--soft-body-font", settings.bodyFontFamily, "\"Manrope\", \"Segoe UI\", sans-serif");
-    setVar("--soft-heading-font", settings.headingFontFamily, "\"Space Grotesk\", \"Manrope\", sans-serif");
-    setVar("--soft-button-font", settings.buttonFontFamily, "\"Manrope\", \"Segoe UI\", sans-serif");
-    setVar("--soft-salmon", settings.accentColor, "#d46b8c");
-    setVar("--soft-salmon-deep", settings.accentColor, "#c05779");
-    setVar("--soft-blue", settings.secondaryAccentColor, "#79a3e6");
-    setVar("--soft-blue-deep", settings.secondaryAccentColor, "#5a84cf");
+    setVar("--soft-bg", settings.backgroundColor, "#fff1a8");
+    setVar("--soft-body-font", settings.bodyFontFamily, "\"Poppins\", \"Manrope\", \"Segoe UI\", sans-serif");
+    setVar("--soft-heading-font", settings.headingFontFamily, "\"Poppins\", \"Manrope\", sans-serif");
+    setVar("--soft-brand-font", settings.brandFontFamily, "\"Poppins\", \"Manrope\", sans-serif");
+    setVar("--soft-button-font", settings.buttonFontFamily, "\"Poppins\", \"Manrope\", \"Segoe UI\", sans-serif");
+    setVar("--soft-salmon", settings.accentColor, "#d38f38");
+    setVar("--soft-salmon-deep", settings.accentColor, "#b97425");
+    setVar("--soft-blue", settings.secondaryAccentColor, "#607fca");
+    setVar("--soft-blue-deep", settings.secondaryAccentColor, "#4568b6");
+
+    const faviconUrl = String(settings.faviconUrl || "").trim();
+    if (faviconUrl) {
+      const href = faviconUrl.startsWith("/") ? `${process.env.PUBLIC_URL || ""}${faviconUrl}` : faviconUrl;
+      let link = document.querySelector('link[rel="icon"]');
+      if (!link) {
+        link = document.createElement("link");
+        link.setAttribute("rel", "icon");
+        document.head.appendChild(link);
+      }
+      link.setAttribute("type", faviconUrl.endsWith(".ico") ? "image/x-icon" : "image/png");
+      link.setAttribute("href", href);
+    }
   }, [design]);
 
   const value = useMemo(

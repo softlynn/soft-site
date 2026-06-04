@@ -34,4 +34,3 @@ export default function EditablePage({ path }) {
     </Box>
   );
 }
-

@@ -1,19 +1,11 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useMemo } from "react";
 import { IconButton, Tooltip } from "@mui/material";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import { ThemeModeContext } from "./ThemeModeContext";
 
-export default function ThemeModeToggle({ sx = {}, variant = "floating", size = "small", announceKey = "default" }) {
+export default function ThemeModeToggle({ sx = {}, variant = "floating", size = "small" }) {
   const { themeMode, toggleThemeMode } = useContext(ThemeModeContext);
-  const [announce, setAnnounce] = useState(true);
-
-  useEffect(() => {
-    setAnnounce(true);
-    const timer = window.setTimeout(() => setAnnounce(false), 2200);
-    return () => window.clearTimeout(timer);
-  }, [announceKey]);
-
   const label = useMemo(() => (themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"), [themeMode]);
 
   return (
@@ -21,7 +13,7 @@ export default function ThemeModeToggle({ sx = {}, variant = "floating", size = 
       <IconButton
         onClick={toggleThemeMode}
         color="primary"
-        className={`soft-theme-toggle soft-theme-toggle--${variant}${announce ? " is-announce" : ""}`}
+        className={`soft-theme-toggle soft-theme-toggle--${variant}`}
         sx={sx}
         size={size}
         aria-label={label}
