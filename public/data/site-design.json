@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-04T19:53:43.203Z",
+  "updatedAt": "2026-06-04T19:55:10.866Z",
   "settings": {
     "headerBrandText": "soft",
     "headerTagline": "",
@@ -101,10 +101,10 @@
               "titleFontFamily": "inherit",
               "titleFontSize": 12,
               "backgroundColor": "",
-              "sideImageUrl": "/uploads/design/5-20-26-softucord-mpzwgzv0.png",
+              "sideImageUrl": "/uploads/design/5-20-26-pfp-mpzwylu2.png",
               "sideImageAlt": "",
               "sideImagePosition": "left",
-              "sideImageWidth": 220,
+              "sideImageWidth": 301,
               "customClassName": "",
               "id": "TextBlock-22687c0d-1e4d-4096-9c05-d6882ef08394",
               "padding": "none",
@@ -127,28 +127,6 @@
               "customClassName": "",
               "id": "RecentVods-97507a2b-fdbb-4f23-bbc1-61151cf72854",
               "backgroundSize": "cover"
-            }
-          },
-          {
-            "type": "EmbedGrid",
-            "props": {
-              "title": "Embeds",
-              "subtitle": "",
-              "columns": "2",
-              "surface": "glass",
-              "backgroundColor": "",
-              "embeds": [
-                {
-                  "title": "Embed",
-                  "src": "https://open.spotify.com/playlist/39yiDX8UItwk0hakJdFM93?si=5de0d0c5a2174dde",
-                  "height": 352,
-                  "aspectRatio": "custom",
-                  "allow": "",
-                  "sandbox": ""
-                }
-              ],
-              "customClassName": "",
-              "id": "EmbedGrid-788ae386-1268-4c54-88c5-06fa4d9368f3"
             }
           }
         ],
