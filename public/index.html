@@ -2,20 +2,13 @@
 <html lang="en" style="background-color: #fff1a8">
   <head>
     <meta charset="utf-8" />
+    <base href="/" />
     <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#FFF1A8" />
     <script>
       (function () {
         try {
-          var redirect = sessionStorage.getItem("softu-spa-redirect");
-          if (redirect) {
-            sessionStorage.removeItem("softu-spa-redirect");
-            window.history.replaceState(null, "", redirect);
-          } else if (window.location.hash && window.location.hash.indexOf("#/") === 0) {
-            var nextPath = window.location.hash.slice(1);
-            window.history.replaceState(null, "", nextPath);
-          }
           var saved = localStorage.getItem("softu-theme-mode");
           var mode = saved === "light" || saved === "dark" ? saved : "light";
           document.documentElement.setAttribute("data-soft-theme", mode);
