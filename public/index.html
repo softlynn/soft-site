@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="en" style="background-color: #e2e9f3">
+<html lang="en" style="background-color: #fff1a8">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#E2E9F3" />
+    <meta name="theme-color" content="#FFF1A8" />
     <script>
       (function () {
         try {
           var saved = localStorage.getItem("softu-theme-mode");
           var mode = saved === "light" || saved === "dark" ? saved : "light";
           document.documentElement.setAttribute("data-soft-theme", mode);
-          document.documentElement.style.backgroundColor = mode === "dark" ? "#0f172a" : "#e2e9f3";
+          document.documentElement.style.backgroundColor = mode === "dark" ? "#101010" : "#fff1a8";
         } catch (e) {}
       })();
     </script>
@@ -26,7 +26,7 @@
     -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Poppins:wght@300;400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <title>Softu</title>
     <meta name="description" content="Watch Softu's VOD archive with chat replay." />
