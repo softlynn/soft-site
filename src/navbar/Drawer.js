@@ -12,7 +12,7 @@ export default function DrawerComponent(props) {
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <Box sx={{ p: 2, pb: 1 }}>
           <Typography variant="subtitle2" sx={{ color: "text.secondary", letterSpacing: "0.04em" }}>
-            Softu
+            soft
           </Typography>
           <Typography variant="h6">Navigation</Typography>
         </Box>

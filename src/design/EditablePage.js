@@ -23,8 +23,10 @@ export default function EditablePage({ path }) {
   if (loading && !page) return <Loading />;
   if (!page || page.type !== "puck") return <NotFound />;
 
+  const isHomePage = page.path === "/";
+
   return (
-    <Box className="soft-editable-page-scroll" sx={{ minHeight: 0, height: "100%", overflowY: "auto" }}>
+    <Box className="soft-editable-page-scroll" sx={{ minHeight: 0, height: "100%", overflowY: isHomePage ? "hidden" : "auto" }}>
       <Box sx={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
         <Box sx={{ flex: "1 0 auto" }}>
           <Render config={designConfig} data={page.puck} metadata={{ page, design }} />

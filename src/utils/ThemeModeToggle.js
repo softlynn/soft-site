@@ -6,7 +6,7 @@ import { ThemeModeContext } from "./ThemeModeContext";
 
 export default function ThemeModeToggle({ sx = {}, variant = "floating", size = "small" }) {
   const { themeMode, toggleThemeMode } = useContext(ThemeModeContext);
-  const label = useMemo(() => (themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"), [themeMode]);
+  const label = useMemo(() => (themeMode === "dark" ? "light" : "dark"), [themeMode]);
 
   return (
     <Tooltip title={label}>

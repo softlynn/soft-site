@@ -1,10 +1,10 @@
-# Softu Site Design Intentions
+# soft Site Design Intentions
 
 Last updated: 2026-06-04
 
 ## Direction
 
-Softu should feel like a personal creator hub, not a dashboard or marketing site. The public shell is intentionally sparse: lowercase `soft` wordmark at top left, plain social icons at top right, pastel yellow background in light mode, and a near-black dark mode.
+soft should feel like a personal creator hub, not a dashboard or marketing site. The public shell is intentionally sparse: lowercase `soft` wordmark at top left, plain social icons at top right, pastel yellow background in light mode, and a near-black dark mode.
 
 The site should stay quiet. Avoid heavy chrome, glassy stacked cards, large animated decorations, loading GIFs, or animated header interactions. Hover states should be understated: small opacity, color, or one-pixel lift changes.
 
@@ -24,16 +24,15 @@ Changing these settings should keep the site cohesive across editable pages, VOD
 The header is not a framed header anymore. It is a simple top strip:
 
 - Top-left brand text only.
-- Top-right socials and a simple dark/light toggle.
+- Top-right socials ordered Twitch, Twitter, YouTube, Discord.
+- Bottom-left simple dark/light toggle.
 - Optional VOD icon button may be enabled in admin, but the primary path to VODs should be an editable page button or Recent VODs block.
 
-Admin access lives on the footer text. Clicking `softu © 2026` prompts for the admin password and opens `/admin`.
+Admin access lives on the footer text. Clicking `soft © 2026` prompts for the admin password and opens `/admin`.
 
 ## Footer
 
-Default footer: centered `softu © 2026`.
-
-VOD/archive/player footer: centered `softu © 2026 ✦ backend by op`, where `op` links to `https://github.com/OP-Archives`.
+Default footer on public pages, VOD archive, and VOD player: centered `soft © 2026`.
 
 ## VOD Cards
 

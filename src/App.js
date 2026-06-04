@@ -1,8 +1,9 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { HashRouter, Route, Routes, useParams } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
 import { CssBaseline, styled } from "@mui/material";
 import Loading from "./utils/Loading";
+import ThemeModeToggle from "./utils/ThemeModeToggle";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { ThemeModeContext } from "./utils/ThemeModeContext";
@@ -55,13 +56,13 @@ const buildTheme = (mode) => {
     },
     typography: {
       fontFamily: '"Poppins", "Manrope", "Segoe UI", sans-serif',
-      h1: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
-      h2: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
-      h3: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
-      h4: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
-      h5: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
-      h6: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 700 },
-      button: { textTransform: "none", fontWeight: 700, letterSpacing: 0 },
+      h1: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 600 },
+      h2: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 600 },
+      h3: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 600 },
+      h4: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 600 },
+      h5: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 600 },
+      h6: { fontFamily: '"Poppins", "Manrope", sans-serif', fontWeight: 600 },
+      button: { textTransform: "none", fontWeight: 600, letterSpacing: 0 },
     },
     components: {
       MuiCssBaseline: {
@@ -241,9 +242,10 @@ export default function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <DesignProvider>
-          <HashRouter>
+          <BrowserRouter>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <Parent>
+                <RouteAwareOverlays />
                 <Suspense fallback={<Loading />}>
                   <Routes>
                   <Route
@@ -299,7 +301,7 @@ export default function App() {
                 </Suspense>
               </Parent>
             </LocalizationProvider>
-          </HashRouter>
+          </BrowserRouter>
         </DesignProvider>
       </ThemeProvider>
     </ThemeModeContext.Provider>
@@ -316,6 +318,26 @@ function DynamicPageOrVod() {
       <Navbar />
       <EditablePage path={`/${pageSlug || ""}`} />
     </>
+  );
+}
+
+function RouteAwareOverlays() {
+  const location = useLocation();
+  const path = location.pathname || "/";
+  const isViewerRoute = path.startsWith("/youtube/") || path.startsWith("/cdn/") || path.startsWith("/games/") || /^\/\d+$/.test(path);
+  if (isViewerRoute) return null;
+
+  return (
+    <ThemeModeToggle
+      sx={{
+        position: "fixed",
+        bottom: { xs: 12, md: 18 },
+        left: { xs: 12, md: 22 },
+        zIndex: 1500,
+        width: 42,
+        height: 42,
+      }}
+    />
   );
 }
 

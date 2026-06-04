@@ -1,15 +1,23 @@
 import { Box, SvgIcon, Tooltip, Typography } from "@mui/material";
 import TwitterIcon from "@mui/icons-material/Twitter";
-import RedditIcon from "@mui/icons-material/Reddit";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import CustomLink from "../utils/CustomLink";
-import ThemeModeToggle from "../utils/ThemeModeToggle";
 import { SITE_TITLE, SOCIAL_LINKS } from "../config/site";
 import { useSiteDesign } from "../design/DesignContext";
 
 const socials = [
-  { key: "reddit", path: SOCIAL_LINKS.reddit, icon: <RedditIcon />, label: "Reddit" },
+  {
+    key: "twitch",
+    path: SOCIAL_LINKS.twitch,
+    icon: (
+      <SvgIcon>
+        <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" />
+      </SvgIcon>
+    ),
+    label: "Twitch",
+  },
+  { key: "twitter", path: SOCIAL_LINKS.twitter, icon: <TwitterIcon />, label: "Twitter" },
   { key: "youtube", path: SOCIAL_LINKS.youtube, icon: <YouTubeIcon />, label: "YouTube" },
   {
     key: "discord",
@@ -21,32 +29,22 @@ const socials = [
     ),
     label: "Discord",
   },
-  { key: "twitter", path: SOCIAL_LINKS.twitter, icon: <TwitterIcon />, label: "X" },
-  {
-    key: "twitch",
-    path: SOCIAL_LINKS.twitch,
-    icon: (
-      <SvgIcon>
-        <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" />
-      </SvgIcon>
-    ),
-    label: "Twitch",
-  },
 ].filter(({ path }) => Boolean(path));
 
 const socialButtonSx = {
-  width: 34,
-  height: 34,
+  width: { xs: 40, sm: 44, md: 46 },
+  height: { xs: 40, sm: 44, md: 46 },
   display: "grid",
   placeItems: "center",
   color: "var(--soft-text)",
   borderRadius: "999px",
-  transition: "background-color 140ms ease, color 140ms ease, transform 140ms ease",
+  transition: "background-color 140ms ease, color 140ms ease, transform 140ms ease, opacity 140ms ease",
   "& svg": {
-    fontSize: 19,
+    fontSize: { xs: 22, sm: 24, md: 25 },
   },
   "&:hover": {
-    backgroundColor: "rgba(255,255,255,0.35)",
+    backgroundColor: "rgba(255,255,255,0.28)",
+    opacity: 0.82,
     transform: "translateY(-1px)",
   },
 };
@@ -67,19 +65,21 @@ export default function Navbar() {
         alignItems: "center",
         justifyContent: "space-between",
         gap: 1.5,
-        px: { xs: 1.4, sm: 2.1, md: 2.8 },
-        py: { xs: 1.25, sm: 1.6 },
+        px: { xs: 2.4, sm: 4.2, md: 6.5, lg: 8.5 },
+        pt: { xs: 2, sm: 2.5, md: 3 },
+        pb: { xs: 0.4, sm: 0.6 },
+        background: "transparent",
       }}
     >
-      <CustomLink href="/" color="inherit" aria-label="Softu home">
+      <CustomLink href="/" color="inherit" aria-label="soft home">
         <Typography
           component="span"
           sx={{
             display: "block",
             color: "var(--soft-text)",
             fontFamily: settings.brandFontFamily || "var(--soft-brand-font)",
-            fontSize: { xs: "1.55rem", sm: "1.75rem" },
-            fontWeight: 700,
+            fontSize: { xs: "1.85rem", sm: "2.1rem", md: "2.25rem" },
+            fontWeight: 500,
             lineHeight: 1,
             letterSpacing: 0,
             textTransform: "lowercase",
@@ -91,7 +91,7 @@ export default function Navbar() {
         </Typography>
       </CustomLink>
 
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: { xs: 0.2, sm: 0.45 }, minWidth: 0 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: { xs: 0.4, sm: 0.65, md: 0.8 }, minWidth: 0 }}>
         {showVodsButton && (
           <Tooltip title="VODs">
             <CustomLink href="/vods" aria-label="VODs">
@@ -109,7 +109,6 @@ export default function Navbar() {
               </CustomLink>
             </Tooltip>
           ))}
-        <ThemeModeToggle variant="inline" sx={{ width: 34, height: 34, boxShadow: "none" }} />
       </Box>
     </Box>
   );

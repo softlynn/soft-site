@@ -750,11 +750,11 @@ export default function Vods() {
                             fontSize: { xs: "2.05rem", sm: "2.8rem", md: "3.2rem" },
                             lineHeight: 0.96,
                             color: "primary.main",
-                            letterSpacing: "-0.03em",
+                            letterSpacing: 0,
                             textTransform: "lowercase",
                           }}
                         >
-                          softu
+                          soft
                         </Typography>
                         <Typography
                           variant="h4"
@@ -885,7 +885,7 @@ export default function Vods() {
                     <Box sx={{ borderRadius: "14px", overflow: "hidden", mx: "auto" }}>
                       <iframe
                         data-testid="embed-iframe"
-                        title="softu stream playlist"
+                        title="soft stream playlist"
                         src={SPOTIFY_PLAYLIST_EMBED_URL}
                         width="100%"
                         height="352"
@@ -902,7 +902,7 @@ export default function Vods() {
                     </Typography>
                     <Box sx={{ borderRadius: "14px", overflow: "hidden", mx: "auto", maxWidth: "350px" }}>
                       <iframe
-                        title="softu discord server"
+                        title="soft discord server"
                         src={DISCORD_WIDGET_EMBED_URL}
                         width="100%"
                         height="352"
