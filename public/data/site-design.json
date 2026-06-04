@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-04T19:40:33.644Z",
+  "updatedAt": "2026-06-04T19:41:29.037Z",
   "settings": {
     "headerBrandText": "soft",
     "headerTagline": "",
@@ -87,12 +87,12 @@
             "type": "TextBlock",
             "props": {
               "eyebrow": "",
-              "title": "Text block",
-              "body": "Write something here.",
-              "align": "left",
+              "title": "credits",
+              "body": "keyart ✦ [soft](https://x.com/softuwo)\nemotes ✦ [yam](https://x.com/no_7error)",
+              "align": "center",
               "width": "normal",
               "surface": "transparent",
-              "animation": "fade",
+              "animation": "float",
               "fontFamily": "inherit",
               "fontSize": 16,
               "fontWeight": "400",
@@ -103,7 +103,7 @@
               "backgroundColor": "",
               "sideImageUrl": "/uploads/design/5-20-26-softucord-mpzwgzv0.png",
               "sideImageAlt": "",
-              "sideImagePosition": "none",
+              "sideImagePosition": "left",
               "sideImageWidth": 220,
               "customClassName": "",
               "id": "TextBlock-22687c0d-1e4d-4096-9c05-d6882ef08394"
