@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-04T19:53:30.198Z",
+  "updatedAt": "2026-06-04T19:53:43.203Z",
   "settings": {
     "headerBrandText": "soft",
     "headerTagline": "",
@@ -140,7 +140,7 @@
               "embeds": [
                 {
                   "title": "Embed",
-                  "src": "<iframe data-testid=\"embed-iframe\" style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator&theme=0\" width=\"100%\" height=\"352\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>",
+                  "src": "https://open.spotify.com/playlist/39yiDX8UItwk0hakJdFM93?si=5de0d0c5a2174dde",
                   "height": 352,
                   "aspectRatio": "custom",
                   "allow": "",
