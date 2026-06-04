@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { BrowserRouter, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
 import { CssBaseline, styled } from "@mui/material";
 import Loading from "./utils/Loading";
@@ -245,6 +245,7 @@ export default function App() {
           <BrowserRouter>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <Parent>
+                <SpaRedirectHandler />
                 <RouteAwareOverlays />
                 <Suspense fallback={<Loading />}>
                   <Routes>
@@ -319,6 +320,33 @@ function DynamicPageOrVod() {
       <EditablePage path={`/${pageSlug || ""}`} />
     </>
   );
+}
+
+function SpaRedirectHandler() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let target = "";
+    try {
+      target = window.sessionStorage.getItem("softu-spa-redirect") || "";
+      if (target) {
+        window.sessionStorage.removeItem("softu-spa-redirect");
+      }
+    } catch (error) {
+      target = "";
+    }
+    if (!target && window.location.hash && window.location.hash.startsWith("#/")) {
+      target = window.location.hash.slice(1);
+    }
+    if (!target) return;
+
+    const parsed = new URL(target, window.location.origin);
+    const nextPath = `${parsed.pathname}${parsed.search}`;
+    navigate(nextPath || "/", { replace: true });
+  }, [navigate]);
+
+  return null;
 }
 
 function RouteAwareOverlays() {
