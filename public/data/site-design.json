@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-04T19:45:08.426Z",
+  "updatedAt": "2026-06-04T19:53:30.198Z",
   "settings": {
     "headerBrandText": "soft",
     "headerTagline": "",
@@ -20,7 +20,7 @@
     "brandFontFamily": "\"Poppins\", \"Manrope\", sans-serif",
     "buttonFontFamily": "\"Poppins\", \"Manrope\", \"Segoe UI\", sans-serif",
     "accentColor": "#ff944d",
-    "secondaryAccentColor": "#fe9aec",
+    "secondaryAccentColor": "#fed99a",
     "footerEnabled": true,
     "footerText": "soft © 2026",
     "footerLink1Label": "",
@@ -34,10 +34,10 @@
     "footerSurface": "transparent",
     "footerVodCreditLabel": "",
     "footerVodCreditHref": "",
-    "vodCardStyle": "bubble",
+    "vodCardStyle": "glass",
     "vodThumbnailShape": "soft",
     "vodThumbnailOverlay": "clean",
-    "vodWatchLabel": "Watch",
+    "vodWatchLabel": "",
     "vodShowGame": true,
     "vodAccentColor": "#eeab53",
     "notFoundTitle": "404",
@@ -109,6 +109,46 @@
               "id": "TextBlock-22687c0d-1e4d-4096-9c05-d6882ef08394",
               "padding": "none",
               "backgroundSize": "cover"
+            }
+          },
+          {
+            "type": "RecentVods",
+            "props": {
+              "title": "vods",
+              "subtitle": "",
+              "count": 4,
+              "showButton": true,
+              "surface": "glass",
+              "backgroundColor": "",
+              "width": "full",
+              "customMaxWidth": "",
+              "minHeight": 0,
+              "padding": "small",
+              "customClassName": "",
+              "id": "RecentVods-97507a2b-fdbb-4f23-bbc1-61151cf72854",
+              "backgroundSize": "cover"
+            }
+          },
+          {
+            "type": "EmbedGrid",
+            "props": {
+              "title": "Embeds",
+              "subtitle": "",
+              "columns": "2",
+              "surface": "glass",
+              "backgroundColor": "",
+              "embeds": [
+                {
+                  "title": "Embed",
+                  "src": "<iframe data-testid=\"embed-iframe\" style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/playlist/39yiDX8UItwk0hakJdFM93?utm_source=generator&theme=0\" width=\"100%\" height=\"352\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>",
+                  "height": 352,
+                  "aspectRatio": "custom",
+                  "allow": "",
+                  "sandbox": ""
+                }
+              ],
+              "customClassName": "",
+              "id": "EmbedGrid-788ae386-1268-4c54-88c5-06fa4d9368f3"
             }
           }
         ],
