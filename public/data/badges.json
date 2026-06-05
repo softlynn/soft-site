@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-05-23T22:14:03.808Z",
+  "generatedAt": "2026-06-05T19:59:03.442Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -2620,6 +2620,21 @@
       ]
     },
     {
+      "set_id": "mod-founder",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/b1d1da41-5616-42a5-b1fa-132753d29f8a/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/b1d1da41-5616-42a5-b1fa-132753d29f8a/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/b1d1da41-5616-42a5-b1fa-132753d29f8a/3",
+          "title": "Mod Founder",
+          "description": "This badge was earned by being a founding member of the Twitch Moderator Club for Mod Appreciation Day 2026.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "moderator",
       "versions": [
         {
@@ -3515,6 +3530,96 @@
       ]
     },
     {
+      "set_id": "rematch-brazil",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/7ec48e22-597f-4900-81e9-a6daa817e78f/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/7ec48e22-597f-4900-81e9-a6daa817e78f/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/7ec48e22-597f-4900-81e9-a6daa817e78f/3",
+          "title": "Rematch Brazil",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Rematch category during the Rematch Nations Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "rematch-england",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/34f1ef71-41e7-440e-9f7e-ed3a56ff8bcc/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/34f1ef71-41e7-440e-9f7e-ed3a56ff8bcc/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/34f1ef71-41e7-440e-9f7e-ed3a56ff8bcc/3",
+          "title": "Rematch England",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Rematch category during the Rematch Nations Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "rematch-france",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/0c2bf01c-5f83-459c-804c-484d42bf278a/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/0c2bf01c-5f83-459c-804c-484d42bf278a/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/0c2bf01c-5f83-459c-804c-484d42bf278a/3",
+          "title": "Rematch France",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Rematch category during the Rematch Nations Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "rematch-nations-cup",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/a0ee40aa-d779-4f2e-bfe4-850d10bf8eae/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/a0ee40aa-d779-4f2e-bfe4-850d10bf8eae/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/a0ee40aa-d779-4f2e-bfe4-850d10bf8eae/3",
+          "title": "Rematch Nations Cup",
+          "description": "This badge was earned by watching the Rematch Nations Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "rematch-nations-cup-eng",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/514cce91-edf6-4c20-9676-e1ba7431926f/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/514cce91-edf6-4c20-9676-e1ba7431926f/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/514cce91-edf6-4c20-9676-e1ba7431926f/3",
+          "title": "Rematch Nations Cup ENG",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Rematch category during the Rematch Nations Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "rematch-us",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/8d7a5df0-b8ae-4192-bc5f-d4c443406238/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/8d7a5df0-b8ae-4192-bc5f-d4c443406238/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/8d7a5df0-b8ae-4192-bc5f-d4c443406238/3",
+          "title": "Rematch US",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Rematch category during the Rematch Nations Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "revedtv-stream-awards-2025",
       "versions": [
         {
@@ -3599,6 +3704,36 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/309c197a-69ed-4c15-8226-a0992f1f5b68/3",
           "title": "Rudy",
           "description": "This Rudy badge was earned by subscribing or gifting a sub to a Monster Hunter Stories 3: Twisted Reflection streamer during its launch!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "runescape-dragon-dagger",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/0a4afdfc-7b58-4674-beb4-631766208b6d/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/0a4afdfc-7b58-4674-beb4-631766208b6d/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/0a4afdfc-7b58-4674-beb4-631766208b6d/3",
+          "title": "RuneScape Dragon Dagger",
+          "description": "This badge was awarded to people who viewed the OldSchoolRS livestream of the Deadman All Stars event Finale. It was added to promote Old School RuneScape's Deadman All Stars event.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "runescape-skull",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/7f382386-e3ce-4c3d-8c23-464851415321/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/7f382386-e3ce-4c3d-8c23-464851415321/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/7f382386-e3ce-4c3d-8c23-464851415321/3",
+          "title": "RuneScape Skull",
+          "description": "This badge was awarded to people who gifted a subscription to any eligible channel (meaning with drops enabled) streaming in the Old School RuneScape category. It was added to promote Old School RuneScape's Deadman All Stars event.",
           "click_action": null,
           "click_url": null
         }
@@ -5264,6 +5399,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/544b6594-e11e-4230-8d42-d81c84002524/3",
           "title": "Went Outside",
           "description": "This badge was earned for tuning into 15 mins of IRL Takeover streams.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "wholesome-direct-2026",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/76c44199-6ad5-4bde-a1c7-65f13adf07d6/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/76c44199-6ad5-4bde-a1c7-65f13adf07d6/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/76c44199-6ad5-4bde-a1c7-65f13adf07d6/3",
+          "title": "Wholesome Direct 2026",
+          "description": "This chat badge was earned by watching 10 minutes of Wholesome Direct 2026",
           "click_action": null,
           "click_url": null
         }
