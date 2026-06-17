@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-06-13T00:59:04.336Z",
+  "generatedAt": "2026-06-16T23:59:04.140Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -5275,6 +5275,36 @@
       ]
     },
     {
+      "set_id": "two-point-museum",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/5008ac34-9165-4fc2-a87c-f7f2526c0509/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/5008ac34-9165-4fc2-a87c-f7f2526c0509/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/5008ac34-9165-4fc2-a87c-f7f2526c0509/3",
+          "title": "Two Point Museum",
+          "description": "This badge was earned by gifting one sub to a creator streaming Two Point Museum during Two Point Studio's 10th Anniversary!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "two-point-pickle",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/42c77849-e591-48dc-84e4-556438f7c5c2/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/42c77849-e591-48dc-84e4-556438f7c5c2/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/42c77849-e591-48dc-84e4-556438f7c5c2/3",
+          "title": "Two Point Pickle",
+          "description": "This badge was earned by watching Two Point Museum for 30min during Two Point Studio's 10th Anniversary!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "tyranny_1",
       "versions": [
         {
@@ -5518,7 +5548,7 @@
           "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/b1e71597-54d4-497e-9e2a-f63b01f4dc82/2",
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/b1e71597-54d4-497e-9e2a-f63b01f4dc82/3",
           "title": "YOU GOT THIS",
-          "description": "This badge was earned by watching Chat FC presented by Adidas!",
+          "description": "This badge was earned by watching Chat FC presented by adidas!",
           "click_action": "visit_url",
           "click_url": "https://www.adidas.com/us/soccer"
         }
