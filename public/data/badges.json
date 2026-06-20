@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-06-16T23:59:04.140Z",
+  "generatedAt": "2026-06-20T21:14:04.086Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -850,6 +850,51 @@
       ]
     },
     {
+      "set_id": "blossom-badge",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/c255cb27-7e04-4be1-9dee-434e85523638/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/c255cb27-7e04-4be1-9dee-434e85523638/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/c255cb27-7e04-4be1-9dee-434e85523638/3",
+          "title": "Blossom Badge Level 1",
+          "description": "Earn this badge for watching a clip, VOD or live stream 3 days a week. The badge upgrades weekly.",
+          "click_action": "visit_url",
+          "click_url": "https://help.twitch.tv/s/article/weekly-rewards"
+        },
+        {
+          "id": "2",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/d045617b-c37f-4643-9170-df05222cacc3/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/d045617b-c37f-4643-9170-df05222cacc3/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/d045617b-c37f-4643-9170-df05222cacc3/3",
+          "title": "Blossom Badge Level 2",
+          "description": "Earn this badge for watching a clip, VOD or live stream 3 days a week. The badge upgrades weekly.",
+          "click_action": "visit_url",
+          "click_url": "https://help.twitch.tv/s/article/weekly-rewards"
+        },
+        {
+          "id": "3",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/75fd2129-b0d6-4290-83f6-41740d1b7825/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/75fd2129-b0d6-4290-83f6-41740d1b7825/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/75fd2129-b0d6-4290-83f6-41740d1b7825/3",
+          "title": "Blossom Badge Level 3",
+          "description": "Earn this badge for watching a clip, VOD or live stream 3 days a week. The badge upgrades weekly.",
+          "click_action": "visit_url",
+          "click_url": "https://help.twitch.tv/s/article/weekly-rewards"
+        },
+        {
+          "id": "4",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/b00f8ff9-aeee-4c27-b974-5513f3abc91a/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/b00f8ff9-aeee-4c27-b974-5513f3abc91a/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/b00f8ff9-aeee-4c27-b974-5513f3abc91a/3",
+          "title": "Blossom Badge Level 4",
+          "description": "Earn this badge for watching a clip, VOD or live stream 3 days a week. The badge upgrades weekly.",
+          "click_action": "visit_url",
+          "click_url": "https://help.twitch.tv/s/article/weekly-rewards"
+        }
+      ]
+    },
+    {
       "set_id": "borderlands-4---c4sh",
       "versions": [
         {
@@ -1346,6 +1391,36 @@
           "description": "I earned this badge by taking part in the Destiny 2: The Final Shape Raid Race!",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/directory/category/destiny-2\t"
+        }
+      ]
+    },
+    {
+      "set_id": "detroit-android-triangle",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/69bf153a-cfa9-4290-9d00-6b1edc4dbe43/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/69bf153a-cfa9-4290-9d00-6b1edc4dbe43/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/69bf153a-cfa9-4290-9d00-6b1edc4dbe43/3",
+          "title": "Detroit Android Triangle",
+          "description": "This badge was earned by watching a streamer in the Detroit: Become Human category for 1 hour",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "detroit-blue-led",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/b3cc4258-07e4-4b3b-b37f-a9c9268853fb/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/b3cc4258-07e4-4b3b-b37f-a9c9268853fb/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/b3cc4258-07e4-4b3b-b37f-a9c9268853fb/3",
+          "title": "Detroit Blue LED",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Detroit: Become Human category",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
