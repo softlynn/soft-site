@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-06-20T21:14:04.086Z",
+  "generatedAt": "2026-06-24T11:11:36.421Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -1539,6 +1539,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/b577304e-7dc9-49f2-bee1-68caf56a91e6/3",
           "title": "Ditto",
           "description": "This badge was earned by subscribing or gifting a sub to a Pokémon Pokopia streamer during launch!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "doa6lr-kasumi",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/709a8b0c-cdf3-4a49-9f93-911376a1cb2e/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/709a8b0c-cdf3-4a49-9f93-911376a1cb2e/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/709a8b0c-cdf3-4a49-9f93-911376a1cb2e/3",
+          "title": "DOA6LR Kasumi",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Dead or Alive 6 Last Round category during the game launch!",
           "click_action": null,
           "click_url": null
         }
