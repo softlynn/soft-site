@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-06-24T11:11:36.421Z",
+  "generatedAt": "2026-06-25T17:21:03.476Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -1779,6 +1779,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/1469e9cf-14d9-4a48-a91c-81712d027439/3",
           "title": "Evo 2025",
           "description": "You have earned the Evo 2025 Badge",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "evo-las-vegas-2026",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/6838631a-037c-4dc3-b0f5-1cc15367bd53/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/6838631a-037c-4dc3-b0f5-1cc15367bd53/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/6838631a-037c-4dc3-b0f5-1cc15367bd53/3",
+          "title": "Evo Las Vegas 2026",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in a participating category during Evo Las Vegas 2026!",
           "click_action": null,
           "click_url": null
         }
