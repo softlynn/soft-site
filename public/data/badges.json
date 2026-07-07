@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-06-26T20:36:03.655Z",
+  "generatedAt": "2026-07-07T18:21:03.946Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -1794,6 +1794,96 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/6838631a-037c-4dc3-b0f5-1cc15367bd53/3",
           "title": "Evo Las Vegas 2026",
           "description": "This badge was earned by subscribing or gifting a sub to a streamer in a participating category during Evo Las Vegas 2026!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-bronze",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/40b8d131-61f0-4ae6-9f65-65a23b27c139/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/40b8d131-61f0-4ae6-9f65-65a23b27c139/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/40b8d131-61f0-4ae6-9f65-65a23b27c139/3",
+          "title": "EWC 2026 (Bronze)",
+          "description": "This badge was earned by watching one hour of the 2026 Esports World Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-diamond",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/cb874239-c790-4f58-93c2-319254d61d18/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/cb874239-c790-4f58-93c2-319254d61d18/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/cb874239-c790-4f58-93c2-319254d61d18/3",
+          "title": "EWC 2026 (Diamond)",
+          "description": "This badge was earned by watching twelve hours of the 2026 Esports World Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-gold",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/aa891ef7-b24b-49ff-ae08-13819621fc4b/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/aa891ef7-b24b-49ff-ae08-13819621fc4b/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/aa891ef7-b24b-49ff-ae08-13819621fc4b/3",
+          "title": "EWC 2026 (Gold)",
+          "description": "This badge was earned by watching three hours of the 2026 Esports World Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-platinum",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/ccd6c0c5-7854-4bc1-b196-ad13e097f2da/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/ccd6c0c5-7854-4bc1-b196-ad13e097f2da/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/ccd6c0c5-7854-4bc1-b196-ad13e097f2da/3",
+          "title": "EWC 2026 (Platinum)",
+          "description": "This badge was earned by watching six hours of the 2026 Esports World Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-silver",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/b58c52e5-ed3c-41e4-9cda-90b26aa1dbcb/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/b58c52e5-ed3c-41e4-9cda-90b26aa1dbcb/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/b58c52e5-ed3c-41e4-9cda-90b26aa1dbcb/3",
+          "title": "EWC 2026 (Silver)",
+          "description": "This badge was earned by watching two hours of the 2026 Esports World Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-ultraviolet",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/a3f5d70f-268f-498d-b0cc-db51bdf355a2/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/a3f5d70f-268f-498d-b0cc-db51bdf355a2/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/a3f5d70f-268f-498d-b0cc-db51bdf355a2/3",
+          "title": "EWC 2026 (Ultraviolet)",
+          "description": "This badge was earned by supporting a 2026 Esports World Cup co-streamer!",
           "click_action": null,
           "click_url": null
         }
