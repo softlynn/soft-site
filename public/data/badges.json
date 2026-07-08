@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-08T09:52:42.961Z",
+  "generatedAt": "2026-07-08T18:52:00.580Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -346,6 +346,21 @@
           "description": "Axiom Verge",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/directory/game/Axiom%20Verge/details"
+        }
+      ]
+    },
+    {
+      "set_id": "ayane",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/471b7cc9-875f-445b-86f6-8009cee27843/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/471b7cc9-875f-445b-86f6-8009cee27843/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/471b7cc9-875f-445b-86f6-8009cee27843/3",
+          "title": "Ayane",
+          "description": "This badge was earned by purchasing a subscription to a Dead or Alive 6: Last Round streamer during Summer Drops Fest 2026!",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -2635,6 +2650,21 @@
       ]
     },
     {
+      "set_id": "killer-inn",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/0900e6b7-23bf-4c64-b5c7-abfd7e9704e7/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/0900e6b7-23bf-4c64-b5c7-abfd7e9704e7/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/0900e6b7-23bf-4c64-b5c7-abfd7e9704e7/3",
+          "title": "Killer Inn",
+          "description": "This badge was earned by purchasing a subscription to a Killer Inn streamer during Summer Drops Fest 2026!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "kingdom-new-lands_1",
       "versions": [
         {
@@ -3394,6 +3424,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/8bebe4ce-6c15-4746-8c33-42312c250ceb/3",
           "title": "Chaos Orb",
           "description": "This badge was earned by subscribing to a streamer during Path of Exile 2's launch!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "perlica",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/c81d6782-6f5a-4c63-a00b-f041ac2cdcda/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/c81d6782-6f5a-4c63-a00b-f041ac2cdcda/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/c81d6782-6f5a-4c63-a00b-f041ac2cdcda/3",
+          "title": "Perlica",
+          "description": "This badge was earned by purchasing a subscription to an Arknights: Endfield streamer during the Half-Year Anniversary!",
           "click_action": null,
           "click_url": null
         }
