@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-07T18:21:03.946Z",
+  "generatedAt": "2026-07-08T02:21:04.086Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -1194,6 +1194,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/fb838633-6ff6-46df-98b4-9e53fcff84f6/3",
           "title": "Clips Leader 3",
           "description": "Ranked as a top clipper in this community",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "cool-cattiva",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/e3d90ca4-f274-431f-bcc0-c0f8963e6624/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/e3d90ca4-f274-431f-bcc0-c0f8963e6624/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/e3d90ca4-f274-431f-bcc0-c0f8963e6624/3",
+          "title": "Cool Cattiva",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Palworld category during Summer Drops Fest 2026!",
           "click_action": null,
           "click_url": null
         }
