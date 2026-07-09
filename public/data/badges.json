@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-08T18:52:00.580Z",
+  "generatedAt": "2026-07-09T01:01:23.784Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -2914,6 +2914,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/8a7c1d1d-12bb-40d9-9be8-0a4fdf0d870c/3",
           "title": "Mel",
           "description": "This badge was earned by subscribing or gifting a sub for a streamer in the Hades II category.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "meltan",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/bf3cca10-6aec-4143-96ce-c41d15feebf8/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/bf3cca10-6aec-4143-96ce-c41d15feebf8/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/bf3cca10-6aec-4143-96ce-c41d15feebf8/3",
+          "title": "Meltan",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Pokémon GO category in celebration of the 10th Anniversary of Pokémon GO!",
           "click_action": null,
           "click_url": null
         }
