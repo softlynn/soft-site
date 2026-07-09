@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-09T14:30:26.212Z",
+  "generatedAt": "2026-07-09T19:51:04.213Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -1614,6 +1614,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/da4c6554-4472-4949-b33b-e79164dbba0b/3",
           "title": "DragonScimmy",
           "description": "This badge was earned by subscribing or gifting a sub to any Old School RuneScape broadcast in 2025 during the launch of Sailing, OSRS’ first ever new skill!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "dream-beyond",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/2cbd5102-928f-4e99-819a-e38511752918/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/2cbd5102-928f-4e99-819a-e38511752918/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/2cbd5102-928f-4e99-819a-e38511752918/3",
+          "title": "Dream Beyond",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Dream Con category during Dream Con 2026!",
           "click_action": null,
           "click_url": null
         }
