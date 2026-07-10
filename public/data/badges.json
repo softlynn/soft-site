@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-09T19:51:04.213Z",
+  "generatedAt": "2026-07-10T22:06:04.166Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -4929,6 +4929,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/9ff55f50-2c2a-40c2-9863-158d5ac2d5fd/3",
           "title": "Survival Cup 4",
           "description": "This badge was earned by subscribing or gifting a sub to a streamer during Survival Cup 4!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "team-valor",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/8837af43-de4b-488b-b3f0-d6117b365196/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/8837af43-de4b-488b-b3f0-d6117b365196/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/8837af43-de4b-488b-b3f0-d6117b365196/3",
+          "title": "Team Valor",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Pokémon GO category in celebration of the 10th Anniversary of Pokémon GO!",
           "click_action": null,
           "click_url": null
         }
