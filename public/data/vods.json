@@ -2,8 +2,8 @@
   {
     "id": "2818524587",
     "title": "OMGOSH NO WAYY",
-    "duration": "00:16:32",
-    "thumbnail_url": "https://vod-secure.twitch.tv/_404/404_processing_640x360.png",
+    "duration": "01:54:00",
+    "thumbnail_url": "https://static-cdn.jtvnw.net/cf_vods/d2vi6trrdongqn/693c24422aebd52e51b9_softuwo_319484403936_1783889370//thumb/thumb0-640x360.jpg",
     "youtube": [
       {
         "id": "_ZFAvkPvSCA",
@@ -11,6 +11,13 @@
         "duration": 0,
         "part": 1,
         "thumbnail_url": "https://i9.ytimg.com/vi/_ZFAvkPvSCA/mqdefault.jpg?sqp=CICK0NIG&rs=AOn4CLBTUWeFP8lACdrXASQEuOlbOOUdsA"
+      },
+      {
+        "id": "-FEZmPgjH70",
+        "type": "vod",
+        "duration": 0,
+        "part": 2,
+        "thumbnail_url": "https://i9.ytimg.com/vi/-FEZmPgjH70/mqdefault.jpg?sqp=CKyi0dIG&rs=AOn4CLDlgUIGaswlLewjE8g62stigFdfow"
       }
     ],
     "stream_id": "319484403936",
@@ -20,14 +27,14 @@
       {
         "gameId": "499003",
         "start": 0,
-        "end": 993,
+        "end": 6840,
         "name": "VRChat",
         "image": "https://static-cdn.jtvnw.net/ttv-boxart/499003_IGDB-40x53.jpg"
       }
     ],
     "games": [],
     "createdAt": "2026-07-12T20:49:35Z",
-    "updatedAt": "2026-07-12T21:21:27.987Z"
+    "updatedAt": "2026-07-13T02:48:35.235Z"
   },
   {
     "id": "2816923280",
