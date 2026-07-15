@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-15T19:06:04.704Z",
+  "generatedAt": "2026-07-15T19:51:03.629Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -1644,6 +1644,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/5dfbd056-8ac1-407f-bdf3-f83183fa97ae/3",
           "title": "Dream Con 2024",
           "description": "This badge was earned by watching Dream Con 2024 or completing the post-event survey!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "dreamers",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/fe2c830a-81d6-4915-b77d-f779bcfa121b/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/fe2c830a-81d6-4915-b77d-f779bcfa121b/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/fe2c830a-81d6-4915-b77d-f779bcfa121b/3",
+          "title": "Dreamers",
+          "description": "This badge was earned by watching a streamer in the Dream Con category during Dream Con 2026!",
           "click_action": null,
           "click_url": null
         }
