@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-14T19:07:26.484Z",
+  "generatedAt": "2026-07-15T19:06:04.704Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -5481,6 +5481,36 @@
           "description": "Celebrated TwitchCon’s 10 year anniversary in 2025",
           "click_action": "visit_url",
           "click_url": "https://www.twitchcon.com/rotterdam-2025/"
+        }
+      ]
+    },
+    {
+      "set_id": "twitchcon-2026---san-diego---beachball",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/b3f69c97-a9a7-4360-bb9e-485ec8db72bb/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/b3f69c97-a9a7-4360-bb9e-485ec8db72bb/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/b3f69c97-a9a7-4360-bb9e-485ec8db72bb/3",
+          "title": "TwitchCon 2026 - San Diego - BeachBall",
+          "description": "This badge is given to anyone who purchased a 1-day ticket to TwitchCon San Diego 2026.",
+          "click_action": "visit_url",
+          "click_url": "https://twitchcon.com/san-diego-2026/?utm_source=twitch&utm_medium=chat-badge&utm_campaign=tcsd26-beachball"
+        }
+      ]
+    },
+    {
+      "set_id": "twitchcon-2026---san-diego---taco",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/aea5244a-3fb5-48f9-a17c-a377760df226/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/aea5244a-3fb5-48f9-a17c-a377760df226/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/aea5244a-3fb5-48f9-a17c-a377760df226/3",
+          "title": "TwitchCon 2026 - San Diego - Taco",
+          "description": "This badge is given to anyone who purchased a 3-day ticket to TwitchCon San Diego 2026.",
+          "click_action": "visit_url",
+          "click_url": "https://twitchcon.com/san-diego-2026/?utm_source=twitch&utm_medium=chat-badge&utm_campaign=tcsd26-taco"
         }
       ]
     },
