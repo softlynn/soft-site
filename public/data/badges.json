@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-15T19:51:03.629Z",
+  "generatedAt": "2026-07-16T01:21:06.212Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -2959,6 +2959,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/5bc8a500-12f5-42c4-86f7-a678d1f930a1/3",
           "title": "Marathon Sub Burger",
           "description": "A tasty burger for you and a friend! Tastes like meat. Isn't",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "meccha-chameleon",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/97f7f702-fde1-48a2-8992-ae0711e06819/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/97f7f702-fde1-48a2-8992-ae0711e06819/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/97f7f702-fde1-48a2-8992-ae0711e06819/3",
+          "title": "Meccha Chameleon",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Meccha Chameleon category during Summer Drops Fest 2026!",
           "click_action": null,
           "click_url": null
         }
