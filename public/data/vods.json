@@ -70,14 +70,17 @@
         "type": "vod",
         "duration": 0,
         "part": 1,
-        "thumbnail_url": "https://i9.ytimg.com/vi/_ZFAvkPvSCA/mqdefault.jpg?sqp=CICK0NIG&rs=AOn4CLBTUWeFP8lACdrXASQEuOlbOOUdsA"
+        "thumbnail_url": "https://i9.ytimg.com/vi/_ZFAvkPvSCA/mqdefault.jpg?sqp=CICK0NIG&rs=AOn4CLBTUWeFP8lACdrXASQEuOlbOOUdsA",
+        "unpublished": true,
+        "adminOrder": 1
       },
       {
         "id": "-FEZmPgjH70",
         "type": "vod",
         "duration": 0,
-        "part": 2,
-        "thumbnail_url": "https://i9.ytimg.com/vi/-FEZmPgjH70/mqdefault.jpg?sqp=CKyi0dIG&rs=AOn4CLDlgUIGaswlLewjE8g62stigFdfow"
+        "part": 1,
+        "thumbnail_url": "https://i9.ytimg.com/vi/-FEZmPgjH70/mqdefault.jpg?sqp=CKyi0dIG&rs=AOn4CLDlgUIGaswlLewjE8g62stigFdfow",
+        "adminOrder": 2
       }
     ],
     "stream_id": "319484403936",
@@ -94,7 +97,7 @@
     ],
     "games": [],
     "createdAt": "2026-07-12T20:49:35Z",
-    "updatedAt": "2026-07-13T02:48:35.235Z"
+    "updatedAt": "2026-07-21T21:51:04.397Z"
   },
   {
     "id": "2816923280",
