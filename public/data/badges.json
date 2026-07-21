@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-16T18:51:04.177Z",
+  "generatedAt": "2026-07-21T18:06:04.191Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -1869,6 +1869,96 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/40b8d131-61f0-4ae6-9f65-65a23b27c139/3",
           "title": "EWC 2026 (Bronze)",
           "description": "This badge was earned by watching one hour of the 2026 Esports World Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-co-streamer-bronze",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/22d9f0cd-02a2-41e7-8e3c-f5b2387a3a3e/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/22d9f0cd-02a2-41e7-8e3c-f5b2387a3a3e/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/22d9f0cd-02a2-41e7-8e3c-f5b2387a3a3e/3",
+          "title": "EWC 2026 Co-Streamer (Bronze)",
+          "description": "This badge was earned by co-streaming EWC 2026!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-co-streamer-diamond",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/a883985f-fd23-4365-bc80-28726a8cd735/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/a883985f-fd23-4365-bc80-28726a8cd735/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/a883985f-fd23-4365-bc80-28726a8cd735/3",
+          "title": "EWC 2026 Co-Streamer (Diamond)",
+          "description": "This badge was earned by co-streaming EWC 2026!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-co-streamer-gold",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/933df6d6-70bb-445a-8b85-c7b39af82ffd/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/933df6d6-70bb-445a-8b85-c7b39af82ffd/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/933df6d6-70bb-445a-8b85-c7b39af82ffd/3",
+          "title": "EWC 2026 Co-Streamer (Gold)",
+          "description": "This badge was earned by co-streaming EWC 2026!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-co-streamer-platinum",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/fb93617f-b5fa-46c3-8354-6d1d3460b9d2/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/fb93617f-b5fa-46c3-8354-6d1d3460b9d2/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/fb93617f-b5fa-46c3-8354-6d1d3460b9d2/3",
+          "title": "EWC 2026 Co-Streamer (Platinum)",
+          "description": "This badge was earned by co-streaming EWC 2026!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-co-streamer-silver",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/a17b6a0f-6a06-4ca2-a153-82ebb368edab/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/a17b6a0f-6a06-4ca2-a153-82ebb368edab/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/a17b6a0f-6a06-4ca2-a153-82ebb368edab/3",
+          "title": "EWC 2026 Co-Streamer (Silver)",
+          "description": "This badge was earned by co-streaming EWC 2026!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "ewc-2026-co-streamer-ultraviolet",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/548010ef-5b5b-497c-82dc-61fbb52738b5/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/548010ef-5b5b-497c-82dc-61fbb52738b5/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/548010ef-5b5b-497c-82dc-61fbb52738b5/3",
+          "title": "EWC 2026 Co-Streamer (Ultraviolet)",
+          "description": "This badge was earned by co-streaming EWC 2026!",
           "click_action": null,
           "click_url": null
         }
