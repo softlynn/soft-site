@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-22T21:06:05.517Z",
+  "generatedAt": "2026-07-22T21:36:05.023Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -1056,6 +1056,21 @@
           "description": "Bubsy: The Woolies Strike Back",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/directory/game/Bubsy:%20The%20Woolies%20Strike%20Back/details"
+        }
+      ]
+    },
+    {
+      "set_id": "budz",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/a7c72bfa-8758-4ba6-92ad-b31edcac1267/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/a7c72bfa-8758-4ba6-92ad-b31edcac1267/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/a7c72bfa-8758-4ba6-92ad-b31edcac1267/3",
+          "title": "Budz",
+          "description": "This badge was earned by subbing to /studbudz during WNBA All-Star Weekend.",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
