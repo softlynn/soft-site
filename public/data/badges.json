@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-21T18:06:04.191Z",
+  "generatedAt": "2026-07-22T21:06:05.517Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -2869,6 +2869,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/3f728095-b84d-4e7e-9eee-541ea02ddea0/3",
           "title": "La Velada V Badge",
           "description": "This badge was earned by watching La Velada V!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "la-velada-vi",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/e767e17a-252a-4047-9365-910f4f05a883/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/e767e17a-252a-4047-9365-910f4f05a883/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/e767e17a-252a-4047-9365-910f4f05a883/3",
+          "title": "La Velada VI",
+          "description": "This badge was earned by tuning in and watching La Velada VI!",
           "click_action": null,
           "click_url": null
         }
