@@ -1,0 +1,3797 @@
+{
+  "source": "twitchdownloader",
+  "twitchVodId": "2827147039",
+  "generatedAt": "2026-07-23T20:21:19.253Z",
+  "comments": [
+    {
+      "id": "cc2215ce-58f5-4bc6-b150-e1034752dfc3",
+      "created_at": "2026-07-23T17:19:07.16Z",
+      "content_offset_seconds": 8,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "hii",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "72422c9a-3054-4ea6-839d-0c2e6c8b9f81",
+      "created_at": "2026-07-23T17:19:07.599Z",
+      "content_offset_seconds": 8,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "cute",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8edfbfaf-dfa1-4063-ac3b-9e9121ab0458",
+      "created_at": "2026-07-23T17:19:26.68Z",
+      "content_offset_seconds": 27,
+      "display_name": "softuwo",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "sub-gifter",
+          "version": "5"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "Uh, wait. Reverb test, Uh.",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ad6018eb-25e9-4d33-bcce-17d4c1a6db48",
+      "created_at": "2026-07-23T17:19:28.845Z",
+      "content_offset_seconds": 30,
+      "display_name": "softuwo",
+      "user_badges": [
+        {
+          "_id": "broadcaster",
+          "version": "1"
+        },
+        {
+          "_id": "sub-gifter",
+          "version": "5"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "OK.",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "710c6921-7e8a-4d20-a3ce-93709e60134e",
+      "created_at": "2026-07-23T17:20:32.818Z",
+      "content_offset_seconds": 94,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "why you added the video of you with the pawsocks ?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6e769ca3-947b-47c1-8f6b-c8e864c20376",
+      "created_at": "2026-07-23T17:29:13.985Z",
+      "content_offset_seconds": 615,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "partner",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": " ads starting! ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " consider a sub with T1 or prime to support, get emotes, and skip the ads! see you in  2 mins!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f3301053-42d0-4db9-a0b5-e37fb76c85fa",
+      "created_at": "2026-07-23T17:29:14.777Z",
+      "content_offset_seconds": 616,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "zfreak462, thank you for following! :33",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "58c41005-1c0a-49ed-ad85-05c766150921",
+      "created_at": "2026-07-23T17:33:14.118Z",
+      "content_offset_seconds": 855,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "hi",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "47fe03a8-f216-4b37-b989-7742dbd6113b",
+      "created_at": "2026-07-23T17:33:34.274Z",
+      "content_offset_seconds": 875,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "i forgot i was hearing music",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "89357436-8dab-4628-9084-755a05fd2ae6",
+      "created_at": "2026-07-23T17:34:16.882Z",
+      "content_offset_seconds": 918,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "yeah taht too but i hear you now",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f75d5e5e-f64f-46a8-a34b-7bd4e992a022",
+      "created_at": "2026-07-23T17:35:52.206Z",
+      "content_offset_seconds": 1013,
+      "display_name": "AiokaVR",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "wow that microskirt is crazy, Hellow everyone!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "03b6ef69-3381-41af-aaee-ae403413a514",
+      "created_at": "2026-07-23T17:40:47.016Z",
+      "content_offset_seconds": 1308,
+      "display_name": "james656769",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "hi",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "85384fea-e214-416e-8544-d009df2ed615",
+      "created_at": "2026-07-23T17:41:41.79Z",
+      "content_offset_seconds": 1363,
+      "display_name": "james656769",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "how did you do that my back would be sore by now",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7ad8ee35-3f6b-494d-a103-5ca3f381984c",
+      "created_at": "2026-07-23T17:51:24.587Z",
+      "content_offset_seconds": 1945,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "yooo wassup",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4ec5365c-83af-445e-ac0b-5afa0a00aaf6",
+      "created_at": "2026-07-23T17:59:21.026Z",
+      "content_offset_seconds": 2422,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "dansi",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "27d63426-3aad-43e8-ac1e-e37b10b7643e",
+      "created_at": "2026-07-23T18:04:32.028Z",
+      "content_offset_seconds": 2733,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "dansi dansi",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6df2ec70-52c2-4e51-8094-a485775f08c5",
+      "created_at": "2026-07-23T18:09:13.915Z",
+      "content_offset_seconds": 3015,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "partner",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": " ads starting! ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " consider a sub with T1 or prime to support, get emotes, and skip the ads! see you in  2 mins!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8aa75a01-be38-4647-9822-a528e7a5f7fc",
+      "created_at": "2026-07-23T18:17:20.507Z",
+      "content_offset_seconds": 3501,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "im colorblind",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "eda21029-da23-4e0c-a065-cfce6b772ceb",
+      "created_at": "2026-07-23T18:17:22.419Z",
+      "content_offset_seconds": 3503,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "i cant do shit here",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0bc06e4e-83e6-4e17-a52a-333d9b7cc4bc",
+      "created_at": "2026-07-23T18:18:50.747Z",
+      "content_offset_seconds": 3592,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "not even close",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f3575880-b580-47b7-b7a3-8782ecdce045",
+      "created_at": "2026-07-23T18:21:52.664Z",
+      "content_offset_seconds": 3773,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "u always skip the songs i like peepoSad",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f688a5b8-f9e0-4954-84ca-3dd365c2a4a0",
+      "created_at": "2026-07-23T18:21:57.495Z",
+      "content_offset_seconds": 3778,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "coryrockstar10, thank you for following! :33",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "638693ea-53fc-459f-9308-9b53b9eda0b1",
+      "created_at": "2026-07-23T18:23:18.205Z",
+      "content_offset_seconds": 3859,
+      "display_name": "ReaperNyxie",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "hihi softu",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c01e51b8-1ff6-4b00-9310-39bc454b3b20",
+      "created_at": "2026-07-23T18:23:39.325Z",
+      "content_offset_seconds": 3880,
+      "display_name": "deav3n",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "bits",
+          "version": "1000"
+        }
+      ],
+      "user_color": "#1E90FF",
+      "message": [
+        {
+          "text": "hello soft 😄 👋👋",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "882665b4-0b33-496e-b9ed-7dd64edbd053",
+      "created_at": "2026-07-23T18:23:48.174Z",
+      "content_offset_seconds": 3889,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "hi nyx",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "619f8725-155b-4e5a-894b-03469c3264d9",
+      "created_at": "2026-07-23T18:24:20.2Z",
+      "content_offset_seconds": 3921,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "maybe you are colorblind",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ac455e57-e927-43db-b46b-09257b36588f",
+      "created_at": "2026-07-23T18:24:25.221Z",
+      "content_offset_seconds": 3926,
+      "display_name": "ReaperNyxie",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "im doing good",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "85bf6b13-dc3a-46d7-96f9-89f704eb9dad",
+      "created_at": "2026-07-23T18:24:29.413Z",
+      "content_offset_seconds": 3930,
+      "display_name": "ReaperNyxie",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "and hello everyone",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "58453c0e-1801-4e5d-adfb-5af730ef857a",
+      "created_at": "2026-07-23T18:24:40.402Z",
+      "content_offset_seconds": 3941,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "thats what i said and discover im colorblind...",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ca970d63-618e-4ac0-bf86-31b98a39d81d",
+      "created_at": "2026-07-23T18:24:46.894Z",
+      "content_offset_seconds": 3948,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "and there the case of a colorblind artist and was so fun",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "84162641-ad4d-4438-b0ef-64a382fee67f",
+      "created_at": "2026-07-23T18:25:21.455Z",
+      "content_offset_seconds": 3982,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "i yap with you too many things i cant remember specifcis",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f03f6b8e-6c79-4cd5-8cf8-27fe36a69c50",
+      "created_at": "2026-07-23T18:26:00.299Z",
+      "content_offset_seconds": 4021,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "SonofaBiscuitxD, thank you for following! :33",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b3b42fd7-af18-48c9-bc72-6b97de8d45e4",
+      "created_at": "2026-07-23T18:26:08.204Z",
+      "content_offset_seconds": 4029,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "okey",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "06ffd909-eabf-4487-bb5c-11825eacff0a",
+      "created_at": "2026-07-23T18:26:18.206Z",
+      "content_offset_seconds": 4039,
+      "display_name": "ReaperNyxie",
+      "user_badges": [],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "VV follow goal met",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1e4e13cb-b0fa-48c5-b020-675f1083d1bd",
+      "created_at": "2026-07-23T18:26:20.449Z",
+      "content_offset_seconds": 4041,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "how you are SUREEE thatyour yellow is yellow and not orange for example",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "92df6dfc-94b3-40f3-a442-05037f5bf8d1",
+      "created_at": "2026-07-23T18:27:09.189Z",
+      "content_offset_seconds": 4090,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "are you sure taht color for other is not blue ? ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        }
+      ]
+    },
+    {
+      "id": "d58f1ce6-af75-4016-a085-d4dc69cced02",
+      "created_at": "2026-07-23T18:28:40.359Z",
+      "content_offset_seconds": 4181,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "well 2 points everyone is colorblind at specifci spectrum of that and woman cheat cuz they can see more colors than man",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ce39fe10-0c14-4728-9641-45da8d453c5b",
+      "created_at": "2026-07-23T18:29:35.743Z",
+      "content_offset_seconds": 4237,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "colorblindness",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "cb4ce166-e230-49b0-8570-2ad6b5139ddd",
+      "created_at": "2026-07-23T18:29:41.325Z",
+      "content_offset_seconds": 4242,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "woman see more color spectrum than man",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "11423bd3-e23e-4ebf-b27e-10e2564f9ec5",
+      "created_at": "2026-07-23T18:29:55.152Z",
+      "content_offset_seconds": 4256,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "i dont remember numbers but was like man 18 to 26 of woman ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        }
+      ]
+    },
+    {
+      "id": "48b35c97-6bfa-4aee-a85d-a3fda28c9909",
+      "created_at": "2026-07-23T18:30:40.928Z",
+      "content_offset_seconds": 4302,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "search it im not doing that",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a8515815-b935-4085-b589-05ee77929890",
+      "created_at": "2026-07-23T18:32:45Z",
+      "content_offset_seconds": 4426,
+      "display_name": "MondrianPuppy",
+      "user_badges": [
+        {
+          "_id": "turbo",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "what world is this?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "cbeb8c26-776b-44d9-b35b-af2c699d2b2e",
+      "created_at": "2026-07-23T18:33:53.943Z",
+      "content_offset_seconds": 4495,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "i like them",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5d97dff3-6ed6-4fe3-81df-23bd340a1c9a",
+      "created_at": "2026-07-23T18:35:36.195Z",
+      "content_offset_seconds": 4597,
+      "display_name": "MondrianPuppy",
+      "user_badges": [
+        {
+          "_id": "turbo",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "ty ty!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "2a183a08-93a4-4f3d-9f10-00c39bcadaaa",
+      "created_at": "2026-07-23T18:36:06.243Z",
+      "content_offset_seconds": 4627,
+      "display_name": "MondrianPuppy",
+      "user_badges": [
+        {
+          "_id": "turbo",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "ohhh",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "dfc7a867-a191-4d5d-b800-6bfb7e655b51",
+      "created_at": "2026-07-23T18:36:12.943Z",
+      "content_offset_seconds": 4634,
+      "display_name": "MondrianPuppy",
+      "user_badges": [
+        {
+          "_id": "turbo",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "kinjaz dojo x sinostage, thank you!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "433be98b-661d-4e26-8672-6f91a2dd53a3",
+      "created_at": "2026-07-23T18:36:59.034Z",
+      "content_offset_seconds": 4680,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " imma deadlocking a bit",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d990a3d1-285d-4f75-8a11-7439cbaacd9b",
+      "created_at": "2026-07-23T18:42:43.246Z",
+      "content_offset_seconds": 5024,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "yo yo yo yo yo yo yo",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "3949fa75-634a-45bf-8a3c-1dd22cdbcc11",
+      "created_at": "2026-07-23T18:42:47.92Z",
+      "content_offset_seconds": 5029,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "wsg wsg wsg",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "61f83e88-91c6-4cae-9a02-32ac709f986a",
+      "created_at": "2026-07-23T18:42:50.603Z",
+      "content_offset_seconds": 5031,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "i misses u",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b0bc1b0a-af98-499f-8853-c763d4f70ca3",
+      "created_at": "2026-07-23T18:44:41.738Z",
+      "content_offset_seconds": 5143,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "ama be lurking fr",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6466f969-89b2-46ff-bf0f-e31af151358a",
+      "created_at": "2026-07-23T18:44:45.463Z",
+      "content_offset_seconds": 5146,
+      "display_name": "FazeOspray_",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF7F50",
+      "message": [
+        {
+          "text": "!lurk",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6e983924-adbe-4653-a559-3f4e1b4bdd1b",
+      "created_at": "2026-07-23T18:44:45.718Z",
+      "content_offset_seconds": 5147,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "FazeOspray_ is now lurking Cozy",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d61ad811-6a0f-43de-a941-1f038cd3bb56",
+      "created_at": "2026-07-23T18:46:27.008Z",
+      "content_offset_seconds": 5248,
+      "display_name": "whatsup_dogg",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#B22222",
+      "message": [
+        {
+          "text": "ur fit look fire",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ae120a06-9152-4579-bf53-8025f7cad197",
+      "created_at": "2026-07-23T18:46:52.987Z",
+      "content_offset_seconds": 5274,
+      "display_name": "whatsup_dogg",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#B22222",
+      "message": [
+        {
+          "text": "damn why can u actually dance",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "dbce7f47-1153-42fc-ba90-c46d67780014",
+      "created_at": "2026-07-23T18:47:51.526Z",
+      "content_offset_seconds": 5332,
+      "display_name": "whatsup_dogg",
+      "user_badges": [
+        {
+          "_id": "twitch-recap-2025",
+          "version": "1"
+        }
+      ],
+      "user_color": "#B22222",
+      "message": [
+        {
+          "text": "nah u must be a professional",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f967a799-088d-42d9-a762-9dcaa6f80860",
+      "created_at": "2026-07-23T18:49:14.008Z",
+      "content_offset_seconds": 5415,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "partner",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": " ads starting! ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " consider a sub with T1 or prime to support, get emotes, and skip the ads! see you in  2 mins!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c2f2ad53-13f8-4e35-bf10-b3f79e82cd92",
+      "created_at": "2026-07-23T19:11:22.276Z",
+      "content_offset_seconds": 6743,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "im being unlucky ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        }
+      ]
+    },
+    {
+      "id": "2cdfc265-e44b-4da3-b7e6-ff56b0ae2789",
+      "created_at": "2026-07-23T19:11:27.615Z",
+      "content_offset_seconds": 6748,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "all the 2v2 i found become 2v5",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f7533740-1c58-4bb1-8826-386c6a23cceb",
+      "created_at": "2026-07-23T19:12:02.824Z",
+      "content_offset_seconds": 6784,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "nah is not that ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSip",
+          "emote": {
+            "emoteID": "emotesv2_66d3a5bda2334fccb3310758456a92be"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_66d3a5bda2334fccb3310758456a92be"
+          }
+        },
+        {
+          "text": " is more the there 3 guys together all time and 2 spawns in middle of the fight",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f3589d96-7814-4d71-93ad-e6965cf91ba3",
+      "created_at": "2026-07-23T19:12:06.029Z",
+      "content_offset_seconds": 6787,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "and me in middle",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "adc3018d-f564-4c70-8baf-0d8127d5a350",
+      "created_at": "2026-07-23T19:12:22.949Z",
+      "content_offset_seconds": 6804,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "the 3v3 we had become 5v3",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "400f19f3-70a8-4dcf-98f0-a23ea8b155a0",
+      "created_at": "2026-07-23T19:15:53.29Z",
+      "content_offset_seconds": 7014,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "the game is lost ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " idk why we lost the fights when we were soahead",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "30ac63ab-a49a-4a36-a3d7-54ee19d673a3",
+      "created_at": "2026-07-23T19:16:01.782Z",
+      "content_offset_seconds": 7023,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "imma just farm ",
+          "emoticon": null
+        },
+        {
+          "text": "ninerxSleep",
+          "emote": {
+            "emoteID": "emotesv2_6d0ab21e1d504d2facb502e150cd6416"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_6d0ab21e1d504d2facb502e150cd6416"
+          }
+        },
+        {
+          "text": " the old clasic afk farming",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "72ee9fb6-e30a-4323-9eb3-0a1a45bd8e0d",
+      "created_at": "2026-07-23T19:16:19.424Z",
+      "content_offset_seconds": 7040,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "nah i dont care ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " is afk farming or inting and i think both are good",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "39f79716-70fb-44d9-8ec6-27a6e7045d99",
+      "created_at": "2026-07-23T19:16:31.723Z",
+      "content_offset_seconds": 7053,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "@FhiXerxoer_Miacord watchu playin?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "307c6b98-511a-49b7-8569-620fbe871783",
+      "created_at": "2026-07-23T19:16:36.068Z",
+      "content_offset_seconds": 7057,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "deadlock",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0bdf5b79-df51-4955-a2bc-9cf5de745c02",
+      "created_at": "2026-07-23T19:16:42.495Z",
+      "content_offset_seconds": 7063,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "softuwSip",
+          "emote": {
+            "emoteID": "emotesv2_66d3a5bda2334fccb3310758456a92be"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_66d3a5bda2334fccb3310758456a92be"
+          }
+        },
+        {
+          "text": " i think skill issue",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e9764f91-7bd4-4961-9db4-fe5dfc66503e",
+      "created_at": "2026-07-23T19:16:51.153Z",
+      "content_offset_seconds": 7072,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "what is that?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "16815edd-a5fe-4730-b6ae-c434b65eb8a7",
+      "created_at": "2026-07-23T19:17:56.531Z",
+      "content_offset_seconds": 7137,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "dont like valorant im more of a cs guy",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a7feca2e-8c77-4bce-ac5f-97056a5a71aa",
+      "created_at": "2026-07-23T19:21:10.35Z",
+      "content_offset_seconds": 7331,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "fair enough",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "10b1379e-aa69-4400-bd84-88c977242b43",
+      "created_at": "2026-07-23T19:22:40.143Z",
+      "content_offset_seconds": 7421,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "MAN",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bd2a6544-12ee-4a72-b2dc-a093649c5d2d",
+      "created_at": "2026-07-23T19:22:42.158Z",
+      "content_offset_seconds": 7423,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "THE GUY WAS 1 HP",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9532f3b8-b4b1-499c-8c8c-182492651cb5",
+      "created_at": "2026-07-23T19:22:46.995Z",
+      "content_offset_seconds": 7428,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "AND IN A SECOND HE WAS FULL HP",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "900af476-fe22-44eb-8122-fc0fe444603a",
+      "created_at": "2026-07-23T19:24:42.054Z",
+      "content_offset_seconds": 7543,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "MAN",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "25e4d7ee-e6e9-4105-b327-88cbdb2b5aea",
+      "created_at": "2026-07-23T19:24:45.917Z",
+      "content_offset_seconds": 7547,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "THEY HIDE AND KILL US",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ba32ffb0-5655-41cc-877c-03a69053cf3b",
+      "created_at": "2026-07-23T19:26:26.623Z",
+      "content_offset_seconds": 7647,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "man the lash saved the base",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "eaf8188f-7f8f-445b-a955-3d4331c4d80b",
+      "created_at": "2026-07-23T19:27:01.007Z",
+      "content_offset_seconds": 7682,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "there 3 v3 aprox",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "48d7ff42-2771-4bcb-9797-ced1fffd8805",
+      "created_at": "2026-07-23T19:27:17.229Z",
+      "content_offset_seconds": 7698,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "the guy never left to fight we lost cuz of that",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0aaf16dd-3c51-4883-b5ca-df6d9e9880b1",
+      "created_at": "2026-07-23T19:27:42.888Z",
+      "content_offset_seconds": 7724,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " my team was full of monkeys fighting over food",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7cc1275b-03f1-46c0-aa91-2f92939f4cb3",
+      "created_at": "2026-07-23T19:27:44.84Z",
+      "content_offset_seconds": 7726,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "not my problem",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d34e8afb-a1a6-4472-89b7-f49c624324fd",
+      "created_at": "2026-07-23T19:28:51.453Z",
+      "content_offset_seconds": 7792,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "you freak ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " not using pants to dance",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "78881e13-8251-4b4a-8d1b-6c13f9ac8beb",
+      "created_at": "2026-07-23T19:29:14.613Z",
+      "content_offset_seconds": 7815,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "partner",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": " ads starting! ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " consider a sub with T1 or prime to support, get emotes, and skip the ads! see you in  2 mins!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "eacd8113-780d-4763-99eb-907b5e5b2801",
+      "created_at": "2026-07-23T19:30:10.304Z",
+      "content_offset_seconds": 7871,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "true",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "1718cdea-aa3d-4b9a-b251-011446bda109",
+      "created_at": "2026-07-23T19:30:25.75Z",
+      "content_offset_seconds": 7887,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "nope",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f43bb131-a0f6-4747-a694-629c28f99d77",
+      "created_at": "2026-07-23T19:31:12.488Z",
+      "content_offset_seconds": 7933,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "im just trying emotes",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9853a5b3-5472-41da-bb74-a3077d8fc454",
+      "created_at": "2026-07-23T19:31:51.773Z",
+      "content_offset_seconds": 7973,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "i want more soft",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "28d4b953-40da-40e2-aa55-f9236f401f6e",
+      "created_at": "2026-07-23T19:32:36.364Z",
+      "content_offset_seconds": 8017,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "why u motivated ?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "d3dfc785-797e-4a56-9e61-c56e08e51093",
+      "created_at": "2026-07-23T19:33:10.544Z",
+      "content_offset_seconds": 8051,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "point of life soft",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "2b66f9ee-8005-463a-aa09-d5cc5c9bda02",
+      "created_at": "2026-07-23T19:33:18.978Z",
+      "content_offset_seconds": 8060,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "my motivation is caffeine",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "5e5a4fda-6adb-40fb-93ca-a155f7bf574b",
+      "created_at": "2026-07-23T19:33:49.041Z",
+      "content_offset_seconds": 8090,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "coffein is good",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8b8ea793-8b54-47e7-9dc1-58ab32ec57f0",
+      "created_at": "2026-07-23T19:35:41.34Z",
+      "content_offset_seconds": 8202,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "coffe",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "534b11ae-0f5d-4ff9-951b-8fa0d35906e9",
+      "created_at": "2026-07-23T19:35:56.383Z",
+      "content_offset_seconds": 8217,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "if im not on caffeine i feel like shit",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "289eb2ed-a8ef-4df7-9b67-500169ace5a5",
+      "created_at": "2026-07-23T19:36:12.248Z",
+      "content_offset_seconds": 8233,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "as long as im hyper im happy",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "eea5f76c-a11c-42c8-b0b8-1ea59f454981",
+      "created_at": "2026-07-23T19:36:49.572Z",
+      "content_offset_seconds": 8270,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "if u develop tolerance just consume more",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "dd07a0de-a18d-409e-ae63-94014250d7b8",
+      "created_at": "2026-07-23T19:37:27.476Z",
+      "content_offset_seconds": 8308,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "rn im on 350 mgs a day",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b506502d-ef29-472a-81b3-ec78e39b6e2b",
+      "created_at": "2026-07-23T19:37:30.929Z",
+      "content_offset_seconds": 8312,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "jusit limit yourself to one a day",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ee1adf42-9e7d-4b38-b375-f46285e2ee5e",
+      "created_at": "2026-07-23T19:38:20.754Z",
+      "content_offset_seconds": 8362,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "freaky ass soft",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "65941776-4097-41ae-af8f-04d566b49005",
+      "created_at": "2026-07-23T19:39:05.778Z",
+      "content_offset_seconds": 8407,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "dear ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " you know for my bday i wanted to ask you a lapdance?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ce0859d7-7119-40bc-9eea-630714586c23",
+      "created_at": "2026-07-23T19:40:04.193Z",
+      "content_offset_seconds": 8465,
+      "display_name": "Odstjackel",
+      "user_badges": [
+        {
+          "_id": "destiny-2-final-shape-raid-race",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5F9EA0",
+      "message": [
+        {
+          "text": "hi",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "810283e6-fda8-43d4-a3c1-bac328eecbfc",
+      "created_at": "2026-07-23T19:40:56.598Z",
+      "content_offset_seconds": 8517,
+      "display_name": "Odstjackel",
+      "user_badges": [
+        {
+          "_id": "destiny-2-final-shape-raid-race",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5F9EA0",
+      "message": [
+        {
+          "text": "I’m good just chilling",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bc2c647b-f48e-477d-b610-c392c6cc6a21",
+      "created_at": "2026-07-23T19:41:04.842Z",
+      "content_offset_seconds": 8526,
+      "display_name": "Odstjackel",
+      "user_badges": [
+        {
+          "_id": "destiny-2-final-shape-raid-race",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5F9EA0",
+      "message": [
+        {
+          "text": "well actually",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8583b232-a317-4818-addf-46148df0b703",
+      "created_at": "2026-07-23T19:41:30.396Z",
+      "content_offset_seconds": 8551,
+      "display_name": "Odstjackel",
+      "user_badges": [
+        {
+          "_id": "destiny-2-final-shape-raid-race",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5F9EA0",
+      "message": [
+        {
+          "text": "been thinking and chilling lol",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e7b0be92-7785-4a89-b379-dcba873e74ca",
+      "created_at": "2026-07-23T19:42:38.314Z",
+      "content_offset_seconds": 8619,
+      "display_name": "Odstjackel",
+      "user_badges": [
+        {
+          "_id": "destiny-2-final-shape-raid-race",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5F9EA0",
+      "message": [
+        {
+          "text": "see I would be playing games with my friend but it’s complicated",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "97e2bce4-5742-4bd0-bae1-4bd273a66921",
+      "created_at": "2026-07-23T19:43:18.781Z",
+      "content_offset_seconds": 8660,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "jinx moved to another place",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "7f4f1c36-a4a8-454a-8d2e-f59dbebce55c",
+      "created_at": "2026-07-23T19:43:29.517Z",
+      "content_offset_seconds": 8670,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "and she gave me all your stuff",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "42bc885e-09cf-4008-9b06-903d00cfb23c",
+      "created_at": "2026-07-23T19:43:29.895Z",
+      "content_offset_seconds": 8671,
+      "display_name": "Odstjackel",
+      "user_badges": [
+        {
+          "_id": "destiny-2-final-shape-raid-race",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5F9EA0",
+      "message": [
+        {
+          "text": "omg you play palworld as well?",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "c0928133-3451-4ead-a0c3-92241a8a183b",
+      "created_at": "2026-07-23T19:44:11.34Z",
+      "content_offset_seconds": 8712,
+      "display_name": "Odstjackel",
+      "user_badges": [
+        {
+          "_id": "destiny-2-final-shape-raid-race",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5F9EA0",
+      "message": [
+        {
+          "text": "totally should play it sometime jk jk unless you actually want to",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bc40f34a-fd8a-4918-83dc-115d6a19c49f",
+      "created_at": "2026-07-23T19:44:57.325Z",
+      "content_offset_seconds": 8758,
+      "display_name": "Odstjackel",
+      "user_badges": [
+        {
+          "_id": "destiny-2-final-shape-raid-race",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5F9EA0",
+      "message": [
+        {
+          "text": "ahh I see",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "abec73d8-43e5-4b23-9092-83e6e299118f",
+      "created_at": "2026-07-23T19:45:34.21Z",
+      "content_offset_seconds": 8795,
+      "display_name": "Odstjackel",
+      "user_badges": [
+        {
+          "_id": "destiny-2-final-shape-raid-race",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5F9EA0",
+      "message": [
+        {
+          "text": "um i don’t think so",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "95f647f1-c059-4862-b512-822f91aedf75",
+      "created_at": "2026-07-23T19:45:39.504Z",
+      "content_offset_seconds": 8800,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "u do ? never seen u",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "9f2d1aa1-f77c-4b0f-ad3e-16bd6504ce5f",
+      "created_at": "2026-07-23T19:46:18.865Z",
+      "content_offset_seconds": 8840,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "barely is the correct term indeed",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "94775b9b-817d-4229-916d-48cb7c18da3b",
+      "created_at": "2026-07-23T19:46:42.786Z",
+      "content_offset_seconds": 8864,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "larper",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ef5c70a4-59d3-40ab-88e7-50d351d4db79",
+      "created_at": "2026-07-23T19:47:13.599Z",
+      "content_offset_seconds": 8894,
+      "display_name": "Fezrollol",
+      "user_badges": [
+        {
+          "_id": "la-velada-v-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "catPls",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "0e7f31d5-ddd2-47f3-a87f-62c1a1c31122",
+      "created_at": "2026-07-23T19:47:59.145Z",
+      "content_offset_seconds": 8940,
+      "display_name": "Fezrollol",
+      "user_badges": [
+        {
+          "_id": "la-velada-v-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "hawwo soft",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6ac3fcb3-3b07-4564-8f3b-25cc56fb31cc",
+      "created_at": "2026-07-23T19:48:24.496Z",
+      "content_offset_seconds": 8965,
+      "display_name": "Fezrollol",
+      "user_badges": [
+        {
+          "_id": "la-velada-v-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "what u think of vrc ui changes ? ",
+          "emoticon": null
+        },
+        {
+          "text": "zayiHmm",
+          "emote": {
+            "emoteID": "emotesv2_9d6f2d79797c4b58b520829357cd33f8"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_9d6f2d79797c4b58b520829357cd33f8"
+          }
+        }
+      ]
+    },
+    {
+      "id": "1c1c192d-2b91-403f-8e79-f56e4fa9d582",
+      "created_at": "2026-07-23T19:48:35.383Z",
+      "content_offset_seconds": 8976,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "i like it",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "128fa60f-dfb2-42c8-95a7-502d46a3887d",
+      "created_at": "2026-07-23T19:48:39.185Z",
+      "content_offset_seconds": 8980,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "is tiger loking",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "e72d54ba-2a40-4a98-8080-c25e032ba022",
+      "created_at": "2026-07-23T19:50:29.853Z",
+      "content_offset_seconds": 9091,
+      "display_name": "Fezrollol",
+      "user_badges": [
+        {
+          "_id": "la-velada-v-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "friendd show upn as white text",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bec9766e-1bb3-44c8-a812-29d6ff30b5ba",
+      "created_at": "2026-07-23T19:50:37.67Z",
+      "content_offset_seconds": 9098,
+      "display_name": "Fezrollol",
+      "user_badges": [
+        {
+          "_id": "la-velada-v-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "its horrible.",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "ac5d35e3-cf1e-4641-8c43-4ad6dd5ea3af",
+      "created_at": "2026-07-23T19:50:56.365Z",
+      "content_offset_seconds": 9117,
+      "display_name": "Fezrollol",
+      "user_badges": [
+        {
+          "_id": "la-velada-v-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "look at ur friends list",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f617896c-2592-4fd1-8959-947384012e4f",
+      "created_at": "2026-07-23T19:51:02.475Z",
+      "content_offset_seconds": 9123,
+      "display_name": "Fezrollol",
+      "user_badges": [
+        {
+          "_id": "la-velada-v-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "its puking",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "b342b103-6d74-40bb-ab7f-ab1a65ccc15d",
+      "created_at": "2026-07-23T19:51:39.603Z",
+      "content_offset_seconds": 9160,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "wow",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "17486f69-d2da-4360-85cc-e035724594f0",
+      "created_at": "2026-07-23T19:51:51.974Z",
+      "content_offset_seconds": 9173,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " i saw the thing in twitter and though why discord is in vrchat now",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "64f2c8ff-bb13-4dd0-9f9f-e6d4e68cdfd0",
+      "created_at": "2026-07-23T19:53:06.978Z",
+      "content_offset_seconds": 9248,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "also the mentally ill pppl",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "cce184fa-2c5e-488b-9476-30a9d281c5bc",
+      "created_at": "2026-07-23T19:54:04.504Z",
+      "content_offset_seconds": 9305,
+      "display_name": "Fezrollol",
+      "user_badges": [
+        {
+          "_id": "la-velada-v-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "ah ic",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "6d659847-7008-4f81-9ff4-2cb8273caf1e",
+      "created_at": "2026-07-23T19:54:57.796Z",
+      "content_offset_seconds": 9359,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "i think skill issue",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "da9173ca-8ef6-4c29-b099-a860fb6c7e0c",
+      "created_at": "2026-07-23T19:55:00.639Z",
+      "content_offset_seconds": 9361,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "lookt at me ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " im fine",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4848c31e-b3e8-4383-a11c-f88171401275",
+      "created_at": "2026-07-23T19:55:14.402Z",
+      "content_offset_seconds": 9375,
+      "display_name": "Fezrollol",
+      "user_badges": [
+        {
+          "_id": "la-velada-v-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#DAA520",
+      "message": [
+        {
+          "text": "vrc spreads mental illnesd agreed",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "91a43a8b-d25c-46d8-a45c-96730fd5421a",
+      "created_at": "2026-07-23T19:55:18.933Z",
+      "content_offset_seconds": 9380,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "damn bro u dont gotta expose me like that",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f751ecbd-be3b-4b5f-9132-65c04194834f",
+      "created_at": "2026-07-23T19:56:57.529Z",
+      "content_offset_seconds": 9478,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "i wanna bite sof",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "638e3c3b-2a16-4ca8-81bc-cc021051ba49",
+      "created_at": "2026-07-23T19:57:34.778Z",
+      "content_offset_seconds": 9516,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " i mean for fun",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "a3f9b9cd-e04e-42fb-8aeb-43cabfd3af8b",
+      "created_at": "2026-07-23T19:57:45.379Z",
+      "content_offset_seconds": 9526,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "what???",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "bede57a1-876e-49f9-9e3c-9fc51c8a2f8b",
+      "created_at": "2026-07-23T19:58:27.839Z",
+      "content_offset_seconds": 9569,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "Sus",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "83976f64-aaf3-444b-9e16-1de0a230118d",
+      "created_at": "2026-07-23T19:58:51.067Z",
+      "content_offset_seconds": 9592,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "softuwSip",
+          "emote": {
+            "emoteID": "emotesv2_66d3a5bda2334fccb3310758456a92be"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_66d3a5bda2334fccb3310758456a92be"
+          }
+        },
+        {
+          "text": " i think ur fine",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "dc876afe-9f77-46bd-ac4c-26d8b148c0b6",
+      "created_at": "2026-07-23T19:59:49.798Z",
+      "content_offset_seconds": 9651,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "get other avi idk",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "dc12fc7c-af80-4869-b7ad-2ae8976f4ef4",
+      "created_at": "2026-07-23T20:01:18.08Z",
+      "content_offset_seconds": 9739,
+      "display_name": "opafex",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "founder",
+          "version": "0"
+        },
+        {
+          "_id": "la-velada-iv",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF69B4",
+      "message": [
+        {
+          "text": "that one is cool",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "94fb304d-43da-4e49-a8ed-63ceb2b6080f",
+      "created_at": "2026-07-23T20:01:38.705Z",
+      "content_offset_seconds": 9760,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "i like how you look",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4c1fd1ec-5d9a-4fc9-84c3-8859bafdab5a",
+      "created_at": "2026-07-23T20:04:31.831Z",
+      "content_offset_seconds": 9933,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "purrplepaws, thank you for following! :33",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "8a007057-6be9-4343-8191-d46b311ff41b",
+      "created_at": "2026-07-23T20:09:14.625Z",
+      "content_offset_seconds": 10215,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "partner",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": " ads starting! ",
+          "emoticon": null
+        },
+        {
+          "text": "softuwSit",
+          "emote": {
+            "emoteID": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_96d9674393054e2a9ea2377c8899fe3b"
+          }
+        },
+        {
+          "text": " consider a sub with T1 or prime to support, get emotes, and skip the ads! see you in  2 mins!",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "4a32d58d-118f-44ce-aa3d-43d5c0ddff6f",
+      "created_at": "2026-07-23T20:09:37.434Z",
+      "content_offset_seconds": 10238,
+      "display_name": "StreamElements",
+      "user_badges": [
+        {
+          "_id": "moderator",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "0"
+        },
+        {
+          "_id": "bot-badge",
+          "version": "1"
+        }
+      ],
+      "user_color": "#5B99FF",
+      "message": [
+        {
+          "text": "BigRaflel, thank you for following! :33",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f96738ea-135b-431c-a473-64d3a173ab8f",
+      "created_at": "2026-07-23T20:10:10.267Z",
+      "content_offset_seconds": 10271,
+      "display_name": "BigRaflel",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "softuwHand",
+          "emote": {
+            "emoteID": "emotesv2_08e6880ab00149b79aca5dc7b3804d1e"
+          },
+          "emoticon": {
+            "emoticon_id": "emotesv2_08e6880ab00149b79aca5dc7b3804d1e"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fd8365a5-248d-476e-bcd2-7e4ae5e22b7d",
+      "created_at": "2026-07-23T20:11:11.02Z",
+      "content_offset_seconds": 10332,
+      "display_name": "mr_mudpants",
+      "user_badges": [],
+      "user_color": null,
+      "message": [
+        {
+          "text": "sit on the camera for a trillion bits",
+          "emoticon": null
+        }
+      ]
+    },
+    {
+      "id": "f15c5e36-e812-462c-822f-621d7c88b8bb",
+      "created_at": "2026-07-23T20:14:44.474Z",
+      "content_offset_seconds": 10545,
+      "display_name": "FhiXerxoer_Miacord",
+      "user_badges": [
+        {
+          "_id": "vip",
+          "version": "1"
+        },
+        {
+          "_id": "subscriber",
+          "version": "3"
+        },
+        {
+          "_id": "raging-wolf-helm",
+          "version": "1"
+        }
+      ],
+      "user_color": "#FF4400",
+      "message": [
+        {
+          "text": "seee you later sof",
+          "emoticon": null
+        }
+      ]
+    }
+  ]
+}
