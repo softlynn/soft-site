@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-22T21:36:05.023Z",
+  "generatedAt": "2026-07-24T05:51:03.677Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -4519,6 +4519,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/00fff6f2-8ac0-4001-b736-c02654756697/3",
           "title": "SpeeDons 6",
           "description": "This badge was earned by watching 60 minutes of any of the SpeeDons 6 channels during the SpeeDons 6 event.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "spiderman",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/03ba20e2-11e1-481c-80d8-155e87afc724/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/03ba20e2-11e1-481c-80d8-155e87afc724/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/03ba20e2-11e1-481c-80d8-155e87afc724/3",
+          "title": "Spider-Man",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Marvel Tōkon category during the Open Beta!",
           "click_action": null,
           "click_url": null
         }
