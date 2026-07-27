@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-07-24T05:51:03.677Z",
+  "generatedAt": "2026-07-27T20:20:03.900Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -1359,6 +1359,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/4f1be82e-d29e-4898-a4c7-29b3ce6ce807/3",
           "title": "Dead by Daylight Icon",
           "description": "This badge was earned by subscribing or gifting a sub to a Dead by Daylight streamer during the Dead by Daylight x Jason Universe Launch!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "dead-by-daylight-pride-icon",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/61aac75c-fb98-4f75-9fa8-4d843c5c545a/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/61aac75c-fb98-4f75-9fa8-4d843c5c545a/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/61aac75c-fb98-4f75-9fa8-4d843c5c545a/3",
+          "title": "Dead by Daylight Pride Icon",
+          "description": "This badge was earned by purchasing a subscription to a Dead by Daylight streamer during Into the Rainbow 2026!",
           "click_action": null,
           "click_url": null
         }
