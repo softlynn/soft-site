@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#11100f" />
+    <title>Softuchive</title>
+    <link rel="stylesheet" href="./app.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">
+            <img src="../assets/icon.png" alt="" />
+          </div>
+          <div>
+            <strong>Softuchive</strong>
+            <span>Archive control</span>
+          </div>
+        </div>
+
+        <section class="sidebar-status" aria-label="Archive status">
+          <div class="status-orbit" aria-hidden="true">
+            <span></span>
+          </div>
+          <div>
+            <span class="overline">Pipeline</span>
+            <strong id="poll-state-value">Checking…</strong>
+            <p id="poll-stage-value">Waiting for live pipeline state.</p>
+          </div>
+        </section>
+
+        <nav class="section-nav" aria-label="Dashboard sections">
+          <a href="#overview" class="active">
+            <span class="nav-icon" aria-hidden="true">⌂</span>
+            Overview
+          </a>
+          <a href="#automation">
+            <span class="nav-icon" aria-hidden="true">↻</span>
+            Automation
+          </a>
+          <a href="#activity">
+            <span class="nav-icon" aria-hidden="true">≋</span>
+            Activity
+          </a>
+        </nav>
+
+        <div class="sidebar-tools">
+          <span class="overline">Quick access</span>
+          <button id="view-archive-folder-button" class="sidebar-button">
+            <span aria-hidden="true">⌑</span>
+            Archive folder
+          </button>
+          <button id="view-logs-button" class="sidebar-button">
+            <span aria-hidden="true">≡</span>
+            Pipeline logs
+          </button>
+        </div>
+
+        <p class="sidebar-foot">Local-first · soft-site pipeline</p>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="overline">Dashboard</p>
+            <h1>Good to see you.</h1>
+          </div>
+          <button id="archive-now-button" class="button button-primary">
+            <span class="button-icon" aria-hidden="true">↥</span>
+            Archive now
+          </button>
+        </header>
+
+        <div id="notice-banner" class="notice" data-tone="info" role="status" aria-live="polite">
+          Loading Softuchive status…
+        </div>
+
+        <section id="overview" class="section-block" aria-labelledby="overview-title">
+          <div class="section-heading">
+            <div>
+              <p class="overline">At a glance</p>
+              <h2 id="overview-title">Archive overview</h2>
+            </div>
+            <span class="live-label"><i></i> Live status</span>
+          </div>
+
+          <div class="stats-grid">
+            <article class="stat-card stat-card-featured">
+              <span class="stat-icon" aria-hidden="true">↻</span>
+              <div>
+                <span class="overline">Last poll</span>
+                <strong id="last-poll-value">Never</strong>
+                <p id="last-poll-detail-value">No poll has started yet.</p>
+              </div>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon" aria-hidden="true">☰</span>
+              <div>
+                <span class="overline">Upload queue</span>
+                <strong id="queue-value">0 queued</strong>
+                <p id="queue-detail-value">No uploads are queued.</p>
+              </div>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon" aria-hidden="true">●</span>
+              <div>
+                <span class="overline">OBS monitor</span>
+                <strong id="obs-running-value">Checking…</strong>
+                <p>Last trigger <span id="obs-trigger-value">never</span></p>
+              </div>
+            </article>
+          </div>
+
+          <article class="card current-card">
+            <div class="card-heading">
+              <div>
+                <p class="overline">Current archive</p>
+                <h2>Live run</h2>
+              </div>
+              <span class="state-pill" id="current-trigger-pill">idle</span>
+            </div>
+
+            <div class="run-layout">
+              <div class="current-copy">
+                <span class="overline">Now processing</span>
+                <strong id="current-item-value">No active archive</strong>
+                <p id="current-item-detail-value">Waiting for the next poll.</p>
+              </div>
+              <div class="progress-value">
+                <strong id="progress-value">0%</strong>
+                <span id="progress-detail-value">No upload in progress.</span>
+              </div>
+            </div>
+
+            <div
+              class="progress-track"
+              role="progressbar"
+              aria-label="Current upload progress"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+
+            <div class="run-footer">
+              <div>
+                <span class="overline">Estimated time</span>
+                <strong id="eta-value">Unknown</strong>
+                <p id="eta-detail-value">ETA appears while bytes are moving.</p>
+              </div>
+              <div class="action-row">
+                <button id="pause-resume-button" class="button button-secondary">Pause current archive</button>
+                <button id="skip-current-vod-button" class="button button-quiet">Skip current VOD</button>
+                <button id="restart-button" class="button button-danger">Restart interrupted</button>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section id="automation" class="section-block" aria-labelledby="automation-title">
+          <div class="section-heading">
+            <div>
+              <p class="overline">Preferences</p>
+              <h2 id="automation-title">Automation & storage</h2>
+            </div>
+            <button id="save-settings-button" class="button button-secondary">Save settings</button>
+          </div>
+
+          <div class="settings-grid">
+            <article class="card setting-card">
+              <div class="setting-topline">
+                <span class="setting-icon" aria-hidden="true">↻</span>
+                <label class="switch">
+                  <input id="auto-poll-toggle" type="checkbox" />
+                  <span class="switch-track"></span>
+                  <span class="sr-only">Enable automatic polling</span>
+                </label>
+              </div>
+              <div>
+                <p class="overline">Scheduled task</p>
+                <h3>Auto archive</h3>
+                <p class="card-copy">Poll in the background, even when Softuchive is closed.</p>
+              </div>
+              <label class="number-field" for="poll-interval-input">
+                <span>Every</span>
+                <input id="poll-interval-input" type="number" min="1" max="720" step="1" />
+                <span>minutes</span>
+              </label>
+              <p class="setting-detail" id="auto-task-detail">Task state unknown.</p>
+            </article>
+
+            <article class="card setting-card">
+              <div class="setting-topline">
+                <span class="setting-icon" aria-hidden="true">◉</span>
+                <label class="switch">
+                  <input id="obs-close-toggle" type="checkbox" />
+                  <span class="switch-track"></span>
+                  <span class="sr-only">Poll when OBS closes</span>
+                </label>
+              </div>
+              <div>
+                <p class="overline">OBS close hook</p>
+                <h3>Final poll</h3>
+                <p class="card-copy">Run one last check when OBS closes while Softuchive is open.</p>
+              </div>
+              <div class="setting-callout">
+                <span class="callout-dot"></span>
+                Uses the local OBS process monitor
+              </div>
+            </article>
+
+            <article class="card setting-card">
+              <div class="setting-topline">
+                <span class="setting-icon" aria-hidden="true">⇅</span>
+                <label class="switch">
+                  <input id="upload-throttle-toggle" type="checkbox" />
+                  <span class="switch-track"></span>
+                  <span class="sr-only">Enable upload speed limit</span>
+                </label>
+              </div>
+              <div>
+                <p class="overline">YouTube upload</p>
+                <h3>Speed limit</h3>
+                <p class="card-copy">Adjust bandwidth while an upload is in progress.</p>
+              </div>
+              <label class="number-field" for="upload-throttle-input">
+                <input id="upload-throttle-input" type="number" min="0.01" max="10000" step="0.25" />
+                <span>Mbps</span>
+              </label>
+              <button id="apply-upload-control-button" class="button button-quiet button-small">Apply limit</button>
+              <p class="setting-detail" id="upload-control-detail">No upload speed limit is active.</p>
+            </article>
+
+            <article class="card setting-card storage-card">
+              <div class="setting-topline">
+                <span class="setting-icon" aria-hidden="true">⌑</span>
+                <button id="pick-folder-button" class="button button-quiet button-small">Choose folder</button>
+              </div>
+              <div>
+                <p class="overline">Local files</p>
+                <h3>Archive storage</h3>
+                <p class="card-copy">The folder Softuchive watches for finished recordings.</p>
+              </div>
+              <label class="path-field" for="archive-folder-input">
+                <span class="sr-only">Archive folder</span>
+                <input
+                  id="archive-folder-input"
+                  type="text"
+                  spellcheck="false"
+                  autocomplete="off"
+                  placeholder="D:\Stream Archives"
+                />
+              </label>
+            </article>
+          </div>
+        </section>
+
+        <section id="activity" class="section-block" aria-labelledby="activity-title">
+          <div class="section-heading">
+            <div>
+              <p class="overline">History</p>
+              <h2 id="activity-title">Queue & activity</h2>
+            </div>
+          </div>
+
+          <div class="activity-grid">
+            <article class="card list-card">
+              <div class="card-heading">
+                <div>
+                  <p class="overline">Queued parts</p>
+                  <h3>Upload line</h3>
+                </div>
+              </div>
+              <div class="upload-list" id="upload-list"></div>
+            </article>
+
+            <article class="card list-card">
+              <div class="card-heading">
+                <div>
+                  <p class="overline">Pipeline</p>
+                  <h3>Recent events</h3>
+                </div>
+              </div>
+              <div class="event-list" id="event-list"></div>
+            </article>
+          </div>
+
+          <article class="card summary-card">
+            <div>
+              <p class="overline">Latest result</p>
+              <h3>Run summary</h3>
+            </div>
+            <pre id="summary-box">No archive summary yet.</pre>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

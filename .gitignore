@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/desktop/softuchive/node_modules
 /.pnp
 .pnp.js
 
@@ -11,6 +12,7 @@
 # production
 /build
 /prod
+/softuchive-dist
 
 # misc
 .DS_Store
@@ -23,6 +25,7 @@
 /scripts/.tmp
 /scripts/tools
 /scripts/tmp-chat.json
+/tmp
 /twitch-extension/dist
 /cloudflare/reactions-api/.wrangler
 

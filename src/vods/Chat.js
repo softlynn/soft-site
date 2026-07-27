@@ -19,9 +19,46 @@ const BASE_FFZ_EMOTE_CDN = "https://cdn.frankerfacez.com/emote";
 const BASE_BTTV_EMOTE_CDN = BTTV_EMOTE_CDN;
 const BASE_7TV_EMOTE_CDN = "https://cdn.7tv.app/emote";
 const CHAT_SEEK_BACKFILL_SECONDS = 180;
+const FALLBACK_BADGE_LABELS = {
+  broadcaster: "LIVE",
+  moderator: "MOD",
+  vip: "VIP",
+  subscriber: "SUB",
+  founder: "FDR",
+  bits: "BITS",
+  "bits-leader": "BITS",
+  premium: "PRIME",
+  "bot-badge": "BOT",
+  "7tv": "7TV",
+};
 
 let messageCount = 0;
 let badgesCount = 0;
+
+const getBadgeSetId = (badge) => String(badge?._id ?? badge?.setID ?? badge?.set_id ?? "").trim();
+
+const getBadgeVersion = (badge) => String(badge?.version ?? badge?.id ?? "").trim();
+
+const formatBadgeTitle = (badgeId, version) => {
+  const readableBadgeId = String(badgeId || "")
+    .replace(/[-_]+/g, " ")
+    .trim();
+  if (!readableBadgeId) return "Badge";
+  if (!version) return readableBadgeId;
+  return `${readableBadgeId} (${version})`;
+};
+
+const getFallbackBadgeLabel = (badgeId) => {
+  const normalized = String(badgeId || "").trim().toLowerCase();
+  if (!normalized) return "BADGE";
+  if (FALLBACK_BADGE_LABELS[normalized]) return FALLBACK_BADGE_LABELS[normalized];
+  return normalized
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((part) => part.replace(/[^a-z0-9]/gi, "").slice(0, 3).toUpperCase())
+    .join("")
+    .slice(0, 7) || "BADGE";
+};
 
 export default function Chat(props) {
   const { isPortrait, vodId, playerRef, playing, userChatDelay, delay, youtube, part, games, chatReplayAvailable = true, forceSideLayout = false } = props;
@@ -224,72 +261,91 @@ export default function Chat(props) {
     };
 
     const transformBadges = (textBadges) => {
+      if (!Array.isArray(textBadges) || textBadges.length === 0) return null;
+
       const badgeWrapper = [];
-      if (!badges.current) return;
-      const channelBadges = badges.current.channel;
-      const globalBadges = badges.current.global;
+      const channelBadges = Array.isArray(badges.current?.channel) ? badges.current.channel : [];
+      const globalBadges = Array.isArray(badges.current?.global) ? badges.current.global : [];
 
       for (const textBadge of textBadges) {
-        const badgeId = textBadge._id ?? textBadge.setID;
-        const version = textBadge.version;
+        const badgeId = getBadgeSetId(textBadge);
+        const version = getBadgeVersion(textBadge);
+        if (!badgeId) continue;
 
-        if (channelBadges) {
-          const badge = channelBadges.find((channelBadge) => channelBadge.set_id === badgeId);
-          if (badge) {
-            const badgeVersion = badge.versions.find((badgeVersion) => badgeVersion.id === version);
-            if (badgeVersion) {
-              badgeWrapper.push(
-                <MessageTooltip
-                  key={badgesCount++}
-                  title={
-                    <Box sx={{ maxWidth: "30rem", textAlign: "center" }}>
-                      <img crossOrigin="anonymous" style={{ marginBottom: "0.3rem", border: "none", maxWidth: "100%", verticalAlign: "top" }} src={badgeVersion.image_url_4x} alt="" />
-                      <Typography display="block" variant="caption">{`${badgeId}`}</Typography>
-                    </Box>
-                  }
-                >
+        const badgeSet =
+          channelBadges.find((channelBadge) => channelBadge.set_id === badgeId) ||
+          globalBadges.find((globalBadge) => globalBadge.set_id === badgeId);
+        const badgeVersion = Array.isArray(badgeSet?.versions)
+          ? badgeSet.versions.find((candidate) => String(candidate?.id || "") === version)
+          : null;
+        const badgeTitle = formatBadgeTitle(badgeId, version);
+
+        if (badgeVersion?.image_url_1x && badgeVersion?.image_url_2x && badgeVersion?.image_url_4x) {
+          badgeWrapper.push(
+            <MessageTooltip
+              key={badgesCount++}
+              title={
+                <Box sx={{ maxWidth: "30rem", textAlign: "center" }}>
                   <img
                     crossOrigin="anonymous"
-                    style={{ display: "inline-block", minWidth: "1rem", height: "1rem", margin: "0 .2rem .1rem 0", backgroundPosition: "50%", verticalAlign: "middle" }}
-                    srcSet={`${badgeVersion.image_url_1x} 1x, ${badgeVersion.image_url_2x} 2x, ${badgeVersion.image_url_4x} 4x`}
-                    src={badgeVersion.image_url_1x}
+                    style={{ marginBottom: "0.3rem", border: "none", maxWidth: "100%", verticalAlign: "top" }}
+                    src={badgeVersion.image_url_4x}
                     alt=""
                   />
-                </MessageTooltip>
-              );
-              continue;
-            }
-          }
+                  <Typography display="block" variant="caption">{badgeTitle}</Typography>
+                </Box>
+              }
+            >
+              <img
+                crossOrigin="anonymous"
+                style={{ display: "inline-block", minWidth: "1rem", height: "1rem", margin: "0 .2rem .1rem 0", backgroundPosition: "50%", verticalAlign: "middle" }}
+                srcSet={`${badgeVersion.image_url_1x} 1x, ${badgeVersion.image_url_2x} 2x, ${badgeVersion.image_url_4x} 4x`}
+                src={badgeVersion.image_url_1x}
+                alt=""
+              />
+            </MessageTooltip>
+          );
+          continue;
         }
 
-        if (globalBadges) {
-          const badge = globalBadges.find((globalBadge) => globalBadge.set_id === badgeId);
-          if (badge) {
-            const badgeVersion = badge.versions.find((badgeVersion) => badgeVersion.id === version);
-            badgeWrapper.push(
-              <MessageTooltip
-                key={badgesCount++}
-                title={
-                  <Box sx={{ maxWidth: "30rem", textAlign: "center" }}>
-                    <img crossOrigin="anonymous" style={{ marginBottom: "0.3rem", border: "none", maxWidth: "100%", verticalAlign: "top" }} src={badgeVersion.image_url_4x} alt="" />
-                    <Typography display="block" variant="caption">{`${badgeId}`}</Typography>
-                  </Box>
-                }
-              >
-                <img
-                  crossOrigin="anonymous"
-                  style={{ display: "inline-block", minWidth: "1rem", height: "1rem", margin: "0 .2rem .1rem 0", backgroundPosition: "50%", verticalAlign: "middle" }}
-                  srcSet={`${badgeVersion.image_url_1x} 1x, ${badgeVersion.image_url_2x} 2x, ${badgeVersion.image_url_4x} 4x`}
-                  src={badgeVersion.image_url_1x}
-                  alt=""
-                />
-              </MessageTooltip>
-            );
-            continue;
-          }
-        }
+        badgeWrapper.push(
+          <MessageTooltip
+            key={badgesCount++}
+            title={
+              <Typography variant="caption" sx={{ display: "block", maxWidth: "16rem", textAlign: "center" }}>
+                {badgeTitle}
+              </Typography>
+            }
+          >
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: "1rem",
+                height: "1rem",
+                px: 0.35,
+                mr: 0.4,
+                mb: 0.1,
+                borderRadius: "999px",
+                background: "rgba(127, 153, 196, 0.2)",
+                border: "1px solid rgba(173, 197, 233, 0.28)",
+                color: "rgba(229, 239, 255, 0.92)",
+                fontSize: "0.52rem",
+                fontWeight: 700,
+                letterSpacing: "0.03em",
+                lineHeight: 1,
+                verticalAlign: "middle",
+              }}
+            >
+              {getFallbackBadgeLabel(badgeId)}
+            </Box>
+          </MessageTooltip>
+        );
       }
 
+      if (badgeWrapper.length === 0) return null;
       return <Box sx={{ display: "inline" }}>{badgeWrapper}</Box>;
     };
 

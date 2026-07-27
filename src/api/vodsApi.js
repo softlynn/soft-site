@@ -3,6 +3,7 @@ import { USE_STATIC_ARCHIVE, VODS_API_BASE } from "../config/site";
 const STATIC_DATA_PATH = `${process.env.PUBLIC_URL || ""}/data/vods.json`;
 const STATIC_COMMENTS_BASE = `${process.env.PUBLIC_URL || ""}/data/comments`;
 const STATIC_EMOTES_BASE = `${process.env.PUBLIC_URL || ""}/data/emotes`;
+const STATIC_BADGES_PATH = `${process.env.PUBLIC_URL || ""}/data/badges.json`;
 const LOCAL_VOD_OVERRIDES_KEY = "softu-vod-overrides";
 const LOCAL_VOD_OVERRIDE_TTL_MS = 30 * 60 * 1000;
 const SPOTIFY_NOTICE_OLD = "Spotify audio is muted on this VOD.";
@@ -11,6 +12,7 @@ const SPOTIFY_NOTICE_NEW = "Spotify audio may be muted on this VOD.";
 let staticVodsCache = null;
 const staticCommentsCache = new Map();
 const staticEmotesCache = new Map();
+let staticBadgesCache = null;
 let localVodOverridesCache = null;
 
 const DEFAULT_EMOTES = {
@@ -18,6 +20,10 @@ const DEFAULT_EMOTES = {
   bttv_emotes: [],
   "7tv_emotes": [],
   embedded_emotes: [],
+};
+const DEFAULT_BADGES = {
+  channel: [],
+  global: [],
 };
 
 const isEmptyObject = (value) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0;
@@ -209,6 +215,13 @@ const normalizeEmotesPayload = (payload) => ({
   embedded_emotes: Array.isArray(payload?.embedded_emotes) ? payload.embedded_emotes : [],
 });
 
+const normalizeBadgesPayload = (payload) => ({
+  ...DEFAULT_BADGES,
+  ...(payload || {}),
+  channel: Array.isArray(payload?.channel) ? payload.channel : [],
+  global: Array.isArray(payload?.global) ? payload.global : [],
+});
+
 const loadStaticEmotes = async (vodId) => {
   const key = String(vodId);
   if (staticEmotesCache.has(key)) return staticEmotesCache.get(key);
@@ -236,6 +249,31 @@ const loadStaticEmotes = async (vodId) => {
   }
 };
 
+const loadStaticBadges = async () => {
+  if (staticBadgesCache) return staticBadgesCache;
+
+  try {
+    const response = await fetch(STATIC_BADGES_PATH, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      staticBadgesCache = DEFAULT_BADGES;
+      return DEFAULT_BADGES;
+    }
+
+    const data = await response.json();
+    const normalized = normalizeBadgesPayload(data);
+    staticBadgesCache = normalized;
+    return normalized;
+  } catch {
+    staticBadgesCache = DEFAULT_BADGES;
+    return DEFAULT_BADGES;
+  }
+};
+
 export const getVodById = async (vodId) => {
   if (USE_STATIC_ARCHIVE) {
     const vods = await loadStaticVods();
@@ -259,13 +297,13 @@ export const getVodById = async (vodId) => {
 };
 
 export const getBadges = async () => {
-  if (USE_STATIC_ARCHIVE) return { channel: [], global: [] };
+  if (USE_STATIC_ARCHIVE) return loadStaticBadges();
 
   const response = await fetch(`${VODS_API_BASE}/v2/badges`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
-  return response.json();
+  return normalizeBadgesPayload(await response.json());
 };
 
 export const getEmotes = async (vodId) => {

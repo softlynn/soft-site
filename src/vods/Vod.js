@@ -8,7 +8,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat.js";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
 import SportsEsportsRoundedIcon from "@mui/icons-material/SportsEsportsRounded";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import VodReactions from "./VodReactions";
 import { useSiteDesign } from "../design/DesignContext";
 
