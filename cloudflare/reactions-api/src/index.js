@@ -7,7 +7,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
 ];
 
 const UPLOAD_ACTIVE_STATES = new Set(["preparing", "uploading", "finalizing"]);
-const UPLOAD_VISIBLE_STATES = new Set(["preparing", "uploading", "finalizing", "done", "error"]);
+const UPLOAD_TERMINAL_STATES = new Set(["done", "error", "paused"]);
+const UPLOAD_VISIBLE_STATES = new Set([...UPLOAD_ACTIVE_STATES, ...UPLOAD_TERMINAL_STATES]);
 
 const allowedOriginsFromEnv = (env) =>
   String(env?.ALLOWED_ORIGINS || "")
@@ -170,6 +171,7 @@ const computeUploadSessionExpiry = (state, nowMs) => {
     case "done":
       return nowMs + 15 * 60 * 1000;
     case "error":
+    case "paused":
       return nowMs + 2 * 60 * 60 * 1000;
     default:
       return nowMs + 30 * 60 * 1000;
@@ -252,11 +254,30 @@ const listActiveUploadSessions = async (env) => {
   await env.DB.prepare("DELETE FROM vod_upload_sessions WHERE expires_at_ms < ?1").bind(nowMs - 60_000).run();
 
   const { results } = await env.DB.prepare(
-    `SELECT session_id, twitch_vod_id, part_number, title, recording_name, stream_date, state, message,
+    `SELECT current.session_id, current.twitch_vod_id, current.part_number, current.title, current.recording_name, current.stream_date, current.state, current.message,
             percent, uploaded_bytes, total_bytes, youtube_video_id, created_at_ms, updated_at_ms, expires_at_ms
-       FROM vod_upload_sessions
-      WHERE expires_at_ms >= ?1 AND state IN ('preparing','uploading','finalizing')
-      ORDER BY created_at_ms DESC`
+       FROM vod_upload_sessions current
+      WHERE current.expires_at_ms >= ?1
+        AND current.state IN ('preparing','uploading','finalizing')
+        AND NOT EXISTS (
+          SELECT 1
+            FROM vod_upload_sessions newer
+           WHERE newer.session_id <> current.session_id
+             AND newer.expires_at_ms >= ?1
+             AND newer.updated_at_ms > current.updated_at_ms
+             AND (
+               (
+                 COALESCE(current.twitch_vod_id, '') <> ''
+                 AND newer.twitch_vod_id = current.twitch_vod_id
+                 AND COALESCE(newer.part_number, 0) = COALESCE(current.part_number, 0)
+               )
+               OR (
+                 COALESCE(current.recording_name, '') <> ''
+                 AND newer.recording_name = current.recording_name
+               )
+             )
+        )
+      ORDER BY current.updated_at_ms DESC, current.created_at_ms DESC`
   )
     .bind(nowMs)
     .all();

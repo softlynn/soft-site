@@ -15,7 +15,7 @@ import ErrorBoundary from "../utils/ErrorBoundary";
 import Footer from "../utils/Footer";
 import Loading from "../utils/Loading";
 import Vod from "./Vod";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router";
 import dayjs from "dayjs";
 import debounce from "lodash.debounce";
 import vodsClient from "./client";

@@ -19,9 +19,13 @@ It also includes a **local admin bridge** for:
 3. toggling per-VOD Spotify muted notice,
 4. toggling per-VOD chat replay availability.
 
+The repo also ships **Softuchive**, a lightweight Electron dashboard for the local pipeline. It controls manual
+polls, the scheduled task, OBS-close polling, archive storage, upload throttling, pause/resume, skip, recovery,
+queue progress, and local logs without moving those responsibilities into a second backend.
+
 ## One-time setup
 
-1. Install dependencies:
+1. Install Node.js 22.22 or newer, then install dependencies:
 
 ```bash
 npm ci --include=dev
@@ -80,6 +84,19 @@ npm run admin:task:remove
 npm run archive:run
 ```
 
+Run the site locally with Vite:
+
+```bash
+npm start
+```
+
+Run the state tests and create the production site:
+
+```bash
+npm test
+npm run build
+```
+
 Start/stop local admin API on demand:
 
 ```bash
@@ -111,24 +128,66 @@ You can also double-click:
 - Admin API install: `npm run admin:task:install`
 - Admin API remove: `npm run admin:task:remove`
 
+## Softuchive
+
+Run Softuchive from source:
+
+```bash
+npm run softuchive:start
+```
+
+Build the Windows portable app:
+
+```bash
+npm run softuchive:dist
+```
+
+The portable executable is written to `softuchive-dist/`. Softuchive locates the surrounding `soft-site`
+checkout automatically, or it can use `SOFTUCHIVE_REPO_ROOT` when launched from another location. Its icon
+source is `desktop/softuchive/assets/icon.png`; regenerate the Windows `.ico` file after replacing that PNG:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/generate_softuchive_icon.ps1
+```
+
 ## Files produced by automation
 
 - VOD index: `public/data/vods.json`
 - Chat replay per VOD: `public/data/comments/<twitchVodId>.json`
 - Emotes per VOD: `public/data/emotes/<twitchVodId>.json`
+- Static chat badges: `public/data/badges.json`
 - Pipeline state: `scripts/.state/pipeline-state.json`
 
 ## YouTube metadata template
 
 Each upload now sets and syncs:
 
-1. title format: `<stream title> - <YYYY-MM-DD> - Part X` (part suffix only when multiple parts exist),
-2. clickable `Chat Replay` link to the GitHub Pages VOD route,
-3. clickable `Original VOD` Twitch link,
-4. category via `YOUTUBE_CATEGORY_ID` (default `20`, Gaming),
-5. part links in description when a VOD has multiple YouTube parts.
-6. hashtag footer:
-   `#vrchat #dance #vtuber #vr #virtualreality`
+1. title format: `<stream title>`,
+2. short chat replay link format: `https://softu.one/<twitchVodId>`,
+3. description format:
+
+```text
+streamed Feb. 26, 2024 ✦ Chat replay: https://softu.one/<twitchVodId>
+Watch live on Twitch! https://twitch.tv/softuwo
+
+Categories:
+<category chapter lines>
+```
+
+4. category via `YOUTUBE_CATEGORY_ID` (default `20`, Gaming).
+
+To resync the template onto existing YouTube uploads without processing recordings, run:
+
+```bash
+npm run archive:sync-metadata
+```
+
+The normal archive poll checks YouTube publish visibility at most every `YOUTUBE_VISIBILITY_SYNC_INTERVAL_MINUTES`
+minutes (default `180`). Manual visibility sync still runs immediately:
+
+```bash
+npm run archive:sync-youtube-visibility
+```
 
 ## Frontend mode
 
@@ -162,6 +221,9 @@ If admin login from GitHub Pages is blocked by CORS on your machine, add your si
 
 GitHub Pages deploy workflow:
 `.github/workflows/deploy-pages.yml`
+
+The frontend uses Vite and Node 24 in CI. Production output remains in `build/`, so the GitHub Pages artifact
+and archive pipeline paths are unchanged.
 
 In GitHub repo settings:
 `Settings -> Pages -> Source: GitHub Actions`

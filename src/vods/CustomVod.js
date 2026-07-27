@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Box, Typography, Tooltip, useMediaQuery, IconButton, Collapse, Divider, Button } from "@mui/material";
 import Loading from "../utils/Loading";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router";
 import DownloadIcon from "@mui/icons-material/Download";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CustomPlayer from "./CustomPlayer";

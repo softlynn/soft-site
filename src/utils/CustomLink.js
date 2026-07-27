@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { styled, Link } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink } from "react-router";
 
 const CustomLink = styled(
   forwardRef(function CustomLinkBase(props, ref) {

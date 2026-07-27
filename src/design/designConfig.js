@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Box, Button, Grid, Stack, Typography } from "@mui/material";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router";
 import { FieldLabel } from "@puckeditor/core";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
