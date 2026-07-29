@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, InputLabel, Select, IconButton, Collapse, Button, Grid, Stack } from "@mui/material";
 import Loading from "../utils/Loading";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -21,6 +21,9 @@ import { getStoredChatDelaySeconds, setStoredChatDelaySeconds } from "./chatDela
 import vodsClient from "./client";
 import VodCard from "./Vod";
 import SimpleBar from "simplebar-react";
+import { ThemeModeContext } from "../utils/ThemeModeContext";
+
+const VIEWER_THEME_STORAGE_KEY = "softu-vod-viewer-theme";
 
 const getOriginalTwitchVodUrl = (vod) => {
   if (!vod || String(vod.platform || "").toLowerCase() !== "twitch") return "";
@@ -38,14 +41,39 @@ const getOriginalTwitchVodUrl = (vod) => {
   return `https://www.twitch.tv/videos/${id}`;
 };
 
-const stableRecommendationScore = (currentVodId, candidateVodId) => {
-  const value = `${currentVodId}:${candidateVodId}`;
-  let hash = 2166136261;
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
+const buildArchiveRecommendations = (vods, currentVodId, limit = 4) => {
+  const archive = (Array.isArray(vods) ? vods : [])
+    .filter((candidate) => Array.isArray(candidate?.youtube) && candidate.youtube.some((entry) => entry?.id))
+    .sort((a, b) => {
+      const dateDifference = new Date(b?.createdAt || 0).getTime() - new Date(a?.createdAt || 0).getTime();
+      return dateDifference || String(b?.id || "").localeCompare(String(a?.id || ""));
+    });
+  const currentIndex = archive.findIndex((candidate) => String(candidate?.id) === String(currentVodId));
+  if (currentIndex < 0) return archive.filter((candidate) => String(candidate?.id) !== String(currentVodId)).slice(0, limit);
+  if (currentIndex === 0) return archive.slice(1, limit + 1);
+
+  const recommendations = [];
+  const addCandidate = (candidate) => {
+    if (!candidate || String(candidate.id) === String(currentVodId)) return;
+    if (recommendations.some((item) => String(item.id) === String(candidate.id))) return;
+    recommendations.push(candidate);
+  };
+
+  addCandidate(archive[0]);
+  if (currentIndex > 1) addCandidate(archive[currentIndex - 1]);
+  addCandidate(archive[currentIndex + 1]);
+  addCandidate(archive[currentIndex + 2]);
+
+  for (let distance = 1; recommendations.length < limit && distance < archive.length; distance += 1) {
+    addCandidate(archive[currentIndex + distance]);
+    addCandidate(archive[currentIndex - distance]);
   }
-  return hash >>> 0;
+  for (const candidate of archive) {
+    if (recommendations.length >= limit) break;
+    addCandidate(candidate);
+  }
+
+  return recommendations.slice(0, limit);
 };
 
 const formatVodDate = (value) => {
@@ -55,6 +83,7 @@ const formatVodDate = (value) => {
 };
 
 export default function Vod(props) {
+  const { themeMode, setThemeMode } = useContext(ThemeModeContext);
   const location = useLocation();
   const navigate = useNavigate();
   const isPortrait = useMediaQuery("(orientation: portrait)");
@@ -76,6 +105,7 @@ export default function Vod(props) {
   const [mobileViewportSize, setMobileViewportSize] = useState({ width: 0, height: 0 });
   const [recommendedVods, setRecommendedVods] = useState([]);
   const playerRef = useRef(null);
+  const themeBeforeViewerRef = useRef(themeMode);
   const mobileViewerFullscreen = isMobile && mobileFullscreenChat;
   const mobileViewportLooksLandscape =
     mobileViewportSize.width > 0 &&
@@ -93,6 +123,15 @@ export default function Vod(props) {
       ? `${mobileViewportSize.width}px`
       : "100vw"
     : "100%";
+
+  useEffect(() => {
+    const themeBeforeViewer = themeBeforeViewerRef.current;
+    const savedViewerTheme = window.localStorage.getItem(VIEWER_THEME_STORAGE_KEY);
+    setThemeMode(savedViewerTheme === "light" ? "light" : "dark");
+    return () => {
+      setThemeMode(themeBeforeViewer);
+    };
+  }, [setThemeMode]);
 
   useEffect(() => {
     const fetchVod = async () => {
@@ -153,12 +192,8 @@ export default function Vod(props) {
       })
       .then((response) => {
         if (!active) return;
-        const candidates = (Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [])
-          .filter((candidate) => String(candidate?.id) !== String(vod.id))
-          .filter((candidate) => Array.isArray(candidate?.youtube) && candidate.youtube.some((entry) => entry?.id))
-          .sort((a, b) => stableRecommendationScore(vod.id, a.id) - stableRecommendationScore(vod.id, b.id))
-          .slice(0, 4);
-        setRecommendedVods(candidates);
+        const archive = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
+        setRecommendedVods(buildArchiveRecommendations(archive, vod.id, 4));
       })
       .catch(() => {
         if (active) setRecommendedVods([]);
@@ -260,6 +295,12 @@ export default function Vod(props) {
     setMobileFullscreenChat((prev) => !prev);
   };
 
+  const handleViewerThemeModeChange = (mode) => {
+    const nextMode = mode === "light" ? "light" : "dark";
+    window.localStorage.setItem(VIEWER_THEME_STORAGE_KEY, nextMode);
+    setThemeMode(nextMode);
+  };
+
   useEffect(() => {
     if (delay === undefined) return;
     console.info(`Chat Delay (effective): ${delay - userChatDelay} seconds`);
@@ -337,7 +378,7 @@ export default function Vod(props) {
           }}
         >
           <Box
-            className="soft-glass"
+            className="soft-glass soft-vod-viewer-panel"
             sx={{
               display: "flex",
               height: useStackedMobileLayout ? "auto" : "100%",
@@ -512,7 +553,7 @@ export default function Vod(props) {
                       <ContentCopyIcon />
                     </IconButton>
                   </Tooltip>
-                  <VodReactions vodId={vod.id} compact lazy={false} sx={{ ml: 0.25 }} />
+                  <VodReactions vodId={vod.id} compact viewerControls lazy={false} sx={{ ml: 0.25 }} />
                 </Box>
               </Box>
             </Collapse>
@@ -533,13 +574,15 @@ export default function Vod(props) {
             forceSideLayout={mobileFullscreenSideLayout}
             showChat={useStackedMobileLayout ? true : chatVisible}
             onShowChatChange={setChatVisible}
+            confirmLightMode
+            onThemeModeChange={handleViewerThemeModeChange}
           />
         </Box>
 
         {!mobileViewerFullscreen && (
           <Box component="section" sx={{ width: "100%", maxWidth: 1760, mx: "auto", px: { xs: 0.15, sm: 0.5, md: 0.75 }, pt: { xs: 1.25, md: 1.75 }, pb: 4 }}>
             <Box
-              className="soft-glass"
+              className="soft-glass soft-vod-viewer-details"
               sx={{
                 borderRadius: { xs: "18px", md: "24px" },
                 p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -597,16 +640,11 @@ export default function Vod(props) {
             </Box>
 
             {recommendedVods.length > 0 && (
-              <Box sx={{ mt: { xs: 2.5, md: 3.5 } }}>
+              <Box className="soft-vod-recommendations" sx={{ mt: { xs: 2.5, md: 3.5 } }}>
                 <Box sx={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: 2, mb: 1.2, px: 0.5 }}>
-                  <Box>
-                    <Typography variant="overline" sx={{ color: "secondary.main", fontWeight: 800, letterSpacing: "0.12em" }}>
-                      Keep watching
-                    </Typography>
-                    <Typography variant="h5" sx={{ color: "primary.main", lineHeight: 1.1 }}>
-                      Four from the archive
-                    </Typography>
-                  </Box>
+                  <Typography variant="h5" sx={{ color: "primary.main", lineHeight: 1.1 }}>
+                    Recommended
+                  </Typography>
                   <Button variant="text" onClick={() => navigate("/vods")}>
                     View all
                   </Button>

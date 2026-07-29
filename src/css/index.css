@@ -1202,3 +1202,67 @@ html[data-soft-theme="dark"] .soft-player-stage::before {
     box-shadow: 0 12px 28px rgba(19, 33, 56, 0.12);
   }
 }
+
+/* VOD surfaces stay intentionally simple so the video and thumbnails lead the page. */
+.soft-vod-viewer-panel.soft-glass,
+.soft-vod-viewer-details.soft-glass,
+.soft-vod-card.soft-glass {
+  background: rgba(255, 249, 238, 0.82);
+  border: 1px solid rgba(70, 52, 30, 0.16);
+  box-shadow: 0 7px 20px rgba(72, 51, 26, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.soft-vod-viewer-panel.soft-glass::before,
+.soft-vod-viewer-panel.soft-glass::after,
+.soft-vod-viewer-details.soft-glass::before,
+.soft-vod-viewer-details.soft-glass::after,
+.soft-vod-card.soft-glass::before,
+.soft-vod-card.soft-glass::after,
+.soft-vod-card__media::before,
+.soft-vod-card__media::after {
+  display: none;
+}
+
+.soft-vod-card .soft-vod-card__media {
+  border: 1px solid rgba(70, 52, 30, 0.18) !important;
+  box-shadow: none !important;
+}
+
+.soft-vod-card.soft-glass:hover {
+  box-shadow: 0 9px 24px rgba(72, 51, 26, 0.11);
+  border-color: rgba(70, 52, 30, 0.24);
+}
+
+html[data-soft-theme="dark"] .soft-vod-watch-shell {
+  background: #0c0f14;
+}
+
+html[data-soft-theme="dark"] .soft-vod-viewer-panel.soft-glass,
+html[data-soft-theme="dark"] .soft-vod-viewer-details.soft-glass,
+html[data-soft-theme="dark"] .soft-vod-card.soft-glass {
+  background: #151922;
+  border-color: #343b49;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+html[data-soft-theme="dark"] .soft-vod-viewer-panel.soft-glass {
+  background: #11151d;
+}
+
+html[data-soft-theme="dark"] .soft-vod-card .soft-vod-card__media {
+  border-color: #3b4352 !important;
+  box-shadow: none !important;
+}
+
+html[data-soft-theme="dark"] .soft-vod-card.soft-glass:hover {
+  border-color: #4b5668;
+  background: #181d27;
+  box-shadow: none;
+}
+
+html[data-soft-theme="dark"] .soft-chat-panel {
+  border: 1px solid #343b49;
+  box-shadow: none;
+}

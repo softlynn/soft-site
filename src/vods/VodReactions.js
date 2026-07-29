@@ -29,6 +29,7 @@ export default function VodReactions({
   readOnly = false,
   showDislike = true,
   countOnlyLike = false,
+  viewerControls = false,
 }) {
   const rootRef = useRef(null);
   const [enabled, setEnabled] = useState(!lazy);
@@ -115,14 +116,16 @@ export default function VodReactions({
     () => ({
       display: "inline-flex",
       alignItems: "center",
-      gap: compact ? 0.35 : 0.42,
-      px: compact ? 0.55 : 0.8,
-      py: compact ? 0.28 : 0.45,
-      minHeight: compact ? 24 : 31,
-      borderRadius: compact ? "10px" : "12px",
-      border: "1px solid var(--soft-border)",
-      background: "var(--soft-surface-strong)",
-      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.20)",
+      gap: viewerControls ? 0.42 : compact ? 0.35 : 0.42,
+      px: viewerControls ? 0.75 : compact ? 0.55 : 0.8,
+      py: viewerControls ? 0.45 : compact ? 0.28 : 0.45,
+      minHeight: viewerControls ? 40 : compact ? 24 : 31,
+      minWidth: viewerControls ? 42 : undefined,
+      justifyContent: viewerControls ? "center" : undefined,
+      borderRadius: viewerControls ? "14px" : compact ? "10px" : "12px",
+      border: viewerControls ? "1px solid transparent" : "1px solid var(--soft-border)",
+      background: viewerControls ? "transparent" : "var(--soft-surface-strong)",
+      boxShadow: viewerControls ? "none" : "inset 0 1px 0 rgba(255,255,255,0.20)",
       color: "text.secondary",
       transition: "transform 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease",
       cursor: isInteractive ? (isPending ? "wait" : "pointer") : "default",
@@ -134,7 +137,7 @@ export default function VodReactions({
         cursor: "wait",
       },
     }),
-    [compact, isInteractive, isPending]
+    [compact, isInteractive, isPending, viewerControls]
   );
 
   const submitVote = async (direction, event) => {
@@ -176,7 +179,7 @@ export default function VodReactions({
       : active
       ? ThumbDownAltRoundedIcon
       : ThumbDownAltOutlinedIcon;
-    const accentColor = isLike ? "#7f2946" : "#35506f";
+    const accentColor = isLike ? "var(--soft-salmon)" : "var(--soft-blue)";
 
     return (
       <Tooltip key={direction} title={compact ? (isLike ? "Like" : "Dislike") : `Global ${isLike ? "likes" : "dislikes"}`}>
@@ -190,7 +193,11 @@ export default function VodReactions({
           sx={{
             ...reactionButtonSx,
             borderColor: active ? (isLike ? "rgba(212,107,140,0.26)" : "rgba(89,145,226,0.24)") : undefined,
-            background: active ? (isLike ? "rgba(212,107,140,0.12)" : "rgba(89,145,226,0.12)") : undefined,
+            background: active
+              ? isLike
+                ? "rgba(212,107,140,0.12)"
+                : "rgba(89,145,226,0.12)"
+              : reactionButtonSx.background,
             boxShadow: active
               ? isLike
                 ? "inset 0 1px 0 rgba(255,255,255,0.28), 0 4px 10px rgba(212,107,140,0.08)"
@@ -198,7 +205,7 @@ export default function VodReactions({
               : reactionButtonSx.boxShadow,
           }}
         >
-          <Icon sx={{ fontSize: compact ? 13 : 15, color: active ? accentColor : "currentColor" }} />
+          <Icon sx={{ fontSize: viewerControls ? 21 : compact ? 13 : 15, color: active ? accentColor : "currentColor" }} />
           <Typography
             variant="caption"
             sx={{
@@ -206,7 +213,7 @@ export default function VodReactions({
               lineHeight: 1,
               minWidth: compact ? 9 : 11,
               color: active ? "text.primary" : "text.secondary",
-              fontSize: compact ? "0.66rem" : "0.72rem",
+              fontSize: viewerControls ? "0.72rem" : compact ? "0.66rem" : "0.72rem",
             }}
           >
             {loading && !counts ? "…" : count}
@@ -273,7 +280,7 @@ export default function VodReactions({
         alignItems: "center",
         gap: compactGap,
         flexWrap: "wrap",
-        minHeight: compact ? 26 : 34,
+        minHeight: viewerControls ? 40 : compact ? 26 : 34,
         ...sx,
       }}
       onClick={(event) => event.stopPropagation()}

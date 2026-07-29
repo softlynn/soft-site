@@ -731,6 +731,8 @@ export default function Chat(props) {
               <ThemeModeToggle
                 variant="inline"
                 size="small"
+                confirmLightMode={props.confirmLightMode}
+                onModeChange={props.onThemeModeChange}
                 announceKey={`viewer-${vodId}`}
                 sx={{
                   width: 34,

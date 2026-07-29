@@ -238,7 +238,7 @@ export default function App() {
   };
 
   return (
-    <ThemeModeContext.Provider value={{ themeMode: effectiveThemeMode, toggleThemeMode }}>
+    <ThemeModeContext.Provider value={{ themeMode: effectiveThemeMode, toggleThemeMode, setThemeMode: setPreferredThemeMode }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <DesignProvider>

@@ -5,5 +5,6 @@ const noop = () => {};
 export const ThemeModeContext = createContext({
   themeMode: "light",
   toggleThemeMode: noop,
+  setThemeMode: noop,
 });
 
