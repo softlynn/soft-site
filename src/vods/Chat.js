@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef, createRef, useCallback } from "reac
 import { Box, Typography, Tooltip, Divider, Collapse, styled, IconButton, Button } from "@mui/material";
 import SimpleBar from "simplebar-react";
 import Loading from "../utils/Loading";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { collapseClasses } from "@mui/material/Collapse";
 import Twemoji from "react-twemoji";
 import Settings from "./Settings";
@@ -12,6 +11,8 @@ import MessageTooltip from "./MessageTooltip";
 import { BTTV_EMOTE_CDN } from "../config/site";
 import { getBadges, getEmotes, getVodComments } from "../api/vodsApi";
 import ThemeModeToggle from "../utils/ThemeModeToggle";
+import KeyboardDoubleArrowLeftRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowLeftRounded";
+import KeyboardDoubleArrowRightRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowRightRounded";
 
 const SEVENTV_API = "https://7tv.io/v3";
 const BASE_TWITCH_CDN = "https://static-cdn.jtvnw.net";
@@ -25,8 +26,8 @@ let badgesCount = 0;
 
 export default function Chat(props) {
   const { isPortrait, vodId, playerRef, playing, userChatDelay, delay, youtube, part, games, chatReplayAvailable = true, forceSideLayout = false } = props;
-  const desktopExpandedWidth = "clamp(320px, 34vw, 420px)";
-  const desktopCollapsedWidth = "46px";
+  const desktopExpandedWidth = "clamp(320px, 23vw, 400px)";
+  const desktopCollapsedWidth = "52px";
   const sideLayout = forceSideLayout || !isPortrait;
   const expandedPanelWidth = forceSideLayout ? "clamp(240px, 38vw, 340px)" : desktopExpandedWidth;
   const expandedPanelMinWidth = forceSideLayout ? "clamp(220px, 30vw, 300px)" : "clamp(320px, 28vw, 420px)";
@@ -666,11 +667,13 @@ export default function Chat(props) {
 
   return (
     <Box
+      className="soft-chat-panel"
       sx={{
-        height: "100%",
+        height: sideLayout ? "100%" : "clamp(320px, 48dvh, 520px)",
         width: !sideLayout ? "100%" : showChat ? expandedPanelWidth : desktopCollapsedWidth,
         minWidth: !sideLayout ? 0 : showChat ? expandedPanelMinWidth : desktopCollapsedWidth,
-        transition: "none",
+        flex: sideLayout ? "0 0 auto" : "0 0 auto",
+        transition: "width 180ms ease, min-width 180ms ease",
         background:
           "linear-gradient(180deg, rgba(16,24,40,0.92), rgba(14,19,31,0.96))",
         borderLeft: !sideLayout ? "none" : "1px solid rgba(255,255,255,0.08)",
@@ -686,13 +689,18 @@ export default function Chat(props) {
     >
       {showChat ? (
         <>
-          <Box sx={{ display: "grid", alignItems: "center", p: 1 }}>
+          <Box sx={{ display: "grid", alignItems: "center", minHeight: 52, p: 0.75 }}>
             {sideLayout && (
               <Box sx={{ justifySelf: "left", gridColumnStart: 1, gridRowStart: 1 }}>
-                <Tooltip title="Collapse">
-                  <ExpandMore expand={showChat} onClick={handleExpandClick} aria-expanded={showChat}>
-                    <ExpandMoreIcon />
-                  </ExpandMore>
+                <Tooltip title="Hide chat">
+                  <IconButton
+                    onClick={handleExpandClick}
+                    aria-expanded={showChat}
+                    aria-label="Hide chat"
+                    sx={{ color: "rgba(234,242,255,0.92)", width: 36, height: 36 }}
+                  >
+                    <KeyboardDoubleArrowRightRoundedIcon fontSize="small" />
+                  </IconButton>
                 </Tooltip>
               </Box>
             )}
@@ -760,13 +768,33 @@ export default function Chat(props) {
         </>
       ) : (
         sideLayout && (
-          <Box sx={{ position: "absolute", inset: 0, display: "grid", placeItems: "center" }}>
-            <Tooltip title="Expand">
-              <ExpandMore expand={showChat} onClick={handleExpandClick} aria-expanded={showChat}>
-                <ExpandMoreIcon />
-              </ExpandMore>
-            </Tooltip>
-          </Box>
+          <Tooltip title="Show chat" placement="left">
+            <Button
+              onClick={handleExpandClick}
+              aria-expanded={showChat}
+              aria-label="Show chat"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                minWidth: 0,
+                width: "100%",
+                borderRadius: 0,
+                color: "rgba(234,242,255,0.94)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1.2,
+                "&:hover": { background: "rgba(255,255,255,0.06)" },
+              }}
+            >
+              <KeyboardDoubleArrowLeftRoundedIcon fontSize="small" />
+              <Typography
+                variant="caption"
+                sx={{ color: "inherit", fontWeight: 800, letterSpacing: "0.16em", writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+              >
+                CHAT
+              </Typography>
+            </Button>
+          </Tooltip>
         )
       )}
       {chatReplayAvailable && (
@@ -788,16 +816,3 @@ const CustomCollapse = styled(({ _, ...props }) => <Collapse {...props} />)({
     height: "100%",
   },
 });
-
-const ExpandMore = styled(({ expand, ...props }, ref) => <IconButton {...props} />)`
-  margin-left: auto;
-  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-  ${(props) =>
-    props.expand
-      ? `
-          transform: rotate(-90deg);
-        `
-      : `
-          transform: rotate(90deg);
-        `}
-`;

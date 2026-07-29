@@ -1,24 +1,27 @@
 import { useEffect, useState, useRef } from "react";
-import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, InputLabel, Select, IconButton, Collapse, Divider, Button } from "@mui/material";
+import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, InputLabel, Select, IconButton, Collapse, Button, Grid, Stack } from "@mui/material";
 import Loading from "../utils/Loading";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import YoutubePlayer from "./YoutubePlayer";
 import DownloadIcon from "@mui/icons-material/Download";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import NotFound from "../utils/NotFound";
 import Chat from "./Chat";
 import Chapters from "./VodChapters";
-import ExpandMore from "../utils/CustomExpandMore";
 import CustomToolTip from "../utils/CustomToolTip";
 import { toHMS, convertTimestamp, toSeconds } from "../utils/helpers";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import HomeIcon from "@mui/icons-material/Home";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
+import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
+import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import { BRAND_NAME, DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "./VodReactions";
 import { getStoredChatDelaySeconds, setStoredChatDelaySeconds } from "./chatDelayPreference";
+import vodsClient from "./client";
+import VodCard from "./Vod";
 
 const getOriginalTwitchVodUrl = (vod) => {
   if (!vod || String(vod.platform || "").toLowerCase() !== "twitch") return "";
@@ -34,6 +37,22 @@ const getOriginalTwitchVodUrl = (vod) => {
   const id = String(vod.id || "").trim();
   if (!/^\d+$/.test(id)) return "";
   return `https://www.twitch.tv/videos/${id}`;
+};
+
+const stableRecommendationScore = (currentVodId, candidateVodId) => {
+  const value = `${currentVodId}:${candidateVodId}`;
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+};
+
+const formatVodDate = (value) => {
+  const date = new Date(value || 0);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat(undefined, { month: "long", day: "numeric", year: "numeric" }).format(date);
 };
 
 export default function Vod(props) {
@@ -56,6 +75,7 @@ export default function Vod(props) {
   const [userChatDelay, setUserChatDelay] = useState(() => getStoredChatDelaySeconds() ?? DEFAULT_CHAT_DELAY_SECONDS);
   const [mobileFullscreenChat, setMobileFullscreenChat] = useState(false);
   const [mobileViewportSize, setMobileViewportSize] = useState({ width: 0, height: 0 });
+  const [recommendedVods, setRecommendedVods] = useState([]);
   const playerRef = useRef(null);
   const mobileViewerFullscreen = isMobile && mobileFullscreenChat;
   const mobileViewportLooksLandscape =
@@ -117,6 +137,38 @@ export default function Vod(props) {
     setChapter(vod.chapters ? vod.chapters[0] : null);
     return;
   }, [vod, type, location.search]);
+
+  useEffect(() => {
+    if (!vod?.id) return undefined;
+    let active = true;
+
+    vodsClient
+      .service("vods")
+      .find({
+        query: {
+          $limit: 200,
+          $skip: 0,
+          $sort: { createdAt: -1 },
+          $and: [{ unpublished: { $ne: true } }],
+        },
+      })
+      .then((response) => {
+        if (!active) return;
+        const candidates = (Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [])
+          .filter((candidate) => String(candidate?.id) !== String(vod.id))
+          .filter((candidate) => Array.isArray(candidate?.youtube) && candidate.youtube.some((entry) => entry?.id))
+          .sort((a, b) => stableRecommendationScore(vod.id, a.id) - stableRecommendationScore(vod.id, b.id))
+          .slice(0, 4);
+        setRecommendedVods(candidates);
+      })
+      .catch(() => {
+        if (active) setRecommendedVods([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [vod?.id]);
 
   useEffect(() => {
     if (!playerRef.current || !vod || !vod.chapters) return;
@@ -234,17 +286,25 @@ export default function Vod(props) {
   const totalVodParts = youtube.filter((data) => String(data?.type || "vod") === "vod" && data?.id).length;
   const hasMultipleVodParts = totalVodParts > 1;
   const originalTwitchVodUrl = getOriginalTwitchVodUrl(vod);
+  const vodDate = formatVodDate(vod.createdAt);
+  const vodTopics = Array.from(
+    new Set(
+      (Array.isArray(vod.chapters) ? vod.chapters : [])
+        .map((item) => String(item?.name || "").trim())
+        .filter(Boolean)
+    )
+  ).slice(0, 3);
 
   return (
     <Box
+      className="soft-vod-watch-scroll"
       sx={{
         height: fullscreenViewportHeight,
         width: fullscreenViewportWidth,
-        p: mobileViewerFullscreen
-          ? "max(env(safe-area-inset-top), 6px) max(env(safe-area-inset-right), 6px) max(env(safe-area-inset-bottom), 6px) max(env(safe-area-inset-left), 6px)"
-          : { xs: 0.75, md: 1 },
         boxSizing: "border-box",
         minHeight: 0,
+        overflowY: mobileViewerFullscreen ? "hidden" : "auto",
+        overscrollBehavior: "contain",
         position: mobileViewerFullscreen ? "fixed" : "relative",
         inset: mobileViewerFullscreen ? 0 : "auto",
         zIndex: mobileViewerFullscreen ? 1400 : "auto",
@@ -252,257 +312,367 @@ export default function Vod(props) {
         backdropFilter: mobileViewerFullscreen ? "blur(6px)" : "none",
       }}
     >
-      <Box sx={{ display: "flex", flexDirection: mobileFullscreenSideLayout ? "row" : isPortrait ? "column" : "row", height: "100%", width: "100%", gap: mobileFullscreenSideLayout ? 0.6 : 0 }}>
+      <Box
+        sx={{
+          minHeight: "100%",
+          p: mobileViewerFullscreen
+            ? "max(env(safe-area-inset-top), 6px) max(env(safe-area-inset-right), 6px) max(env(safe-area-inset-bottom), 6px) max(env(safe-area-inset-left), 6px)"
+            : { xs: 0.75, md: 1 },
+          boxSizing: "border-box",
+        }}
+      >
         <Box
-          className="soft-glass"
           sx={{
             display: "flex",
-            height: "100%",
-            width: mobileFullscreenSideLayout ? "auto" : "100%",
-            flex: "1 1 auto",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            minWidth: 0,
-            overflow: "hidden",
-            position: "relative",
-            borderRadius: "20px",
-            p: 0.6,
-            gap: 0.5,
+            flexDirection: mobileFullscreenSideLayout ? "row" : useStackedMobileLayout ? "column" : "row",
+            height: mobileViewerFullscreen ? "100%" : useStackedMobileLayout ? "auto" : "calc(100dvh - 16px)",
+            minHeight: mobileViewerFullscreen || useStackedMobileLayout ? 0 : 560,
+            width: "100%",
+            maxWidth: 1920,
+            mx: "auto",
+            gap: { xs: 0.7, md: 1 },
           }}
         >
-          <Tooltip title="home">
-            <IconButton
-              onClick={() => navigate("/")}
-              aria-label="home"
-              sx={{
-                position: "absolute",
-                top: { xs: 10, md: 12 },
-                left: { xs: 10, md: 12 },
-                zIndex: 6,
-                width: 36,
-                height: 36,
-                color: "var(--soft-text-primary)",
-                background: "var(--soft-control-strip-bg)",
-                border: "1px solid var(--soft-control-strip-border)",
-                boxShadow: "var(--soft-control-strip-inset), 0 6px 16px rgba(2,6,18,0.12)",
-                "&:hover": {
-                  background: "var(--soft-control-strip-bg)",
-                },
-              }}
-            >
-              <HomeIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
           <Box
-            className="soft-player-stage"
+            className="soft-glass"
             sx={{
-              width: "100%",
-              minHeight: 0,
-              flex: 1,
-              display: "grid",
-              placeItems: "center",
-              position: "relative",
-              borderRadius: "16px",
+              display: "flex",
+              height: useStackedMobileLayout ? "auto" : "100%",
+              width: mobileFullscreenSideLayout ? "auto" : "100%",
+              flex: "1 1 auto",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              minWidth: 0,
               overflow: "hidden",
+              position: "relative",
+              borderRadius: { xs: "16px", md: "22px" },
+              p: 0.6,
+              gap: 0.5,
             }}
           >
-            {!!vod.thumbnail_url && (
-              <Box
-                aria-hidden="true"
+            <Tooltip title="Back home">
+              <IconButton
+                onClick={() => navigate("/")}
+                aria-label="Back home"
                 sx={{
                   position: "absolute",
-                  inset: -12,
-                  backgroundImage: `url(${vod.thumbnail_url})`,
-                  backgroundPosition: "center",
-                  backgroundSize: "cover",
-                  filter: "blur(28px) saturate(1.08)",
-                  transform: "scale(1.06)",
-                  opacity: 0.6,
-                  zIndex: 0,
+                  top: { xs: 10, md: 12 },
+                  left: { xs: 10, md: 12 },
+                  zIndex: 6,
+                  width: 40,
+                  height: 40,
+                  color: "var(--soft-text-primary)",
+                  background: "var(--soft-control-strip-bg)",
+                  border: "1px solid var(--soft-control-strip-border)",
+                  boxShadow: "var(--soft-control-strip-inset), 0 8px 20px rgba(2,6,18,0.16)",
+                  "&:hover": { background: "var(--soft-control-strip-bg)" },
                 }}
-              />
-            )}
-            <Box
-              aria-hidden="true"
-              sx={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "radial-gradient(120% 90% at 8% 8%, rgba(255,255,255,0.16), transparent 58%), radial-gradient(110% 90% at 92% 92%, rgba(212,107,140,0.15), transparent 64%), linear-gradient(180deg, rgba(255,255,255,0.04), rgba(17,24,39,0.04))",
-                zIndex: 1,
-              }}
-            />
-            <Box
-              className="soft-player-frame"
-              sx={{
-                width: "100%",
-                maxWidth: {
-                  xs: mobileFullscreenSideLayout ? `min(100%, calc((100dvh - ${showMenu ? 156 : 92}px) * 16 / 9))` : "100%",
-                  md: `min(100%, calc((100dvh - ${showMenu ? 156 : 92}px) * 16 / 9))`,
-                },
-                maxHeight: "100%",
-                aspectRatio: "16 / 9",
-                borderRadius: "16px",
-                overflow: "hidden",
-                background: "transparent",
-                minHeight: 0,
-                boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
-                position: "relative",
-                zIndex: 2,
-              }}
-            >
-              <YoutubePlayer playerRef={playerRef} part={part} youtube={youtube} setCurrentTime={setCurrentTime} setPart={setPart} setPlaying={setPlaying} delay={delay} />
-            </Box>
-          </Box>
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: showMenu ? 8 : 10,
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 4,
-              borderRadius: "999px",
-              background: "var(--soft-control-strip-bg)",
-              border: "1px solid var(--soft-control-strip-border)",
-              boxShadow: "var(--soft-control-strip-inset), 0 6px 16px rgba(2,6,18,0.14)",
-              p: 0.25,
-            }}
-          >
-            <Tooltip title={showMenu ? "Collapse" : "Expand"}>
-              <ExpandMore expand={showMenu} onClick={handleExpandClick} aria-expanded={showMenu} aria-label="show menu" sx={{ width: 34, height: 34 }}>
-                <ExpandMoreIcon />
-              </ExpandMore>
+              >
+                <HomeIcon fontSize="small" />
+              </IconButton>
             </Tooltip>
+
             {isMobile && (
-              <Tooltip title={mobileViewerFullscreen ? "Exit Fullscreen + Chat" : "Open Fullscreen + Chat (Overlay)"}> 
+              <Tooltip title={mobileViewerFullscreen ? "Exit fullscreen viewer" : "Open fullscreen with chat"}>
                 <IconButton
                   onClick={handleMobileFullscreenChatToggle}
-                  aria-label={mobileViewerFullscreen ? "Exit fullscreen with chat" : "Open fullscreen with chat"}
+                  aria-label={mobileViewerFullscreen ? "Exit fullscreen viewer" : "Open fullscreen with chat"}
                   sx={{
-                    width: 34,
-                    height: 34,
+                    position: "absolute",
+                    top: 10,
+                    right: 10,
+                    zIndex: 6,
+                    width: 40,
+                    height: 40,
                     color: "var(--soft-text-primary)",
-                    borderRadius: "999px",
-                    ml: 0.15,
+                    background: "var(--soft-control-strip-bg)",
+                    border: "1px solid var(--soft-control-strip-border)",
+                    boxShadow: "var(--soft-control-strip-inset), 0 8px 20px rgba(2,6,18,0.16)",
+                    "&:hover": { background: "var(--soft-control-strip-bg)" },
                   }}
                 >
                   {mobileViewerFullscreen ? <CloseFullscreenIcon fontSize="small" /> : <OpenInFullIcon fontSize="small" />}
                 </IconButton>
               </Tooltip>
             )}
-          </Box>
-          <Collapse in={showMenu} timeout="auto" unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
+
             <Box
+              className="soft-player-stage"
               sx={{
-                display: "flex",
-                p: 1,
-                alignItems: "center",
-                borderRadius: "14px",
-                background: "var(--soft-control-strip-bg)",
-                border: "1px solid var(--soft-control-strip-border)",
-                boxShadow: "var(--soft-control-strip-inset)",
-                mx: 0.4,
-                mb: 0.2,
+                width: "100%",
+                minHeight: 0,
+                flex: useStackedMobileLayout ? "0 0 auto" : 1,
+                aspectRatio: useStackedMobileLayout ? "16 / 9" : "auto",
+                display: "grid",
+                placeItems: "center",
+                position: "relative",
+                borderRadius: { xs: "13px", md: "18px" },
+                overflow: "hidden",
               }}
             >
-              {chapter && <Chapters chapters={vod.chapters} chapter={chapter} setPart={setPart} youtube={youtube} setChapter={setChapter} />}
-              <Box sx={{ minWidth: 0 }}>
-                <CustomToolTip title={vod.title}>
-                  <Typography fontWeight={550} variant="body1" noWrap={true}>{`${vod.title}`}</Typography>
-                </CustomToolTip>
-                {vod.vodNotice && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: "warning.main",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 0.4,
-                      px: 0.75,
-                      py: 0.3,
-                      mt: 0.2,
-                      borderRadius: "999px",
-                      background: "rgba(204,111,78,0.10)",
-                      border: "1px solid rgba(204,111,78,0.18)",
-                    }}
-                  >
-                    {vod.vodNotice}
-                  </Typography>
-                )}
-                {originalTwitchVodUrl && (
-                  <Button
-                    component="a"
-                    href={originalTwitchVodUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    size="small"
-                    variant="text"
-                    sx={{ display: "inline-flex", minWidth: 0, mt: 0.2, px: 0, py: 0, color: "text.secondary", fontSize: "0.75rem", fontWeight: 600 }}
-                  >
-                    [open twitch vod]
-                  </Button>
-                )}
+              {!!vod.thumbnail_url && (
+                <Box
+                  aria-hidden="true"
+                  sx={{
+                    position: "absolute",
+                    inset: -12,
+                    backgroundImage: `url(${vod.thumbnail_url})`,
+                    backgroundPosition: "center",
+                    backgroundSize: "cover",
+                    filter: "blur(28px) saturate(1.08)",
+                    transform: "scale(1.06)",
+                    opacity: 0.6,
+                    zIndex: 0,
+                  }}
+                />
+              )}
+              <Box
+                aria-hidden="true"
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "radial-gradient(120% 90% at 8% 8%, rgba(255,255,255,0.16), transparent 58%), radial-gradient(110% 90% at 92% 92%, rgba(212,107,140,0.15), transparent 64%), linear-gradient(180deg, rgba(255,255,255,0.04), rgba(17,24,39,0.04))",
+                  zIndex: 1,
+                }}
+              />
+
+              <Box
+                className="soft-player-frame"
+                sx={{
+                  width: "100%",
+                  maxWidth: useStackedMobileLayout
+                    ? "100%"
+                    : `min(100%, calc((100dvh - ${showMenu ? 96 : 28}px) * 16 / 9))`,
+                  maxHeight: "100%",
+                  aspectRatio: "16 / 9",
+                  borderRadius: { xs: "13px", md: "18px" },
+                  overflow: "hidden",
+                  background: "#080b12",
+                  minHeight: 0,
+                  boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), 0 18px 44px rgba(2,6,18,0.18)",
+                  position: "relative",
+                  zIndex: 2,
+                }}
+              >
+                <YoutubePlayer playerRef={playerRef} part={part} youtube={youtube} setCurrentTime={setCurrentTime} setPart={setPart} setPlaying={setPlaying} delay={delay} />
               </Box>
-              <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
-                {hasMultipleVodParts && (
-                  <Box sx={{ ml: 0.5 }}>
+
+              {!showMenu && (
+                <Button
+                  onClick={handleExpandClick}
+                  aria-expanded={showMenu}
+                  aria-label="Show viewer controls"
+                  startIcon={<KeyboardArrowUpRoundedIcon />}
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    bottom: 12,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    zIndex: 5,
+                    borderRadius: "999px",
+                    color: "var(--soft-text)",
+                    background: "var(--soft-control-strip-bg)",
+                    border: "1px solid var(--soft-control-strip-border)",
+                    boxShadow: "var(--soft-control-strip-inset), 0 8px 22px rgba(2,6,18,0.18)",
+                    backdropFilter: "blur(14px)",
+                    px: 1.35,
+                    "&:hover": { background: "var(--soft-control-strip-bg)" },
+                  }}
+                >
+                  Show controls
+                </Button>
+              )}
+            </Box>
+
+            <Collapse in={showMenu} timeout={180} unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: { xs: "wrap", sm: "nowrap" },
+                  gap: 0.6,
+                  p: { xs: 0.65, sm: 0.8 },
+                  alignItems: "center",
+                  borderRadius: "14px",
+                  background: "var(--soft-control-strip-bg)",
+                  border: "1px solid var(--soft-control-strip-border)",
+                  boxShadow: "var(--soft-control-strip-inset)",
+                  mx: 0.25,
+                  mb: 0.15,
+                }}
+              >
+                {chapter && <Chapters chapters={vod.chapters} chapter={chapter} setPart={setPart} youtube={youtube} setChapter={setChapter} />}
+                <Box sx={{ minWidth: 0, flex: "1 1 220px" }}>
+                  <CustomToolTip title={vod.title}>
+                    <Typography fontWeight={650} variant="body1" noWrap>{vod.title}</Typography>
+                  </CustomToolTip>
+                  <Stack direction="row" spacing={0.8} alignItems="center">
+                    {vodDate && (
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                        {vodDate}
+                      </Typography>
+                    )}
+                    {vod.vodNotice && (
+                      <Typography variant="caption" sx={{ color: "warning.main", fontWeight: 650 }} noWrap>
+                        {vod.vodNotice}
+                      </Typography>
+                    )}
+                  </Stack>
+                </Box>
+
+                <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 0.35 }}>
+                  {hasMultipleVodParts && (
                     <FormControl
                       variant="outlined"
+                      size="small"
                       sx={{
+                        minWidth: 82,
                         "& .MuiOutlinedInput-root": {
-                          boxShadow: "0 0 0 1px rgba(212,107,140,0.18), 0 0 16px rgba(212,107,140,0.18)",
+                          boxShadow: "0 0 0 1px rgba(212,107,140,0.18), 0 0 16px rgba(212,107,140,0.14)",
                         },
                       }}
                     >
                       <InputLabel id="select-label">Part</InputLabel>
-                      <Select labelId="select-label" label="Part" value={part.part - 1} onChange={handlePartChange} autoWidth>
-                        {youtube.map((data, i) => {
-                          return (
-                            <MenuItem key={data.id} value={i}>
-                              {data?.part || i + 1}
-                            </MenuItem>
-                          );
-                        })}
+                      <Select labelId="select-label" label="Part" value={part.part - 1} onChange={handlePartChange}>
+                        {youtube.map((data, index) => (
+                          <MenuItem key={data.id} value={index}>
+                            {data?.part || index + 1}
+                          </MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
-                  </Box>
-                )}
-                <Box sx={{ ml: 0.5 }}>
-                  {drive && drive[0] && (
-                    <Tooltip title={`Download Vod`}>
-                      <IconButton href={`https://drive.google.com/u/2/open?id=${drive[0].id}`} color="secondary" aria-label="Download Vod" rel="noopener noreferrer" target="_blank">
+                  )}
+                  {drive?.[0] && (
+                    <Tooltip title="Download VOD">
+                      <IconButton href={`https://drive.google.com/u/2/open?id=${drive[0].id}`} color="secondary" aria-label="Download VOD" rel="noopener noreferrer" target="_blank">
                         <DownloadIcon />
                       </IconButton>
                     </Tooltip>
                   )}
-                </Box>
-                <Box sx={{ ml: 0.5 }}>
-                  <Tooltip title={`Copy Current Timestamp`}>
-                    <IconButton onClick={copyTimestamp} color="primary" aria-label="Copy Current Timestamp" rel="noopener noreferrer" target="_blank">
+                  <Tooltip title="Copy current timestamp">
+                    <IconButton onClick={copyTimestamp} color="primary" aria-label="Copy current timestamp">
                       <ContentCopyIcon />
                     </IconButton>
                   </Tooltip>
+                  <VodReactions vodId={vod.id} compact lazy={false} sx={{ ml: 0.25 }} />
+                  <Tooltip title="Hide viewer controls">
+                    <IconButton onClick={handleExpandClick} aria-expanded={showMenu} aria-label="Hide viewer controls">
+                      <KeyboardArrowDownRoundedIcon />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
-                <VodReactions vodId={vod.id} compact lazy={false} sx={{ ml: 0.7 }} />
               </Box>
-            </Box>
-          </Collapse>
+            </Collapse>
+          </Box>
+
+          <Chat
+            isPortrait={useStackedMobileLayout}
+            vodId={vodId}
+            chatReplayAvailable={vod.chatReplayAvailable !== false}
+            playerRef={playerRef}
+            playing={playing}
+            delay={delay}
+            userChatDelay={userChatDelay}
+            youtube={youtube}
+            part={part}
+            setPart={setPart}
+            setUserChatDelay={setUserChatDelay}
+            forceSideLayout={mobileFullscreenSideLayout}
+          />
         </Box>
-        {useStackedMobileLayout && <Divider sx={{ my: 0.6, borderColor: "rgba(19,33,56,0.08)" }} />}
-        <Chat
-          isPortrait={useStackedMobileLayout}
-          vodId={vodId}
-          chatReplayAvailable={vod.chatReplayAvailable !== false}
-          playerRef={playerRef}
-          playing={playing}
-          delay={delay}
-          userChatDelay={userChatDelay}
-          youtube={youtube}
-          part={part}
-          setPart={setPart}
-          setUserChatDelay={setUserChatDelay}
-          forceSideLayout={mobileFullscreenSideLayout}
-        />
+
+        {!mobileViewerFullscreen && (
+          <Box component="section" sx={{ width: "100%", maxWidth: 1680, mx: "auto", px: { xs: 0.25, sm: 1, md: 2 }, pt: { xs: 2, md: 3 }, pb: 4 }}>
+            <Box
+              className="soft-glass"
+              sx={{
+                borderRadius: { xs: "18px", md: "24px" },
+                p: { xs: 1.5, sm: 2, md: 2.5 },
+                display: "flex",
+                alignItems: { xs: "flex-start", md: "center" },
+                flexDirection: { xs: "column", md: "row" },
+                gap: 2,
+              }}
+            >
+              <Box sx={{ minWidth: 0, flex: 1 }}>
+                <Typography variant="overline" sx={{ color: "secondary.main", fontWeight: 800, letterSpacing: "0.12em" }}>
+                  Now watching
+                </Typography>
+                <Typography variant="h4" sx={{ mt: 0.25, lineHeight: 1.12, color: "primary.main" }}>
+                  {vod.title}
+                </Typography>
+                <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={{ mt: 1.25 }}>
+                  {[vodDate, vod.duration, `${totalVodParts} ${totalVodParts === 1 ? "part" : "parts"}`, ...vodTopics]
+                    .filter(Boolean)
+                    .map((label) => (
+                      <Box
+                        key={label}
+                        sx={{
+                          px: 1.05,
+                          py: 0.45,
+                          borderRadius: "999px",
+                          color: "text.secondary",
+                          background: "rgba(255,255,255,0.36)",
+                          border: "1px solid var(--soft-border)",
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {label}
+                      </Box>
+                    ))}
+                </Stack>
+                {vod.description && (
+                  <Typography variant="body2" sx={{ mt: 1.25, maxWidth: 900, color: "text.secondary", whiteSpace: "pre-wrap" }}>
+                    {vod.description}
+                  </Typography>
+                )}
+              </Box>
+
+              <Stack direction={{ xs: "row", md: "column" }} spacing={0.8} useFlexGap flexWrap="wrap">
+                <Button variant="contained" startIcon={<VideoLibraryRoundedIcon />} onClick={() => navigate("/vods")}>
+                  Browse archive
+                </Button>
+                {originalTwitchVodUrl && (
+                  <Button component="a" href={originalTwitchVodUrl} target="_blank" rel="noopener noreferrer" variant="outlined">
+                    Open Twitch VOD
+                  </Button>
+                )}
+              </Stack>
+            </Box>
+
+            {recommendedVods.length > 0 && (
+              <Box sx={{ mt: { xs: 2.5, md: 3.5 } }}>
+                <Box sx={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: 2, mb: 1.2, px: 0.5 }}>
+                  <Box>
+                    <Typography variant="overline" sx={{ color: "secondary.main", fontWeight: 800, letterSpacing: "0.12em" }}>
+                      Keep watching
+                    </Typography>
+                    <Typography variant="h5" sx={{ color: "primary.main", lineHeight: 1.1 }}>
+                      Four from the archive
+                    </Typography>
+                  </Box>
+                  <Button variant="text" onClick={() => navigate("/vods")}>
+                    View all
+                  </Button>
+                </Box>
+                <Grid container spacing={{ xs: 1.2, sm: 1.6, md: 2 }} sx={{ justifyContent: "center" }}>
+                  {recommendedVods.map((recommendedVod, index) => (
+                    <VodCard
+                      key={recommendedVod.id}
+                      vod={recommendedVod}
+                      sizes={{ xs: 12, sm: 6, lg: 3 }}
+                      gridSize={3}
+                      sheen={index === 0}
+                      cardWidth="100%"
+                    />
+                  ))}
+                </Grid>
+              </Box>
+            )}
+          </Box>
+        )}
       </Box>
     </Box>
   );

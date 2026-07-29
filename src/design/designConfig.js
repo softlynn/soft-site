@@ -611,7 +611,7 @@ function GenericEmbedFrame({ title, src, height = 352, aspectRatio = "custom", a
   );
 }
 
-function RecentVodsRenderer({ title, subtitle, count = 4, showButton = true, surface = "glass", backgroundColor = "", borderColor = "", width, customMaxWidth, minHeight, padding, ...styleProps }) {
+function RecentVodsRenderer({ title, subtitle, count = 4, showButton = true, surface = "glass", backgroundColor = "", borderColor = "", width, customMaxWidth, minHeight, padding, customClassName = "", ...styleProps }) {
   const navigate = useNavigate();
   const [vods, setVods] = useState(null);
 
@@ -643,7 +643,7 @@ function RecentVodsRenderer({ title, subtitle, count = 4, showButton = true, sur
 
   return (
     <Box
-      className="soft-design-section"
+      className={`soft-design-section ${customClassName}`.trim()}
       sx={{
         ...getResizeSx({ width, customMaxWidth, minHeight }),
         ...getSurfaceSx({ surface, backgroundColor, borderColor }),
@@ -798,7 +798,19 @@ export const designConfig = {
           }}
         >
           {props.customCss && <style>{String(props.customCss)}</style>}
-          <Box sx={{ width: "100%", maxWidth, mx: "auto", display: "grid", gap: "var(--soft-design-section-gap)" }}>{children}</Box>
+          <Box
+            sx={{
+              width: "100%",
+              maxWidth,
+              minWidth: 0,
+              mx: "auto",
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr)",
+              gap: "var(--soft-design-section-gap)",
+            }}
+          >
+            {children}
+          </Box>
         </Box>
       );
     },
