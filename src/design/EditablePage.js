@@ -17,7 +17,7 @@ export default function EditablePage({ path }) {
     if (!page) return;
     const rootProps = page?.puck?.root?.props || {};
     const title = rootProps.pageTitle || page.title || SITE_TITLE;
-    document.title = title === SITE_TITLE ? SITE_TITLE : `${title} | ${SITE_TITLE}`;
+    document.title = page.path === "/" ? "soft" : title === SITE_TITLE ? SITE_TITLE : `${title} | ${SITE_TITLE}`;
   }, [page]);
 
   if (loading && !page) return <Loading />;

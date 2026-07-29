@@ -499,7 +499,7 @@ function PlaceholderMedia({ icon = "image", accentColor = "#d38f38" }) {
   );
 }
 
-function ImageFrame({ src, alt, aspectRatio = "16 / 10", accentColor = "#d38f38", className = "" }) {
+function ImageFrame({ src, alt, aspectRatio = "16 / 10", accentColor = "#d38f38", className = "", transparent = false }) {
   const cleanSrc = safeUrl(src);
   return (
     <Box
@@ -507,15 +507,20 @@ function ImageFrame({ src, alt, aspectRatio = "16 / 10", accentColor = "#d38f38"
       sx={{
         width: "100%",
         aspectRatio,
-        borderRadius: "18px",
+        borderRadius: transparent ? 0 : "18px",
         overflow: "hidden",
-        border: "1px solid rgba(255,255,255,0.45)",
-        background: "rgba(255,255,255,0.2)",
-        boxShadow: "0 18px 34px rgba(19,33,56,0.12)",
+        border: transparent ? 0 : "1px solid rgba(255,255,255,0.45)",
+        background: transparent ? "transparent" : "rgba(255,255,255,0.2)",
+        boxShadow: transparent ? "none" : "0 18px 34px rgba(19,33,56,0.12)",
       }}
     >
       {cleanSrc ? (
-        <Box component="img" alt={alt || ""} src={cleanSrc} sx={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }} />
+        <Box
+          component="img"
+          alt={alt || ""}
+          src={cleanSrc}
+          sx={{ width: "100%", height: "100%", display: "block", objectFit: transparent ? "contain" : "cover" }}
+        />
       ) : (
         <PlaceholderMedia accentColor={accentColor} />
       )}
@@ -1121,7 +1126,7 @@ export const designConfig = {
         const stacked = props.sideImagePosition === "top";
         const image = imageUrl ? (
           <Box sx={{ width: stacked ? "100%" : Math.max(80, Number(props.sideImageWidth) || 220), flex: "0 0 auto" }}>
-            <ImageFrame src={imageUrl} alt={props.sideImageAlt} aspectRatio={stacked ? "16 / 9" : "4 / 5"} />
+            <ImageFrame src={imageUrl} alt={props.sideImageAlt} aspectRatio={stacked ? "16 / 9" : "4 / 5"} transparent />
           </Box>
         ) : null;
         const text = (
@@ -1607,7 +1612,7 @@ function createDefaultRootProps() {
     pageTitle: "soft",
     pageDescription: "",
     backgroundMode: "theme",
-    backgroundColor: "#fff1a8",
+    backgroundColor: "#ffe1ad",
     backgroundGradient: "",
     backgroundImage: "",
     backgroundPosition: "center center",

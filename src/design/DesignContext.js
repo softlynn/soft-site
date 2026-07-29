@@ -54,7 +54,7 @@ export function DesignProvider({ children }) {
       root.style.setProperty(name, String(value || fallback));
     };
 
-    setVar("--soft-bg", settings.backgroundColor, "#fff1a8");
+    setVar("--soft-bg", settings.backgroundColor, "#ffe1ad");
     setVar("--soft-body-font", settings.bodyFontFamily, "\"Poppins\", \"Manrope\", \"Segoe UI\", sans-serif");
     setVar("--soft-heading-font", settings.headingFontFamily, "\"Poppins\", \"Manrope\", sans-serif");
     setVar("--soft-brand-font", settings.brandFontFamily, "\"Poppins\", \"Manrope\", sans-serif");
