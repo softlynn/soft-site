@@ -25,13 +25,28 @@ let messageCount = 0;
 let badgesCount = 0;
 
 export default function Chat(props) {
-  const { isPortrait, vodId, playerRef, playing, userChatDelay, delay, youtube, part, games, chatReplayAvailable = true, forceSideLayout = false } = props;
-  const desktopExpandedWidth = "clamp(320px, 23vw, 400px)";
+  const {
+    isPortrait,
+    vodId,
+    playerRef,
+    playing,
+    userChatDelay,
+    delay,
+    youtube,
+    part,
+    games,
+    chatReplayAvailable = true,
+    forceSideLayout = false,
+    showChat: controlledShowChat,
+    onShowChatChange,
+  } = props;
+  const desktopExpandedWidth = "clamp(300px, 22vw, 360px)";
   const desktopCollapsedWidth = "52px";
   const sideLayout = forceSideLayout || !isPortrait;
   const expandedPanelWidth = forceSideLayout ? "clamp(240px, 38vw, 340px)" : desktopExpandedWidth;
-  const expandedPanelMinWidth = forceSideLayout ? "clamp(220px, 30vw, 300px)" : "clamp(320px, 28vw, 420px)";
-  const [showChat, setShowChat] = useState(true);
+  const expandedPanelMinWidth = forceSideLayout ? "clamp(220px, 30vw, 300px)" : desktopExpandedWidth;
+  const [internalShowChat, setInternalShowChat] = useState(true);
+  const showChat = typeof controlledShowChat === "boolean" ? controlledShowChat : internalShowChat;
   const [shownMessages, setShownMessages] = useState([]);
   const comments = useRef([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
@@ -82,9 +97,10 @@ export default function Chat(props) {
 
   useEffect(() => {
     if (forceSideLayout) {
-      setShowChat(true);
+      setInternalShowChat(true);
+      onShowChatChange?.(true);
     }
-  }, [forceSideLayout]);
+  }, [forceSideLayout, onShowChatChange]);
 
   useEffect(() => {
     comments.current = [];
@@ -662,7 +678,9 @@ export default function Chat(props) {
   };
 
   const handleExpandClick = () => {
-    setShowChat(!showChat);
+    const nextShowChat = !showChat;
+    setInternalShowChat(nextShowChat);
+    onShowChatChange?.(nextShowChat);
   };
 
   return (

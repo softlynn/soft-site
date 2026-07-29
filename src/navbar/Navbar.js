@@ -38,15 +38,15 @@ const socials = [
 ].filter(({ path }) => Boolean(path));
 
 const socialButtonSx = {
-  width: { xs: 42, sm: 48, md: 52 },
-  height: { xs: 42, sm: 48, md: 52 },
+  width: { xs: 46, sm: 54, md: 60 },
+  height: { xs: 46, sm: 54, md: 60 },
   display: "grid",
   placeItems: "center",
   color: "var(--soft-text)",
   borderRadius: "999px",
   transition: "background-color 140ms ease, color 140ms ease, transform 140ms ease, opacity 140ms ease",
   "& svg": {
-    fontSize: { xs: 24, sm: 27, md: 29 },
+    fontSize: { xs: 27, sm: 31, md: 34 },
   },
   "&:hover": {
     backgroundColor: "rgba(255,255,255,0.28)",
@@ -153,6 +153,7 @@ export default function Navbar() {
             minWidth: 0,
             flex: "0 0 auto",
             ml: { xs: "auto", sm: 0 },
+            transform: { xs: "translateY(-6px)", sm: "translateY(-12px)", md: "translateY(-16px)" },
           }}
         >
           {showVodsButton && (
