@@ -89,9 +89,10 @@ export default function Navbar() {
         sx={{
           flex: "0 0 auto",
           display: "flex",
+          flexWrap: { xs: "wrap", sm: "nowrap" },
           alignItems: "center",
           justifyContent: "space-between",
-          gap: { xs: 0.75, sm: 1.5 },
+          gap: { xs: 0.5, sm: 1.5 },
           px: { xs: 2, sm: 4.2, md: 6.5, lg: 8.5 },
           pt: { xs: 1.4, sm: 2, md: 2.4 },
           pb: { xs: 0.2, sm: 0.4 },
@@ -106,7 +107,7 @@ export default function Navbar() {
           sx={{
             appearance: "none",
             display: "block",
-            flex: "0 1 auto",
+            flex: "0 0 auto",
             minWidth: 0,
             p: 0,
             border: 0,
@@ -133,9 +134,9 @@ export default function Navbar() {
             aria-hidden="true"
             sx={{
               display: "block",
-              width: { xs: 82, sm: 106, md: 118 },
+              width: { xs: 246, sm: 318, md: 354 },
               maxWidth: "100%",
-              height: { xs: 48, sm: 58, md: 64 },
+              height: { xs: 144, sm: 174, md: 192 },
               objectFit: "contain",
               mixBlendMode: "screen",
               pointerEvents: "none",
@@ -143,7 +144,17 @@ export default function Navbar() {
           />
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: { xs: 0.1, sm: 0.5, md: 0.7 }, minWidth: 0 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: { xs: 0.1, sm: 0.5, md: 0.7 },
+            minWidth: 0,
+            flex: "0 0 auto",
+            ml: { xs: "auto", sm: 0 },
+          }}
+        >
           {showVodsButton && (
             <Tooltip title="VODs">
               <CustomLink href="/vods" aria-label="VODs">
@@ -172,7 +183,7 @@ export default function Navbar() {
             inset: 0,
             zIndex: 2000,
             overflow: "hidden",
-            background: "#000",
+            background: "transparent",
             pointerEvents: "none",
           }}
         >
@@ -185,7 +196,13 @@ export default function Navbar() {
             preload="auto"
             onEnded={finishStinger}
             onError={handleStingerError}
-            sx={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+            sx={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              mixBlendMode: "screen",
+            }}
           />
         </Box>
       )}

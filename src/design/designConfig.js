@@ -1087,7 +1087,7 @@ export const designConfig = {
           { label: "Right", value: "right" },
           { label: "Top", value: "top" },
         ]),
-        sideImageWidth: numberField("Side image width", 80, 520),
+        sideImageWidth: numberField("Side image width", 80, 1040),
         align: selectField("Text align", [
           { label: "Left", value: "left" },
           { label: "Center", value: "center" },
@@ -1125,7 +1125,23 @@ export const designConfig = {
         const imageFirst = props.sideImagePosition === "left" || props.sideImagePosition === "top";
         const stacked = props.sideImagePosition === "top";
         const image = imageUrl ? (
-          <Box sx={{ width: stacked ? "100%" : Math.max(80, Number(props.sideImageWidth) || 220), flex: "0 0 auto" }}>
+          <Box
+            sx={{
+              width: stacked
+                ? "100%"
+                : {
+                    xs: "calc(100vw - 20px)",
+                    sm: "calc(100vw - 32px)",
+                    md: Math.max(80, Number(props.sideImageWidth) || 220),
+                  },
+              maxWidth: {
+                xs: "calc(100vw - 20px)",
+                sm: "calc(100vw - 32px)",
+                md: "100%",
+              },
+              flex: "0 1 auto",
+            }}
+          >
             <ImageFrame src={imageUrl} alt={props.sideImageAlt} aspectRatio={stacked ? "16 / 9" : "4 / 5"} transparent />
           </Box>
         ) : null;
