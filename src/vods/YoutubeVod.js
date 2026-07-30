@@ -462,7 +462,8 @@ export default function Vod(props) {
               <Box
                 className="soft-player-frame"
                 sx={{
-                  width: "100%",
+                  width: useStackedMobileLayout ? "100%" : "auto",
+                  height: useStackedMobileLayout ? "auto" : "100%",
                   maxWidth: "100%",
                   maxHeight: "100%",
                   aspectRatio: "16 / 9",

@@ -20,10 +20,10 @@ const EditablePage = lazy(() => import("./design/EditablePage"));
 const DesignEditorPage = lazy(() => import("./design/DesignEditorPage"));
 const THEME_STORAGE_KEY = "softu-theme-mode";
 const getInitialThemeMode = () => {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
   if (saved === "light" || saved === "dark") return saved;
-  return "light";
+  return "dark";
 };
 
 const buildTheme = (mode) => {

@@ -5,6 +5,7 @@ import ThumbUpAltRoundedIcon from "@mui/icons-material/ThumbUpAltRounded";
 import ThumbDownAltOutlinedIcon from "@mui/icons-material/ThumbDownAltOutlined";
 import ThumbDownAltRoundedIcon from "@mui/icons-material/ThumbDownAltRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import { getStoredVodReactionVote, getVodLikeCount, getVodReactionSnapshot, setVodReactionVote, subscribeVodReactionSnapshot } from "./vodReactionsApi";
 
 const optimisticCounts = (snapshot, previousVote, nextVote) => {
@@ -238,7 +239,8 @@ export default function VodReactions({
   };
 
   if (countOnlyLike) {
-    const cardText = error ? "!" : loading && !counts ? "…" : likeCount;
+    const cardText = error ? "" : loading && !counts ? "…" : likeCount;
+    const HeartIcon = likeCount > 0 && !error ? FavoriteRoundedIcon : FavoriteBorderRoundedIcon;
     return (
       <Tooltip title={error ? `Global likes unavailable (${error})` : "Global likes"}>
         <Box
@@ -246,27 +248,45 @@ export default function VodReactions({
           sx={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 0.35,
-            minHeight: 22,
-            px: 0.6,
-            py: 0.25,
-            borderRadius: "10px",
-            border: "1px solid var(--soft-border)",
-            background: "var(--soft-surface-strong)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.20)",
+            gap: 0.3,
+            minHeight: 21,
+            px: 0.25,
+            py: 0.15,
+            borderRadius: "7px",
+            border: 0,
+            background: "transparent",
             color: "text.secondary",
             flexShrink: 0,
+            transition: "color 150ms ease, transform 150ms ease",
+            "&:hover": {
+              color: "#e17698",
+              transform: "translateY(-1px)",
+            },
             ...sx,
           }}
           onClick={(event) => event.stopPropagation()}
         >
-          <FavoriteBorderRoundedIcon sx={{ fontSize: 13, color: error ? "warning.main" : "#D46B8C" }} />
-          <Typography
-            variant="caption"
-            sx={{ fontWeight: 800, lineHeight: 1, fontSize: "0.66rem", color: error ? "warning.main" : "text.primary" }}
-          >
-            {cardText}
-          </Typography>
+          <HeartIcon
+            sx={{
+              fontSize: 15,
+              color: error ? "warning.main" : "#e17698",
+              filter: "drop-shadow(0 2px 4px rgba(225,118,152,0.2))",
+            }}
+          />
+          {cardText !== "" && (
+            <Typography
+              variant="caption"
+              sx={{
+                fontFamily: "Roboto, Arial, sans-serif",
+                fontWeight: 500,
+                lineHeight: 1,
+                fontSize: "0.7rem",
+                color: "text.secondary",
+              }}
+            >
+              {cardText}
+            </Typography>
+          )}
         </Box>
       </Tooltip>
     );

@@ -86,6 +86,7 @@ export default function Navbar() {
     <>
       <Box
         component="header"
+        className="soft-site-header"
         sx={{
           flex: "0 0 auto",
           display: "flex",
@@ -125,6 +126,7 @@ export default function Navbar() {
         >
           <Box
             component="video"
+            className="soft-site-logo-video"
             src={LOGO_LOOP_SRC}
             autoPlay
             loop
@@ -145,6 +147,7 @@ export default function Navbar() {
         </Box>
 
         <Box
+          className="soft-site-socials"
           sx={{
             display: "flex",
             alignItems: "center",
