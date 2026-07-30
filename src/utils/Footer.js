@@ -29,11 +29,13 @@ export default function Footer() {
   return (
     <Box
       component="footer"
+      className="soft-site-footer"
       sx={{
         flex: "0 0 auto",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        flexWrap: "wrap",
         gap: 0.65,
         px: 2,
         pt: 2,

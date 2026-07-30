@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { Render } from "@puckeditor/core";
 import { Box } from "@mui/material";
 import Footer from "../utils/Footer";
+import HomeSponsor from "../utils/HomeSponsor";
 import Loading from "../utils/Loading";
 import NotFound from "../utils/NotFound";
 import { SITE_TITLE } from "../config/site";
@@ -28,12 +29,20 @@ export default function EditablePage({ path }) {
   return (
     <Box
       className={`soft-editable-page-scroll${isHomePage ? " soft-editable-page-scroll--home" : ""}`}
-      sx={{ minHeight: 0, height: "100%", overflowY: isHomePage ? "hidden" : "auto" }}
+      sx={{
+        minHeight: 0,
+        height: "100%",
+        overflowX: "hidden",
+        overflowY: isHomePage ? { xs: "auto", md: "hidden" } : "auto",
+        WebkitOverflowScrolling: "touch",
+        overscrollBehaviorY: "contain",
+      }}
     >
       <Box sx={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
         <Box sx={{ flex: "1 0 auto" }}>
           <Render config={designConfig} data={page.puck} metadata={{ page, design }} />
         </Box>
+        {isHomePage && <HomeSponsor />}
         <Footer />
       </Box>
     </Box>

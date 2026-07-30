@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" style="background-color: #ffe1ad">
+<html lang="en" data-soft-theme="dark" style="background-color: #101010">
   <head>
     <meta charset="utf-8" />
     <base href="/" />
     <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#FFE1AD" />
+    <meta name="theme-color" content="#101010" />
     <script>
       (function () {
         try {
           var saved = localStorage.getItem("softu-theme-mode");
-          var mode = saved === "light" || saved === "dark" ? saved : "light";
+          var mode = saved === "light" || saved === "dark" ? saved : "dark";
           document.documentElement.setAttribute("data-soft-theme", mode);
           document.documentElement.style.backgroundColor = mode === "dark" ? "#101010" : "#ffe1ad";
         } catch (e) {}
