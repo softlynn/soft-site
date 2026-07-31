@@ -2,7 +2,7 @@ import { Box, Typography, Grid, Button, IconButton } from "@mui/material";
 import Thumbnail from "../assets/default_thumbnail.png";
 import Chapters from "./ChaptersMenu";
 import CustomWidthTooltip from "../utils/CustomToolTip";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat.js";
 import VolumeOffRoundedIcon from "@mui/icons-material/VolumeOffRounded";
@@ -16,8 +16,6 @@ dayjs.extend(localizedFormat);
 
 const DEFAULT_CARD_WIDTH = "20.75rem";
 const HOVER_PREVIEW_DELAY_MS = 500;
-const TWITCH_PREVIEW_MAX_AGE_DAYS = 58;
-let twitchPlayerScriptPromise = null;
 
 const safeUrl = (value) => {
   const raw = String(value || "").trim();
@@ -61,37 +59,6 @@ const formatDuration = (value) => {
   return duration.replace(/^00:/, "").replace(/^0(?=\d:)/, "");
 };
 
-const loadTwitchPlayer = () => {
-  if (typeof window === "undefined") return Promise.reject(new Error("Twitch player is unavailable"));
-  if (window.Twitch?.Player) return Promise.resolve(window.Twitch);
-  if (twitchPlayerScriptPromise) return twitchPlayerScriptPromise;
-
-  twitchPlayerScriptPromise = new Promise((resolve, reject) => {
-    const existing = document.querySelector('script[data-soft-twitch-player="true"]');
-    const script = existing || document.createElement("script");
-    const handleLoad = () => (
-      window.Twitch?.Player
-        ? resolve(window.Twitch)
-        : reject(new Error("Twitch player failed to initialize"))
-    );
-    const handleError = () => reject(new Error("Twitch player failed to load"));
-
-    script.addEventListener("load", handleLoad, { once: true });
-    script.addEventListener("error", handleError, { once: true });
-    if (!existing) {
-      script.src = "https://player.twitch.tv/js/embed/v1.js";
-      script.async = true;
-      script.dataset.softTwitchPlayer = "true";
-      document.head.appendChild(script);
-    }
-  }).catch((error) => {
-    twitchPlayerScriptPromise = null;
-    throw error;
-  });
-
-  return twitchPlayerScriptPromise;
-};
-
 export default function Vod(props) {
   const { vod, gridSize, sizes, sheen = false, cardWidth } = props;
   const { design } = useSiteDesign();
@@ -99,17 +66,6 @@ export default function Vod(props) {
   const resolvedCardWidth = cardWidth || DEFAULT_CARD_WIDTH;
   const previewVideoId = useMemo(() => getPrimaryYoutubeId(vod), [vod]);
   const hasPlayableVod = Boolean(previewVideoId);
-  const twitchPreviewAvailable = useMemo(() => {
-    const createdAt = dayjs(vod?.createdAt);
-    return (
-      String(vod?.platform || "").toLowerCase() === "twitch" &&
-      /^\d+$/.test(String(vod?.id || "")) &&
-      createdAt.isValid() &&
-      dayjs().diff(createdAt, "day") <= TWITCH_PREVIEW_MAX_AGE_DAYS
-    );
-  }, [vod]);
-  const previewKind = twitchPreviewAvailable ? "twitch" : previewVideoId ? "youtube" : "";
-  const previewHostId = `soft-vod-preview-${useId().replace(/:/g, "")}`;
   const watchHref = `/${vod.id}`;
   const vodAccent = String(settings.vodAccentColor || settings.accentColor || "#d38f38");
   const vodCardStyle = String(settings.vodCardStyle || "bubble");
@@ -121,7 +77,6 @@ export default function Vod(props) {
   const thumbnail = thumbnailCandidates[thumbnailIndex] || Thumbnail;
   const previewTimerRef = useRef(null);
   const previewFrameRef = useRef(null);
-  const previewPlayerRef = useRef(null);
   const [previewActive, setPreviewActive] = useState(false);
   const [previewReady, setPreviewReady] = useState(false);
   const [previewMuted, setPreviewMuted] = useState(true);
@@ -141,56 +96,6 @@ export default function Vod(props) {
     },
     []
   );
-
-  useEffect(() => {
-    if (!previewActive || previewKind !== "twitch") return undefined;
-    let cancelled = false;
-    let player = null;
-
-    loadTwitchPlayer()
-      .then((Twitch) => {
-        if (cancelled || !document.getElementById(previewHostId)) return;
-        const parents = Array.from(new Set(["localhost", window.location.hostname].filter(Boolean)));
-        player = new Twitch.Player(previewHostId, {
-          video: `v${vod.id}`,
-          parent: parents,
-          autoplay: true,
-          muted: true,
-          controls: false,
-          width: "100%",
-          height: "100%",
-        });
-        previewPlayerRef.current = player;
-
-        player.addEventListener(Twitch.Player.READY, () => {
-          if (cancelled) return;
-          try {
-            player.setMuted(true);
-            player.play();
-          } catch {
-            // The visible audio control can retry once the player is settled.
-          }
-          setPreviewReady(true);
-        });
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setPreviewActive(false);
-          setPreviewReady(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-      if (previewPlayerRef.current === player) previewPlayerRef.current = null;
-      try {
-        player?.pause?.();
-        player?.destroy?.();
-      } catch {
-        // Twitch may already have removed its iframe.
-      }
-    };
-  }, [previewActive, previewHostId, previewKind, vod.id]);
 
   const vodPartCount = useMemo(
     () =>
@@ -215,7 +120,7 @@ export default function Vod(props) {
   };
 
   const startPreview = (event) => {
-    if (!previewKind || event.pointerType === "touch") return;
+    if (!previewVideoId || event.pointerType === "touch") return;
     const hasHover = window.matchMedia?.("(hover: hover) and (pointer: fine)")?.matches;
     const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
     if (!hasHover || reduceMotion) return;
@@ -238,7 +143,7 @@ export default function Vod(props) {
   const sendYoutubePreviewCommand = (func, args = []) => {
     previewFrameRef.current?.contentWindow?.postMessage(
       JSON.stringify({ event: "command", func, args }),
-      "https://www.youtube-nocookie.com"
+      "https://www.youtube.com"
     );
   };
 
@@ -246,14 +151,7 @@ export default function Vod(props) {
     event.preventDefault();
     event.stopPropagation();
     const shouldMute = !previewMuted;
-    if (previewKind === "twitch") {
-      try {
-        previewPlayerRef.current?.setMuted(shouldMute);
-        if (!shouldMute) previewPlayerRef.current?.play();
-      } catch {
-        // Keep the button responsive if the embed is still settling.
-      }
-    } else if (shouldMute) {
+    if (shouldMute) {
       sendYoutubePreviewCommand("mute");
     } else {
       sendYoutubePreviewCommand("setVolume", [70]);
@@ -263,10 +161,13 @@ export default function Vod(props) {
     setPreviewMuted(shouldMute);
   };
 
+  const previewOrigin = typeof window !== "undefined" ? window.location.origin : "";
   const previewSrc = previewVideoId
-    ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(
+    ? `https://www.youtube.com/embed/${encodeURIComponent(
         previewVideoId
-      )}?autoplay=1&mute=1&controls=0&disablekb=1&enablejsapi=1&fs=0&iv_load_policy=3&playsinline=1&rel=0&modestbranding=1`
+      )}?autoplay=1&mute=1&controls=0&disablekb=1&enablejsapi=1&fs=0&iv_load_policy=3&playsinline=1&rel=0&modestbranding=1&origin=${encodeURIComponent(
+        previewOrigin
+      )}`
     : "";
 
   return (
@@ -316,44 +217,28 @@ export default function Vod(props) {
           />
 
           {previewActive && (
-            previewKind === "twitch" ? (
-              <Box
-                id={previewHostId}
-                className="soft-vod-card__preview"
-                aria-label={`Muted preview of ${vod.title}`}
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  zIndex: 1,
-                  opacity: previewReady ? 1 : 0,
-                  transition: "opacity 180ms ease",
-                  pointerEvents: "none",
-                }}
-              />
-            ) : (
-              <Box
-                ref={previewFrameRef}
-                className="soft-vod-card__preview"
-                component="iframe"
-                title={`Muted preview of ${vod.title}`}
-                src={previewSrc}
-                allow="autoplay; encrypted-media; picture-in-picture"
-                referrerPolicy="strict-origin-when-cross-origin"
-                tabIndex={-1}
-                onLoad={() => setPreviewReady(true)}
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  zIndex: 1,
-                  width: "100%",
-                  height: "100%",
-                  border: 0,
-                  pointerEvents: "none",
-                  opacity: previewReady ? 1 : 0,
-                  transition: "opacity 180ms ease",
-                }}
-              />
-            )
+            <Box
+              ref={previewFrameRef}
+              className="soft-vod-card__preview"
+              component="iframe"
+              title={`Muted preview of ${vod.title}`}
+              src={previewSrc}
+              allow="autoplay; encrypted-media; picture-in-picture"
+              referrerPolicy="strict-origin-when-cross-origin"
+              tabIndex={-1}
+              onLoad={() => setPreviewReady(true)}
+              sx={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 1,
+                width: "100%",
+                height: "100%",
+                border: 0,
+                pointerEvents: "none",
+                opacity: previewReady ? 1 : 0,
+                transition: "opacity 180ms ease",
+              }}
+            />
           )}
 
           <Box

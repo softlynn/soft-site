@@ -27,7 +27,18 @@ export default function HomeSponsor() {
           letterSpacing: "-0.01em",
         }}
       >
-        Use code <Box component="span" sx={{ color: "#ffad72", fontWeight: 800 }}>SOFT</Box> for 10% off!
+        Use code{" "}
+        <Box
+          component="span"
+          sx={{
+            color: "#ffad72",
+            fontWeight: 800,
+            "[data-soft-theme=\"light\"] &": { color: "#b45719" },
+          }}
+        >
+          SOFT
+        </Box>{" "}
+        for 10% off!
       </Typography>
 
       <Box
@@ -59,6 +70,19 @@ export default function HomeSponsor() {
           "&:focus-visible": {
             outline: "2px solid #ffad72",
             outlineOffset: 3,
+          },
+          "[data-soft-theme=\"light\"] &": {
+            color: "#2b2119",
+            background: "rgba(255, 250, 241, 0.92)",
+            borderColor: "rgba(102, 66, 35, 0.18)",
+            boxShadow: "0 10px 26px rgba(111, 80, 42, 0.12)",
+            "&:hover": {
+              background: "#fffdf8",
+              borderColor: "rgba(181, 87, 30, 0.34)",
+            },
+            "&:focus-visible": {
+              outlineColor: "#b85a21",
+            },
           },
         }}
       >
@@ -92,7 +116,8 @@ export default function HomeSponsor() {
             noWrap
             sx={{
               mt: 0.35,
-              color: "rgba(225,226,235,0.58)",
+              color: "inherit",
+              opacity: 0.58,
               fontFamily: "Roboto, Arial, sans-serif",
               fontSize: { xs: "0.72rem", sm: "0.78rem" },
               lineHeight: 1.2,
@@ -102,7 +127,7 @@ export default function HomeSponsor() {
           </Typography>
         </Box>
 
-        <OpenInNewRoundedIcon sx={{ flex: "0 0 auto", color: "rgba(255,255,255,0.44)", fontSize: 18 }} />
+        <OpenInNewRoundedIcon sx={{ flex: "0 0 auto", color: "inherit", opacity: 0.44, fontSize: 18 }} />
       </Box>
     </Box>
   );
