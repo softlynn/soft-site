@@ -288,7 +288,7 @@ export default function Vod(props) {
             </Box>
           )}
 
-          {previewActive && (
+          {previewActive && previewReady && (
             <IconButton
               type="button"
               aria-label={previewMuted ? "Unmute preview" : "Mute preview"}
