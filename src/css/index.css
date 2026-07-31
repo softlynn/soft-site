@@ -428,8 +428,7 @@ button,
 }
 
 .soft-vod-card__preview,
-.soft-vod-card__preview > div,
-.soft-vod-card__preview iframe {
+iframe.soft-vod-card__preview {
   width: 100% !important;
   height: 100% !important;
   border: 0 !important;
