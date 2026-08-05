@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-08-03T21:05:05.102Z",
+  "generatedAt": "2026-08-05T19:20:04.002Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -2664,6 +2664,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/31d7dfb0-2687-486c-a3f4-b86d1e307fa5/3",
           "title": "Hotline",
           "description": "This badge was earned by subscribing or gifting a sub to a streamer in the CONTROL Resonant category.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "hulk",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/b56139ed-b483-441f-9d89-70f5d0bca1b6/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/b56139ed-b483-441f-9d89-70f5d0bca1b6/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/b56139ed-b483-441f-9d89-70f5d0bca1b6/3",
+          "title": "Hulk",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Marvel Tōkon category during the game's launch!",
           "click_action": null,
           "click_url": null
         }
