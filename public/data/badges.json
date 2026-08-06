@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-08-05T19:20:04.002Z",
+  "generatedAt": "2026-08-06T18:35:03.459Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -1839,6 +1839,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/5d5ab328-0916-4655-90b9-78b983ca4262/3",
           "title": "Elden Ring Nightreign Clip badge - Wylder",
           "description": "You captured a clippable Elden Ring moment. You’ve earned the Wylder badge.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "enchantedbigboiboxers",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/267664ac-261c-48e1-8dc3-dad180eb5146/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/267664ac-261c-48e1-8dc3-dad180eb5146/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/267664ac-261c-48e1-8dc3-dad180eb5146/3",
+          "title": "EnchantedBigBoiBoxers",
+          "description": "Subbed to a streamer and got 2 months of Audible Premium!",
           "click_action": null,
           "click_url": null
         }
@@ -4006,6 +4021,36 @@
           "description": "Prime Gaming",
           "click_action": "visit_url",
           "click_url": "https://gaming.amazon.com"
+        }
+      ]
+    },
+    {
+      "set_id": "princessdonutbrown",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/88264e40-69cf-4afb-8b12-3df0ba5ca460/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/88264e40-69cf-4afb-8b12-3df0ba5ca460/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/88264e40-69cf-4afb-8b12-3df0ba5ca460/3",
+          "title": "PrincessDonutBrown",
+          "description": "Subbed to a streamer and got 2 months of Audible Premium!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "princessdonutpink",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/c70f2113-d552-44be-9f8f-40550dbe5fdd/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/c70f2113-d552-44be-9f8f-40550dbe5fdd/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/c70f2113-d552-44be-9f8f-40550dbe5fdd/3",
+          "title": "PrincessDonutPink",
+          "description": "Subbed to a streamer and got 2 months of Audible Premium!",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
