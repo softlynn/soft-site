@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-08-06T18:35:03.459Z",
+  "generatedAt": "2026-08-10T17:35:04.638Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -2989,6 +2989,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/0822047b-65e0-46f2-94a9-d1091d685d33/3",
           "title": "Lead Moderator",
           "description": "A badge for users who are a lead moderator in the channel",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "league-of-legends-classic",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/4bd0a409-4313-4f21-8a5a-00b1bdb77d73/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/4bd0a409-4313-4f21-8a5a-00b1bdb77d73/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/4bd0a409-4313-4f21-8a5a-00b1bdb77d73/3",
+          "title": "League of Legends Classic",
+          "description": "This badge was earned by supporting a streamer during the LoL Classic Twitch Rivals launch!",
           "click_action": null,
           "click_url": null
         }
