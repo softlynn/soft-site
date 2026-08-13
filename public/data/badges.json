@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-08-13T15:35:19.942Z",
+  "generatedAt": "2026-08-13T18:20:03.981Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -4304,6 +4304,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/8d7a5df0-b8ae-4192-bc5f-d4c443406238/3",
           "title": "Rematch US",
           "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Rematch category during the Rematch Nations Cup!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "resonance-minotaur",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/63cf6329-f34c-449e-8f70-fafa1eb1de9e/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/63cf6329-f34c-449e-8f70-fafa1eb1de9e/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/63cf6329-f34c-449e-8f70-fafa1eb1de9e/3",
+          "title": "Resonance Minotaur",
+          "description": "This badge was earned by watching Resonance: A Plague Tale Legacy for 60 min",
           "click_action": null,
           "click_url": null
         }
