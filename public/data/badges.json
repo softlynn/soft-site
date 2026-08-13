@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-08-10T17:35:04.638Z",
+  "generatedAt": "2026-08-13T15:35:19.942Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -5289,6 +5289,36 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/c5688799-c50c-4878-b451-de78f3ef6a56/3",
           "title": "TFT Paris Open",
           "description": "This chat badge was awarded for gifting two subscriptions to a TFT streamer during the 2025 TFT Paris Open!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "the-blood-of-dawnwalker-launch",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/1c04ddd1-6baa-4e5c-a685-976c621d5114/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/1c04ddd1-6baa-4e5c-a685-976c621d5114/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/1c04ddd1-6baa-4e5c-a685-976c621d5114/3",
+          "title": "The Blood of Dawnwalker Launch",
+          "description": "This badge was earned by watching a streamer in The Blood of Dawnwalker category for 1 hour",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "the-blood-of-dawnwalker-supporter",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/63076299-4910-4594-a05c-60899d32c765/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/63076299-4910-4594-a05c-60899d32c765/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/63076299-4910-4594-a05c-60899d32c765/3",
+          "title": "The Blood of Dawnwalker Supporter",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in The Blood of Dawnwalker category",
           "click_action": null,
           "click_url": null
         }
