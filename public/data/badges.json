@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-08-13T18:20:03.981Z",
+  "generatedAt": "2026-08-17T16:20:03.515Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -1075,6 +1075,21 @@
       ]
     },
     {
+      "set_id": "bulbasaur",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/68072d07-8648-4066-9694-3f9fb594eb3d/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/68072d07-8648-4066-9694-3f9fb594eb3d/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/68072d07-8648-4066-9694-3f9fb594eb3d/3",
+          "title": "Bulbasaur",
+          "description": "This badge was earned during the Pokémon Kanto Starters Collection Campaign.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "bungie-foundation-ally",
       "versions": [
         {
@@ -1116,6 +1131,21 @@
           "description": "Earned by watching CDawg's 5th Charity Cyclethon 2026!",
           "click_action": "visit_url",
           "click_url": "https://tiltify.com/@cdawgva/cyclethon-5"
+        }
+      ]
+    },
+    {
+      "set_id": "charmander",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/afe60f97-56d1-493d-a55c-2f1cec7aca7c/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/afe60f97-56d1-493d-a55c-2f1cec7aca7c/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/afe60f97-56d1-493d-a55c-2f1cec7aca7c/3",
+          "title": "Charmander",
+          "description": "This badge was earned during the Pokémon Kanto Starters Collection Campaign.",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -3730,6 +3760,21 @@
       ]
     },
     {
+      "set_id": "pichu",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/20f214cf-36b0-4b42-8992-3b769bcb0461/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/20f214cf-36b0-4b42-8992-3b769bcb0461/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/20f214cf-36b0-4b42-8992-3b769bcb0461/3",
+          "title": "Pichu",
+          "description": "This badge was earned during the Pokémon Kanto Starters Collection Campaign.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "pogchamps-6-7",
       "versions": [
         {
@@ -4654,6 +4699,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/03ba20e2-11e1-481c-80d8-155e87afc724/3",
           "title": "Spiderman",
           "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Marvel Tōkon category during the Open Beta!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "squirtle",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/6e19714e-571f-4737-bc8b-865ebfb3e2c7/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/6e19714e-571f-4737-bc8b-865ebfb3e2c7/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/6e19714e-571f-4737-bc8b-865ebfb3e2c7/3",
+          "title": "Squirtle",
+          "description": "This badge was earned during the Pokémon Kanto Starters Collection Campaign.",
           "click_action": null,
           "click_url": null
         }
