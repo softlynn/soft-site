@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-08-17T20:20:03.625Z",
+  "generatedAt": "2026-08-24T19:05:04.417Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -3539,6 +3539,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/52f0ea34-b35a-4bab-97a0-c7d354a27268/3",
           "title": "NASA Artemis II",
           "description": "This chat badge was awarded to Twitch users who watched NASA's Artemis II mission around the Moon.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "nasa-roman",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/c411b949-c736-4b1a-9769-d759e213923c/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/c411b949-c736-4b1a-9769-d759e213923c/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/c411b949-c736-4b1a-9769-d759e213923c/3",
+          "title": "NASA Roman",
+          "description": "This chat badge was awarded to Twitch users who watched NASA's launch of the Nancy Grace Roman Space Telescope.",
           "click_action": null,
           "click_url": null
         }
