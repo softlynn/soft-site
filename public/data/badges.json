@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-08-26T22:35:03.720Z",
+  "generatedAt": "2026-08-27T21:35:04.869Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -3539,6 +3539,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/5cb2e584-1efd-469b-ab1d-4d1b59a944e7/3",
           "title": "Moments Badge - Tier 9",
           "description": "Earned for being a part of at least 60 moments on a channel",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "mouseathon",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/8bce8f4e-f53a-4922-b715-35167b0fae7b/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/8bce8f4e-f53a-4922-b715-35167b0fae7b/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/8bce8f4e-f53a-4922-b715-35167b0fae7b/3",
+          "title": "Mouseathon",
+          "description": "This badge was earned by watching Ironmouse's 2026 Subathon!",
           "click_action": null,
           "click_url": null
         }
