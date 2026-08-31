@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-08-31T18:20:03.092Z",
+  "generatedAt": "2026-08-31T19:50:03.153Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -4759,6 +4759,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/3c5a5ea0-714f-46da-b764-5e7ceba59fca/3",
           "title": "Sonic Racing",
           "description": "This badge was earned by subscribing to a streamer in the Sonic Racing: Crossworlds category!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "sorcerer-rogier-elden-ring",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/3d6ad3b0-0a0f-43ae-a969-c5215d8d5a06/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/3d6ad3b0-0a0f-43ae-a969-c5215d8d5a06/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/3d6ad3b0-0a0f-43ae-a969-c5215d8d5a06/3",
+          "title": "Sorcerer Rogier ELDEN RING",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the ELDEN RING category.",
           "click_action": null,
           "click_url": null
         }
