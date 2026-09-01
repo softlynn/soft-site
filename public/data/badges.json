@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-09-01T13:20:03.284Z",
+  "generatedAt": "2026-09-01T17:35:03.518Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -6436,6 +6436,36 @@
           "description": "For the Horde!",
           "click_action": "visit_url",
           "click_url": "http://warcraftontwitch.tv/"
+        }
+      ]
+    },
+    {
+      "set_id": "wardog",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/a00140ee-7c25-4cd1-95d9-54b9603f1f80/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/a00140ee-7c25-4cd1-95d9-54b9603f1f80/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/a00140ee-7c25-4cd1-95d9-54b9603f1f80/3",
+          "title": "WARDOG",
+          "description": "This badge was earned by watching WARDOGS for 30 minutes",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "warlord",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/233322a6-0c31-43e7-acfa-f10e732e87da/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/233322a6-0c31-43e7-acfa-f10e732e87da/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/233322a6-0c31-43e7-acfa-f10e732e87da/3",
+          "title": "WARLORD",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the WARDOGS category during the Beta/Early Access period",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
