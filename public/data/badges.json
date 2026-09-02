@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-09-01T17:35:03.518Z",
+  "generatedAt": "2026-09-02T19:05:16.921Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -6584,6 +6584,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/2040d479-b815-4617-8a55-9aed027e30d0/3",
           "title": "ZEVENT 2024",
           "description": "This badge was earned for watching ZEVENT 2024!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "zevent-2026",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/daea9c61-566f-41da-9b0a-1c520faf5c01/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/daea9c61-566f-41da-9b0a-1c520faf5c01/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/daea9c61-566f-41da-9b0a-1c520faf5c01/3",
+          "title": "ZEVENT 2026",
+          "description": "This badge was earned by watching ZEVENT 2026!",
           "click_action": null,
           "click_url": null
         }
