@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-09-03T23:05:20.352Z",
+  "generatedAt": "2026-09-04T21:12:16.014Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -5415,6 +5415,21 @@
       ]
     },
     {
+      "set_id": "subtember-2026",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/6ae639f0-a06d-40a9-ad16-7b7e7c18a323/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/6ae639f0-a06d-40a9-ad16-7b7e7c18a323/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/6ae639f0-a06d-40a9-ad16-7b7e7c18a323/3",
+          "title": "SUBtember 2026",
+          "description": "Badge given to users who sub, gift, or use bits during SUBtember 2026.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "superhot_1",
       "versions": [
         {
@@ -6441,6 +6456,21 @@
           "description": "VIP",
           "click_action": "visit_url",
           "click_url": "https://help.twitch.tv/customer/en/portal/articles/659115-twitch-chat-badges-guide"
+        }
+      ]
+    },
+    {
+      "set_id": "volume-up",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/8d2a48c5-f188-4468-b165-d4771f539c24/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/8d2a48c5-f188-4468-b165-d4771f539c24/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/8d2a48c5-f188-4468-b165-d4771f539c24/3",
+          "title": "Volume Up",
+          "description": "This badge was earned by streaming for 4+ hours through the DJ Program during 8.08 Week!",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
