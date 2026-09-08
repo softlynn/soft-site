@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-09-04T21:12:16.014Z",
+  "generatedAt": "2026-09-08T11:35:03.309Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -4789,6 +4789,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/590698dd-2bc4-4401-817a-17c641f5e881/3",
           "title": "Social Media Badge",
           "description": "This user earned a Legend badge for reaching 100000 views on their social posts.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "solasta-2-multiplayer",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/e8430418-13e9-4325-b2ad-85664d2a4ddd/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/e8430418-13e9-4325-b2ad-85664d2a4ddd/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/e8430418-13e9-4325-b2ad-85664d2a4ddd/3",
+          "title": "Solasta 2 Multiplayer",
+          "description": "This badge was earned by watching the Solasta II category for 30 minutes!",
           "click_action": null,
           "click_url": null
         }
