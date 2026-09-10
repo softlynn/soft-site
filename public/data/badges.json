@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-09-08T11:35:03.309Z",
+  "generatedAt": "2026-09-10T16:05:03.494Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -4619,6 +4619,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/0a4afdfc-7b58-4674-beb4-631766208b6d/3",
           "title": "RuneScape Dragon Dagger",
           "description": "This badge was awarded to people who viewed the OldSchoolRS livestream of the Deadman All Stars event Finale. It was added to promote Old School RuneScape's Deadman All Stars event.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "runescape-dragonwilds-eye",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/a5b43a31-4534-4f9e-875b-b9f0d1be8f73/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/a5b43a31-4534-4f9e-875b-b9f0d1be8f73/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/a5b43a31-4534-4f9e-875b-b9f0d1be8f73/3",
+          "title": "RuneScape Dragonwilds Eye",
+          "description": "This badge was earned by watching 30 minutes of RuneScape: Dragonwilds category",
           "click_action": null,
           "click_url": null
         }
