@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-09-11T17:35:02.902Z",
+  "generatedAt": "2026-09-11T19:20:02.911Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -6674,6 +6674,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/714081b8-aded-46d7-a6c3-14b2d79f19be/3",
           "title": "Wolf",
           "description": "This badge was earned by watching a streamer in the PAYDAY 3 category for 90 minutes ",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "wsci-2026",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/e61d79be-7d9d-4de2-8571-41f00bf2081a/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/e61d79be-7d9d-4de2-8571-41f00bf2081a/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/e61d79be-7d9d-4de2-8571-41f00bf2081a/3",
+          "title": "WSCI 2026",
+          "description": "This badge was earned by supporting the 2026 World Star Challengers Invitational!",
           "click_action": null,
           "click_url": null
         }
