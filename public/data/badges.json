@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-09-11T19:20:02.911Z",
+  "generatedAt": "2026-09-12T16:05:03.696Z",
   "channelLogin": "softuwo",
   "channelId": "218908733",
   "global": [
@@ -2974,6 +2974,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/ad51bd4c-2621-4d7c-8580-89243002bc8b/3",
           "title": "Jeff the Land Shark",
           "description": "This badge was earned by subscribing or gifting a sub in the Marvel Rivals category during Marvel Rivals' 1-year anniversary!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "joker-mayhem",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/7973c062-7a4f-41de-9a20-77d4b2edc56a/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/7973c062-7a4f-41de-9a20-77d4b2edc56a/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/7973c062-7a4f-41de-9a20-77d4b2edc56a/3",
+          "title": "Joker Mayhem",
+          "description": "This badge was earned by subscribing or gifting a sub to a LEGO® Batman™: Legacy of the Dark Knight streamer!",
           "click_action": null,
           "click_url": null
         }
