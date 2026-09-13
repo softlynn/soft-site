@@ -3,14 +3,20 @@ import { USE_STATIC_ARCHIVE, VODS_API_BASE } from "../config/site";
 const STATIC_DATA_PATH = `${process.env.PUBLIC_URL || ""}/data/vods.json`;
 const STATIC_COMMENTS_BASE = `${process.env.PUBLIC_URL || ""}/data/comments`;
 const STATIC_EMOTES_BASE = `${process.env.PUBLIC_URL || ""}/data/emotes`;
+const STATIC_BADGES_PATH = `${process.env.PUBLIC_URL || ""}/data/badges.json`;
 const LOCAL_VOD_OVERRIDES_KEY = "softu-vod-overrides";
 const LOCAL_VOD_OVERRIDE_TTL_MS = 30 * 60 * 1000;
 const SPOTIFY_NOTICE_OLD = "Spotify audio is muted on this VOD.";
 const SPOTIFY_NOTICE_NEW = "Spotify audio may be muted on this VOD.";
 
 let staticVodsCache = null;
+let staticVodsRequest = null;
+let staticVodsLoadedAt = 0;
+const STATIC_VODS_CACHE_MS = 15000;
 const staticCommentsCache = new Map();
+const staticCommentsRequests = new Map();
 const staticEmotesCache = new Map();
+let staticBadgesCache = null;
 let localVodOverridesCache = null;
 
 const DEFAULT_EMOTES = {
@@ -18,6 +24,10 @@ const DEFAULT_EMOTES = {
   bttv_emotes: [],
   "7tv_emotes": [],
   embedded_emotes: [],
+};
+const DEFAULT_BADGES = {
+  channel: [],
+  global: [],
 };
 
 const isEmptyObject = (value) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0;
@@ -157,46 +167,64 @@ const normalizeVod = (vod) => {
   return normalizeVodNoticeText(applyLocalVodOverride(normalized));
 };
 
-const loadStaticVods = async () => {
+const loadStaticVods = async ({ forceRefresh = false } = {}) => {
+  if (staticVodsRequest) return staticVodsRequest;
+  if (!forceRefresh && staticVodsCache && Date.now() - staticVodsLoadedAt < STATIC_VODS_CACHE_MS) return staticVodsCache;
+  staticVodsRequest = (async () => {
   try {
     const response = await fetch(STATIC_DATA_PATH, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
-      cache: "no-store",
+      cache: "no-cache",
     });
     if (!response.ok) throw new Error(`Failed to load static VOD data (${response.status})`);
     const data = await response.json();
     staticVodsCache = Array.isArray(data) ? data.map(normalizeVod) : [];
+    staticVodsLoadedAt = Date.now();
     return staticVodsCache;
   } catch (error) {
     if (staticVodsCache) return staticVodsCache;
     throw error;
+  }
+  })();
+  try {
+    return await staticVodsRequest;
+  } finally {
+    staticVodsRequest = null;
   }
 };
 
 const loadStaticComments = async (vodId) => {
   const key = String(vodId);
   if (staticCommentsCache.has(key)) return staticCommentsCache.get(key);
-
+  if (staticCommentsRequests.has(key)) return staticCommentsRequests.get(key);
+  const request = (async () => {
   try {
     const response = await fetch(`${STATIC_COMMENTS_BASE}/${encodeURIComponent(key)}.json`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
-      cache: "no-store",
+      cache: "no-cache",
     });
 
     if (!response.ok) {
-      staticCommentsCache.set(key, []);
       return [];
     }
 
     const data = await response.json();
     const comments = Array.isArray(data) ? data : Array.isArray(data.comments) ? data.comments : [];
     staticCommentsCache.set(key, comments);
+    // Keep recently viewed logs, without retaining every long stream visited.
+    while (staticCommentsCache.size > 3) staticCommentsCache.delete(staticCommentsCache.keys().next().value);
     return comments;
   } catch {
-    staticCommentsCache.set(key, []);
     return [];
+  }
+  })();
+  staticCommentsRequests.set(key, request);
+  try {
+    return await request;
+  } finally {
+    staticCommentsRequests.delete(key);
   }
 };
 
@@ -207,6 +235,13 @@ const normalizeEmotesPayload = (payload) => ({
   bttv_emotes: Array.isArray(payload?.bttv_emotes) ? payload.bttv_emotes : [],
   "7tv_emotes": Array.isArray(payload?.["7tv_emotes"]) ? payload["7tv_emotes"] : [],
   embedded_emotes: Array.isArray(payload?.embedded_emotes) ? payload.embedded_emotes : [],
+});
+
+const normalizeBadgesPayload = (payload) => ({
+  ...DEFAULT_BADGES,
+  ...(payload || {}),
+  channel: Array.isArray(payload?.channel) ? payload.channel : [],
+  global: Array.isArray(payload?.global) ? payload.global : [],
 });
 
 const loadStaticEmotes = async (vodId) => {
@@ -236,9 +271,34 @@ const loadStaticEmotes = async (vodId) => {
   }
 };
 
-export const getVodById = async (vodId) => {
+const loadStaticBadges = async () => {
+  if (staticBadgesCache) return staticBadgesCache;
+
+  try {
+    const response = await fetch(STATIC_BADGES_PATH, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      staticBadgesCache = DEFAULT_BADGES;
+      return DEFAULT_BADGES;
+    }
+
+    const data = await response.json();
+    const normalized = normalizeBadgesPayload(data);
+    staticBadgesCache = normalized;
+    return normalized;
+  } catch {
+    staticBadgesCache = DEFAULT_BADGES;
+    return DEFAULT_BADGES;
+  }
+};
+
+export const getVodById = async (vodId, options = {}) => {
   if (USE_STATIC_ARCHIVE) {
-    const vods = await loadStaticVods();
+    const vods = await loadStaticVods(options);
     const match = vods.find((vod) => String(vod.id) === String(vodId));
     const resolvedMatch = match ? normalizeVodNoticeText(applyLocalVodOverride(match)) : match;
     if (resolvedMatch?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
@@ -250,22 +310,20 @@ export const getVodById = async (vodId) => {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
+  if (!response.ok) throw new Error(`Failed to load VOD (${response.status})`);
   const payload = await response.json();
   if (payload?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
-  return {
-    ...payload,
-    youtube: normalizeYouTubeEntriesForSite(payload?.youtube),
-  };
+  return normalizeVod(payload);
 };
 
 export const getBadges = async () => {
-  if (USE_STATIC_ARCHIVE) return { channel: [], global: [] };
+  if (USE_STATIC_ARCHIVE) return loadStaticBadges();
 
   const response = await fetch(`${VODS_API_BASE}/v2/badges`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
-  return response.json();
+  return normalizeBadgesPayload(await response.json());
 };
 
 export const getEmotes = async (vodId) => {

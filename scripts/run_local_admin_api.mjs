@@ -4,8 +4,10 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import dotenv from "dotenv";
+import { createAdminConsole, isAllowedAdminOrigin } from "./admin_console.mjs";
+import { serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +20,7 @@ dotenv.config({ path: path.join(repoRoot, ".env.local") });
 const cleanUrl = (value) => String(value || "").replace(/\/+$/, "");
 
 const config = {
-  host: process.env.ADMIN_API_HOST || "localhost",
+  host: process.env.ADMIN_API_HOST || "127.0.0.1",
   port: Number(process.env.ADMIN_API_PORT || "49731"),
   archiveSiteUrl: cleanUrl(process.env.ARCHIVE_SITE_URL || ""),
   adminAllowedOrigins: String(process.env.ADMIN_ALLOWED_ORIGINS || ""),
@@ -33,13 +35,8 @@ const config = {
   vodsDataPath: process.env.ARCHIVE_VODS_PATH || path.join(repoRoot, "public", "data", "vods.json"),
   siteDesignPath: process.env.SITE_DESIGN_PATH || path.join(repoRoot, "public", "data", "site-design.json"),
   designAssetsPath: process.env.SITE_DESIGN_ASSETS_PATH || path.join(repoRoot, "public", "uploads", "design"),
-  twitchChannelLogin: process.env.TWITCH_CHANNEL_LOGIN || "",
-  twitchClientId: process.env.TWITCH_CLIENT_ID || "",
-  twitchClientSecret: process.env.TWITCH_CLIENT_SECRET || "",
-  twitchUserTokenPath: process.env.TWITCH_USER_TOKEN_PATH || path.join(repoRoot, "secrets", "twitch_user_token.json"),
   youtubeClientSecretPath: process.env.YOUTUBE_CLIENT_SECRET_PATH || path.join(repoRoot, "secrets", "youtube_client_secret.json"),
   youtubeTokenPath: process.env.YOUTUBE_TOKEN_PATH || path.join(repoRoot, "secrets", "youtube_token.json"),
-  twitchAuthTimeoutSeconds: Number(process.env.TWITCH_AUTH_TIMEOUT_SECONDS || "180"),
   adminIdleTimeoutMinutes: Number(process.env.ADMIN_API_IDLE_TIMEOUT_MINUTES || "240"),
   spotifyNoticeText: process.env.ADMIN_SPOTIFY_NOTICE_TEXT || "Spotify audio may be muted on this VOD.",
 };
@@ -54,12 +51,13 @@ const DESIGN_ASSET_EXTENSIONS = new Map([
   ["image/gif", ".gif"],
 ]);
 const sessions = new Map();
-let twitchBootstrapState = null;
-const TWITCH_AUTH_SCOPES = ["channel:manage:videos"];
-const TWITCH_DEVICE_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code";
+const requestBodies = new WeakMap();
+const queuedMutations = new WeakSet();
 let lastActivityAt = Date.now();
 let shuttingDownForIdle = false;
 let googleApis = null;
+let activeRequests = 0;
+const serveConsole = createAdminConsole({ buildRoot: path.join(repoRoot, "build"), publicRoot: path.join(repoRoot, "public") });
 
 const log = (message) => {
   console.log(`[${new Date().toISOString()}] ${message}`);
@@ -77,19 +75,6 @@ const gitCommitIdentityArgs = () => [
 ];
 
 const createApiError = (status, message, details = {}) => Object.assign(new Error(message), { status, ...details });
-
-const openUrl = (url) => {
-  if (!url) return;
-  if (process.platform === "win32") {
-    spawn("rundll32.exe", ["url.dll,FileProtocolHandler", url], { detached: true, stdio: "ignore" }).unref();
-    return;
-  }
-  if (process.platform === "darwin") {
-    spawn("open", [url], { detached: true, stdio: "ignore" }).unref();
-    return;
-  }
-  spawn("xdg-open", [url], { detached: true, stdio: "ignore" }).unref();
-};
 
 const markActivity = () => {
   lastActivityAt = Date.now();
@@ -122,12 +107,11 @@ const readJsonFile = async (filePath, fallback) => {
 };
 
 const writeJsonFile = async (filePath, payload) => {
-  await ensureDirectory(path.dirname(filePath));
-  await fs.writeFile(filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  await writeJsonFileAtomic(filePath, payload);
 };
 
 const getAllowedOrigins = () => {
-  const defaults = new Set(["http://localhost:3000", "https://softlynn.github.io"]);
+  const defaults = new Set(["http://localhost:3000", "https://softlynn.github.io", "https://softu.one", "https://www.softu.one"]);
   try {
     if (config.archiveSiteUrl) defaults.add(new URL(config.archiveSiteUrl).origin);
   } catch {
@@ -143,12 +127,10 @@ const getAllowedOrigins = () => {
 };
 
 const allowedOrigins = getAllowedOrigins();
-const isGithubPagesOrigin = (origin) => /^https:\/\/[a-z0-9-]+\.github\.io$/i.test(origin);
-const isHttpOrHttpsOrigin = (origin) => /^https?:\/\/[^/]+$/i.test(origin);
 
 const setCorsHeaders = (req, res) => {
   const origin = String(req.headers.origin || "");
-  if (allowedOrigins.has(origin) || isGithubPagesOrigin(origin) || isHttpOrHttpsOrigin(origin)) {
+  if (origin && isAllowedAdminOrigin(origin, allowedOrigins)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin, Access-Control-Request-Private-Network");
   }
@@ -160,24 +142,30 @@ const setCorsHeaders = (req, res) => {
 };
 
 const sendJson = (req, res, statusCode, payload) => {
+  if (res.destroyed || res.writableEnded) return;
   setCorsHeaders(req, res);
+  res.setHeader("Cache-Control", "no-store");
   res.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
   res.end(JSON.stringify(payload));
 };
 
-const readBodyJson = async (req) =>
-  new Promise((resolve, reject) => {
-    let body = "";
+const readBodyJson = (req) => {
+  if (requestBodies.has(req)) return requestBodies.get(req);
+  const result = new Promise((resolve, reject) => {
+    const chunks = [];
     let byteCount = 0;
     req.on("data", (chunk) => {
       byteCount += chunk.length;
       if (byteCount > MAX_BODY_BYTES) {
-        reject(new Error("Request body too large"));
+        chunks.length = 0;
+        reject(createApiError(413, "Request body too large"));
         return;
       }
-      body += chunk.toString("utf8");
+      chunks.push(chunk);
     });
     req.on("end", () => {
+      if (byteCount > MAX_BODY_BYTES) return;
+      const body = Buffer.concat(chunks).toString("utf8");
       if (!body.trim()) {
         resolve({});
         return;
@@ -185,11 +173,15 @@ const readBodyJson = async (req) =>
       try {
         resolve(JSON.parse(body));
       } catch {
-        reject(new Error("Invalid JSON request body"));
+        reject(createApiError(400, "Invalid JSON request body"));
       }
     });
     req.on("error", (error) => reject(error));
+    req.on("aborted", () => reject(createApiError(400, "Request interrupted")));
   });
+  requestBodies.set(req, result);
+  return result;
+};
 
 const timingSafeEquals = (left, right) => {
   const a = Buffer.from(String(left || ""));
@@ -221,11 +213,11 @@ const getBearerToken = (req) => {
 const requireSession = (req) => {
   pruneSessions();
   const token = getBearerToken(req);
-  if (!token) fail("Missing admin session token");
+  if (!token) throw createApiError(401, "Sign in to continue.");
   const expiresAt = sessions.get(token);
   if (!expiresAt || expiresAt <= Date.now()) {
     sessions.delete(token);
-    fail("Admin session expired");
+    throw createApiError(401, "Your session expired. Sign in again.");
   }
   sessions.set(token, Date.now() + SESSION_TTL_MS);
   return token;
@@ -445,376 +437,6 @@ const setYouTubeVideoPrivacy = async (youtube, videoId, privacyStatus) => {
   return { id: videoId, privacyStatus: normalizedPrivacy, changed: true };
 };
 
-const saveTwitchTokenRecord = async (tokenRecord) => {
-  await writeJsonFile(config.twitchUserTokenPath, tokenRecord);
-};
-
-const refreshTwitchUserToken = async (refreshToken) => {
-  const params = new URLSearchParams({
-    client_id: config.twitchClientId,
-    client_secret: config.twitchClientSecret,
-    grant_type: "refresh_token",
-    refresh_token: refreshToken,
-  });
-
-  const response = await fetch("https://id.twitch.tv/oauth2/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params.toString(),
-  });
-
-  if (!response.ok) {
-    const body = await response.text();
-    fail(`Failed to refresh Twitch token (${response.status}): ${body}`);
-  }
-
-  return response.json();
-};
-
-const validateTwitchToken = async (accessToken) => {
-  const response = await fetch("https://id.twitch.tv/oauth2/validate", {
-    method: "GET",
-    headers: {
-      Authorization: `OAuth ${accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    const body = await response.text();
-    fail(`Failed to validate Twitch token (${response.status}): ${body}`);
-  }
-
-  return response.json();
-};
-
-const ensureTwitchLoginMatches = (login) => {
-  if (!config.twitchChannelLogin) return;
-  if (!login) return;
-  if (String(login).toLowerCase() !== String(config.twitchChannelLogin).toLowerCase()) {
-    fail(`Twitch token login "${login}" does not match TWITCH_CHANNEL_LOGIN "${config.twitchChannelLogin}"`);
-  }
-};
-
-const persistValidatedTwitchToken = async (tokenPayload, existingRecord = {}) => {
-  const accessToken = tokenPayload?.access_token || existingRecord?.access_token;
-  if (!accessToken) fail("Twitch OAuth payload missing access_token");
-
-  const validated = await validateTwitchToken(accessToken);
-  ensureTwitchLoginMatches(validated.login);
-
-  const expiresInSeconds = Number(tokenPayload?.expires_in || 0);
-  const expiresAtMs =
-    expiresInSeconds > 0
-      ? Date.now() + expiresInSeconds * 1000
-      : Number(existingRecord.expires_at_ms || 0) || Date.now() + 3600 * 1000;
-
-  const record = {
-    ...existingRecord,
-    ...tokenPayload,
-    access_token: accessToken,
-    refresh_token: tokenPayload?.refresh_token || existingRecord?.refresh_token || "",
-    expires_at_ms: expiresAtMs,
-    obtained_at: new Date().toISOString(),
-    user_id: validated.user_id,
-    user_login: validated.login,
-    scopes: validated.scopes || tokenPayload?.scope || existingRecord?.scopes || [],
-  };
-
-  await saveTwitchTokenRecord(record);
-  return record;
-};
-
-const requestTwitchDeviceCode = async () => {
-  const params = new URLSearchParams({
-    client_id: config.twitchClientId,
-    scopes: TWITCH_AUTH_SCOPES.join(" "),
-  });
-
-  const response = await fetch("https://id.twitch.tv/oauth2/device", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params.toString(),
-  });
-
-  if (!response.ok) {
-    const body = await response.text();
-    fail(`Twitch device authorization request failed (${response.status}): ${body}`);
-  }
-
-  return response.json();
-};
-
-const sleep = (ms) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-
-const pollTwitchDeviceToken = async (deviceCode) => {
-  const params = new URLSearchParams({
-    client_id: config.twitchClientId,
-    grant_type: TWITCH_DEVICE_GRANT_TYPE,
-    device_code: String(deviceCode || ""),
-  });
-  if (config.twitchClientSecret) params.set("client_secret", config.twitchClientSecret);
-
-  const response = await fetch("https://id.twitch.tv/oauth2/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params.toString(),
-  });
-
-  if (response.ok) {
-    return {
-      status: "success",
-      payload: await response.json(),
-    };
-  }
-
-  const text = await response.text();
-  let message = "";
-  try {
-    const parsed = JSON.parse(text);
-    message = String(parsed?.message || parsed?.error || "");
-  } catch {
-    message = String(text || "");
-  }
-
-  const normalized = message.trim().toLowerCase().replace(/\s+/g, "_");
-  if (normalized === "authorization_pending") return { status: "pending" };
-  if (normalized === "slow_down") return { status: "slow_down" };
-  if (normalized === "access_denied") return { status: "denied" };
-  if (normalized === "expired_token" || normalized === "invalid_device_code") return { status: "expired" };
-
-  return {
-    status: "error",
-    error: `Twitch device token poll failed (${response.status}): ${text}`,
-  };
-};
-
-const startInteractiveTwitchAuth = async () => {
-  const device = await requestTwitchDeviceCode();
-  const authUrl = String(device?.verification_uri || "");
-  const userCode = String(device?.user_code || "");
-  const expiresInSeconds = Number(device?.expires_in || config.twitchAuthTimeoutSeconds || 1800);
-
-  const bootstrap = {
-    authUrl,
-    userCode,
-    done: false,
-    error: null,
-    startedAt: Date.now(),
-    promise: null,
-  };
-
-  bootstrap.promise = (async () => {
-    if (!device?.device_code) {
-      fail("Twitch device authorization did not return a device_code");
-    }
-    if (!authUrl) {
-      fail("Twitch device authorization did not return a verification URL");
-    }
-
-    let pollIntervalSeconds = Math.max(1, Number(device?.interval || 5));
-    const expiresAtMs = Date.now() + Math.max(30, expiresInSeconds) * 1000;
-
-    log(`Starting Twitch device authorization for ${config.twitchChannelLogin || "configured channel"}...`);
-    log(`Open this URL and complete authorization: ${authUrl}`);
-    if (userCode) log(`Use code: ${userCode}`);
-    openUrl(authUrl);
-
-    while (Date.now() < expiresAtMs) {
-      markActivity();
-      await sleep(pollIntervalSeconds * 1000);
-      const polled = await pollTwitchDeviceToken(device.device_code);
-      if (polled.status === "pending") continue;
-      if (polled.status === "slow_down") {
-        pollIntervalSeconds = Math.min(pollIntervalSeconds + 5, 30);
-        continue;
-      }
-      if (polled.status === "denied") {
-        fail("Twitch authorization was denied. Retry unpublish and approve access.");
-      }
-      if (polled.status === "expired") {
-        fail("Twitch authorization expired. Retry unpublish to get a new code.");
-      }
-      if (polled.status === "error") {
-        fail(polled.error);
-      }
-
-      const saved = await persistValidatedTwitchToken(polled.payload, {});
-      markActivity();
-      return saved;
-    }
-
-    fail("Timed out waiting for Twitch authorization. Please retry unpublish.");
-  })()
-    .then((result) => {
-      bootstrap.done = true;
-      bootstrap.error = null;
-      return result;
-    })
-    .catch((error) => {
-      bootstrap.done = true;
-      bootstrap.error = error?.message || "Twitch authorization failed";
-      throw error;
-    });
-
-  // Prevent unhandled rejections when auth is not yet awaited by a request.
-  bootstrap.promise.catch((error) => {
-    log(`Twitch authorization session ended with error: ${error?.message || error}`);
-  });
-
-  return bootstrap;
-};
-
-const seedTwitchTokenFromEnv = async () => {
-  const accessToken = String(process.env.TWITCH_USER_ACCESS_TOKEN || "").trim();
-  if (!accessToken) return null;
-
-  const seeded = {
-    access_token: accessToken,
-    refresh_token: String(process.env.TWITCH_USER_REFRESH_TOKEN || "").trim(),
-    expires_in: Number(process.env.TWITCH_USER_EXPIRES_IN || 0),
-  };
-
-  log("Seeding Twitch user token from environment variables.");
-  return persistValidatedTwitchToken(seeded, {});
-};
-
-const bootstrapTwitchUserToken = async () => {
-  const fromEnv = await seedTwitchTokenFromEnv();
-  if (fromEnv) return fromEnv;
-
-  if (!twitchBootstrapState || (twitchBootstrapState.done && twitchBootstrapState.error)) {
-    log("No stored Twitch user token found. Starting one-time interactive Twitch authorization.");
-    twitchBootstrapState = await startInteractiveTwitchAuth();
-  }
-
-  if (twitchBootstrapState.done && !twitchBootstrapState.error) {
-    return twitchBootstrapState.promise;
-  }
-
-  const userCodeHint = twitchBootstrapState.userCode ? ` Use code: ${twitchBootstrapState.userCode}.` : "";
-  throw createApiError(
-    409,
-    `Twitch authorization required. Open this URL, complete authorization, then click Unpublish again: ${twitchBootstrapState.authUrl}.${userCodeHint}`,
-    {
-      code: "TWITCH_AUTH_REQUIRED",
-      authUrl: twitchBootstrapState.authUrl,
-      userCode: twitchBootstrapState.userCode,
-    }
-  );
-};
-
-const loadTwitchTokenRecord = async () => {
-  if (await fileExists(config.twitchUserTokenPath)) {
-    return readJsonFile(config.twitchUserTokenPath, {});
-  }
-  return bootstrapTwitchUserToken();
-};
-
-const refreshAndPersistTwitchToken = async (tokenRecord) => {
-  const refreshToken = tokenRecord?.refresh_token || "";
-  if (!refreshToken) return null;
-
-  const refreshed = await refreshTwitchUserToken(refreshToken);
-  return persistValidatedTwitchToken(
-    {
-      ...refreshed,
-      refresh_token: refreshed.refresh_token || refreshToken,
-    },
-    tokenRecord
-  );
-};
-
-const getValidTwitchToken = async () => {
-  if (!config.twitchClientId || !config.twitchClientSecret) {
-    fail("TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET must be set");
-  }
-
-  let tokenRecord = await loadTwitchTokenRecord();
-  let accessToken = tokenRecord.access_token || "";
-  const expiresAt = Number(tokenRecord.expires_at_ms || 0);
-  const isExpired = !accessToken || !expiresAt || Date.now() >= expiresAt - 60 * 1000;
-
-  if (isExpired) {
-    const refreshed = await refreshAndPersistTwitchToken(tokenRecord);
-    tokenRecord = refreshed || (await bootstrapTwitchUserToken());
-    accessToken = tokenRecord.access_token || "";
-  }
-
-  try {
-    const validated = await validateTwitchToken(accessToken);
-    ensureTwitchLoginMatches(validated.login);
-    return {
-      ...tokenRecord,
-      user_id: validated.user_id,
-      user_login: validated.login,
-      scopes: validated.scopes || tokenRecord.scopes || [],
-    };
-  } catch {
-    const refreshed = await refreshAndPersistTwitchToken(tokenRecord);
-    tokenRecord = refreshed || (await bootstrapTwitchUserToken());
-    return tokenRecord;
-  }
-};
-
-const requestTwitchVodApi = async (vodId, method, tokenRecordInput) => {
-  const tokenRecord = tokenRecordInput || (await getValidTwitchToken());
-  const request = async (token) =>
-    fetch(`https://api.twitch.tv/helix/videos?id=${encodeURIComponent(String(vodId))}`, {
-      method,
-      headers: {
-        "Client-Id": config.twitchClientId,
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-  let response = await request(tokenRecord.access_token);
-  if (response.status === 401 && tokenRecord.refresh_token) {
-    const refreshed = await refreshTwitchUserToken(tokenRecord.refresh_token);
-    const refreshedExpiresAt = Date.now() + Number(refreshed.expires_in || 0) * 1000;
-    const nextRecord = {
-      ...tokenRecord,
-      ...refreshed,
-      access_token: refreshed.access_token,
-      refresh_token: refreshed.refresh_token || tokenRecord.refresh_token,
-      expires_at_ms: refreshedExpiresAt,
-      obtained_at: new Date().toISOString(),
-    };
-    await saveTwitchTokenRecord(nextRecord);
-    response = await request(nextRecord.access_token);
-  }
-
-  return response;
-};
-
-const getTwitchVodStatus = async (vodId, tokenRecordInput) => {
-  const response = await requestTwitchVodApi(vodId, "GET", tokenRecordInput);
-  if (!response.ok) {
-    const body = await response.text();
-    fail(`Twitch VOD lookup failed (${response.status}): ${body}`);
-  }
-
-  const payload = await response.json().catch(() => ({}));
-  const item = Array.isArray(payload?.data) ? payload.data[0] : null;
-  if (!item) {
-    return {
-      id: String(vodId),
-      exists: false,
-      republished: false,
-      reason: "Twitch VOD is no longer available and cannot be restored automatically.",
-    };
-  }
-
-  return {
-    id: String(vodId),
-    exists: true,
-    republished: true,
-    reason: "Twitch VOD already exists.",
-  };
-};
-
 const parseVodRoute = (pathname) => {
   const parts = pathname.split("/").filter(Boolean);
   if (parts.length !== 3 || parts[0] !== "vods") return null;
@@ -936,6 +558,11 @@ const handleRequest = async (req, res) => {
   const requestUrl = new URL(req.url || "/", `http://${config.host}:${config.port}`);
   const pathname = requestUrl.pathname;
 
+  if (!isAllowedAdminOrigin(String(req.headers.origin || ""), allowedOrigins)) {
+    sendJson(req, res, 403, { error: "This site is not allowed to use the local admin. Open admin from Softuchive." });
+    return;
+  }
+
   if (method === "OPTIONS") {
     setCorsHeaders(req, res);
     res.writeHead(204);
@@ -944,9 +571,11 @@ const handleRequest = async (req, res) => {
   }
 
   if (method === "GET" && pathname === "/health") {
-    sendJson(req, res, 200, { ok: true, service: "soft-admin-api" });
+    sendJson(req, res, 200, { ok: true, service: "soft-admin-api", consolePath: "/console/admin" });
     return;
   }
+
+  if (await serveConsole(req, res, pathname)) return;
 
   if (method === "POST" && pathname === "/auth") {
     const body = await readBodyJson(req);
@@ -963,6 +592,16 @@ const handleRequest = async (req, res) => {
     requireSession(req);
     sendJson(req, res, 200, { ok: true });
     return;
+  }
+
+  if (method === "POST" && !queuedMutations.has(req)) {
+    requireSession(req);
+    await readBodyJson(req);
+    return serializeFileUpdate(config.vodsDataPath, () => {
+      if (res.destroyed) return;
+      queuedMutations.add(req);
+      return handleRequest(req, res);
+    });
   }
 
   if (method === "GET" && pathname === "/vods") {
@@ -1066,23 +705,18 @@ const handleRequest = async (req, res) => {
       const vod = vods.find((entry) => String(entry.id) === String(vodRoute.vodId));
       if (!vod) fail(`VOD ${vodRoute.vodId} not found`);
 
-      const twitchToken = await getValidTwitchToken();
       const youtubeIds = (Array.isArray(vod.youtube) ? vod.youtube : []).map((entry) => entry?.id).filter(Boolean);
-      const youtube = await loadYoutubeClient();
+      const youtube = youtubeIds.length ? await loadYoutubeClient() : null;
       const youtubeResults = [];
       for (const videoId of youtubeIds) {
         youtubeResults.push(await setYouTubeVideoPrivacy(youtube, videoId, "private"));
       }
 
-      const twitchStatus = await getTwitchVodStatus(vodRoute.vodId, twitchToken);
       const twitchResult = {
         id: String(vodRoute.vodId),
         deleted: false,
         changed: false,
-        exists: twitchStatus.exists,
-        reason: twitchStatus.exists
-          ? "Skipped Twitch deletion to preserve the VOD. Twitch Helix has no official unpublish endpoint."
-          : "Twitch VOD not found. No deletion was performed.",
+        reason: "Twitch VOD preserved unchanged.",
       };
 
       const updatedVod = await updateVod(
@@ -1109,15 +743,14 @@ const handleRequest = async (req, res) => {
       const vod = vods.find((entry) => String(entry.id) === String(vodRoute.vodId));
       if (!vod) fail(`VOD ${vodRoute.vodId} not found`);
 
-      const twitchToken = await getValidTwitchToken();
-      const youtubeIds = (Array.isArray(vod.youtube) ? vod.youtube : []).map((entry) => entry?.id).filter(Boolean);
-      const youtube = await loadYoutubeClient();
+      const youtubeIds = (Array.isArray(vod.youtube) ? vod.youtube : []).filter((entry) => entry?.unpublished !== true).map((entry) => entry?.id).filter(Boolean);
+      const youtube = youtubeIds.length ? await loadYoutubeClient() : null;
       const youtubeResults = [];
       for (const videoId of youtubeIds) {
         youtubeResults.push(await setYouTubeVideoPrivacy(youtube, videoId, "public"));
       }
 
-      const twitchResult = await getTwitchVodStatus(vodRoute.vodId, twitchToken);
+      const twitchResult = { id: String(vodRoute.vodId), changed: false, deleted: false, reason: "Twitch VOD preserved unchanged." };
 
       const updatedVod = await updateVod(
         vodRoute.vodId,
@@ -1293,6 +926,7 @@ const handleRequest = async (req, res) => {
 await validateConfig();
 
 const server = http.createServer((req, res) => {
+  activeRequests += 1;
   handleRequest(req, res).catch((error) => {
     markActivity();
     log(`Request failed: ${error.message}`);
@@ -1302,12 +936,12 @@ const server = http.createServer((req, res) => {
     if (error?.authUrl) payload.authUrl = error.authUrl;
     if (error?.userCode) payload.userCode = error.userCode;
     sendJson(req, res, status, payload);
-  });
+  }).finally(() => { activeRequests -= 1; markActivity(); });
 });
 
 server.listen(config.port, config.host, () => {
   markActivity();
-  log(`Soft admin API listening on http://${config.host}:${config.port}`);
+  log(`Soft admin API listening on http://${config.host}:${server.address().port}`);
 });
 
 setInterval(pruneSessions, 60 * 1000).unref();
@@ -1317,7 +951,7 @@ if (Number.isFinite(config.adminIdleTimeoutMinutes) && config.adminIdleTimeoutMi
   const checkEveryMs = Math.min(60 * 1000, Math.max(15 * 1000, Math.floor(idleTimeoutMs / 4)));
 
   setInterval(() => {
-    if (shuttingDownForIdle) return;
+    if (shuttingDownForIdle || activeRequests > 0) return;
     if (Date.now() - lastActivityAt < idleTimeoutMs) return;
 
     shuttingDownForIdle = true;

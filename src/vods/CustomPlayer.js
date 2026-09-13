@@ -11,6 +11,9 @@ const CDN_BASE = CDN_BASE_URL;
 export default function Player(props) {
   const { playerRef, setCurrentTime, setPlaying, type, vod, timestamp, delay, setDelay } = props;
   const timeUpdateRef = useRef(null);
+  const timeUpdateCallbackRef = useRef(null);
+  const objectUrlRef = useRef(null);
+  const lastSavedSecondRef = useRef(-1);
   const [source, setSource] = useState(undefined);
   const [fileError, setFileError] = useState(undefined);
   const videoJsOptions = {
@@ -25,19 +28,20 @@ export default function Player(props) {
   // Save current position to localStorage
   const savePosition = useCallback(
     (player) => {
-      if (!player) return;
+      if (!player || player.isDisposed()) return;
       const currentTime = player.currentTime();
-      localStorage.setItem(`video-position-${vod.id}`, currentTime);
+      try { localStorage.setItem(`video-position-${vod.id}`, currentTime); } catch { /* Storage may be unavailable. */ }
     },
     [vod.id]
   );
 
   const clearPosition = () => {
-    localStorage.removeItem(`video-position-${vod.id}`);
+    try { localStorage.removeItem(`video-position-${vod.id}`); } catch { /* Storage may be unavailable. */ }
   };
 
   const onReady = (player) => {
     playerRef.current = player;
+    setPlaying({ playing: false, ready: true });
 
     player.hotkeys({
       alwaysCaptureHotkeys: true,
@@ -49,7 +53,7 @@ export default function Player(props) {
     });
 
     canAutoPlay.video().then(({ result }) => {
-      if (!result) playerRef.current.muted(true);
+      if (!result && !player.isDisposed()) player.muted(true);
     });
 
     // Restore last position after metadata is loaded
@@ -58,7 +62,8 @@ export default function Player(props) {
       if (timestamp) {
         player.currentTime(timestamp);
       } else {
-        const savedPosition = localStorage.getItem(`video-position-${vod.id}`);
+        let savedPosition;
+        try { savedPosition = localStorage.getItem(`video-position-${vod.id}`); } catch { /* Optional resume position. */ }
         if (savedPosition) {
           const position = parseFloat(savedPosition);
           if (!isNaN(position)) {
@@ -70,7 +75,9 @@ export default function Player(props) {
 
     // Save position every 5 seconds
     player.on("timeupdate", () => {
-      if (Math.floor(player.currentTime()) % 5 === 0) {
+      const second = Math.floor(player.currentTime());
+      if (second % 5 === 0 && lastSavedSecondRef.current !== second) {
+        lastSavedSecondRef.current = second;
         savePosition(player);
       }
     });
@@ -87,7 +94,7 @@ export default function Player(props) {
       setPlaying({ playing: false });
     });
 
-    player.on("end", () => {
+    player.on("ended", () => {
       clearPosition();
       clearTimeUpdate();
       setPlaying({ playing: false });
@@ -104,18 +111,19 @@ export default function Player(props) {
   };
 
   const timeUpdate = () => {
-    if (!playerRef.current) return;
+    if (!playerRef.current || playerRef.current.isDisposed()) return;
     if (playerRef.current.paused()) return;
     let currentTime = 0;
     currentTime += playerRef.current.currentTime();
     currentTime += delay;
     setCurrentTime(currentTime);
   };
+  timeUpdateCallbackRef.current = timeUpdate;
 
   const loopTimeUpdate = () => {
     if (timeUpdateRef.current !== null) clearTimeout(timeUpdateRef.current);
     timeUpdateRef.current = setTimeout(() => {
-      timeUpdate();
+      timeUpdateCallbackRef.current?.();
       loopTimeUpdate();
     }, 1000);
   };
@@ -127,37 +135,47 @@ export default function Player(props) {
   const fileChange = (evt) => {
     setFileError(false);
     const file = evt.target.files[0];
+    if (!file) return;
     if (file.type.split("/")[0] !== "video") {
       return setFileError("It has to be a valid video file!");
     }
 
-    setSource({ src: URL.createObjectURL(file), type: file.type });
+    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    objectUrlRef.current = URL.createObjectURL(file);
+    setSource({ src: objectUrlRef.current, type: file.type });
   };
 
   useEffect(() => {
     if (!source || !playerRef.current) return;
-    playerRef.current.src(source);
-
-    // Delay/duration logic
-    const set = async () => {
-      let playerDuration = playerRef.current.duration();
-      while (isNaN(playerDuration) || playerDuration === 0) {
-        playerDuration = playerRef.current.duration();
-        await sleep(100);
-      }
+    const player = playerRef.current;
+    const updateDuration = () => {
+      if (player.isDisposed()) return;
+      const playerDuration = player.duration();
+      if (!Number.isFinite(playerDuration) || playerDuration <= 0) return;
       const vodDuration = toSeconds(vod.duration);
       const tmpDelay = vodDuration - playerDuration < 0 ? 0 : vodDuration - playerDuration;
       setDelay(tmpDelay);
     };
-    set();
+    player.on("loadedmetadata", updateDuration);
+    player.on("durationchange", updateDuration);
+    player.src(source);
+    return () => {
+      if (!player.isDisposed()) {
+        player.off("loadedmetadata", updateDuration);
+        player.off("durationchange", updateDuration);
+      }
+    };
   }, [source, playerRef, vod, setDelay]);
 
   // On unmount, save position
   useEffect(() => {
     return () => {
+      clearTimeout(timeUpdateRef.current);
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
       if (playerRef.current) {
         savePosition(playerRef.current);
       }
+      playerRef.current = null;
     };
   }, [vod.id, playerRef, savePosition]);
 
@@ -180,7 +198,3 @@ export default function Player(props) {
     </Box>
   );
 }
-
-const sleep = (ms) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};

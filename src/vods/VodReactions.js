@@ -270,14 +270,14 @@ export default function VodReactions({
             sx={{
               fontSize: 15,
               color: error ? "warning.main" : "#e17698",
-              filter: "drop-shadow(0 2px 4px rgba(225,118,152,0.2))",
+
             }}
           />
           {cardText !== "" && (
             <Typography
               variant="caption"
               sx={{
-                fontFamily: "Roboto, Arial, sans-serif",
+
                 fontWeight: 500,
                 lineHeight: 1,
                 fontSize: "0.7rem",

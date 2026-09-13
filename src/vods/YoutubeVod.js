@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, InputLabel, Select, IconButton, Collapse, Button, Grid, Stack } from "@mui/material";
 import Loading from "../utils/Loading";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router";
 import YoutubePlayer from "./YoutubePlayer";
 import DownloadIcon from "@mui/icons-material/Download";
 import NotFound from "../utils/NotFound";
@@ -18,6 +18,7 @@ import { BRAND_NAME, DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "./VodReactions";
 import { getStoredChatDelaySeconds, setStoredChatDelaySeconds } from "./chatDelayPreference";
+import { resolvePlaybackPosition } from "./replayUtils.mjs";
 import vodsClient from "./client";
 import VodCard from "./Vod";
 import SimpleBar from "simplebar-react";
@@ -126,7 +127,8 @@ export default function Vod(props) {
 
   useEffect(() => {
     const themeBeforeViewer = themeBeforeViewerRef.current;
-    const savedViewerTheme = window.localStorage.getItem(VIEWER_THEME_STORAGE_KEY);
+    let savedViewerTheme;
+    try { savedViewerTheme = window.localStorage.getItem(VIEWER_THEME_STORAGE_KEY); } catch { /* Optional viewer preference. */ }
     setThemeMode(savedViewerTheme === "light" ? "light" : "dark");
     return () => {
       setThemeMode(themeBeforeViewer);
@@ -134,44 +136,38 @@ export default function Vod(props) {
   }, [setThemeMode]);
 
   useEffect(() => {
+    let disposed = false;
+    setVod(undefined);
+    setYoutube(undefined);
+    setDrive(undefined);
+    setPlaying({ playing: false });
     const fetchVod = async () => {
       await getVodById(vodId)
         .then((response) => {
+          if (disposed) return;
           setVod(response);
           document.title = `${response.title || response.id} - ${BRAND_NAME}`;
         })
         .catch((e) => {
+          if (disposed) return;
           console.error(e);
           setVod(null);
         });
     };
     fetchVod();
-    return;
+    return () => { disposed = true; };
   }, [vodId]);
 
   useEffect(() => {
     if (!vod) return;
-    if (!type) {
-      const useType = vod.youtube.some((youtube) => youtube.type === "live") ? "live" : "vod";
-      setYoutube(vod.youtube.filter((data) => data.type === useType));
-      setDrive(vod.drive.filter((data) => data.type === useType));
-    } else {
-      setYoutube(vod.youtube.filter((data) => data.type === type));
-      setDrive(vod.drive.filter((data) => data.type === type));
-    }
+    const useType = type || (vod.youtube.some((entry) => entry.type === "live") ? "live" : "vod");
+    const videos = vod.youtube.filter((data) => (data.type || "vod") === useType)
+      .map((data, index) => ({ ...data, part: index + 1 }));
+    setYoutube(videos);
+    setDrive(vod.drive.filter((data) => (data.type || "vod") === useType));
     const search = new URLSearchParams(location.search);
-    let timestamp = search.get("t") !== null ? convertTimestamp(search.get("t")) : 0;
-    let tmpPart = search.get("part") !== null ? parseInt(search.get("part")) : 1;
-    if (timestamp > 0) {
-      for (let data of vod.youtube) {
-        if (data.duration > timestamp) {
-          tmpPart = data?.part || vod.youtube.indexOf(data) + 1;
-          break;
-        }
-        timestamp -= data.duration;
-      }
-    }
-    setPart({ part: tmpPart, timestamp: timestamp });
+    const timestamp = search.get("t") !== null ? convertTimestamp(search.get("t")) : 0;
+    setPart(resolvePlaybackPosition(videos, search.get("part"), timestamp));
     setChapter(vod.chapters ? vod.chapters[0] : null);
     return;
   }, [vod, type, location.search]);
@@ -287,7 +283,7 @@ export default function Vod(props) {
 
   const handlePartChange = (evt) => {
     const tmpPart = evt.target.value + 1;
-    setPart({ part: tmpPart, duration: 0 });
+    setPart({ part: tmpPart, timestamp: 0 });
   };
 
   const handleMobileFullscreenChatToggle = () => {
@@ -297,7 +293,7 @@ export default function Vod(props) {
 
   const handleViewerThemeModeChange = (mode) => {
     const nextMode = mode === "light" ? "light" : "dark";
-    window.localStorage.setItem(VIEWER_THEME_STORAGE_KEY, nextMode);
+    try { window.localStorage.setItem(VIEWER_THEME_STORAGE_KEY, nextMode); } catch { /* Optional viewer preference. */ }
     setThemeMode(nextMode);
   };
 
@@ -315,8 +311,8 @@ export default function Vod(props) {
     navigator.clipboard.writeText(`${window.location.origin}${location.pathname}?t=${toHMS(currentTime)}`);
   };
 
-  if (vod === undefined || drive === undefined || part === undefined || delay === undefined) return <Loading />;
   if (vod === null) return <NotFound />;
+  if (vod === undefined || drive === undefined || part === undefined || delay === undefined || youtube === undefined) return <Loading />;
 
   if (youtube.length === 0) return <NotFound />;
   const totalVodParts = youtube.filter((data) => String(data?.type || "vod") === "vod" && data?.id).length;
@@ -374,7 +370,7 @@ export default function Vod(props) {
             maxWidth: 1920,
             mx: "auto",
             gap: { xs: 0.4, md: 0.55 },
-            transition: "height 220ms cubic-bezier(.2,.8,.2,1)",
+            transition: "none",
           }}
         >
           <Box
@@ -432,29 +428,12 @@ export default function Vod(props) {
                 overflow: "hidden",
               }}
             >
-              {!!vod.thumbnail_url && (
-                <Box
-                  aria-hidden="true"
-                  sx={{
-                    position: "absolute",
-                    inset: -12,
-                    backgroundImage: `url(${vod.thumbnail_url})`,
-                    backgroundPosition: "center",
-                    backgroundSize: "cover",
-                    filter: "blur(28px) saturate(1.08)",
-                    transform: "scale(1.06)",
-                    opacity: 0.6,
-                    zIndex: 0,
-                  }}
-                />
-              )}
               <Box
                 aria-hidden="true"
                 sx={{
                   position: "absolute",
                   inset: 0,
-                  background:
-                    "radial-gradient(120% 90% at 8% 8%, rgba(255,255,255,0.16), transparent 58%), radial-gradient(110% 90% at 92% 92%, rgba(212,107,140,0.15), transparent 64%), linear-gradient(180deg, rgba(255,255,255,0.04), rgba(17,24,39,0.04))",
+                  background: "#111214",
                   zIndex: 1,
                 }}
               />

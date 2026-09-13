@@ -1,15 +1,16 @@
-import { useState } from "react";
-import { Box, SvgIcon, Tooltip } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Box, SvgIcon, Tooltip, useMediaQuery } from "@mui/material";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import CustomLink from "../utils/CustomLink";
 import { SOCIAL_LINKS } from "../config/site";
 import { useSiteDesign } from "../design/DesignContext";
 
 const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
-const LOGO_LOOP_SRC = publicAsset("/media/soft-logo-loop.webm");
+const LOGO_LOOP_SRC = publicAsset("/media/soft-logo-loop-web.webm");
+const LOGO_STILL_SRC = publicAsset("/media/soft-logo-still.webp");
 const LOGO_STINGER_SRC = publicAsset("/media/soft-logo-stinger.webm");
 
 const socials = [
@@ -58,10 +59,19 @@ const socialButtonSx = {
 export default function Navbar() {
   const navigate = useNavigate();
   const [stingerActive, setStingerActive] = useState(false);
+  const [logoFailed, setLogoFailed] = useState(false);
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const { design } = useSiteDesign();
   const settings = design.settings || {};
   const showSocials = settings.showSocials !== false;
   const showVodsButton = settings.headerShowVodsButton === true;
+
+  useEffect(() => {
+    if (!stingerActive) return undefined;
+    // Blocked autoplay or a stalled download must never trap the home button.
+    const timeout = setTimeout(() => { navigate("/"); setStingerActive(false); }, 6000);
+    return () => clearTimeout(timeout);
+  }, [stingerActive, navigate]);
 
   const handleLogoClick = () => {
     if (stingerActive) return;
@@ -125,14 +135,13 @@ export default function Navbar() {
           }}
         >
           <Box
-            component="video"
+            component={reducedMotion || logoFailed ? "img" : "video"}
             className="soft-site-logo-video"
-            src={LOGO_LOOP_SRC}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
+            src={reducedMotion || logoFailed ? LOGO_STILL_SRC : LOGO_LOOP_SRC}
+            {...(reducedMotion || logoFailed ? { alt: "" } : {
+              autoPlay: true, loop: true, muted: true, playsInline: true,
+              preload: "auto", poster: LOGO_STILL_SRC, onError: () => setLogoFailed(true),
+            })}
             aria-hidden="true"
             sx={{
               display: "block",

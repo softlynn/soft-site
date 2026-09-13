@@ -1,5 +1,7 @@
 import { Box, Typography, FormControl, InputLabel, Select, MenuItem, TextField, Chip, Stack } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import { START_DATE } from "../config/site";
@@ -21,11 +23,11 @@ export default function ArchiveControls(props) {
   } = props;
 
   return (
-    <Box className="soft-glass soft-grid-pattern soft-panel-ambient" sx={{ px: { xs: 1.25, md: 2 }, py: { xs: 1.25, md: 1.45 }, borderRadius: "22px" }}>
+    <Box sx={{ px: { xs: 0.25, md: 0.5 }, py: { xs: 1.25, md: 1.45 } }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: { xs: "flex-start", md: "center" }, gap: 1.5, flexDirection: { xs: "column", md: "row" } }}>
         <Box>
           <Typography variant="h5" className="soft-section-heading" sx={{ color: "primary.main", pr: 1 }}>
-            Full VOD Archive
+            VOD archive
           </Typography>
           <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.35, maxWidth: 520, lineHeight: 1.45 }}>
             Search, filter, and jump into any stream with chat replay.
@@ -50,12 +52,12 @@ export default function ArchiveControls(props) {
         sx={{
           mt: 1.35,
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "auto auto 1fr auto" },
+          gridTemplateColumns: { xs: "1fr", md: "160px minmax(220px, 560px)" },
           gap: 1.1,
           alignItems: "center",
         }}
       >
-        <FormControl sx={{ minWidth: 130 }}>
+        <FormControl size="small" sx={{ minWidth: 130 }}>
           <InputLabel id="filter-select-label">Filter</InputLabel>
           <Select labelId="filter-select-label" label="Filter" value={filter} onChange={changeFilter}>
             {filters.map((value) => (
@@ -67,12 +69,13 @@ export default function ArchiveControls(props) {
         </FormControl>
 
         {filter === "Date" ? (
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <DatePicker
               minDate={dayjs(START_DATE)}
               maxDate={dayjs()}
               label="Start Date"
-              defaultValue={filterStartDate}
+              value={filterStartDate}
               onAccept={(newDate) => setFilterStartDate(newDate)}
               views={["year", "month", "day"]}
               slotProps={{ textField: { size: "small" } }}
@@ -81,16 +84,17 @@ export default function ArchiveControls(props) {
               minDate={dayjs(START_DATE)}
               maxDate={dayjs()}
               label="End Date"
-              defaultValue={filterEndDate}
+              value={filterEndDate}
               onAccept={(newDate) => setFilterEndDate(newDate)}
               views={["year", "month", "day"]}
               slotProps={{ textField: { size: "small" } }}
             />
           </Stack>
+          </LocalizationProvider>
         ) : filter === "Title" ? (
-          <TextField size="small" fullWidth label="Search by Title" type="text" onChange={handleTitleChange} defaultValue={filterTitle} />
+          <TextField key="title" size="small" fullWidth label="Search by Title" type="search" onChange={handleTitleChange} defaultValue={filterTitle} />
         ) : filter === "Game" ? (
-          <TextField size="small" fullWidth label="Search by Game" type="text" onChange={handleGameChange} defaultValue={filterGame} />
+          <TextField key="game" size="small" fullWidth label="Search by Game" type="search" onChange={handleGameChange} defaultValue={filterGame} />
         ) : (
           <Box />
         )}

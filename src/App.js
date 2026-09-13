@@ -1,11 +1,9 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router";
 import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
 import { CssBaseline, styled } from "@mui/material";
 import Loading from "./utils/Loading";
 import ThemeModeToggle from "./utils/ThemeModeToggle";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { ThemeModeContext } from "./utils/ThemeModeContext";
 import { DesignProvider } from "./design/DesignContext";
 
@@ -21,8 +19,10 @@ const DesignEditorPage = lazy(() => import("./design/DesignEditorPage"));
 const THEME_STORAGE_KEY = "softu-theme-mode";
 const getInitialThemeMode = () => {
   if (typeof window === "undefined") return "dark";
-  const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (saved === "light" || saved === "dark") return saved;
+  try {
+    const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (saved === "light" || saved === "dark") return saved;
+  } catch { /* Storage is optional in private browsing. */ }
   return "dark";
 };
 
@@ -230,7 +230,7 @@ export default function App() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(THEME_STORAGE_KEY, preferredThemeMode);
+    try { window.localStorage.setItem(THEME_STORAGE_KEY, preferredThemeMode); } catch { /* Keep the in-memory preference. */ }
   }, [preferredThemeMode]);
 
   const toggleThemeMode = () => {
@@ -242,8 +242,7 @@ export default function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <DesignProvider>
-          <BrowserRouter>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <BrowserRouter basename={window.location.pathname.startsWith("/console/") ? "/console" : "/"}>
               <Parent>
                 <SpaRedirectHandler />
                 <RouteAwareOverlays />
@@ -301,7 +300,6 @@ export default function App() {
                   </Routes>
                 </Suspense>
               </Parent>
-            </LocalizationProvider>
           </BrowserRouter>
         </DesignProvider>
       </ThemeProvider>

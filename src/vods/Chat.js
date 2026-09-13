@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef, createRef, useCallback } from "reac
 import { Box, Typography, Tooltip, Divider, Collapse, styled, IconButton, Button } from "@mui/material";
 import SimpleBar from "simplebar-react";
 import Loading from "../utils/Loading";
+import KeyboardDoubleArrowLeftRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowLeftRounded";
+import KeyboardDoubleArrowRightRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowRightRounded";
 import { collapseClasses } from "@mui/material/Collapse";
 import Twemoji from "react-twemoji";
 import Settings from "./Settings";
@@ -11,8 +13,7 @@ import MessageTooltip from "./MessageTooltip";
 import { BTTV_EMOTE_CDN } from "../config/site";
 import { getBadges, getEmotes, getVodComments } from "../api/vodsApi";
 import ThemeModeToggle from "../utils/ThemeModeToggle";
-import KeyboardDoubleArrowLeftRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowLeftRounded";
-import KeyboardDoubleArrowRightRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowRightRounded";
+import { findReplayEnd, indexEmotes } from "./replayUtils.mjs";
 
 const SEVENTV_API = "https://7tv.io/v3";
 const BASE_TWITCH_CDN = "https://static-cdn.jtvnw.net";
@@ -20,26 +21,56 @@ const BASE_FFZ_EMOTE_CDN = "https://cdn.frankerfacez.com/emote";
 const BASE_BTTV_EMOTE_CDN = BTTV_EMOTE_CDN;
 const BASE_7TV_EMOTE_CDN = "https://cdn.7tv.app/emote";
 const CHAT_SEEK_BACKFILL_SECONDS = 180;
+const CHAT_VISIBLE_MESSAGE_LIMIT = 500;
+const emoteIndexes = new WeakMap();
+const findEmote = (entries, text) => {
+  if (!Array.isArray(entries)) return undefined;
+  if (!emoteIndexes.has(entries)) emoteIndexes.set(entries, indexEmotes(entries));
+  return emoteIndexes.get(entries).get(text);
+};
+const FALLBACK_BADGE_LABELS = {
+  broadcaster: "LIVE",
+  moderator: "MOD",
+  vip: "VIP",
+  subscriber: "SUB",
+  founder: "FDR",
+  bits: "BITS",
+  "bits-leader": "BITS",
+  premium: "PRIME",
+  "bot-badge": "BOT",
+  "7tv": "7TV",
+};
 
 let messageCount = 0;
 let badgesCount = 0;
 
+const getBadgeSetId = (badge) => String(badge?._id ?? badge?.setID ?? badge?.set_id ?? "").trim();
+
+const getBadgeVersion = (badge) => String(badge?.version ?? badge?.id ?? "").trim();
+
+const formatBadgeTitle = (badgeId, version) => {
+  const readableBadgeId = String(badgeId || "")
+    .replace(/[-_]+/g, " ")
+    .trim();
+  if (!readableBadgeId) return "Badge";
+  if (!version) return readableBadgeId;
+  return `${readableBadgeId} (${version})`;
+};
+
+const getFallbackBadgeLabel = (badgeId) => {
+  const normalized = String(badgeId || "").trim().toLowerCase();
+  if (!normalized) return "BADGE";
+  if (FALLBACK_BADGE_LABELS[normalized]) return FALLBACK_BADGE_LABELS[normalized];
+  return normalized
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((part) => part.replace(/[^a-z0-9]/gi, "").slice(0, 3).toUpperCase())
+    .join("")
+    .slice(0, 7) || "BADGE";
+};
+
 export default function Chat(props) {
-  const {
-    isPortrait,
-    vodId,
-    playerRef,
-    playing,
-    userChatDelay,
-    delay,
-    youtube,
-    part,
-    games,
-    chatReplayAvailable = true,
-    forceSideLayout = false,
-    showChat: controlledShowChat,
-    onShowChatChange,
-  } = props;
+  const { isPortrait, vodId, playerRef, playing, userChatDelay, delay, youtube, part, games, chatReplayAvailable = true, forceSideLayout = false, showChat: controlledShowChat, onShowChatChange } = props;
   const desktopExpandedWidth = "clamp(300px, 22vw, 360px)";
   const desktopCollapsedWidth = "52px";
   const sideLayout = forceSideLayout || !isPortrait;
@@ -63,9 +94,12 @@ export default function Chat(props) {
   const commentsRequestSeqRef = useRef(0);
   const hasInitializedSyncRef = useRef(false);
   const [scrolling, setScrolling] = useState(false);
+  const scrollingRef = useRef(false);
+  const historyExpansionPending = useRef(false);
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [chatSyncing, setChatSyncing] = useState(false);
+  const [historyLimit, setHistoryLimit] = useState(CHAT_VISIBLE_MESSAGE_LIMIT);
 
   const applyCommentsPage = useCallback((response) => {
     const nextComments = Array.isArray(response?.comments) ? response.comments : [];
@@ -113,6 +147,14 @@ export default function Chat(props) {
     lastPlaybackTimeRef.current = null;
     commentsRequestSeqRef.current += 1;
     hasInitializedSyncRef.current = false;
+    setHistoryLimit(CHAT_VISIBLE_MESSAGE_LIMIT);
+    scrollingRef.current = false;
+    historyExpansionPending.current = false;
+    return () => {
+      commentsRequestSeqRef.current += 1;
+      clearInterval(loopRef.current);
+      clearTimeout(playRef.current);
+    };
   }, [vodId, part?.part]);
 
   useEffect(() => {
@@ -120,6 +162,7 @@ export default function Chat(props) {
       const ref = chatRef.current;
       const handleScroll = (e) => {
         const atBottom = ref.scrollHeight - ref.clientHeight - ref.scrollTop < 512;
+        scrollingRef.current = !atBottom;
         setScrolling((prev) => (prev === !atBottom ? prev : !atBottom));
       };
 
@@ -127,15 +170,17 @@ export default function Chat(props) {
 
       return () => ref.removeEventListener("scroll", handleScroll);
     }
-  }, []);
+  }, [commentsLoaded, showChat, shownMessages.length > 0]);
 
   useEffect(() => {
     if (!chatReplayAvailable) return;
+    let disposed = false;
+    emotes.current = { ffz_emotes: [], bttv_emotes: [], "7tv_emotes": [], embedded_emotes: [] };
 
     const loadBadges = () => {
       getBadges()
         .then((data) => {
-          if (data.error) return;
+          if (disposed || data.error) return;
           badges.current = data;
         })
         .catch((e) => {
@@ -152,7 +197,8 @@ export default function Chat(props) {
       })
         .then((response) => response.json())
         .then((data) => {
-          emotes.current["7tv_emotes"] = emotes.current["7tv_emotes"].concat(data.emotes);
+          if (disposed || !Array.isArray(data.emotes)) return;
+          emotes.current["7tv_emotes"] = (emotes.current["7tv_emotes"] || []).concat(data.emotes);
         })
         .catch((e) => {
           console.error(e);
@@ -162,17 +208,18 @@ export default function Chat(props) {
     const loadEmotes = async () => {
       await getEmotes(vodId)
         .then((data) => {
-          if (data.error) return;
-          emotes.current = data.data[0];
+          if (disposed || data.error) return;
+          emotes.current = data.data?.[0] || emotes.current;
         })
         .catch((e) => {
           console.error(e);
         });
-      load7TVGlobalEmotes();
+      if (!disposed) load7TVGlobalEmotes();
     };
 
     loadEmotes();
     loadBadges();
+    return () => { disposed = true; };
   }, [vodId, chatReplayAvailable]);
 
   const getCurrentTime = useCallback(() => {
@@ -182,11 +229,11 @@ export default function Chat(props) {
       for (let video of youtube) {
         if (!video.part) break;
         if (video.part >= part.part) break;
-        time += video.duration;
+        time += Number(video.duration) || 0;
       }
       time += playerRef.current.getCurrentTime();
     } else if (games) {
-      time += parseFloat(games[part.part - 1].start_time);
+      time += Number(games[part.part - 1]?.start_time) || 0;
       time += playerRef.current.getCurrentTime();
     } else {
       time += playerRef.current.currentTime();
@@ -207,7 +254,7 @@ export default function Chat(props) {
 
   const buildComments = useCallback((options = {}) => {
     const force = Boolean(options?.force);
-    if (!chatReplayAvailable) return;
+    if (!chatReplayAvailable || (!force && document.hidden)) return;
     if (!playerRef.current || !comments.current || comments.current.length === 0 || stoppedAtIndex.current === null) return;
     if (!force && (youtube || games ? playerRef.current.getPlayerState() !== 1 : playerRef.current.paused())) return;
 
@@ -219,15 +266,9 @@ export default function Chat(props) {
     }
     lastPlaybackTimeRef.current = time;
 
-    let lastIndex = comments.current.length;
-    for (let i = stoppedAtIndex.current.valueOf(); i < comments.current.length; i++) {
-      if (comments.current[i].content_offset_seconds > time) {
-        lastIndex = i;
-        break;
-      }
-    }
+    const lastIndex = findReplayEnd(comments.current, time);
 
-    if (stoppedAtIndex.current === lastIndex && stoppedAtIndex.current !== 0) return;
+    if (stoppedAtIndex.current === lastIndex) return;
 
     const fetchNextComments = () => {
       if (!cursor.current) return;
@@ -241,72 +282,91 @@ export default function Chat(props) {
     };
 
     const transformBadges = (textBadges) => {
+      if (!Array.isArray(textBadges) || textBadges.length === 0) return null;
+
       const badgeWrapper = [];
-      if (!badges.current) return;
-      const channelBadges = badges.current.channel;
-      const globalBadges = badges.current.global;
+      const channelBadges = Array.isArray(badges.current?.channel) ? badges.current.channel : [];
+      const globalBadges = Array.isArray(badges.current?.global) ? badges.current.global : [];
 
       for (const textBadge of textBadges) {
-        const badgeId = textBadge._id ?? textBadge.setID;
-        const version = textBadge.version;
+        const badgeId = getBadgeSetId(textBadge);
+        const version = getBadgeVersion(textBadge);
+        if (!badgeId) continue;
 
-        if (channelBadges) {
-          const badge = channelBadges.find((channelBadge) => channelBadge.set_id === badgeId);
-          if (badge) {
-            const badgeVersion = badge.versions.find((badgeVersion) => badgeVersion.id === version);
-            if (badgeVersion) {
-              badgeWrapper.push(
-                <MessageTooltip
-                  key={badgesCount++}
-                  title={
-                    <Box sx={{ maxWidth: "30rem", textAlign: "center" }}>
-                      <img crossOrigin="anonymous" style={{ marginBottom: "0.3rem", border: "none", maxWidth: "100%", verticalAlign: "top" }} src={badgeVersion.image_url_4x} alt="" />
-                      <Typography display="block" variant="caption">{`${badgeId}`}</Typography>
-                    </Box>
-                  }
-                >
+        const badgeSet =
+          channelBadges.find((channelBadge) => channelBadge.set_id === badgeId) ||
+          globalBadges.find((globalBadge) => globalBadge.set_id === badgeId);
+        const badgeVersion = Array.isArray(badgeSet?.versions)
+          ? badgeSet.versions.find((candidate) => String(candidate?.id || "") === version)
+          : null;
+        const badgeTitle = formatBadgeTitle(badgeId, version);
+
+        if (badgeVersion?.image_url_1x && badgeVersion?.image_url_2x && badgeVersion?.image_url_4x) {
+          badgeWrapper.push(
+            <MessageTooltip
+              key={badgesCount++}
+              title={
+                <Box sx={{ maxWidth: "30rem", textAlign: "center" }}>
                   <img
                     crossOrigin="anonymous"
-                    style={{ display: "inline-block", minWidth: "1rem", height: "1rem", margin: "0 .2rem .1rem 0", backgroundPosition: "50%", verticalAlign: "middle" }}
-                    srcSet={`${badgeVersion.image_url_1x} 1x, ${badgeVersion.image_url_2x} 2x, ${badgeVersion.image_url_4x} 4x`}
-                    src={badgeVersion.image_url_1x}
+                    style={{ marginBottom: "0.3rem", border: "none", maxWidth: "100%", verticalAlign: "top" }}
+                    src={badgeVersion.image_url_4x}
                     alt=""
                   />
-                </MessageTooltip>
-              );
-              continue;
-            }
-          }
+                  <Typography display="block" variant="caption">{badgeTitle}</Typography>
+                </Box>
+              }
+            >
+              <img
+                crossOrigin="anonymous"
+                style={{ display: "inline-block", minWidth: "1rem", height: "1rem", margin: "0 .2rem .1rem 0", backgroundPosition: "50%", verticalAlign: "middle" }}
+                srcSet={`${badgeVersion.image_url_1x} 1x, ${badgeVersion.image_url_2x} 2x, ${badgeVersion.image_url_4x} 4x`}
+                src={badgeVersion.image_url_1x}
+                alt=""
+              />
+            </MessageTooltip>
+          );
+          continue;
         }
 
-        if (globalBadges) {
-          const badge = globalBadges.find((globalBadge) => globalBadge.set_id === badgeId);
-          if (badge) {
-            const badgeVersion = badge.versions.find((badgeVersion) => badgeVersion.id === version);
-            badgeWrapper.push(
-              <MessageTooltip
-                key={badgesCount++}
-                title={
-                  <Box sx={{ maxWidth: "30rem", textAlign: "center" }}>
-                    <img crossOrigin="anonymous" style={{ marginBottom: "0.3rem", border: "none", maxWidth: "100%", verticalAlign: "top" }} src={badgeVersion.image_url_4x} alt="" />
-                    <Typography display="block" variant="caption">{`${badgeId}`}</Typography>
-                  </Box>
-                }
-              >
-                <img
-                  crossOrigin="anonymous"
-                  style={{ display: "inline-block", minWidth: "1rem", height: "1rem", margin: "0 .2rem .1rem 0", backgroundPosition: "50%", verticalAlign: "middle" }}
-                  srcSet={`${badgeVersion.image_url_1x} 1x, ${badgeVersion.image_url_2x} 2x, ${badgeVersion.image_url_4x} 4x`}
-                  src={badgeVersion.image_url_1x}
-                  alt=""
-                />
-              </MessageTooltip>
-            );
-            continue;
-          }
-        }
+        badgeWrapper.push(
+          <MessageTooltip
+            key={badgesCount++}
+            title={
+              <Typography variant="caption" sx={{ display: "block", maxWidth: "16rem", textAlign: "center" }}>
+                {badgeTitle}
+              </Typography>
+            }
+          >
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: "1rem",
+                height: "1rem",
+                px: 0.35,
+                mr: 0.4,
+                mb: 0.1,
+                borderRadius: "999px",
+                background: "rgba(127, 153, 196, 0.2)",
+                border: "1px solid rgba(173, 197, 233, 0.28)",
+                color: "rgba(229, 239, 255, 0.92)",
+                fontSize: "0.52rem",
+                fontWeight: 700,
+                letterSpacing: "0.03em",
+                lineHeight: 1,
+                verticalAlign: "middle",
+              }}
+            >
+              {getFallbackBadgeLabel(badgeId)}
+            </Box>
+          </MessageTooltip>
+        );
       }
 
+      if (badgeWrapper.length === 0) return null;
       return <Box sx={{ display: "inline" }}>{badgeWrapper}</Box>;
     };
 
@@ -392,7 +452,7 @@ export default function Chat(props) {
             const EMBEDDED_EMOTES = emotes.current["embedded_emotes"];
 
             if (EMBEDDED_EMOTES) {
-              const emote = EMBEDDED_EMOTES.find((EMBEDDED_EMOTE) => EMBEDDED_EMOTE.name === text || EMBEDDED_EMOTE.code === text);
+              const emote = findEmote(EMBEDDED_EMOTES, text);
               if (emote) {
                 const embeddedSrc = emote.data ? `data:image/webp;base64,${emote.data}` : `${BASE_7TV_EMOTE_CDN}/${emote.id}/4x.webp`;
                 const embeddedSrcSmall = emote.data ? `data:image/webp;base64,${emote.data}` : `${BASE_7TV_EMOTE_CDN}/${emote.id}/1x.webp`;
@@ -420,7 +480,7 @@ export default function Chat(props) {
             }
 
             if (SEVENTV_EMOTES) {
-              const emote = SEVENTV_EMOTES.find((SEVENTV_EMOTE) => SEVENTV_EMOTE.name === text || SEVENTV_EMOTE.code === text);
+              const emote = findEmote(SEVENTV_EMOTES, text);
               if (emote) {
                 textFragments.push(
                   <MessageTooltip
@@ -456,7 +516,7 @@ export default function Chat(props) {
             }
 
             if (FFZ_EMOTES) {
-              const emote = FFZ_EMOTES.find((FFZ_EMOTE) => FFZ_EMOTE.name === text || FFZ_EMOTE.code === text);
+              const emote = findEmote(FFZ_EMOTES, text);
               if (emote) {
                 textFragments.push(
                   <MessageTooltip
@@ -487,7 +547,7 @@ export default function Chat(props) {
             }
 
             if (BTTV_EMOTES) {
-              const emote = BTTV_EMOTES.find((BTTV_EMOTE) => BTTV_EMOTE.name === text || BTTV_EMOTE.code === text);
+              const emote = findEmote(BTTV_EMOTES, text);
               if (emote) {
                 textFragments.push(
                   <MessageTooltip
@@ -518,18 +578,15 @@ export default function Chat(props) {
             }
           }
 
-          textFragments.push(
-            <Twemoji key={messageCount++} noWrapper options={{ className: "twemoji" }}>
-              <Typography variant="body1" display="inline">{`${text} `}</Typography>
-            </Twemoji>
-          );
+          textFragments.push(`${text} `);
         }
       }
-      return <Box sx={{ display: "inline" }}>{textFragments}</Box>;
+      return <Twemoji noWrapper options={{ className: "twemoji" }}><Box component="span" sx={{ display: "inline", fontSize: "1rem" }}>{textFragments}</Box></Twemoji>;
     };
 
     const messages = [];
-    for (let i = stoppedAtIndex.current.valueOf(); i < lastIndex; i++) {
+    const firstIndex = Math.max(stoppedAtIndex.current, lastIndex - historyLimit);
+    for (let i = firstIndex; i < lastIndex; i++) {
       const comment = comments.current[i];
       if (!comment.message) continue;
       messages.push(
@@ -562,17 +619,23 @@ export default function Chat(props) {
     newMessages.current = messages;
 
     setShownMessages((shownMessages) => {
-      return shownMessages.concat(messages);
+      const nextMessages = shownMessages.concat(messages);
+      return scrollingRef.current ? nextMessages : nextMessages.slice(-historyLimit);
     });
     stoppedAtIndex.current = lastIndex;
     if (comments.current.length === lastIndex) fetchNextComments();
-  }, [chatReplayAvailable, getCurrentTime, playerRef, youtube, games, showTimestamp, requestComments]);
+  }, [chatReplayAvailable, getCurrentTime, playerRef, youtube, games, showTimestamp, requestComments, historyLimit]);
 
   const loop = useCallback(() => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
     buildComments();
     loopRef.current = setInterval(buildComments, 400);
   }, [buildComments]);
+
+  useEffect(() => () => {
+    clearInterval(loopRef.current);
+    clearTimeout(playRef.current);
+  }, []);
 
   useEffect(() => {
     if (!chatReplayAvailable) return;
@@ -652,7 +715,7 @@ export default function Chat(props) {
     hasInitializedSyncRef.current = true;
     const timer = setTimeout(syncChat, isInitialSync ? 220 : 80);
     return () => clearTimeout(timer);
-  }, [vodId, part?.part, playerRef, getCurrentTime, loop, buildComments, chatReplayAvailable, requestComments, getSeekFetchOffset, playing?.playing, delay, userChatDelay]);
+  }, [vodId, part?.part, playerRef, getCurrentTime, loop, buildComments, chatReplayAvailable, requestComments, getSeekFetchOffset, playing?.playing, playing?.ready, delay, userChatDelay]);
 
   const stopLoop = () => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
@@ -661,6 +724,13 @@ export default function Chat(props) {
 
   useEffect(() => {
     if (!chatRef.current || shownMessages.length === 0) return;
+    if (historyExpansionPending.current) {
+      historyExpansionPending.current = false;
+      chatRef.current.scrollTop = 0;
+      scrollingRef.current = true;
+      setScrolling(true);
+      return;
+    }
 
     let messageHeight = 0;
     for (let message of newMessages.current) {
@@ -673,6 +743,7 @@ export default function Chat(props) {
   }, [shownMessages]);
 
   const scrollToBottom = () => {
+    scrollingRef.current = false;
     setScrolling(false);
     chatRef.current.scrollTop = chatRef.current.scrollHeight;
   };
@@ -690,18 +761,17 @@ export default function Chat(props) {
         height: sideLayout ? "100%" : "clamp(320px, 48dvh, 520px)",
         width: !sideLayout ? "100%" : showChat ? expandedPanelWidth : desktopCollapsedWidth,
         minWidth: !sideLayout ? 0 : showChat ? expandedPanelMinWidth : desktopCollapsedWidth,
-        flex: sideLayout ? "0 0 auto" : "0 0 auto",
-        transition: "width 180ms ease, min-width 180ms ease",
-        background:
-          "linear-gradient(180deg, rgba(16,24,40,0.92), rgba(14,19,31,0.96))",
+        flex: "0 0 auto",
+        transition: "none",
+        background: "#151619",
         borderLeft: !sideLayout ? "none" : "1px solid rgba(255,255,255,0.08)",
         color: "rgba(234,242,255,0.96)",
         display: "flex",
         flexDirection: "column",
         minHeight: 0,
-        borderRadius: "18px",
+        borderRadius: "12px",
         overflow: "hidden",
-        boxShadow: "0 14px 34px rgba(2,6,18,0.22)",
+        boxShadow: "none",
         position: "relative",
       }}
     >
@@ -711,12 +781,7 @@ export default function Chat(props) {
             {sideLayout && (
               <Box sx={{ justifySelf: "left", gridColumnStart: 1, gridRowStart: 1 }}>
                 <Tooltip title="Hide chat">
-                  <IconButton
-                    onClick={handleExpandClick}
-                    aria-expanded={showChat}
-                    aria-label="Hide chat"
-                    sx={{ color: "rgba(234,242,255,0.92)", width: 36, height: 36 }}
-                  >
+                  <IconButton onClick={handleExpandClick} aria-expanded={showChat} aria-label="Hide chat" sx={{ color: "inherit", width: 36, height: 36 }}>
                     <KeyboardDoubleArrowRightRoundedIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
@@ -744,7 +809,7 @@ export default function Chat(props) {
                 }}
               />
               {chatReplayAvailable && (
-                <IconButton title="Settings" onClick={() => setShowModal(true)} sx={{ color: "rgba(234,242,255,0.9)" }}>
+                <IconButton title="Settings" aria-label="Chat settings" onClick={() => setShowModal(true)} sx={{ color: "rgba(234,242,255,0.9)" }}>
                   <SettingsIcon />
                 </IconButton>
               )}
@@ -769,6 +834,14 @@ export default function Chat(props) {
             ) : (
               <>
                 <SimpleBar scrollableNodeProps={{ ref: chatRef }} style={{ height: "100%", overflowX: "hidden", borderRadius: "0 0 18px 18px" }}>
+                  {stoppedAtIndex.current > historyLimit && (
+                    <Button size="small" onClick={() => {
+                      historyExpansionPending.current = true;
+                      setHistoryLimit((limit) => limit + CHAT_VISIBLE_MESSAGE_LIMIT);
+                    }} sx={{ color: "inherit", width: "100%", my: 0.5 }}>
+                      Show earlier chat
+                    </Button>
+                  )}
                   <Box sx={{ display: "flex", justifyContent: "flex-end", flexDirection: "column" }}>
                     <Box sx={{ display: "flex", flexWrap: "wrap", minHeight: 0, alignItems: "flex-end" }}>{shownMessages}</Box>
                   </Box>
@@ -789,30 +862,10 @@ export default function Chat(props) {
       ) : (
         sideLayout && (
           <Tooltip title="Show chat" placement="left">
-            <Button
-              onClick={handleExpandClick}
-              aria-expanded={showChat}
-              aria-label="Show chat"
-              sx={{
-                position: "absolute",
-                inset: 0,
-                minWidth: 0,
-                width: "100%",
-                borderRadius: 0,
-                color: "rgba(234,242,255,0.94)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 1.2,
-                "&:hover": { background: "rgba(255,255,255,0.06)" },
-              }}
-            >
+            <Button onClick={handleExpandClick} aria-expanded={showChat} aria-label="Show chat"
+              sx={{ position: "absolute", inset: 0, minWidth: 0, width: "100%", borderRadius: 0, color: "inherit", display: "flex", flexDirection: "column", gap: 1.2 }}>
               <KeyboardDoubleArrowLeftRoundedIcon fontSize="small" />
-              <Typography
-                variant="caption"
-                sx={{ color: "inherit", fontWeight: 800, letterSpacing: "0.16em", writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-              >
-                CHAT
-              </Typography>
+              <Typography variant="caption" sx={{ color: "inherit", fontWeight: 600, letterSpacing: "0.1em", writingMode: "vertical-rl", transform: "rotate(180deg)" }}>CHAT</Typography>
             </Button>
           </Tooltip>
         )

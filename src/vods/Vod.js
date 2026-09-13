@@ -8,7 +8,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat.js";
 import VolumeOffRoundedIcon from "@mui/icons-material/VolumeOffRounded";
 import VolumeUpRoundedIcon from "@mui/icons-material/VolumeUpRounded";
 import SportsEsportsRoundedIcon from "@mui/icons-material/SportsEsportsRounded";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import VodReactions from "./VodReactions";
 import { useSiteDesign } from "../design/DesignContext";
 
@@ -71,7 +71,7 @@ export default function Vod(props) {
   const vodCardStyle = String(settings.vodCardStyle || "bubble");
   const thumbnailShape = String(settings.vodThumbnailShape || "soft");
   const thumbnailOverlay = String(settings.vodThumbnailOverlay || "clean");
-  const thumbnailRadius = thumbnailShape === "bubble" ? 26 : thumbnailShape === "round" ? 22 : 18;
+  const thumbnailRadius = thumbnailShape === "bubble" ? 18 : thumbnailShape === "round" ? 15 : 12;
   const thumbnailCandidates = useMemo(() => getThumbnailCandidates(vod), [vod]);
   const [thumbnailIndex, setThumbnailIndex] = useState(0);
   const thumbnail = thumbnailCandidates[thumbnailIndex] || Thumbnail;
@@ -96,6 +96,18 @@ export default function Vod(props) {
     },
     []
   );
+
+  useEffect(() => {
+    const pauseHiddenPreview = () => {
+      if (!document.hidden) return;
+      window.clearTimeout(previewTimerRef.current);
+      setPreviewActive(false);
+      setPreviewReady(false);
+      setPreviewMuted(true);
+    };
+    document.addEventListener("visibilitychange", pauseHiddenPreview);
+    return () => document.removeEventListener("visibilitychange", pauseHiddenPreview);
+  }, []);
 
   const vodPartCount = useMemo(
     () =>
@@ -123,7 +135,7 @@ export default function Vod(props) {
     if (!previewVideoId || event.pointerType === "touch") return;
     const hasHover = window.matchMedia?.("(hover: hover) and (pointer: fine)")?.matches;
     const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-    if (!hasHover || reduceMotion) return;
+    if (!hasHover || reduceMotion || navigator.connection?.saveData) return;
 
     clearPreviewTimer();
     previewTimerRef.current = window.setTimeout(() => {
@@ -171,11 +183,12 @@ export default function Vod(props) {
     : "";
 
   return (
-    <Grid size={sizes || { xs: gridSize }} sx={{ maxWidth: resolvedCardWidth, flexBasis: resolvedCardWidth }}>
+    <Grid size={sizes || { xs: gridSize }} sx={{ maxWidth: `min(100%, ${resolvedCardWidth})`, flexBasis: resolvedCardWidth, minWidth: 0 }}>
       <Box
         className={`soft-glass soft-surface-float soft-vod-card soft-vod-card--${vodCardStyle} soft-vod-card--overlay-${thumbnailOverlay}`}
         sx={{
-          borderRadius: vodCardStyle === "bubble" ? "28px" : "22px",
+          borderRadius: vodCardStyle === "bubble" ? "20px" : "16px",
+          boxShadow: "none",
           p: vodCardStyle === "pearl" ? 0.85 : 0.95,
           height: "100%",
           display: "flex",
@@ -196,13 +209,12 @@ export default function Vod(props) {
             cursor: hasPlayableVod ? "pointer" : "default",
             background: "var(--soft-surface)",
             border: "1px solid var(--soft-border)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14), 0 14px 28px rgba(19,33,56,0.10)",
+            boxShadow: "none",
             "& img": {
-              transition: "transform 360ms cubic-bezier(.2,.8,.2,1), filter 260ms ease, opacity 180ms ease",
+              transition: "opacity 180ms ease",
             },
             "&:hover:not(.is-previewing) img": {
-              transform: "scale(1.055)",
-              filter: "saturate(1.06) contrast(1.02)",
+              opacity: 0.94,
             },
           }}
         >
@@ -213,6 +225,8 @@ export default function Vod(props) {
             onError={() => setThumbnailIndex((index) => Math.min(index + 1, thumbnailCandidates.length - 1))}
             loading={sheen ? "eager" : "lazy"}
             decoding="async"
+            width="480"
+            height="270"
             fetchPriority={sheen ? "high" : "auto"}
           />
 
@@ -261,8 +275,8 @@ export default function Vod(props) {
             <Box
               component={Link}
               to={watchHref}
-              aria-label={`Watch ${vod.title}`}
-              sx={{ position: "absolute", inset: 0, zIndex: 3, borderRadius: "inherit" }}
+              aria-label={`Watch ${vod.title || "video"}`}
+              sx={{ position: "absolute", inset: 0, zIndex: 3, borderRadius: "inherit", "&:focus-visible": { outline: "2px solid var(--soft-text-primary)", outlineOffset: -3 } }}
             />
           )}
 
@@ -280,7 +294,7 @@ export default function Vod(props) {
               >
                 <Typography
                   variant="caption"
-                  sx={{ color: "inherit", fontFamily: "Roboto, Arial, sans-serif", fontWeight: 600, fontSize: "0.7rem", lineHeight: 1 }}
+                  sx={{ color: "inherit", fontWeight: 600, fontSize: "0.7rem", lineHeight: 1 }}
                 >
                   {vodPartCount} parts
                 </Typography>
@@ -307,14 +321,14 @@ export default function Vod(props) {
                 color: "#fff",
                 background: "rgba(0,0,0,0.76)",
                 border: "1px solid rgba(255,255,255,0.24)",
-                backdropFilter: "blur(6px)",
+
                 "&:hover": { background: "rgba(0,0,0,0.9)", transform: "none" },
               }}
             >
               {previewMuted ? <VolumeOffRoundedIcon sx={{ fontSize: 17 }} /> : <VolumeUpRoundedIcon sx={{ fontSize: 17 }} />}
               <Typography
                 component="span"
-                sx={{ color: "inherit", fontFamily: "Roboto, Arial, sans-serif", fontSize: "0.68rem", fontWeight: 600 }}
+                sx={{ color: "inherit", fontSize: "0.68rem", fontWeight: 600 }}
               >
                 {previewMuted ? "Unmute" : "Mute"}
               </Typography>
@@ -336,8 +350,7 @@ export default function Vod(props) {
                 borderRadius: "4px",
                 backgroundColor: "rgba(0,0,0,0.82)",
                 color: "#fff",
-                fontFamily: "Roboto, Arial, sans-serif",
-                fontSize: "0.72rem",
+                                fontSize: "0.72rem",
                 fontWeight: 600,
                 lineHeight: 1.25,
                 letterSpacing: "0.01em",
@@ -368,18 +381,17 @@ export default function Vod(props) {
                     py: 0.45,
                     borderRadius: "12px",
                     "&:hover": {
-                      background: "rgba(255,255,255,0.58)",
+                      background: "var(--soft-surface)",
                     },
                   }}
                   size="small"
                   disabled={!hasPlayableVod}
                 >
                   <Typography
-                    fontWeight={700}
+                    fontWeight={600}
                     variant="body2"
                     color="primary"
-                    noWrap
-                    sx={{ width: "100%", textAlign: "left", lineHeight: 1.24, letterSpacing: 0 }}
+                    sx={{ width: "100%", textAlign: "left", lineHeight: 1.45, letterSpacing: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: "2.9em" }}
                   >
                     {vod.title}
                   </Typography>
@@ -403,7 +415,7 @@ export default function Vod(props) {
               {settings.vodShowGame !== false && primaryGame && (
                 <>
                   <SportsEsportsRoundedIcon sx={{ fontSize: 14, color: vodAccent, flexShrink: 0 }} />
-                  <Typography variant="caption" noWrap sx={{ fontWeight: 750, letterSpacing: 0, minWidth: 0 }}>
+                  <Typography variant="caption" noWrap sx={{ fontWeight: 500, letterSpacing: 0, minWidth: 0 }}>
                     {primaryGame}
                   </Typography>
                   <Typography component="span" aria-hidden sx={{ color: "text.secondary", fontSize: "0.65rem" }}>

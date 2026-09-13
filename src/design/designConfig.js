@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Box, Button, Grid, Stack, Typography } from "@mui/material";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { FieldLabel } from "@puckeditor/core";
+import { Link as RouterLink, useNavigate } from "react-router";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import Loading from "../utils/Loading";
@@ -11,6 +10,10 @@ import vodsClient from "../vods/client";
 import Logo from "../assets/logo.png";
 import MarkdownText from "../utils/MarkdownText";
 import { SITE_DESCRIPTION, SOCIAL_LINKS } from "../config/site";
+
+// Custom editor fields need only a label; importing Puck's editor control here
+// pulls its editing runtime into every public page using this render config.
+const FieldLabel = ({ label }) => <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>{label}</div>;
 
 const SURFACE_OPTIONS = [
   { label: "Glass", value: "glass" },

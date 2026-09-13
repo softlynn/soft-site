@@ -1,15 +1,17 @@
 import { cacheLocalVodOverrideFromVod } from "./vodsApi";
+import { createAdminTransport } from "./adminTransport.mjs";
 
-const ADMIN_API_BASE = (process.env.REACT_APP_ADMIN_API_BASE || "http://localhost:49731").replace(/\/+$/, "");
+export const isLocalAdminConsole = typeof window !== "undefined" && window.location.pathname.startsWith("/console/");
+const ADMIN_API_BASE = (isLocalAdminConsole ? window.location.origin : process.env.REACT_APP_ADMIN_API_BASE || "http://127.0.0.1:49731").replace(/\/+$/, "");
 const ADMIN_API_FALLBACK_BASES = Array.from(
   new Set(
-    [
+    (isLocalAdminConsole ? [ADMIN_API_BASE] : [
       ADMIN_API_BASE,
       "http://localhost:49731",
       "http://127.0.0.1:49731",
       "http://localhost:49721",
       "http://127.0.0.1:49721",
-    ]
+    ])
       .map((value) => String(value || "").replace(/\/+$/, ""))
       .filter(Boolean)
   )
@@ -18,16 +20,10 @@ const ADMIN_TOKEN_KEY = "soft_admin_token";
 const ADMIN_TOKEN_HANDOFF_KEY = "soft_admin_token_handoff";
 const ADMIN_PENDING_PASSWORD_KEY = "soft_admin_pending_password";
 let runtimeAdminToken = "";
-const ADMIN_API_STARTUP_RETRY_MS = 7000;
-const ADMIN_API_STARTUP_RETRY_DELAY_MS = 800;
 const ADMIN_API_WAKE_PROTOCOL = "soft-archive-admin://wake";
-const ADMIN_API_HEALTH_PATH = "/health";
-
-const buildUrl = (base, path) => `${base}${path.startsWith("/") ? path : `/${path}`}`;
-const sleep = (ms) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+const transport = createAdminTransport({ bases: ADMIN_API_FALLBACK_BASES });
+export const connectAdmin = () => transport.discover();
+export const getLocalAdminUrl = () => `${transport.getBase() || ADMIN_API_BASE}/console/admin`;
 
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -36,12 +32,6 @@ const readFileAsDataUrl = (file) =>
     reader.onerror = () => reject(new Error("Failed to read image file"));
     reader.readAsDataURL(file);
   });
-
-const isNetworkStartupError = (error) => {
-  const message = String(error?.message || "").toLowerCase();
-  if (!message) return false;
-  return message.includes("failed to fetch") || message.includes("networkerror");
-};
 
 const tryWakeAdminApi = () => {
   if (typeof window === "undefined" || typeof document === "undefined") return;
@@ -85,36 +75,6 @@ export const primeAdminWake = () => {
   tryWakeAdminApiFromGesture();
 };
 
-const pingAdminApi = async () => {
-  for (const base of ADMIN_API_FALLBACK_BASES) {
-    try {
-      const response = await fetch(buildUrl(base, ADMIN_API_HEALTH_PATH), {
-        method: "GET",
-      });
-      if (response.ok) return true;
-    } catch {
-      // try next base
-    }
-  }
-  return false;
-};
-
-const ensureAdminApiAvailable = async ({ useGestureWake = false, timeoutMs = ADMIN_API_STARTUP_RETRY_MS } = {}) => {
-  if (await pingAdminApi()) return true;
-  if (useGestureWake) {
-    tryWakeAdminApiFromGesture();
-  } else {
-    tryWakeAdminApi();
-  }
-
-  const deadline = Date.now() + Math.max(0, Number(timeoutMs) || 0);
-  while (Date.now() < deadline) {
-    await sleep(450);
-    if (await pingAdminApi()) return true;
-  }
-  return false;
-};
-
 const readAdminToken = () => {
   if (runtimeAdminToken) return runtimeAdminToken;
   try {
@@ -151,11 +111,6 @@ const writeAdminToken = (token) => {
   } catch {
     // Keep runtime fallback when storage is unavailable.
   }
-  try {
-    localStorage.setItem(ADMIN_TOKEN_HANDOFF_KEY, runtimeAdminToken);
-  } catch {
-    // Keep runtime fallback when storage is unavailable.
-  }
 };
 
 export const clearAdminToken = () => {
@@ -177,11 +132,6 @@ export const setPendingAdminPassword = (password) => {
   if (!normalized) return;
   try {
     sessionStorage.setItem(ADMIN_PENDING_PASSWORD_KEY, normalized);
-  } catch {
-    // no-op
-  }
-  try {
-    localStorage.setItem(ADMIN_PENDING_PASSWORD_KEY, normalized);
   } catch {
     // no-op
   }
@@ -216,49 +166,7 @@ export const consumePendingAdminPassword = () => {
 
 export const getAdminToken = () => readAdminToken();
 
-const request = async (path, { method = "GET", body, token } = {}) => {
-  let lastError = null;
-  const deadline = Date.now() + ADMIN_API_STARTUP_RETRY_MS;
-  let wakeAttempted = false;
-
-  while (true) {
-    for (const base of ADMIN_API_FALLBACK_BASES) {
-      try {
-        const response = await fetch(buildUrl(base, path), {
-          method,
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-        });
-
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          const message = payload?.error || `Admin API request failed (${response.status})`;
-          const error = new Error(message);
-          if (payload?.code) error.code = payload.code;
-          if (payload?.authUrl) error.authUrl = payload.authUrl;
-          if (payload?.userCode) error.userCode = payload.userCode;
-          throw error;
-        }
-        return payload;
-      } catch (error) {
-        lastError = error;
-      }
-    }
-
-    if (!isNetworkStartupError(lastError) || Date.now() >= deadline) break;
-    if (!wakeAttempted) {
-      wakeAttempted = true;
-      tryWakeAdminApi();
-    }
-    await sleep(ADMIN_API_STARTUP_RETRY_DELAY_MS);
-  }
-
-  const message = lastError?.message || "Failed to reach local admin API";
-  throw new Error(`${message}. If needed, start it with 'npm run admin:api:wake' (or start-admin-api.cmd), then retry.`);
-};
+const request = transport.request;
 
 export const authenticateAdmin = async (password) => {
   const payload = await request("/auth", {
@@ -278,9 +186,12 @@ export const verifyAdminSession = async () => {
   try {
     await request("/session", { token });
     return true;
-  } catch {
-    clearAdminToken();
-    return false;
+  } catch (error) {
+    if (error.status === 401) {
+      clearAdminToken();
+      return false;
+    }
+    throw error;
   }
 };
 
@@ -420,7 +331,6 @@ export const promptAndLoginAdmin = async () => {
   if (password == null) return false;
   const normalizedPassword = String(password).trim();
   if (!normalizedPassword) throw new Error("Admin password cannot be empty.");
-  await ensureAdminApiAvailable({ useGestureWake: false, timeoutMs: ADMIN_API_STARTUP_RETRY_MS });
   await authenticateAdmin(normalizedPassword);
   return true;
 };

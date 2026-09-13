@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, InputLabel, Select, IconButton, Link, Collapse, Divider } from "@mui/material";
 import Loading from "../utils/Loading";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router";
 import YoutubePlayer from "./Youtube";
 import DownloadIcon from "@mui/icons-material/Download";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -15,6 +15,7 @@ import VodReactions from "../vods/VodReactions";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import { getStoredChatDelaySeconds, setStoredChatDelaySeconds } from "../vods/chatDelayPreference";
+import { resolvePlaybackPosition } from "../vods/replayUtils.mjs";
 
 const delay = 0;
 const getOriginalTwitchVodUrl = (vod) => {
@@ -67,19 +68,24 @@ export default function Games(props) {
     : "100%";
 
   useEffect(() => {
+    let disposed = false;
+    setVod(undefined);
+    setPlaying({ playing: false });
     const fetchVod = async () => {
       await getVodById(vodId)
         .then((response) => {
+          if (disposed) return;
           setVod(response);
           document.title = `${response.title || response.id} - ${BRAND_NAME}`;
         })
         .catch((e) => {
+          if (disposed) return;
           console.error(e);
           setVod(null);
         });
     };
     fetchVod();
-    return;
+    return () => { disposed = true; };
   }, [vodId]);
 
   useEffect(() => {
@@ -87,8 +93,7 @@ export default function Games(props) {
     setDrive(vod.drive.filter((data) => data.type === "vod"));
     setGames(vod.games);
     const search = new URLSearchParams(location.search);
-    let tmpPart = search.get("part") !== null ? parseInt(search.get("part")) : 1;
-    setPart({ part: tmpPart, timestamp: 0 });
+    setPart(resolvePlaybackPosition(vod.games.map((game, index) => ({ ...game, part: index + 1 })), search.get("part")));
     return;
   }, [vod, location.search]);
 
@@ -170,8 +175,8 @@ export default function Games(props) {
     setStoredChatDelaySeconds(userChatDelay);
   }, [userChatDelay]);
 
-  if (vod === undefined || drive === undefined || part === undefined || delay === undefined) return <Loading />;
   if (vod === null) return <NotFound />;
+  if (vod === undefined || drive === undefined || part === undefined || games === undefined) return <Loading />;
 
   if (games.length === 0) return <NotFound />;
   const originalTwitchVodUrl = getOriginalTwitchVodUrl(vod);
@@ -224,22 +229,6 @@ export default function Games(props) {
               overflow: "hidden",
             }}
           >
-            {!!(vod.thumbnail_url || games?.[part.part - 1]?.thumbnail_url) && (
-              <Box
-                aria-hidden="true"
-                sx={{
-                  position: "absolute",
-                  inset: -12,
-                  backgroundImage: `url(${vod.thumbnail_url || games?.[part.part - 1]?.thumbnail_url})`,
-                  backgroundPosition: "center",
-                  backgroundSize: "cover",
-                  filter: "blur(28px) saturate(1.08)",
-                  transform: "scale(1.06)",
-                  opacity: 0.6,
-                  zIndex: 0,
-                }}
-              />
-            )}
             <Box
               aria-hidden="true"
               sx={{

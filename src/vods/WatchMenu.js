@@ -1,6 +1,6 @@
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import { Menu, Button, Box } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink } from "react-router";
 
 export default function WatchMenu(props) {
   const { vod, anchorEl, setAnchorEl } = props;

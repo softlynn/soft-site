@@ -10,8 +10,8 @@ const DesignContext = createContext({
 });
 
 const fetchStaticDesign = async () => {
-  const response = await fetch(`${SITE_DESIGN_PATH}?v=${Date.now()}`, {
-    cache: "no-store",
+  const response = await fetch(SITE_DESIGN_PATH, {
+    cache: "no-cache",
   });
   if (!response.ok) {
     throw new Error(`Failed to load site design (${response.status})`);

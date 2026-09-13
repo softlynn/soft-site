@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { Render } from "@puckeditor/core";
+import { Render } from "@puckeditor/core/rsc";
 import { Box } from "@mui/material";
 import Footer from "../utils/Footer";
 import HomeSponsor from "../utils/HomeSponsor";

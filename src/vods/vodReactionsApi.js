@@ -22,6 +22,7 @@ let nextWriteRequestAt = 0;
 const sessionVoteMap = new Map();
 let backendModeCache = null;
 let backendModeCheckedAt = 0;
+let backendModeDiscovery = null;
 let votesLoadedFromStorage = false;
 
 const clampCount = (value) => {
@@ -181,10 +182,7 @@ const markBackendMode = (mode) => {
 
 const shouldRefreshBackendMode = () => !backendModeCache || Date.now() - backendModeCheckedAt > PRIMARY_MODE_CACHE_MS;
 
-const getPreferredBackendMode = async () => {
-  if (!hasPrimaryBackendConfigured()) return "counter";
-  if (!shouldRefreshBackendMode()) return backendModeCache;
-
+const discoverBackendMode = async () => {
   try {
     const response = await retryableRequest(() =>
       fetchWithTimeout(
@@ -212,6 +210,19 @@ const getPreferredBackendMode = async () => {
   } catch {
     return markBackendMode("counter");
   }
+};
+
+const getPreferredBackendMode = async () => {
+  if (!hasPrimaryBackendConfigured()) return "counter";
+  if (!shouldRefreshBackendMode()) return backendModeCache;
+  // Every visible card needs a count, but they can share one health probe and
+  // its retries. Release the promise so an expired fallback can recover later.
+  if (!backendModeDiscovery) {
+    backendModeDiscovery = discoverBackendMode().finally(() => {
+      backendModeDiscovery = null;
+    });
+  }
+  return backendModeDiscovery;
 };
 
 const isPrimaryUnavailableError = (error) => {
