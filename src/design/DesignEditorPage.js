@@ -647,7 +647,7 @@ export default function DesignEditorPage() {
               size="small"
               label="Site background"
               type="color"
-              value={draftDesign.settings.backgroundColor || "#fff1a8"}
+              value={draftDesign.settings.backgroundColor || "#ffe1ad"}
               onChange={(event) => handleSettingsField("backgroundColor", event.target.value)}
               disabled={!authorized}
             />

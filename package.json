@@ -1,6 +1,6 @@
 {
   "name": "soft-archive-site",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Softu's VOD archive site, local pipeline, and Softuchive desktop controller.",
   "author": "softlynn",
   "private": true,
@@ -82,13 +82,16 @@
     "extends": null,
     "appId": "one.softu.softuchive",
     "productName": "Softuchive",
+    "electronDist": "node_modules/electron/dist",
     "artifactName": "Softuchive-${version}-${arch}.${ext}",
     "directories": {
       "app": "desktop/softuchive",
       "output": "softuchive-dist"
     },
     "files": [
-      "**/*"
+      "**/*",
+      "!**/*.test.cjs",
+      "!qa/**"
     ],
     "win": {
       "icon": "desktop/softuchive/assets/icon.ico",

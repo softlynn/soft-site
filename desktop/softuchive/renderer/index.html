@@ -20,7 +20,7 @@
           </div>
           <div>
             <strong>Softuchive</strong>
-            <span>Archive control</span>
+            <span>Your stream archive</span>
           </div>
         </div>
 
@@ -29,7 +29,6 @@
             <span></span>
           </div>
           <div>
-            <span class="overline">Pipeline</span>
             <strong id="poll-state-value">Checking…</strong>
             <p id="poll-stage-value">Waiting for live pipeline state.</p>
           </div>
@@ -38,11 +37,12 @@
         <nav class="section-nav" aria-label="Dashboard sections">
           <a href="#overview" class="active">
             <span class="nav-icon" aria-hidden="true">⌂</span>
-            Overview
+            Archive
           </a>
           <a href="#automation">
             <span class="nav-icon" aria-hidden="true">↻</span>
-            Automation
+            Settings
+            <span id="settings-dot" class="dirty-dot" hidden aria-label="Unsaved changes"></span>
           </a>
           <a href="#activity">
             <span class="nav-icon" aria-hidden="true">≋</span>
@@ -51,7 +51,10 @@
         </nav>
 
         <div class="sidebar-tools">
-          <span class="overline">Quick access</span>
+          <button id="open-admin-button" class="sidebar-button">
+            <span aria-hidden="true">↗</span>
+            Open admin
+          </button>
           <button id="view-archive-folder-button" class="sidebar-button">
             <span aria-hidden="true">⌑</span>
             Archive folder
@@ -62,18 +65,18 @@
           </button>
         </div>
 
-        <p class="sidebar-foot">Local-first · soft-site pipeline</p>
+        <p class="sidebar-foot">On this PC · Softu</p>
       </aside>
 
       <main class="workspace">
         <header class="topbar">
           <div>
-            <p class="overline">Dashboard</p>
-            <h1>Good to see you.</h1>
+            <p class="overline" id="page-eyebrow">STREAM → ARCHIVE</p>
+            <h1 id="page-title">Archive</h1>
           </div>
-          <button id="archive-now-button" class="button button-primary">
+          <button id="archive-now-button" class="button button-primary" disabled>
             <span class="button-icon" aria-hidden="true">↥</span>
-            Archive now
+            Check for recordings
           </button>
         </header>
 
@@ -84,17 +87,15 @@
         <section id="overview" class="section-block" aria-labelledby="overview-title">
           <div class="section-heading">
             <div>
-              <p class="overline">At a glance</p>
-              <h2 id="overview-title">Archive overview</h2>
+              <h2 id="overview-title" class="sr-only">Archive overview</h2>
             </div>
-            <span class="live-label"><i></i> Live status</span>
           </div>
 
           <div class="stats-grid">
             <article class="stat-card stat-card-featured">
               <span class="stat-icon" aria-hidden="true">↻</span>
               <div>
-                <span class="overline">Last poll</span>
+                <span class="overline">Last check</span>
                 <strong id="last-poll-value">Never</strong>
                 <p id="last-poll-detail-value">No poll has started yet.</p>
               </div>
@@ -120,20 +121,18 @@
           <article class="card current-card">
             <div class="card-heading">
               <div>
-                <p class="overline">Current archive</p>
-                <h2>Live run</h2>
+                <h2>Current archive</h2>
               </div>
               <span class="state-pill" id="current-trigger-pill">idle</span>
             </div>
 
             <div class="run-layout">
               <div class="current-copy">
-                <span class="overline">Now processing</span>
-                <strong id="current-item-value">No active archive</strong>
+                <strong id="current-item-value">Ready when you are.</strong>
                 <p id="current-item-detail-value">Waiting for the next poll.</p>
               </div>
               <div class="progress-value">
-                <strong id="progress-value">0%</strong>
+                <strong id="progress-value">—</strong>
                 <span id="progress-detail-value">No upload in progress.</span>
               </div>
             </div>
@@ -151,25 +150,27 @@
             <div class="run-footer">
               <div>
                 <span class="overline">Estimated time</span>
-                <strong id="eta-value">Unknown</strong>
+                <strong id="eta-value">—</strong>
                 <p id="eta-detail-value">ETA appears while bytes are moving.</p>
               </div>
               <div class="action-row">
-                <button id="pause-resume-button" class="button button-secondary">Pause current archive</button>
-                <button id="skip-current-vod-button" class="button button-quiet">Skip current VOD</button>
-                <button id="restart-button" class="button button-danger">Restart interrupted</button>
+                <button id="pause-resume-button" class="button button-secondary" disabled>Pause</button>
+                <button id="skip-current-vod-button" class="button button-quiet" disabled>Skip VOD</button>
               </div>
             </div>
           </article>
+          <details class="recovery-panel">
+            <summary>Recover an interrupted archive</summary>
+            <div><p>Clear interrupted markers and start another check. Completed archives are kept.</p><button id="restart-button" class="button button-danger" disabled>Restart interrupted run</button></div>
+          </details>
         </section>
 
-        <section id="automation" class="section-block" aria-labelledby="automation-title">
+        <section id="automation" class="section-block" aria-labelledby="automation-title" hidden>
           <div class="section-heading">
             <div>
-              <p class="overline">Preferences</p>
               <h2 id="automation-title">Automation & storage</h2>
             </div>
-            <button id="save-settings-button" class="button button-secondary">Save settings</button>
+            <button id="save-settings-button" class="button button-secondary" disabled>Save changes</button>
           </div>
 
           <div class="settings-grid">
@@ -183,13 +184,12 @@
                 </label>
               </div>
               <div>
-                <p class="overline">Scheduled task</p>
-                <h3>Auto archive</h3>
-                <p class="card-copy">Poll in the background, even when Softuchive is closed.</p>
+                <h3>Automatic checks</h3>
+                <p class="card-copy">Check on a schedule, even when Softuchive is closed. This switch applies immediately.</p>
               </div>
               <label class="number-field" for="poll-interval-input">
                 <span>Every</span>
-                <input id="poll-interval-input" type="number" min="1" max="720" step="1" />
+                <input id="poll-interval-input" type="number" min="1" max="720" step="1" aria-label="Check interval in minutes" />
                 <span>minutes</span>
               </label>
               <p class="setting-detail" id="auto-task-detail">Task state unknown.</p>
@@ -205,13 +205,12 @@
                 </label>
               </div>
               <div>
-                <p class="overline">OBS close hook</p>
-                <h3>Final poll</h3>
-                <p class="card-copy">Run one last check when OBS closes while Softuchive is open.</p>
+                <h3>When OBS closes</h3>
+                <p class="card-copy">Check for the final recording when OBS closes. Keep Softuchive open for this to run.</p>
               </div>
               <div class="setting-callout">
                 <span class="callout-dot"></span>
-                Uses the local OBS process monitor
+                Applies after saving changes
               </div>
             </article>
 
@@ -225,15 +224,14 @@
                 </label>
               </div>
               <div>
-                <p class="overline">YouTube upload</p>
-                <h3>Speed limit</h3>
-                <p class="card-copy">Adjust bandwidth while an upload is in progress.</p>
+                <h3>Upload speed limit</h3>
+                <p class="card-copy">Leave bandwidth available for streaming and everything else.</p>
               </div>
               <label class="number-field" for="upload-throttle-input">
-                <input id="upload-throttle-input" type="number" min="0.01" max="10000" step="0.25" />
+                <input id="upload-throttle-input" type="number" min="0.01" max="10000" step="any" aria-label="Upload speed limit in megabits per second" />
                 <span>Mbps</span>
               </label>
-              <button id="apply-upload-control-button" class="button button-quiet button-small">Apply limit</button>
+              <button id="apply-upload-control-button" class="button button-quiet button-small" disabled>Apply limit</button>
               <p class="setting-detail" id="upload-control-detail">No upload speed limit is active.</p>
             </article>
 
@@ -243,9 +241,8 @@
                 <button id="pick-folder-button" class="button button-quiet button-small">Choose folder</button>
               </div>
               <div>
-                <p class="overline">Local files</p>
-                <h3>Archive storage</h3>
-                <p class="card-copy">The folder Softuchive watches for finished recordings.</p>
+                <h3>Recording folder</h3>
+                <p class="card-copy">Where the pipeline looks for finished recordings.</p>
               </div>
               <label class="path-field" for="archive-folder-input">
                 <span class="sr-only">Archive folder</span>
@@ -261,11 +258,10 @@
           </div>
         </section>
 
-        <section id="activity" class="section-block" aria-labelledby="activity-title">
+        <section id="activity" class="section-block" aria-labelledby="activity-title" hidden>
           <div class="section-heading">
             <div>
-              <p class="overline">History</p>
-              <h2 id="activity-title">Queue & activity</h2>
+              <h2 id="activity-title" class="sr-only">Queue & activity</h2>
             </div>
           </div>
 
@@ -273,8 +269,7 @@
             <article class="card list-card">
               <div class="card-heading">
                 <div>
-                  <p class="overline">Queued parts</p>
-                  <h3>Upload line</h3>
+                  <h3>Upload queue</h3>
                 </div>
               </div>
               <div class="upload-list" id="upload-list"></div>
@@ -283,7 +278,6 @@
             <article class="card list-card">
               <div class="card-heading">
                 <div>
-                  <p class="overline">Pipeline</p>
                   <h3>Recent events</h3>
                 </div>
               </div>
@@ -291,13 +285,10 @@
             </article>
           </div>
 
-          <article class="card summary-card">
-            <div>
-              <p class="overline">Latest result</p>
-              <h3>Run summary</h3>
-            </div>
+          <details class="card summary-card">
+            <summary>Latest run summary</summary>
             <pre id="summary-box">No archive summary yet.</pre>
-          </article>
+          </details>
         </section>
       </main>
     </div>

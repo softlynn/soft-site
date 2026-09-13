@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
 
 export const SOFTUCHIVE_SCHEMA_VERSION = 1;
 
@@ -90,7 +91,6 @@ const fileExists = async (filePath) => {
 };
 
 const readJsonFile = async (filePath, fallback) => {
-  if (!(await fileExists(filePath))) return fallback;
   try {
     const raw = await fs.readFile(filePath, "utf8");
     return JSON.parse(raw);
@@ -99,10 +99,7 @@ const readJsonFile = async (filePath, fallback) => {
   }
 };
 
-const writeJsonFile = async (filePath, payload) => {
-  await ensureDirectory(path.dirname(filePath));
-  await fs.writeFile(filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
-};
+const writeJsonFile = writeJsonFileAtomic;
 
 const normalizeUploadThrottleMbps = (value) => {
   if (value === null || value === undefined || value === "") return null;
@@ -121,14 +118,14 @@ export const ensureSoftuchiveStateFiles = async (repoRoot, { archiveFolder } = {
   });
   const control = await readSoftuchiveControl(repoRoot);
 
-  if (!(await fileExists(paths.settingsPath))) {
-    await writeJsonFile(paths.settingsPath, settings);
-  }
-  if (!(await fileExists(paths.runtimePath))) {
-    await writeJsonFile(paths.runtimePath, runtime);
-  }
-  if (!(await fileExists(paths.controlPath))) {
-    await writeJsonFile(paths.controlPath, control);
+  for (const [filePath, initial] of [
+    [paths.settingsPath, settings],
+    [paths.runtimePath, runtime],
+    [paths.controlPath, control],
+  ]) {
+    await serializeFileUpdate(filePath, async () => {
+      if (!(await fileExists(filePath))) await writeJsonFile(filePath, initial);
+    });
   }
 
   return { paths, settings, runtime, control };
@@ -151,18 +148,20 @@ export const readSoftuchiveSettings = async (repoRoot, { archiveFolder } = {}) =
 
 export const writeSoftuchiveSettings = async (repoRoot, nextSettings, { archiveFolder } = {}) => {
   const { settingsPath } = resolveSoftuchivePaths(repoRoot);
-  const previous = await readSoftuchiveSettings(repoRoot, { archiveFolder });
-  const merged = {
-    ...previous,
-    ...(nextSettings && typeof nextSettings === "object" ? nextSettings : {}),
-    archiveFolder: resolveArchiveFolder(
-      nextSettings?.archiveFolder ?? previous.archiveFolder,
-      archiveFolder && path.isAbsolute(archiveFolder) ? archiveFolder : repoRoot
-    ),
-    updatedAt: new Date().toISOString(),
-  };
-  await writeJsonFile(settingsPath, merged);
-  return merged;
+  return serializeFileUpdate(settingsPath, async () => {
+    const previous = await readSoftuchiveSettings(repoRoot, { archiveFolder });
+    const merged = {
+      ...previous,
+      ...(nextSettings && typeof nextSettings === "object" ? nextSettings : {}),
+      archiveFolder: resolveArchiveFolder(
+        nextSettings?.archiveFolder ?? previous.archiveFolder,
+        archiveFolder && path.isAbsolute(archiveFolder) ? archiveFolder : repoRoot
+      ),
+      updatedAt: new Date().toISOString(),
+    };
+    await writeJsonFile(settingsPath, merged);
+    return merged;
+  });
 };
 
 export const readSoftuchiveRuntime = async (repoRoot, { archiveFolder } = {}) => {
@@ -200,31 +199,33 @@ export const readSoftuchiveRuntime = async (repoRoot, { archiveFolder } = {}) =>
 
 export const writeSoftuchiveRuntime = async (repoRoot, nextRuntime, { archiveFolder } = {}) => {
   const { runtimePath, taskLogPath, summaryLogPath } = resolveSoftuchivePaths(repoRoot);
-  const previous = await readSoftuchiveRuntime(repoRoot, { archiveFolder });
-  const merged = {
-    ...previous,
-    ...(nextRuntime && typeof nextRuntime === "object" ? nextRuntime : {}),
-    app: {
-      ...previous.app,
-      ...(nextRuntime?.app && typeof nextRuntime.app === "object" ? nextRuntime.app : {}),
-      archiveFolder: nextRuntime?.app?.archiveFolder || previous.app.archiveFolder || archiveFolder || "",
-      taskLogPath,
-      summaryLogPath,
-    },
-    run: {
-      ...previous.run,
-      ...(nextRuntime?.run && typeof nextRuntime.run === "object" ? nextRuntime.run : {}),
-      queue: {
-        ...previous.run.queue,
-        ...(nextRuntime?.run?.queue && typeof nextRuntime.run.queue === "object" ? nextRuntime.run.queue : {}),
+  return serializeFileUpdate(runtimePath, async () => {
+    const previous = await readSoftuchiveRuntime(repoRoot, { archiveFolder });
+    const merged = {
+      ...previous,
+      ...(nextRuntime && typeof nextRuntime === "object" ? nextRuntime : {}),
+      app: {
+        ...previous.app,
+        ...(nextRuntime?.app && typeof nextRuntime.app === "object" ? nextRuntime.app : {}),
+        archiveFolder: nextRuntime?.app?.archiveFolder || previous.app.archiveFolder || archiveFolder || "",
+        taskLogPath,
+        summaryLogPath,
       },
-      uploads: Array.isArray(nextRuntime?.run?.uploads) ? nextRuntime.run.uploads : previous.run.uploads,
-    },
-    events: Array.isArray(nextRuntime?.events) ? nextRuntime.events.slice(-DEFAULT_RECENT_EVENT_LIMIT) : previous.events,
-    updatedAt: new Date().toISOString(),
-  };
-  await writeJsonFile(runtimePath, merged);
-  return merged;
+      run: {
+        ...previous.run,
+        ...(nextRuntime?.run && typeof nextRuntime.run === "object" ? nextRuntime.run : {}),
+        queue: {
+          ...previous.run.queue,
+          ...(nextRuntime?.run?.queue && typeof nextRuntime.run.queue === "object" ? nextRuntime.run.queue : {}),
+        },
+        uploads: Array.isArray(nextRuntime?.run?.uploads) ? nextRuntime.run.uploads : previous.run.uploads,
+      },
+      events: Array.isArray(nextRuntime?.events) ? nextRuntime.events.slice(-DEFAULT_RECENT_EVENT_LIMIT) : previous.events,
+      updatedAt: new Date().toISOString(),
+    };
+    await writeJsonFile(runtimePath, merged);
+    return merged;
+  });
 };
 
 export const readSoftuchiveControl = async (repoRoot) => {
@@ -245,39 +246,41 @@ export const readSoftuchiveControl = async (repoRoot) => {
 
 export const writeSoftuchiveControl = async (repoRoot, nextControl) => {
   const { controlPath } = resolveSoftuchivePaths(repoRoot);
-  const previous = await readSoftuchiveControl(repoRoot);
-  const merged = {
-    ...previous,
-    ...(nextControl && typeof nextControl === "object" ? nextControl : {}),
-    pauseRequested:
-      Object.prototype.hasOwnProperty.call(nextControl || {}, "pauseRequested")
-        ? nextControl?.pauseRequested === true
-        : previous.pauseRequested === true,
-    uploadPaused:
-      Object.prototype.hasOwnProperty.call(nextControl || {}, "uploadPaused")
-        ? nextControl?.uploadPaused === true
-        : previous.uploadPaused === true,
-    uploadThrottleMbps:
-      Object.prototype.hasOwnProperty.call(nextControl || {}, "uploadThrottleMbps")
-        ? normalizeUploadThrottleMbps(nextControl?.uploadThrottleMbps)
-        : normalizeUploadThrottleMbps(previous.uploadThrottleMbps),
-    skipRequestedUploadSessionId:
-      Object.prototype.hasOwnProperty.call(nextControl || {}, "skipRequestedUploadSessionId")
-        ? String(nextControl?.skipRequestedUploadSessionId || "").trim()
-        : String(previous.skipRequestedUploadSessionId || "").trim(),
-    skipRequestedAt:
-      Object.prototype.hasOwnProperty.call(nextControl || {}, "skipRequestedAt")
-        ? nextControl?.skipRequestedAt
-          ? String(nextControl.skipRequestedAt)
-          : null
-        : previous.skipRequestedAt || null,
-    updatedAt: new Date().toISOString(),
-  };
-  if (!merged.skipRequestedUploadSessionId) {
-    merged.skipRequestedAt = null;
-  }
-  await writeJsonFile(controlPath, merged);
-  return merged;
+  return serializeFileUpdate(controlPath, async () => {
+    const previous = await readSoftuchiveControl(repoRoot);
+    const merged = {
+      ...previous,
+      ...(nextControl && typeof nextControl === "object" ? nextControl : {}),
+      pauseRequested:
+        Object.prototype.hasOwnProperty.call(nextControl || {}, "pauseRequested")
+          ? nextControl?.pauseRequested === true
+          : previous.pauseRequested === true,
+      uploadPaused:
+        Object.prototype.hasOwnProperty.call(nextControl || {}, "uploadPaused")
+          ? nextControl?.uploadPaused === true
+          : previous.uploadPaused === true,
+      uploadThrottleMbps:
+        Object.prototype.hasOwnProperty.call(nextControl || {}, "uploadThrottleMbps")
+          ? normalizeUploadThrottleMbps(nextControl?.uploadThrottleMbps)
+          : normalizeUploadThrottleMbps(previous.uploadThrottleMbps),
+      skipRequestedUploadSessionId:
+        Object.prototype.hasOwnProperty.call(nextControl || {}, "skipRequestedUploadSessionId")
+          ? String(nextControl?.skipRequestedUploadSessionId || "").trim()
+          : String(previous.skipRequestedUploadSessionId || "").trim(),
+      skipRequestedAt:
+        Object.prototype.hasOwnProperty.call(nextControl || {}, "skipRequestedAt")
+          ? nextControl?.skipRequestedAt
+            ? String(nextControl.skipRequestedAt)
+            : null
+          : previous.skipRequestedAt || null,
+      updatedAt: new Date().toISOString(),
+    };
+    if (!merged.skipRequestedUploadSessionId) {
+      merged.skipRequestedAt = null;
+    }
+    await writeJsonFile(controlPath, merged);
+    return merged;
+  });
 };
 
 export const appendSoftuchiveSummary = async (repoRoot, lines) => {

@@ -5,6 +5,12 @@ import Youtube from "react-youtube";
 export default function YoutubePlayer(props) {
   const { youtube, playerRef, part, setPart, setCurrentTime, delay, setPlaying } = props;
   const timeUpdateRef = useRef(null);
+  const timeUpdateCallbackRef = useRef(null);
+
+  useEffect(() => () => {
+    clearTimeout(timeUpdateRef.current);
+    playerRef.current = null;
+  }, [playerRef]);
 
   useEffect(() => {
     if (!playerRef.current) return;
@@ -19,26 +25,28 @@ export default function YoutubePlayer(props) {
     let currentTime = 0;
     for (let video of youtube) {
       if (video.part >= part.part) break;
-      currentTime += video.duration;
+      currentTime += Number(video.duration) || 0;
     }
     currentTime += playerRef.current.getCurrentTime();
     currentTime += delay;
     setCurrentTime(currentTime);
   };
+  timeUpdateCallbackRef.current = timeUpdate;
 
   const loopTimeUpdate = () => {
     if (timeUpdateRef.current !== null) clearTimeout(timeUpdateRef.current);
     timeUpdateRef.current = setTimeout(() => {
-      timeUpdate();
+      timeUpdateCallbackRef.current?.();
       loopTimeUpdate();
     }, 1000);
   };
 
   const onReady = (evt) => {
     playerRef.current = evt.target;
+    setPlaying({ playing: false, ready: true });
 
     canAutoPlay.video().then(({ result }) => {
-      if (!result) playerRef.current.mute();
+      if (!result && playerRef.current === evt.target) evt.target.mute();
     });
 
     const index = youtube.findIndex((data) => data.part === part.part);
@@ -57,7 +65,11 @@ export default function YoutubePlayer(props) {
   };
 
   const onEnd = () => {
-    setPart({ part: part.part + 1, duration: 0 });
+    clearTimeUpdate();
+    setPlaying({ playing: false });
+    if (youtube.some((video) => video.part === part.part + 1)) {
+      setPart({ part: part.part + 1, timestamp: 0 });
+    }
   };
 
   const onError = (evt) => {

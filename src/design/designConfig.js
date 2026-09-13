@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Box, Button, Grid, Stack, Typography } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router";
-import { FieldLabel } from "@puckeditor/core";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import Loading from "../utils/Loading";
@@ -11,6 +10,10 @@ import vodsClient from "../vods/client";
 import Logo from "../assets/logo.png";
 import MarkdownText from "../utils/MarkdownText";
 import { SITE_DESCRIPTION, SOCIAL_LINKS } from "../config/site";
+
+// Custom editor fields need only a label; importing Puck's editor control here
+// pulls its editing runtime into every public page using this render config.
+const FieldLabel = ({ label }) => <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>{label}</div>;
 
 const SURFACE_OPTIONS = [
   { label: "Glass", value: "glass" },
@@ -499,7 +502,7 @@ function PlaceholderMedia({ icon = "image", accentColor = "#d38f38" }) {
   );
 }
 
-function ImageFrame({ src, alt, aspectRatio = "16 / 10", accentColor = "#d38f38", className = "" }) {
+function ImageFrame({ src, alt, aspectRatio = "16 / 10", accentColor = "#d38f38", className = "", transparent = false }) {
   const cleanSrc = safeUrl(src);
   return (
     <Box
@@ -507,15 +510,20 @@ function ImageFrame({ src, alt, aspectRatio = "16 / 10", accentColor = "#d38f38"
       sx={{
         width: "100%",
         aspectRatio,
-        borderRadius: "18px",
+        borderRadius: transparent ? 0 : "18px",
         overflow: "hidden",
-        border: "1px solid rgba(255,255,255,0.45)",
-        background: "rgba(255,255,255,0.2)",
-        boxShadow: "0 18px 34px rgba(19,33,56,0.12)",
+        border: transparent ? 0 : "1px solid rgba(255,255,255,0.45)",
+        background: transparent ? "transparent" : "rgba(255,255,255,0.2)",
+        boxShadow: transparent ? "none" : "0 18px 34px rgba(19,33,56,0.12)",
       }}
     >
       {cleanSrc ? (
-        <Box component="img" alt={alt || ""} src={cleanSrc} sx={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }} />
+        <Box
+          component="img"
+          alt={alt || ""}
+          src={cleanSrc}
+          sx={{ width: "100%", height: "100%", display: "block", objectFit: transparent ? "contain" : "cover" }}
+        />
       ) : (
         <PlaceholderMedia accentColor={accentColor} />
       )}
@@ -606,7 +614,7 @@ function GenericEmbedFrame({ title, src, height = 352, aspectRatio = "custom", a
   );
 }
 
-function RecentVodsRenderer({ title, subtitle, count = 4, showButton = true, surface = "glass", backgroundColor = "", borderColor = "", width, customMaxWidth, minHeight, padding, ...styleProps }) {
+function RecentVodsRenderer({ title, subtitle, count = 4, showButton = true, surface = "glass", backgroundColor = "", borderColor = "", width, customMaxWidth, minHeight, padding, customClassName = "", ...styleProps }) {
   const navigate = useNavigate();
   const [vods, setVods] = useState(null);
 
@@ -638,7 +646,7 @@ function RecentVodsRenderer({ title, subtitle, count = 4, showButton = true, sur
 
   return (
     <Box
-      className="soft-design-section"
+      className={`soft-design-section ${customClassName}`.trim()}
       sx={{
         ...getResizeSx({ width, customMaxWidth, minHeight }),
         ...getSurfaceSx({ surface, backgroundColor, borderColor }),
@@ -793,7 +801,19 @@ export const designConfig = {
           }}
         >
           {props.customCss && <style>{String(props.customCss)}</style>}
-          <Box sx={{ width: "100%", maxWidth, mx: "auto", display: "grid", gap: "var(--soft-design-section-gap)" }}>{children}</Box>
+          <Box
+            sx={{
+              width: "100%",
+              maxWidth,
+              minWidth: 0,
+              mx: "auto",
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr)",
+              gap: "var(--soft-design-section-gap)",
+            }}
+          >
+            {children}
+          </Box>
         </Box>
       );
     },
@@ -1082,7 +1102,7 @@ export const designConfig = {
           { label: "Right", value: "right" },
           { label: "Top", value: "top" },
         ]),
-        sideImageWidth: numberField("Side image width", 80, 520),
+        sideImageWidth: numberField("Side image width", 80, 1040),
         align: selectField("Text align", [
           { label: "Left", value: "left" },
           { label: "Center", value: "center" },
@@ -1120,8 +1140,24 @@ export const designConfig = {
         const imageFirst = props.sideImagePosition === "left" || props.sideImagePosition === "top";
         const stacked = props.sideImagePosition === "top";
         const image = imageUrl ? (
-          <Box sx={{ width: stacked ? "100%" : Math.max(80, Number(props.sideImageWidth) || 220), flex: "0 0 auto" }}>
-            <ImageFrame src={imageUrl} alt={props.sideImageAlt} aspectRatio={stacked ? "16 / 9" : "4 / 5"} />
+          <Box
+            sx={{
+              width: stacked
+                ? "100%"
+                : {
+                    xs: "calc(100vw - 20px)",
+                    sm: "calc(100vw - 32px)",
+                    md: Math.max(80, Number(props.sideImageWidth) || 220),
+                  },
+              maxWidth: {
+                xs: "calc(100vw - 20px)",
+                sm: "calc(100vw - 32px)",
+                md: "100%",
+              },
+              flex: "0 1 auto",
+            }}
+          >
+            <ImageFrame src={imageUrl} alt={props.sideImageAlt} aspectRatio={stacked ? "16 / 9" : "4 / 5"} transparent />
           </Box>
         ) : null;
         const text = (
@@ -1607,7 +1643,7 @@ function createDefaultRootProps() {
     pageTitle: "soft",
     pageDescription: "",
     backgroundMode: "theme",
-    backgroundColor: "#fff1a8",
+    backgroundColor: "#ffe1ad",
     backgroundGradient: "",
     backgroundImage: "",
     backgroundPosition: "center center",

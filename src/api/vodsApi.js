@@ -10,7 +10,11 @@ const SPOTIFY_NOTICE_OLD = "Spotify audio is muted on this VOD.";
 const SPOTIFY_NOTICE_NEW = "Spotify audio may be muted on this VOD.";
 
 let staticVodsCache = null;
+let staticVodsRequest = null;
+let staticVodsLoadedAt = 0;
+const STATIC_VODS_CACHE_MS = 15000;
 const staticCommentsCache = new Map();
+const staticCommentsRequests = new Map();
 const staticEmotesCache = new Map();
 let staticBadgesCache = null;
 let localVodOverridesCache = null;
@@ -163,46 +167,64 @@ const normalizeVod = (vod) => {
   return normalizeVodNoticeText(applyLocalVodOverride(normalized));
 };
 
-const loadStaticVods = async () => {
+const loadStaticVods = async ({ forceRefresh = false } = {}) => {
+  if (staticVodsRequest) return staticVodsRequest;
+  if (!forceRefresh && staticVodsCache && Date.now() - staticVodsLoadedAt < STATIC_VODS_CACHE_MS) return staticVodsCache;
+  staticVodsRequest = (async () => {
   try {
     const response = await fetch(STATIC_DATA_PATH, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
-      cache: "no-store",
+      cache: "no-cache",
     });
     if (!response.ok) throw new Error(`Failed to load static VOD data (${response.status})`);
     const data = await response.json();
     staticVodsCache = Array.isArray(data) ? data.map(normalizeVod) : [];
+    staticVodsLoadedAt = Date.now();
     return staticVodsCache;
   } catch (error) {
     if (staticVodsCache) return staticVodsCache;
     throw error;
+  }
+  })();
+  try {
+    return await staticVodsRequest;
+  } finally {
+    staticVodsRequest = null;
   }
 };
 
 const loadStaticComments = async (vodId) => {
   const key = String(vodId);
   if (staticCommentsCache.has(key)) return staticCommentsCache.get(key);
-
+  if (staticCommentsRequests.has(key)) return staticCommentsRequests.get(key);
+  const request = (async () => {
   try {
     const response = await fetch(`${STATIC_COMMENTS_BASE}/${encodeURIComponent(key)}.json`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
-      cache: "no-store",
+      cache: "no-cache",
     });
 
     if (!response.ok) {
-      staticCommentsCache.set(key, []);
       return [];
     }
 
     const data = await response.json();
     const comments = Array.isArray(data) ? data : Array.isArray(data.comments) ? data.comments : [];
     staticCommentsCache.set(key, comments);
+    // Keep recently viewed logs, without retaining every long stream visited.
+    while (staticCommentsCache.size > 3) staticCommentsCache.delete(staticCommentsCache.keys().next().value);
     return comments;
   } catch {
-    staticCommentsCache.set(key, []);
     return [];
+  }
+  })();
+  staticCommentsRequests.set(key, request);
+  try {
+    return await request;
+  } finally {
+    staticCommentsRequests.delete(key);
   }
 };
 
@@ -274,9 +296,9 @@ const loadStaticBadges = async () => {
   }
 };
 
-export const getVodById = async (vodId) => {
+export const getVodById = async (vodId, options = {}) => {
   if (USE_STATIC_ARCHIVE) {
-    const vods = await loadStaticVods();
+    const vods = await loadStaticVods(options);
     const match = vods.find((vod) => String(vod.id) === String(vodId));
     const resolvedMatch = match ? normalizeVodNoticeText(applyLocalVodOverride(match)) : match;
     if (resolvedMatch?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
@@ -288,12 +310,10 @@ export const getVodById = async (vodId) => {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
+  if (!response.ok) throw new Error(`Failed to load VOD (${response.status})`);
   const payload = await response.json();
   if (payload?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
-  return {
-    ...payload,
-    youtube: normalizeYouTubeEntriesForSite(payload?.youtube),
-  };
+  return normalizeVod(payload);
 };
 
 export const getBadges = async () => {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Box, Button, CircularProgress, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Stack, Switch, Typography } from "@mui/material";
+import { Alert, Box, Button, Chip, CircularProgress, Divider, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Stack, Switch, TextField, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router";
 import SimpleBar from "simplebar-react";
 import Footer from "../utils/Footer";
@@ -9,8 +9,10 @@ import {
   clearAdminToken,
   getAdminVods,
   getAdminToken,
+  isLocalAdminConsole,
+  connectAdmin,
+  getLocalAdminUrl,
   primeAdminWake,
-  promptAndLoginAdmin,
   republishVodPart,
   republishVod,
   setVodFlags,
@@ -20,23 +22,6 @@ import {
 } from "../api/adminApi";
 
 const SORT_DESC = (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-const INIT_TIMEOUT_MS = 8000;
-const withTimeout = async (promise, label) => {
-  let timeoutId;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise((_, reject) => {
-        timeoutId = setTimeout(() => {
-          reject(new Error(`${label} timed out. Please click Unlock Admin.`));
-        }, INIT_TIMEOUT_MS);
-      }),
-    ]);
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-  }
-};
-
 const normalizePartNumber = (value, fallback) => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
@@ -47,6 +32,9 @@ export default function AdminPage() {
   const [ready, setReady] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [search, setSearch] = useState("");
+  const [visibility, setVisibility] = useState("all");
   const [vods, setVods] = useState([]);
   const [selectedVodId, setSelectedVodId] = useState("");
   const [selectedVodPartId, setSelectedVodPartId] = useState("");
@@ -105,12 +93,15 @@ export default function AdminPage() {
     const nextVods = Array.isArray(payload?.vods) ? [...payload.vods].sort(SORT_DESC) : [];
     setVods(nextVods);
 
-    const nextSelected = selectedVodId && nextVods.some((vod) => String(vod.id) === String(selectedVodId)) ? selectedVodId : nextVods[0]?.id || "";
-    setSelectedVodId(nextSelected);
+    setSelectedVodId((current) => nextVods.some((vod) => String(vod.id) === String(current)) ? current : String(nextVods[0]?.id || ""));
+  }, []);
 
-    const matched = nextVods.find((vod) => String(vod.id) === String(nextSelected)) || null;
-    syncFlagsFromVod(matched);
-  }, [selectedVodId]);
+  const visibleVods = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return vods.filter((vod) => (visibility === "all" || (visibility === "hidden") === Boolean(vod.unpublished))
+      && (!term || `${vod.title} ${vod.id}`.toLowerCase().includes(term)));
+  }, [vods, search, visibility]);
+  const flagsChanged = selectedVod && (noticeEnabled !== Boolean(selectedVod.vodNotice) || chatReplayAvailable !== (selectedVod.chatReplayAvailable !== false));
 
   useEffect(() => {
     let active = true;
@@ -122,14 +113,14 @@ export default function AdminPage() {
 
         if (pendingPassword) {
           try {
-            await withTimeout(authenticateAdmin(pendingPassword), "Admin login");
+            await authenticateAdmin(pendingPassword);
             isAuthorized = true;
           } catch (error) {
             if (!active || userUnlockInProgressRef.current) return;
             setMessage({ type: "error", text: error.message });
           }
         } else if (existingToken) {
-          const valid = await withTimeout(verifyAdminSession(), "Admin session check");
+          const valid = await verifyAdminSession();
           isAuthorized = valid;
         }
 
@@ -138,7 +129,7 @@ export default function AdminPage() {
         setAuthorized(isAuthorized);
         if (isAuthorized) {
           try {
-            await withTimeout(hydrateVods(), "Admin VOD sync");
+            await hydrateVods();
             if (!active || userUnlockInProgressRef.current) return;
             setMessage({ type: "success", text: "Admin panel unlocked." });
           } catch (error) {
@@ -176,17 +167,16 @@ export default function AdminPage() {
     }
   }, [selectedVodPartId, selectedVodParts]);
 
-  const handleUnlock = useCallback(async () => {
+  const handleUnlock = async (event) => {
+    event?.preventDefault();
+    if (!password.trim()) return;
     userUnlockInProgressRef.current = true;
     setLoading(true);
     try {
-      const didLogin = await promptAndLoginAdmin();
-      if (!didLogin) {
-        setMessage({ type: "info", text: "Admin login canceled." });
-        return;
-      }
+      await authenticateAdmin(password);
+      setPassword("");
       setAuthorized(true);
-      await withTimeout(hydrateVods(), "Admin VOD sync");
+      await hydrateVods();
       setMessage({ type: "success", text: "Admin panel unlocked." });
     } catch (error) {
       setAuthorized(false);
@@ -196,7 +186,7 @@ export default function AdminPage() {
       setLoading(false);
       setReady(true);
     }
-  }, [hydrateVods]);
+  };
 
   const handleLock = () => {
     clearAdminToken();
@@ -205,6 +195,7 @@ export default function AdminPage() {
   };
 
   const handleRefresh = async () => {
+    if (flagsChanged && !window.confirm("Discard unsaved replay settings and refresh?")) return;
     setLoading(true);
     try {
       await hydrateVods();
@@ -361,140 +352,135 @@ export default function AdminPage() {
     }
   };
 
-  if (!ready) {
-    return (
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
 
+  if (!ready) return <Box sx={{ display: "grid", placeItems: "center", height: "100%" }}><CircularProgress size={28} aria-label="Connecting to admin" /></Box>;
+
+  const panel = { border: "1px solid var(--soft-border)", borderRadius: "16px", background: "var(--soft-surface)", p: { xs: 2, md: 3 }, minWidth: 0 };
+  const formatDate = (value) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "Undated" : date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  };
   return (
     <SimpleBar style={{ minHeight: 0, height: "100%" }}>
-      <Box sx={{ p: 3, maxWidth: "900px", margin: "0 auto" }}>
-        <Typography variant="h4" sx={{ mb: 1 }}>
-          Admin
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Hidden controls for VOD publish state and manual notice flags. This panel talks to your local admin bridge.
-        </Typography>
-
-        <Alert severity={message.type} sx={{ mb: 2 }}>
-          {message.text}
-        </Alert>
-
-        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-          {!authorized ? (
-            <Button variant="contained" onMouseDown={primeAdminWake} onTouchStart={primeAdminWake} onClick={handleUnlock} disabled={loading}>
-              Unlock Admin
-            </Button>
-          ) : (
-            <>
-              <Button variant="outlined" onClick={handleRefresh} disabled={loading}>
-                Refresh
-              </Button>
-              <Button component={RouterLink} to="/admin/design" variant="contained" disabled={loading}>
-                Design Editor
-              </Button>
-              <Button variant="outlined" color="warning" onClick={handleLock} disabled={loading}>
-                Lock
-              </Button>
-            </>
-          )}
+      <Box component="main" sx={{ px: { xs: 2, md: 4 }, py: 3, maxWidth: 1180, mx: "auto" }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" useFlexGap flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
+          <Box>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 600, letterSpacing: "-0.04em" }}>Archive admin</Typography>
+            <Typography variant="body2" color="text.secondary">Manage your VODs and site.</Typography>
+          </Box>
+          <Stack direction="row" useFlexGap flexWrap="wrap" gap={1}>
+            {authorized && <>
+              <Button variant="outlined" onClick={handleRefresh} disabled={loading}>Refresh</Button>
+              <Button component={RouterLink} to="/admin/design" variant="contained" disabled={loading}>Edit site</Button>
+              <Button onClick={handleLock} disabled={loading}>Sign out</Button>
+            </>}
+          </Stack>
         </Stack>
 
-        {authorized && (
-          <Box sx={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: 2, p: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              VOD Controls
-            </Typography>
+        {(message.type !== "info" || authorized) && <Alert severity={message.type} sx={{ mb: 2 }} aria-live="polite">{message.text}</Alert>}
 
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Select VOD
+        {!authorized ? (
+          <Box sx={{ ...panel, maxWidth: 460, mx: "auto", my: { xs: 2, md: 6 } }}>
+            <Typography component="h2" variant="h6" sx={{ mb: 1 }}>Welcome back</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              {isLocalAdminConsole ? "Your archive is connected on this PC. Sign in to make changes." : "Open Softuchive and choose Open admin for a direct connection to this PC."}
             </Typography>
-            <Select
-              fullWidth
-              value={selectedVodId}
-              onChange={(event) => setSelectedVodId(event.target.value)}
-              sx={{ mb: 2 }}
-            >
-              {vods.map((vod) => (
-                <MenuItem key={vod.id} value={vod.id}>
-                  {`${vod.id} - ${vod.title}${vod.unpublished ? " (unpublished)" : ""}`}
-                </MenuItem>
-              ))}
-            </Select>
-
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              YouTube Parts (published + unpublished)
-            </Typography>
-            <FormControl fullWidth size="small" sx={{ mb: 0.5 }}>
-              <InputLabel id="admin-vod-part-label">Part</InputLabel>
-              <Select
-                labelId="admin-vod-part-label"
-                label="Part"
-                value={selectedVodPartId}
-                onChange={(event) => setSelectedVodPartId(event.target.value)}
-                disabled={loading || !selectedVod || selectedVod.unpublished || selectedVodParts.length === 0}
-              >
-                {selectedVodParts.map((part) => (
-                  <MenuItem key={part.id} value={String(part.id)}>
-                    {part.isUnpublished
-                      ? `Unpublished (backend #${part.backendOrder}, last part ${part.storedPartNumber}) - ${part.id}`
-                      : `Part ${part.partNumber} (backend #${part.backendOrder}) - ${part.id}`}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
-              {publishedSelectedVodPartCount > 1
-                ? "Unpublishing a selected published part hides it on the VOD site and renumbers remaining published parts."
-                : "Need at least 2 published parts to unpublish a single part."}
-            </Typography>
-
-            <FormControlLabel
-              control={<Switch checked={noticeEnabled} onChange={(event) => setNoticeEnabled(event.target.checked)} />}
-              label="Show Spotify muted notice on this VOD"
-            />
-            <FormControlLabel
-              control={<Switch checked={chatReplayAvailable} onChange={(event) => setChatReplayAvailable(event.target.checked)} />}
-              label="Chat replay available on this VOD"
-            />
-
-            <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-              <Button variant="contained" onClick={handleSaveFlags} disabled={loading || !selectedVod}>
-                Save VOD Flags
+            <Box component="form" onSubmit={handleUnlock}>
+              <TextField fullWidth autoFocus type="password" label="Admin password" autoComplete="current-password"
+                value={password} onChange={(event) => setPassword(event.target.value)} disabled={loading} sx={{ mb: 2 }} />
+              <Button fullWidth type="submit" variant="contained" disabled={loading || !password.trim()}>
+                {loading ? "Connecting…" : "Sign in"}
               </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={handleUnpublishPart}
-                disabled={
-                  loading ||
-                  !selectedVod ||
-                  selectedVod.unpublished ||
-                  !selectedVodPart ||
-                  selectedVodPart.isUnpublished ||
-                  publishedSelectedVodPartCount <= 1
-                }
-              >
-                Unpublish Selected Part
-              </Button>
-              <Button
-                variant="outlined"
-                color="success"
-                onClick={handleRepublishPart}
-                disabled={loading || !selectedVod || selectedVod.unpublished || !selectedVodPart || !selectedVodPart.isUnpublished}
-              >
-                Republish Selected Part
-              </Button>
-              <Button variant="contained" color="error" onClick={handleUnpublish} disabled={loading || !selectedVod || selectedVod.unpublished}>
-                Unpublish (Keep Twitch VOD)
-              </Button>
-              <Button variant="contained" color="success" onClick={handleRepublish} disabled={loading || !selectedVod || !selectedVod.unpublished}>
-                Republish (YouTube + Archive)
-              </Button>
-            </Stack>
+            </Box>
+            {!isLocalAdminConsole && <Stack direction="row" useFlexGap flexWrap="wrap" gap={1} sx={{ mt: 2 }}>
+              <Button size="small" onClick={primeAdminWake} disabled={loading}>Start local bridge</Button>
+              <Button size="small" onClick={async () => {
+                setLoading(true);
+                try { await connectAdmin(); window.location.assign(getLocalAdminUrl()); }
+                catch (error) { setMessage({ type: "error", text: error.message }); }
+                finally { setLoading(false); }
+              }} disabled={loading}>Open local admin</Button>
+            </Stack>}
+          </Box>
+        ) : (
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "320px minmax(0, 1fr)" }, gap: 3, alignItems: "start" }}>
+            <Box component="aside" aria-label="Choose a VOD" sx={panel}>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                <Typography component="h2" variant="h6">VODs</Typography>
+                <Typography variant="caption" color="text.secondary">{vods.length} total</Typography>
+              </Stack>
+              <TextField fullWidth size="small" label="Search title or ID" value={search} onChange={(event) => setSearch(event.target.value)} sx={{ mb: 1.5 }} />
+              <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                <InputLabel id="visibility-filter">Visibility</InputLabel>
+                <Select labelId="visibility-filter" label="Visibility" value={visibility} onChange={(event) => setVisibility(event.target.value)}>
+                  <MenuItem value="all">All VODs</MenuItem><MenuItem value="published">Published</MenuItem><MenuItem value="hidden">Unpublished</MenuItem>
+                </Select>
+              </FormControl>
+              <Box sx={{ maxHeight: { xs: 240, md: "62vh" }, overflowY: "auto", mx: -1, px: 1 }}>
+                {visibleVods.length === 0 && <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>No VODs found.</Typography>}
+                {visibleVods.map((vod) => <Box component="button" type="button" key={vod.id} disabled={loading}
+                  onClick={() => {
+                    if (flagsChanged && !window.confirm("Discard the unsaved changes to this VOD?")) return;
+                    setSelectedVodId(String(vod.id));
+                  }}
+                  aria-pressed={String(vod.id) === String(selectedVodId)}
+                  sx={{ width: "100%", display: "block", textAlign: "left", p: 1.5, mb: .5, borderRadius: "10px", border: "1px solid",
+                    borderColor: String(vod.id) === String(selectedVodId) ? "var(--soft-text)" : "transparent",
+                    background: String(vod.id) === String(selectedVodId) ? "var(--soft-surface-strong)" : "transparent",
+                    color: "inherit", font: "inherit", cursor: "pointer", transition: "background-color 140ms ease",
+                    "&:hover": { background: "var(--soft-surface-strong)" }, "&:focus-visible": { outline: "2px solid var(--soft-text)", outlineOffset: 2 } }}>
+                  <Typography component="span" variant="body2" sx={{ display: "block", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vod.title || "Untitled VOD"}</Typography>
+                  <Typography component="span" variant="caption" color="text.secondary">{formatDate(vod.createdAt)}{vod.unpublished ? " · Unpublished" : ""}</Typography>
+                </Box>)}
+              </Box>
+            </Box>
+            {selectedVod ? <Stack spacing={2.5} sx={{ minWidth: 0 }} aria-busy={loading}>
+              <Box sx={panel}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2} sx={{ mb: 1 }}>
+                  <Chip size="small" variant="outlined" label={selectedVod.unpublished ? "Unpublished" : "Published"} />
+                  {!selectedVod.unpublished && <Button component={RouterLink} to={`/${selectedVod.id}`} size="small">View VOD ↗</Button>}
+                </Stack>
+                <Typography component="h2" variant="h5" sx={{ overflowWrap: "anywhere", fontWeight: 600, mt: 2, mb: 1 }}>{selectedVod.title || "Untitled VOD"}</Typography>
+                <Typography variant="body2" color="text.secondary">{formatDate(selectedVod.createdAt)} · {selectedVodParts.length} {selectedVodParts.length === 1 ? "part" : "parts"} · {selectedVod.id}</Typography>
+                <Divider sx={{ my: 2.5 }} />
+                <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Replay settings</Typography>
+                <Stack>
+                  <FormControlLabel control={<Switch disabled={loading} checked={chatReplayAvailable} onChange={(event) => setChatReplayAvailable(event.target.checked)} />} label="Chat replay" />
+                  <FormControlLabel control={<Switch disabled={loading} checked={noticeEnabled} onChange={(event) => setNoticeEnabled(event.target.checked)} />} label="Spotify muted notice" />
+                </Stack>
+                <Stack direction="row" alignItems="center" gap={2} sx={{ mt: 2 }}>
+                  <Button variant="contained" onClick={handleSaveFlags} disabled={loading || !flagsChanged}>{loading ? "Working…" : "Save changes"}</Button>
+                  {flagsChanged && <Typography variant="caption" color="text.secondary">Unsaved changes</Typography>}
+                </Stack>
+              </Box>
+              <Box sx={panel}>
+                <Typography component="h3" variant="h6" sx={{ mb: 1 }}>Publication</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Manage availability on YouTube and the archive. Your Twitch VOD is kept.</Typography>
+                <Stack direction="row" useFlexGap flexWrap="wrap" gap={1}>
+                  {selectedVod.unpublished
+                    ? <Button variant="outlined" onClick={handleRepublish} disabled={loading}>Republish VOD</Button>
+                    : <Button variant="outlined" color="error" onClick={handleUnpublish} disabled={loading}>Unpublish VOD</Button>}
+                </Stack>
+                {selectedVodParts.length > 0 && <>
+                  <Divider sx={{ my: 2.5 }} />
+                  <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                    <InputLabel id="admin-vod-part-label">YouTube part</InputLabel>
+                    <Select labelId="admin-vod-part-label" label="YouTube part" value={selectedVodPartId}
+                      onChange={(event) => setSelectedVodPartId(event.target.value)} disabled={loading || selectedVod.unpublished}>
+                      {selectedVodParts.map((part) => <MenuItem key={part.id} value={String(part.id)}>
+                        {part.isUnpublished ? `Unpublished · ${part.id}` : `Part ${part.partNumber} · ${part.id}`}
+                      </MenuItem>)}
+                    </Select>
+                  </FormControl>
+                  {selectedVodPart?.isUnpublished
+                    ? <Button variant="outlined" onClick={handleRepublishPart} disabled={loading || selectedVod.unpublished}>Republish part</Button>
+                    : <Button variant="outlined" color="error" onClick={handleUnpublishPart} disabled={loading || selectedVod.unpublished || !selectedVodPart || publishedSelectedVodPartCount <= 1}>Unpublish part</Button>}
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5 }}>
+                    {publishedSelectedVodPartCount > 1 ? "Remaining parts are renumbered automatically." : "Keep at least one part published, or unpublish the whole VOD."}
+                  </Typography>
+                </>}
+              </Box>
+            </Stack> : <Box sx={panel}><Typography color="text.secondary">Your archive is empty. Published uploads will appear here.</Typography></Box>}
           </Box>
         )}
       </Box>

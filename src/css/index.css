@@ -1,5 +1,5 @@
 :root {
-  --soft-bg: #fff1a8;
+  --soft-bg: #ffe1ad;
   --soft-surface: rgba(255, 255, 255, 0.66);
   --soft-surface-strong: rgba(255, 255, 255, 0.82);
   --soft-surface-soft: rgba(255, 255, 255, 0.58);
@@ -421,6 +421,23 @@ button,
 
 .soft-vod-card__media {
   transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.soft-vod-card__media.is-preview-ready > .thumbnail {
+  opacity: 0;
+}
+
+.soft-vod-card__preview,
+iframe.soft-vod-card__preview {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  pointer-events: none !important;
+}
+
+.soft-vod-card__media.is-previewing::before,
+.soft-vod-card__media.is-previewing::after {
+  opacity: 0;
 }
 
 .soft-vod-card__media::before {
@@ -865,6 +882,28 @@ button,
   box-shadow:
     0 18px 34px rgba(19,33,56,0.14),
     0 0 0 1px rgba(255,255,255,0.06) inset;
+  transition: width 220ms cubic-bezier(.2,.8,.2,1), max-width 220ms cubic-bezier(.2,.8,.2,1);
+}
+
+.soft-vod-watch-scroll .simplebar-content-wrapper {
+  overscroll-behavior: contain;
+}
+
+.soft-vod-watch-scroll .simplebar-content {
+  min-height: 100%;
+}
+
+.soft-vod-watch-scroll .simplebar-track.simplebar-vertical {
+  width: 6px !important;
+  right: 1px;
+  background: transparent;
+}
+
+.soft-vod-watch-scroll .simplebar-track.simplebar-vertical .simplebar-scrollbar::before {
+  left: 2px !important;
+  right: 1px !important;
+  background: rgba(74, 58, 40, 0.52) !important;
+  box-shadow: none;
 }
 
 .soft-vods-scroll .simplebar-mask,
@@ -1179,4 +1218,123 @@ html[data-soft-theme="dark"] .soft-player-stage::before {
   .soft-theme-toggle {
     box-shadow: 0 12px 28px rgba(19, 33, 56, 0.12);
   }
+
+  .soft-home-sponsor {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 820px) {
+  .soft-site-header {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .soft-site-logo-video {
+    width: 300px !important;
+    height: 132px !important;
+  }
+
+  .soft-site-socials {
+    transform: translateY(-7px) !important;
+  }
+
+  .soft-home-sponsor {
+    padding-top: 4px !important;
+  }
+
+  .soft-home-sponsor__offer {
+    margin-bottom: 4px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .soft-home-sponsor__link {
+    min-height: 56px !important;
+    padding: 5px !important;
+  }
+
+  .soft-editable-page-scroll--home .soft-site-footer {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .soft-design-page {
+    overflow-x: clip;
+  }
+
+  .soft-design-section {
+    min-width: 0;
+  }
+
+  .soft-editable-page-scroll,
+  .soft-vods-scroll--native {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* VOD surfaces stay intentionally simple so the video and thumbnails lead the page. */
+.soft-vod-viewer-panel.soft-glass,
+.soft-vod-viewer-details.soft-glass,
+.soft-vod-card.soft-glass {
+  background: rgba(255, 249, 238, 0.82);
+  border: 1px solid rgba(70, 52, 30, 0.16);
+  box-shadow: 0 7px 20px rgba(72, 51, 26, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.soft-vod-viewer-panel.soft-glass::before,
+.soft-vod-viewer-panel.soft-glass::after,
+.soft-vod-viewer-details.soft-glass::before,
+.soft-vod-viewer-details.soft-glass::after,
+.soft-vod-card.soft-glass::before,
+.soft-vod-card.soft-glass::after,
+.soft-vod-card__media::before,
+.soft-vod-card__media::after {
+  display: none;
+}
+
+.soft-vod-card .soft-vod-card__media {
+  border: 1px solid rgba(70, 52, 30, 0.18) !important;
+  box-shadow: none !important;
+}
+
+.soft-vod-card.soft-glass:hover {
+  box-shadow: 0 9px 24px rgba(72, 51, 26, 0.11);
+  border-color: rgba(70, 52, 30, 0.24);
+}
+
+html[data-soft-theme="dark"] .soft-vod-watch-shell {
+  background: #0c0f14;
+}
+
+html[data-soft-theme="dark"] .soft-vod-viewer-panel.soft-glass,
+html[data-soft-theme="dark"] .soft-vod-viewer-details.soft-glass,
+html[data-soft-theme="dark"] .soft-vod-card.soft-glass {
+  background: #151922;
+  border-color: #343b49;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+html[data-soft-theme="dark"] .soft-vod-viewer-panel.soft-glass {
+  background: #11151d;
+}
+
+html[data-soft-theme="dark"] .soft-vod-card .soft-vod-card__media {
+  border-color: #3b4352 !important;
+  box-shadow: none !important;
+}
+
+html[data-soft-theme="dark"] .soft-vod-card.soft-glass:hover {
+  border-color: #4b5668;
+  background: #181d27;
+  box-shadow: none;
+}
+
+html[data-soft-theme="dark"] .soft-chat-panel {
+  border: 1px solid #343b49;
+  box-shadow: none;
 }

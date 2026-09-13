@@ -10,6 +10,7 @@ import {
   InputAdornment,
   Button,
   Stack,
+  Skeleton,
 } from "@mui/material";
 import ErrorBoundary from "../utils/ErrorBoundary";
 import Footer from "../utils/Footer";
@@ -298,6 +299,8 @@ export default function Vods() {
   const [activeUploads, setActiveUploads] = useState([]);
   const [readyVodHighlights, setReadyVodHighlights] = useState([]);
   const [totalVods, setTotalVods] = useState(null);
+  const [archiveError, setArchiveError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
   const [deferredHeroFxReady, setDeferredHeroFxReady] = useState(false);
   const [filter, setFilter] = useState(FILTERS[0]);
   const [filterStartDate, setFilterStartDate] = useState(dayjs(START_DATE));
@@ -305,7 +308,8 @@ export default function Vods() {
   const [filterTitle, setFilterTitle] = useState("");
   const [filterGame, setFilterGame] = useState("");
   const [platform] = useState(PLATFORMS[0]);
-  const page = parseInt(query.get("page") || "1", 10);
+  const requestedPage = Number(query.get("page") || 1);
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const limit = isMobile ? 10 : 20;
   const previewLimit = isMobile ? 4 : 8;
   const uploadReadyWatchStateRef = useRef({
@@ -417,7 +421,7 @@ export default function Vods() {
             if (watchToken.canceled) return;
 
             try {
-              const vod = await getVodById(twitchVodId);
+              const vod = await getVodById(twitchVodId, { forceRefresh: true });
               if (isVodReadyForSession(vod, partNumber)) {
                 if (watchToken.canceled) return;
 
@@ -458,6 +462,7 @@ export default function Vods() {
 
   useEffect(() => {
     if (!isHomeRoute) return undefined;
+    let disposed = false;
 
     vodsClient
       .service("vods")
@@ -470,19 +475,23 @@ export default function Vods() {
         },
       })
       .then((response) => {
+        if (disposed) return;
         const visible = Array.isArray(response.data) ? response.data.filter((vod) => !vod?.unpublished) : [];
         setPreviewVods(visible.slice(0, previewLimit));
       })
       .catch((error) => {
+        if (disposed) return;
         console.error(error);
         setPreviewVods([]);
       });
 
-    return undefined;
+    return () => { disposed = true; };
   }, [isHomeRoute, previewLimit]);
 
   useEffect(() => {
     if (isHomeRoute) return undefined;
+    let disposed = false;
+    setArchiveError("");
     const fetchVods = async () => {
       let nextQuery = {
         $limit: limit,
@@ -505,20 +514,20 @@ export default function Vods() {
 
       switch (filter) {
         case "Date":
-          if (filterStartDate > filterEndDate) {
+          if (!filterStartDate?.isValid() || !filterEndDate?.isValid() || filterStartDate > filterEndDate) {
+            setArchiveError("Choose a valid date range to search the archive.");
             nextQuery = null;
             break;
           }
           nextQuery.$and.push({
             createdAt: {
-              $gte: filterStartDate.toISOString(),
-              $lte: filterEndDate.toISOString(),
+              $gte: filterStartDate.startOf("day").toISOString(),
+              $lte: filterEndDate.endOf("day").toISOString(),
             },
           });
           break;
         case "Title":
           if (filterTitle.length === 0) {
-            nextQuery = null;
             break;
           }
           nextQuery.$and.push({
@@ -529,7 +538,6 @@ export default function Vods() {
           break;
         case "Game":
           if (filterGame.length === 0) {
-            nextQuery = null;
             break;
           }
           if (platform === PLATFORMS[0]) {
@@ -556,6 +564,7 @@ export default function Vods() {
           query: nextQuery,
         })
         .then((response) => {
+          if (disposed) return;
           const visibleVods = Array.isArray(response.data) ? response.data.filter((vod) => !vod?.unpublished) : [];
           setVods(visibleVods);
           if (typeof response.total === "number") {
@@ -566,13 +575,16 @@ export default function Vods() {
           setTotalVods(visibleVods.length);
         })
         .catch((e) => {
+          if (disposed) return;
           console.error(e);
+          setArchiveError("The archive couldn't load. Please try again.");
+          setVods([]);
         });
     };
 
     fetchVods();
-    return undefined;
-  }, [isHomeRoute, limit, page, filter, filterStartDate, filterEndDate, filterTitle, filterGame, platform]);
+    return () => { disposed = true; };
+  }, [isHomeRoute, limit, page, filter, filterStartDate, filterEndDate, filterTitle, filterGame, platform, retryCount]);
 
   const changeFilter = (evt) => {
     setFilter(evt.target.value);
@@ -581,8 +593,8 @@ export default function Vods() {
 
   const handleSubmit = (e) => {
     const value = e.target.value;
-    if (e.which === 13 && !isNaN(value) && value > 0) {
-      navigate(`${location.pathname}?page=${value}`);
+    if (e.key === "Enter" && Number.isSafeInteger(Number(value)) && Number(value) > 0) {
+      navigate(`${location.pathname}?page=${Math.min(Number(value), totalPages)}`);
     }
   };
 
@@ -590,16 +602,18 @@ export default function Vods() {
     () =>
       debounce((value) => {
         setFilterTitle(value);
+        navigate(`${location.pathname}?page=1`, { replace: true });
       }, 350),
-    []
+    [navigate, location.pathname]
   );
 
   const debouncedSetFilterGame = useMemo(
     () =>
       debounce((value) => {
         setFilterGame(value);
+        navigate(`${location.pathname}?page=1`, { replace: true });
       }, 350),
-    []
+    [navigate, location.pathname]
   );
 
   useEffect(() => {
@@ -614,6 +628,7 @@ export default function Vods() {
     if (!value) {
       debouncedSetFilterTitle.cancel();
       setFilterTitle("");
+      navigate(`${location.pathname}?page=1`, { replace: true });
       return;
     }
     debouncedSetFilterTitle(value);
@@ -624,6 +639,7 @@ export default function Vods() {
     if (!value) {
       debouncedSetFilterGame.cancel();
       setFilterGame("");
+      navigate(`${location.pathname}?page=1`, { replace: true });
       return;
     }
     debouncedSetFilterGame(value);
@@ -632,12 +648,16 @@ export default function Vods() {
   const totalPages = Math.max(1, Math.ceil((totalVods || 0) / limit));
 
   const renderVodGrid = (list, cardSizes, { edgePad = { xs: 0.05, sm: 0.15, md: 0.25 }, cardWidth } = {}) => {
-    if (!list) return <Loading />;
+    if (!list) return (
+      <Box role="status" aria-label="Loading videos" sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }, gap: 2 }}>
+        {Array.from({ length: 4 }, (_, index) => <Box key={index}><Skeleton animation={false} variant="rounded" sx={{ aspectRatio: "16 / 9", height: "auto" }} /><Skeleton animation={false} width="80%" sx={{ mt: 1 }} /></Box>)}
+      </Box>
+    );
     if (list.length === 0) {
       return (
         <Box className="soft-glass" sx={{ p: 2, borderRadius: "20px", textAlign: "center" }}>
           <Typography variant="body1" sx={{ color: "text.secondary" }}>
-            No VODs found yet. Upload to YouTube and the archive will sync automatically.
+            No videos found. Try another title, game, or date range.
           </Typography>
         </Box>
       );
@@ -657,9 +677,7 @@ export default function Vods() {
         {list.map((item, index) => {
           if (item?.__type === "upload-placeholder") {
             return (
-              <Reveal key={item.__key} delay={Math.min(index * 40, 220)} sx={{ display: "contents" }}>
-                <UploadingVodPlaceholder upload={item.upload} sizes={cardSizes} cardWidth={cardWidth} />
-              </Reveal>
+              <UploadingVodPlaceholder key={item.__key} upload={item.upload} sizes={cardSizes} cardWidth={cardWidth} />
             );
           }
 
@@ -667,9 +685,7 @@ export default function Vods() {
           const sheen = realVodIndex === 0;
           realVodIndex += 1;
           return (
-            <Reveal key={vod.id} delay={Math.min(index * 40, 220)} sx={{ display: "contents" }}>
-              <Vod vod={vod} sizes={cardSizes} gridSize={2.1} sheen={sheen} cardWidth={cardWidth} />
-            </Reveal>
+            <Vod key={vod.id} vod={vod} sizes={cardSizes} gridSize={2.1} sheen={sheen} cardWidth={cardWidth} />
           );
         })}
       </Grid>
@@ -976,7 +992,9 @@ export default function Vods() {
               </Suspense>
             </Reveal>
 
-            <Box sx={{ mt: 1.2 }}>{renderVodGrid(archiveDisplayList, { xs: 12, sm: 6, lg: 3, xl: 3 })}</Box>
+            <Box sx={{ mt: 1.2 }}>
+              {archiveError ? <Box role="alert" sx={{ p: 3, textAlign: "center" }}><Typography color="text.secondary">{archiveError}</Typography><Button onClick={() => setRetryCount((count) => count + 1)} sx={{ mt: 1 }}>Try again</Button></Box> : renderVodGrid(archiveDisplayList, { xs: 12, sm: 6, lg: 3, xl: 3 })}
+            </Box>
 
             <Box sx={{ display: "flex", justifyContent: "center", mt: 2.5, mb: 1.2, alignItems: "center", flexDirection: isMobile ? "column" : "row" }}>
               {totalPages !== null && (
@@ -991,7 +1009,7 @@ export default function Vods() {
                     renderItem={(item) => <PaginationItem component={Link} to={`${location.pathname}${item.page === 1 ? "" : `?page=${item.page}`}`} {...item} />}
                   />
                   <TextField
-                    inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                    inputProps={{ inputMode: "numeric", pattern: "[0-9]*", "aria-label": "Go to page" }}
                     InputProps={{
                       startAdornment: <InputAdornment position="start">Page</InputAdornment>,
                     }}

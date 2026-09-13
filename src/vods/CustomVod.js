@@ -76,19 +76,25 @@ export default function Vod(props) {
     : "100%";
 
   useEffect(() => {
+    let disposed = false;
+    setVod(undefined);
+    setDrive(undefined);
+    setPlaying({ playing: false });
     const fetchVod = async () => {
       await getVodById(vodId)
         .then((response) => {
+          if (disposed) return;
           setVod(response);
           document.title = `${response.title || response.id} - ${BRAND_NAME}`;
         })
         .catch((e) => {
+          if (disposed) return;
           console.error(e);
           setVod(null);
         });
     };
     fetchVod();
-    return;
+    return () => { disposed = true; };
   }, [vodId]);
 
   useEffect(() => {
@@ -197,8 +203,8 @@ export default function Vod(props) {
     navigator.clipboard.writeText(`${window.location.origin}${location.pathname}?t=${toHMS(currentTime)}`);
   };
 
-  if (vod === undefined || drive === undefined) return <Loading />;
   if (vod === null) return <NotFound />;
+  if (vod === undefined || drive === undefined) return <Loading />;
   const originalTwitchVodUrl = getOriginalTwitchVodUrl(vod);
 
   return (
@@ -272,22 +278,6 @@ export default function Vod(props) {
               overflow: "hidden",
             }}
           >
-            {!!vod.thumbnail_url && (
-              <Box
-                aria-hidden="true"
-                sx={{
-                  position: "absolute",
-                  inset: -12,
-                  backgroundImage: `url(${vod.thumbnail_url})`,
-                  backgroundPosition: "center",
-                  backgroundSize: "cover",
-                  filter: "blur(28px) saturate(1.08)",
-                  transform: "scale(1.06)",
-                  opacity: 0.6,
-                  zIndex: 0,
-                }}
-              />
-            )}
             <Box
               aria-hidden="true"
               sx={{

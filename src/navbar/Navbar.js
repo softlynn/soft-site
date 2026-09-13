@@ -1,10 +1,17 @@
-import { Box, SvgIcon, Tooltip, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Box, SvgIcon, Tooltip, useMediaQuery } from "@mui/material";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
+import { useNavigate } from "react-router";
 import CustomLink from "../utils/CustomLink";
-import { SITE_TITLE, SOCIAL_LINKS } from "../config/site";
+import { SOCIAL_LINKS } from "../config/site";
 import { useSiteDesign } from "../design/DesignContext";
+
+const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
+const LOGO_LOOP_SRC = publicAsset("/media/soft-logo-loop-web.webm");
+const LOGO_STILL_SRC = publicAsset("/media/soft-logo-still.webp");
+const LOGO_STINGER_SRC = publicAsset("/media/soft-logo-stinger.webm");
 
 const socials = [
   {
@@ -17,7 +24,7 @@ const socials = [
     ),
     label: "Twitch",
   },
-  { key: "twitter", path: SOCIAL_LINKS.twitter, icon: <TwitterIcon />, label: "Twitter" },
+  { key: "twitter", path: SOCIAL_LINKS.twitter, icon: <TwitterIcon />, label: "X" },
   { key: "youtube", path: SOCIAL_LINKS.youtube, icon: <YouTubeIcon />, label: "YouTube" },
   {
     key: "discord",
@@ -32,15 +39,15 @@ const socials = [
 ].filter(({ path }) => Boolean(path));
 
 const socialButtonSx = {
-  width: { xs: 40, sm: 44, md: 46 },
-  height: { xs: 40, sm: 44, md: 46 },
+  width: { xs: 46, sm: 54, md: 60 },
+  height: { xs: 46, sm: 54, md: 60 },
   display: "grid",
   placeItems: "center",
   color: "var(--soft-text)",
   borderRadius: "999px",
   transition: "background-color 140ms ease, color 140ms ease, transform 140ms ease, opacity 140ms ease",
   "& svg": {
-    fontSize: { xs: 22, sm: 24, md: 25 },
+    fontSize: { xs: 27, sm: 31, md: 34 },
   },
   "&:hover": {
     backgroundColor: "rgba(255,255,255,0.28)",
@@ -50,66 +57,168 @@ const socialButtonSx = {
 };
 
 export default function Navbar() {
+  const navigate = useNavigate();
+  const [stingerActive, setStingerActive] = useState(false);
+  const [logoFailed, setLogoFailed] = useState(false);
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const { design } = useSiteDesign();
   const settings = design.settings || {};
   const showSocials = settings.showSocials !== false;
   const showVodsButton = settings.headerShowVodsButton === true;
-  const brandText = String(settings.headerBrandText || SITE_TITLE || "soft").trim() || "soft";
+
+  useEffect(() => {
+    if (!stingerActive) return undefined;
+    // Blocked autoplay or a stalled download must never trap the home button.
+    const timeout = setTimeout(() => { navigate("/"); setStingerActive(false); }, 6000);
+    return () => clearTimeout(timeout);
+  }, [stingerActive, navigate]);
+
+  const handleLogoClick = () => {
+    if (stingerActive) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      navigate("/");
+      return;
+    }
+    setStingerActive(true);
+  };
+
+  const finishStinger = () => {
+    navigate("/");
+    setStingerActive(false);
+  };
+
+  const handleStingerError = () => {
+    navigate("/");
+    setStingerActive(false);
+  };
 
   return (
-    <Box
-      component="header"
-      sx={{
-        flex: "0 0 auto",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 1.5,
-        px: { xs: 2.4, sm: 4.2, md: 6.5, lg: 8.5 },
-        pt: { xs: 2, sm: 2.5, md: 3 },
-        pb: { xs: 0.4, sm: 0.6 },
-        background: "transparent",
-      }}
-    >
-      <CustomLink href="/" color="inherit" aria-label="soft home">
-        <Typography
-          component="span"
+    <>
+      <Box
+        component="header"
+        className="soft-site-header"
+        sx={{
+          flex: "0 0 auto",
+          display: "flex",
+          flexWrap: { xs: "wrap", sm: "nowrap" },
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: { xs: 0.5, sm: 1.5 },
+          px: { xs: 2, sm: 4.2, md: 6.5, lg: 8.5 },
+          pt: { xs: 1.4, sm: 2, md: 2.4 },
+          pb: { xs: 0.2, sm: 0.4 },
+          background: "transparent",
+        }}
+      >
+        <Box
+          component="button"
+          type="button"
+          onClick={handleLogoClick}
+          aria-label="Play soft logo transition and return home"
           sx={{
+            appearance: "none",
             display: "block",
-            color: "var(--soft-text)",
-            fontFamily: settings.brandFontFamily || "var(--soft-brand-font)",
-            fontSize: { xs: "1.85rem", sm: "2.1rem", md: "2.25rem" },
-            fontWeight: 500,
-            lineHeight: 1,
-            letterSpacing: 0,
-            textTransform: "lowercase",
-            transition: "opacity 140ms ease",
-            "&:hover": { opacity: 0.72 },
+            flex: "0 0 auto",
+            minWidth: 0,
+            p: 0,
+            border: 0,
+            background: "transparent",
+            cursor: "pointer",
+            lineHeight: 0,
+            transition: "opacity 140ms ease, transform 140ms ease",
+            "&:hover": { opacity: 0.82, transform: "translateY(-1px)" },
+            "&:focus-visible": {
+              outline: "2px solid var(--soft-text)",
+              outlineOffset: 4,
+              borderRadius: "10px",
+            },
           }}
         >
-          {brandText.toLowerCase()}
-        </Typography>
-      </CustomLink>
+          <Box
+            component={reducedMotion || logoFailed ? "img" : "video"}
+            className="soft-site-logo-video"
+            src={reducedMotion || logoFailed ? LOGO_STILL_SRC : LOGO_LOOP_SRC}
+            {...(reducedMotion || logoFailed ? { alt: "" } : {
+              autoPlay: true, loop: true, muted: true, playsInline: true,
+              preload: "auto", poster: LOGO_STILL_SRC, onError: () => setLogoFailed(true),
+            })}
+            aria-hidden="true"
+            sx={{
+              display: "block",
+              width: { xs: 246, sm: 318, md: 354 },
+              maxWidth: "100%",
+              height: { xs: 144, sm: 174, md: 192 },
+              objectFit: "contain",
+              mixBlendMode: "screen",
+              pointerEvents: "none",
+            }}
+          />
+        </Box>
 
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: { xs: 0.4, sm: 0.65, md: 0.8 }, minWidth: 0 }}>
-        {showVodsButton && (
-          <Tooltip title="VODs">
-            <CustomLink href="/vods" aria-label="VODs">
-              <Box sx={socialButtonSx}>
-                <VideoLibraryRoundedIcon />
-              </Box>
-            </CustomLink>
-          </Tooltip>
-        )}
-        {showSocials &&
-          socials.map(({ path, icon, label }) => (
-            <Tooltip key={path} title={label}>
-              <CustomLink href={path} rel="noopener noreferrer" target="_blank" aria-label={label}>
-                <Box sx={socialButtonSx}>{icon}</Box>
+        <Box
+          className="soft-site-socials"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: { xs: 0.1, sm: 0.5, md: 0.7 },
+            minWidth: 0,
+            flex: "0 0 auto",
+            ml: { xs: "auto", sm: 0 },
+            transform: { xs: "translateY(-6px)", sm: "translateY(-12px)", md: "translateY(-16px)" },
+          }}
+        >
+          {showVodsButton && (
+            <Tooltip title="VODs">
+              <CustomLink href="/vods" aria-label="VODs">
+                <Box sx={socialButtonSx}>
+                  <VideoLibraryRoundedIcon />
+                </Box>
               </CustomLink>
             </Tooltip>
-          ))}
+          )}
+          {showSocials &&
+            socials.map(({ path, icon, label }) => (
+              <Tooltip key={path} title={label}>
+                <CustomLink href={path} rel="noopener noreferrer" target="_blank" aria-label={label}>
+                  <Box sx={socialButtonSx}>{icon}</Box>
+                </CustomLink>
+              </Tooltip>
+            ))}
+        </Box>
       </Box>
-    </Box>
+
+      {stingerActive && (
+        <Box
+          aria-hidden="true"
+          sx={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 2000,
+            overflow: "hidden",
+            background: "transparent",
+            pointerEvents: "none",
+          }}
+        >
+          <Box
+            component="video"
+            src={LOGO_STINGER_SRC}
+            autoPlay
+            muted
+            playsInline
+            preload="auto"
+            onEnded={finishStinger}
+            onError={handleStingerError}
+            sx={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              mixBlendMode: "screen",
+            }}
+          />
+        </Box>
+      )}
+    </>
   );
 }

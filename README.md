@@ -14,8 +14,8 @@ This repo now includes a **local Windows automation pipeline** for:
 
 It also includes a **local admin bridge** for:
 
-1. hidden admin panel unlock from the site (triple-click `soft Archive` + password prompt),
-2. unpublishing a VOD on YouTube + Twitch,
+1. a password-protected local admin console, opened directly from Softuchive,
+2. unpublishing or republishing a VOD on YouTube and the archive (Twitch is preserved),
 3. toggling per-VOD Spotify muted notice,
 4. toggling per-VOD chat replay availability.
 
@@ -90,7 +90,7 @@ Run the site locally with Vite:
 npm start
 ```
 
-Run the state tests and create the production site:
+Run the regression tests and create the production site:
 
 ```bash
 npm test
@@ -104,7 +104,7 @@ npm run admin:api:wake
 npm run admin:api:stop
 ```
 
-Enable auto-wake from the admin page (recommended on Windows, one-time):
+Enable the explicit Start local bridge button on the public admin page (optional, one-time):
 
 ```bash
 npm run admin:protocol:install
@@ -150,6 +150,10 @@ source is `desktop/softuchive/assets/icon.png`; regenerate the Windows `.ico` fi
 powershell -ExecutionPolicy Bypass -File scripts/generate_softuchive_icon.ps1
 ```
 
+Archive shows the active upload and queue; Settings contains scheduling and storage; Activity contains
+logs and recovery tools. Open admin starts the local bridge on demand, verifies it is ready, and opens
+the console. Run `npm run build` after website changes so the local console serves the current UI.
+
 ## Files produced by automation
 
 - VOD index: `public/data/vods.json`
@@ -193,11 +197,12 @@ npm run archive:sync-youtube-visibility
 
 `REACT_APP_USE_STATIC_ARCHIVE=true` is enabled, so the site serves archive data from `public/data/*` and does not require a custom API endpoint.
 
-## Hidden admin panel use
+## Admin console
 
-1. Open the site and click `soft Archive` **3 times** quickly.
-2. Enter the admin password in the prompt.
-3. After unlock, `/admin` lets you:
+1. In Softuchive, choose **Open admin**. Alternatively run `npm run admin:api:wake` and open
+   `http://127.0.0.1:49731/console/admin` (use your configured port if different).
+2. Sign in with the password from your local `.env.local`.
+3. Search or filter the archive, select a VOD, and use the controls to:
    - unpublish a VOD on YouTube + archive listing (Twitch VOD is preserved),
    - unpublish a single YouTube VOD part while keeping the VOD published (remaining parts are renumbered),
    - republish a previously unpublished YouTube VOD part on both YouTube and the archive site,
@@ -208,21 +213,27 @@ npm run archive:sync-youtube-visibility
 
 Twitch note: Helix provides delete/list operations for videos, but no official per-VOD unpublish toggle. This admin flow does not delete Twitch VODs.
 
-The admin password is never committed to GitHub; it is read from local `.env.local`.
-If a Twitch user token is missing when you unpublish, the admin API now starts an automatic one-time Twitch device authorization flow and stores the token locally.
-Optional advanced fallback: set `TWITCH_USER_ACCESS_TOKEN` / `TWITCH_USER_REFRESH_TOKEN` in `.env.local` to seed the token file automatically.
-No Twitch redirect URI setup is required for this flow.
+The admin password is never committed to GitHub; it is read from local `.env.local`. New login sessions
+use tab-scoped storage. YouTube publication changes require YouTube credentials, not Twitch authorization.
 The local admin API process is no longer watchdog-managed; it starts via a one-shot launcher and can auto-stop after inactivity (`ADMIN_API_IDLE_TIMEOUT_MINUTES` in `.env.local`, default `30`).
 Default local admin API port is `49731` (`ADMIN_API_PORT` in `.env.local`).
-When `soft-archive-admin://` protocol is installed, the admin page can wake the local API automatically if it is not running.
-If admin login from GitHub Pages is blocked by CORS on your machine, add your site origin to `ADMIN_ALLOWED_ORIGINS` in `.env.local` (comma-separated).
+The public site's footer copyright label opens `/admin` with one click.
+When the `soft-archive-admin://` protocol is installed, its **Start local bridge** button can wake the API.
+Use the local console if your browser blocks access from the public HTTPS site to localhost; both the UI
+and API then share the same origin. Additional public origins must be explicitly listed in
+`ADMIN_ALLOWED_ORIGINS` in `.env.local` (comma-separated). The default listener is loopback only.
+
+Publication writes are never automatically retried after an uncertain network response. Refresh the VOD
+before retrying, because YouTube or the local archive may already have accepted the change.
+Make admin metadata edits between archive runs: the separate pipeline still keeps an in-memory VOD
+snapshot during a run, so cross-process metadata edits are not yet merged safely.
 
 ## Deploy
 
 GitHub Pages deploy workflow:
 `.github/workflows/deploy-pages.yml`
 
-The frontend uses Vite and Node 24 in CI. Production output remains in `build/`, so the GitHub Pages artifact
+The frontend uses Vite and Node 24 in CI, with regression tests before deployment. Production output remains in `build/`, so the GitHub Pages artifact
 and archive pipeline paths are unchanged.
 
 In GitHub repo settings:

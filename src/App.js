@@ -4,8 +4,6 @@ import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/mat
 import { CssBaseline, styled } from "@mui/material";
 import Loading from "./utils/Loading";
 import ThemeModeToggle from "./utils/ThemeModeToggle";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { ThemeModeContext } from "./utils/ThemeModeContext";
 import { DesignProvider } from "./design/DesignContext";
 
@@ -20,10 +18,12 @@ const EditablePage = lazy(() => import("./design/EditablePage"));
 const DesignEditorPage = lazy(() => import("./design/DesignEditorPage"));
 const THEME_STORAGE_KEY = "softu-theme-mode";
 const getInitialThemeMode = () => {
-  if (typeof window === "undefined") return "light";
-  const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (saved === "light" || saved === "dark") return saved;
-  return "light";
+  if (typeof window === "undefined") return "dark";
+  try {
+    const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (saved === "light" || saved === "dark") return saved;
+  } catch { /* Storage is optional in private browsing. */ }
+  return "dark";
 };
 
 const buildTheme = (mode) => {
@@ -230,7 +230,7 @@ export default function App() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(THEME_STORAGE_KEY, preferredThemeMode);
+    try { window.localStorage.setItem(THEME_STORAGE_KEY, preferredThemeMode); } catch { /* Keep the in-memory preference. */ }
   }, [preferredThemeMode]);
 
   const toggleThemeMode = () => {
@@ -238,12 +238,11 @@ export default function App() {
   };
 
   return (
-    <ThemeModeContext.Provider value={{ themeMode: effectiveThemeMode, toggleThemeMode }}>
+    <ThemeModeContext.Provider value={{ themeMode: effectiveThemeMode, toggleThemeMode, setThemeMode: setPreferredThemeMode }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <DesignProvider>
-          <BrowserRouter>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <BrowserRouter basename={window.location.pathname.startsWith("/console/") ? "/console" : "/"}>
               <Parent>
                 <SpaRedirectHandler />
                 <RouteAwareOverlays />
@@ -301,7 +300,6 @@ export default function App() {
                   </Routes>
                 </Suspense>
               </Parent>
-            </LocalizationProvider>
           </BrowserRouter>
         </DesignProvider>
       </ThemeProvider>

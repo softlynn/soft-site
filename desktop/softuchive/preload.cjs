@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld("softuchive", {
   pickArchiveFolder: () => ipcRenderer.invoke("softuchive:pick-archive-folder"),
   openLogs: () => ipcRenderer.invoke("softuchive:open-logs"),
   openArchiveFolder: () => ipcRenderer.invoke("softuchive:open-archive-folder"),
+  openAdmin: () => ipcRenderer.invoke("softuchive:open-admin"),
   onState: (handler) => {
     const listener = (_event, payload) => handler(payload);
     ipcRenderer.on("softuchive:state", listener);

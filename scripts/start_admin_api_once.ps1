@@ -45,7 +45,8 @@ function Test-PortListening {
 }
 
 if (!(Test-Path $adminApiScript)) {
-  exit 0
+  Write-Error "Admin API script is missing."
+  exit 1
 }
 
 if (!(Test-Path $logDir)) {
@@ -59,10 +60,9 @@ if (Test-Path $envFilePath) {
       if ($line -match '^\s*ADMIN_API_PORT\s*=\s*(.+)\s*$') {
         $rawPort = ($matches[1] -replace '\s+', '').Trim('"').Trim("'")
         $parsedPort = 0
-        if ([int]::TryParse($rawPort, [ref]$parsedPort) -and $parsedPort -gt 0) {
+        if ([int]::TryParse($rawPort, [ref]$parsedPort) -and $parsedPort -gt 0 -and $parsedPort -le 65535) {
           $port = $parsedPort
         }
-        break
       }
       if ($line -match '^\s*ADMIN_API_HOST\s*=\s*(.+)\s*$') {
         $parsedHost = [string](($matches[1] -replace '\s+', '').Trim('"').Trim("'"))
@@ -95,28 +95,32 @@ foreach ($candidatePort in $candidatePorts) {
 if ($null -eq $launchPort) {
   $timestamp = Get-Date -Format o
   "[$timestamp] Failed to launch local admin API: no free candidate port ($($candidatePorts -join ', '))." | Out-File -FilePath $stderrLog -Append -Encoding utf8
-  exit 0
-}
-
-$scriptRegex = [Regex]::Escape($adminApiScript)
-$staleNodeProcesses = Get-CimInstance Win32_Process |
-  Where-Object { $_.Name -ieq "node.exe" -and $_.CommandLine -match $scriptRegex }
-foreach ($proc in $staleNodeProcesses) {
-  Stop-Process -Id $proc.ProcessId -Force -ErrorAction SilentlyContinue
+  Write-Error "Local admin ports are occupied. See scripts/.state/admin-api-stderr.log."
+  exit 1
 }
 
 try {
   $previousAdminApiPort = $env:ADMIN_API_PORT
   $env:ADMIN_API_PORT = [string]$launchPort
-  Start-Process -FilePath "node" `
-    -ArgumentList @($adminApiScript) `
+  $nodeExecutable = (Get-Command node -ErrorAction Stop).Source
+  $launchedProcess = Start-Process -FilePath $nodeExecutable `
+    -ArgumentList @(('"{0}"' -f $adminApiScript)) `
     -WorkingDirectory $repoRoot `
     -WindowStyle Hidden `
     -RedirectStandardOutput $stdoutLog `
-    -RedirectStandardError $stderrLog | Out-Null
+    -RedirectStandardError $stderrLog -PassThru
+  $startupDeadline = (Get-Date).AddSeconds(15)
+  do {
+    if (Test-AdminApiHealth -ApiHost $apiHost -ApiPort $launchPort) { exit 0 }
+    if ($launchedProcess.HasExited) { throw "Admin bridge exited during startup. See scripts/.state/admin-api-stderr.log." }
+    Start-Sleep -Milliseconds 250
+  } while ((Get-Date) -lt $startupDeadline)
+  throw "Admin bridge did not become ready. See scripts/.state/admin-api-stderr.log."
 } catch {
   $timestamp = Get-Date -Format o
   "[$timestamp] Failed to launch local admin API: $($_.Exception.Message)" | Out-File -FilePath $stderrLog -Append -Encoding utf8
+  Write-Error $_.Exception.Message
+  exit 1
 } finally {
   if ($null -eq $previousAdminApiPort) {
     Remove-Item Env:\ADMIN_API_PORT -ErrorAction SilentlyContinue

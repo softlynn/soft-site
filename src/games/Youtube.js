@@ -13,9 +13,10 @@ export default function YoutubeGames(props) {
 
   const onReady = (evt) => {
     playerRef.current = evt.target;
+    setPlaying({ playing: false, ready: true });
 
     canAutoPlay.video().then(({ result }) => {
-      if (!result) playerRef.current.mute();
+      if (!result && playerRef.current === evt.target) evt.target.mute();
     });
 
     playerRef.current.loadVideoById(games[part.part - 1].video_id, part.timestamp);
@@ -30,9 +31,10 @@ export default function YoutubeGames(props) {
   };
 
   const onEnd = () => {
+    setPlaying({ playing: false });
     const nextPart = part.part + 1;
     if (nextPart > games.length) return;
-    setPart({ part: nextPart, duration: 0 });
+    setPart({ part: nextPart, timestamp: 0 });
   };
 
   const onError = (evt) => {

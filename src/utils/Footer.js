@@ -1,11 +1,12 @@
 import { Box, Typography } from "@mui/material";
-import { setPendingAdminPassword } from "../api/adminApi";
+import { useNavigate } from "react-router";
 import { BRAND_NAME } from "../config/site";
 import { useSiteDesign } from "../design/DesignContext";
 
 const COPYRIGHT_YEAR = 2026;
 
 export default function Footer() {
+  const navigate = useNavigate();
   const { design } = useSiteDesign();
   const settings = design.settings || {};
   const brandLabel = String(BRAND_NAME || "soft").toLowerCase();
@@ -15,25 +16,19 @@ export default function Footer() {
 
   const handleAdminClick = (event) => {
     event.preventDefault();
-    const password = window.prompt("Enter admin password");
-    if (password == null) return;
-    const normalizedPassword = String(password).trim();
-    if (!normalizedPassword) {
-      window.alert("Admin password cannot be empty.");
-      return;
-    }
-    setPendingAdminPassword(normalizedPassword);
-    window.location.assign("/admin");
+    navigate("/admin");
   };
 
   return (
     <Box
       component="footer"
+      className="soft-site-footer"
       sx={{
         flex: "0 0 auto",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        flexWrap: "wrap",
         gap: 0.65,
         px: 2,
         pt: 2,

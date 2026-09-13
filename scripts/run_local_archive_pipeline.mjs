@@ -1,8 +1,10 @@
 import fs from "fs/promises";
+import { acquirePipelineRunLock, isCurrentProcessRunning } from "./pipeline_run_lock.mjs";
+import { createSnapshotWriter, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
 import fsSync from "fs";
 import os from "os";
 import path from "path";
-import { Transform } from "stream";
+import { DynamicUploadThrottleStream, getUploadHealthState } from "./pipeline_upload_stream.mjs";
 import { fileURLToPath } from "url";
 import { spawn, spawnSync } from "child_process";
 import dotenv from "dotenv";
@@ -199,7 +201,6 @@ const TERMINAL_PROCESSED_FILE_STATUSES = new Set([
   "ignored_unknown_duration",
   "skipped_manual",
 ]);
-const PIPELINE_RUN_LOCK_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const PROCESSING_RECORD_STALE_AFTER_MS =
   Math.max(5, Number(process.env.SOFTUCHIVE_PROCESSING_STALE_AFTER_MINUTES || "30")) * 60 * 1000;
 const YOUTUBE_VISIBILITY_SYNC_INTERVAL_MS =
@@ -287,10 +288,7 @@ const readJsonFile = async (filePath, fallback) => {
   return JSON.parse(contents);
 };
 
-const writeJsonFile = async (filePath, value) => {
-  await ensureDirectory(path.dirname(filePath));
-  await fs.writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-};
+const writeJsonFile = writeJsonFileAtomic;
 
 const chunkArray = (items, size) => {
   const source = Array.isArray(items) ? items : [];
@@ -314,63 +312,8 @@ const parseTimestampMs = (value) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-const isCurrentProcessRunning = (pid) => {
-  const numericPid = Number(pid);
-  if (!Number.isInteger(numericPid) || numericPid <= 0) return false;
-  try {
-    process.kill(numericPid, 0);
-    return true;
-  } catch {
-    return false;
-  }
-};
 
-const acquirePipelineRunLock = async (lockPath) => {
-  await ensureDirectory(path.dirname(lockPath));
-
-  const tryWriteLock = async () => {
-    const nowMs = Date.now();
-    const payload = {
-      pid: process.pid,
-      createdAt: new Date(nowMs).toISOString(),
-      createdAtMs: nowMs,
-      argv: process.argv.slice(1),
-    };
-    await fs.writeFile(lockPath, `${JSON.stringify(payload, null, 2)}\n`, {
-      encoding: "utf8",
-      flag: "wx",
-    });
-  };
-
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      await tryWriteLock();
-      return async () => {
-        try {
-          await fs.rm(lockPath, { force: true });
-        } catch {}
-      };
-    } catch (error) {
-      if (error?.code !== "EEXIST") throw error;
-
-      const existing = await readJsonFile(lockPath, null);
-      const createdAtMs = Number(existing?.createdAtMs) || parseTimestampMs(existing?.createdAt) || 0;
-      const ageMs = Math.max(0, Date.now() - createdAtMs);
-      const ownerAlive = isCurrentProcessRunning(existing?.pid);
-      const staleLock = !ownerAlive || ageMs > PIPELINE_RUN_LOCK_MAX_AGE_MS;
-
-      if (!staleLock) {
-        return null;
-      }
-
-      try {
-        await fs.rm(lockPath, { force: true });
-      } catch {}
-    }
-  }
-
-  return null;
-};
+const persistObsDockStatus = createSnapshotWriter(({ outputPath, payload }) => writeJsonFile(outputPath, payload));
 
 const writeObsDockUploadStatus = async (status = {}) => {
   const outputPath = String(config.obsDockUploadStatusPath || "").trim();
@@ -387,7 +330,7 @@ const writeObsDockUploadStatus = async (status = {}) => {
   };
 
   try {
-    await writeJsonFile(outputPath, payload);
+    await persistObsDockStatus({ outputPath, payload });
   } catch (error) {
     log(`Failed to write OBS dock upload status: ${error.message}`);
   }
@@ -1344,93 +1287,6 @@ const createUploadControlReader = ({ uploadSessionId = "" } = {}) => {
   };
 };
 
-class DynamicUploadThrottleStream extends Transform {
-  constructor({ readControl, onChunkSent } = {}) {
-    super();
-    this.readControl = typeof readControl === "function" ? readControl : async () => ({});
-    this.onChunkSent = typeof onChunkSent === "function" ? onChunkSent : null;
-    this.activeLimitMbps = null;
-    this.limitStartedAtMs = Date.now();
-    this.bytesSentUnderLimit = 0;
-  }
-
-  async waitForControl() {
-    while (true) {
-      const control = await this.readControl();
-      if (control.pauseRequested) {
-        throw createPipelineControlError("Pause requested during YouTube upload.", SOFTUCHIVE_PAUSE_ERROR_CODE);
-      }
-      if (control.skipRequested) {
-        throw createPipelineControlError("Skip requested for this VOD.", SOFTUCHIVE_SKIP_ERROR_CODE);
-      }
-      const uploadThrottleMbps = normalizeUploadThrottleMbps(control.uploadThrottleMbps);
-      if (!control.uploadPaused) {
-        return {
-          uploadPaused: false,
-          uploadThrottleMbps,
-        };
-      }
-      if (this.onChunkSent) {
-        this.onChunkSent(0, {
-          uploadPaused: true,
-          uploadThrottleMbps,
-          uploadMbps: 0,
-        });
-      }
-      await waitMs(500);
-    }
-  }
-
-  resetLimitWindow(limitMbps) {
-    if (this.activeLimitMbps === limitMbps) return;
-    this.activeLimitMbps = limitMbps;
-    this.limitStartedAtMs = Date.now();
-    this.bytesSentUnderLimit = 0;
-  }
-
-  async waitForThrottle(byteLength, limitMbps) {
-    if (!Number.isFinite(limitMbps) || limitMbps <= 0) {
-      this.resetLimitWindow(null);
-      return;
-    }
-
-    this.resetLimitWindow(limitMbps);
-    const bytesPerSecond = (limitMbps * 1_000_000) / 8;
-    this.bytesSentUnderLimit += byteLength;
-    const targetElapsedMs = (this.bytesSentUnderLimit / bytesPerSecond) * 1000;
-    const elapsedMs = Date.now() - this.limitStartedAtMs;
-    const waitForMs = Math.ceil(targetElapsedMs - elapsedMs);
-    if (waitForMs > 0) {
-      await waitMs(waitForMs);
-    }
-  }
-
-  async sendChunk(chunk) {
-    let offset = 0;
-    while (offset < chunk.length) {
-      const control = await this.waitForControl();
-      const limitMbps = normalizeUploadThrottleMbps(control.uploadThrottleMbps);
-      const bytesPerSecond = limitMbps ? (limitMbps * 1_000_000) / 8 : chunk.length;
-      const sliceSize = limitMbps ? Math.max(1024, Math.min(64 * 1024, Math.ceil(bytesPerSecond / 8))) : chunk.length - offset;
-      const end = Math.min(chunk.length, offset + sliceSize);
-      const slice = chunk.subarray(offset, end);
-
-      await this.waitForThrottle(slice.length, limitMbps);
-      this.push(slice);
-      if (this.onChunkSent) {
-        this.onChunkSent(slice.length, {
-          uploadPaused: false,
-          uploadThrottleMbps: limitMbps,
-        });
-      }
-      offset = end;
-    }
-  }
-
-  _transform(chunk, _encoding, callback) {
-    this.sendChunk(chunk).then(() => callback(), callback);
-  }
-}
 
 const normalizeYouTubeLookupText = (value) =>
   String(value || "")
@@ -1647,7 +1503,9 @@ const uploadRecordingToYouTube = async ({
         if (uploadReadCompletedAtMs) return;
 
         const nowMs = Date.now();
-        if (nowMs - lastByteProgressAtMs >= Math.max(15_000, stallTimeoutMs)) {
+        const health = getUploadHealthState({ nowMs, lastByteProgressAtMs, stallTimeoutMs, uploadPaused: control.uploadPaused });
+        lastByteProgressAtMs = health.lastByteProgressAtMs;
+        if (health.stalled) {
           abortActiveUpload(
             createPipelineControlError(
               `Upload stalled for ${Math.ceil((nowMs - lastByteProgressAtMs) / 1000)} seconds.`,
@@ -2436,6 +2294,9 @@ const createSoftuchiveTracker = async ({ trigger = "manual", metadataOnly = fals
     error: "",
   };
 
+  const persistSnapshot = createSnapshotWriter((snapshot) =>
+    writeSoftuchiveRuntime(repoRoot, snapshot, { archiveFolder: config.recordingsDir })
+  );
   const persist = async () => {
     runtime.events = events.slice(-120);
     runtime.app = {
@@ -2445,7 +2306,7 @@ const createSoftuchiveTracker = async ({ trigger = "manual", metadataOnly = fals
       summaryLogPath: softuchivePaths.summaryLogPath,
     };
     runtime.updatedAt = new Date().toISOString();
-    runtime = await writeSoftuchiveRuntime(repoRoot, runtime, { archiveFolder: config.recordingsDir });
+    await persistSnapshot(cloneJson(runtime));
     return runtime;
   };
 

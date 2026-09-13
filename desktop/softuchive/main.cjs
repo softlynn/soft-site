@@ -14,6 +14,7 @@ const WINDOWS_DEFAULT_ARCHIVE_FOLDER = "D:\\Stream Archives";
 const DEFAULT_ARCHIVE_FOLDER = "recordings";
 const STATE_POLL_INTERVAL_MS = 1500;
 const OBS_POLL_INTERVAL_MS = 5000;
+const TASK_CACHE_MS = 60000;
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
 
 let mainWindow = null;
@@ -31,9 +32,16 @@ let obsMonitorState = {
   lastTriggeredAt: null,
 };
 let repoEnvironmentLoadedFor = "";
+let stateFilesReady = false;
+let stateReadPromise = null;
+let scheduledTaskPromise = null;
+let scheduledTaskCache = null;
+let scheduledTaskCheckedAt = 0;
+let pipelineLaunchInFlight = false;
+let appQuitting = false;
+let latestRunActive = false;
 
 const pipelineStatePath = () => path.join(repoRoot, "scripts", ".state", "pipeline-state.json");
-const pipelineRunLockPath = () => path.join(repoRoot, "scripts", ".state", "pipeline-run.lock.json");
 const iconAssetPath = () => path.join(__dirname, "assets", "icon.png");
 
 const psQuote = (value) => `'${String(value || "").replace(/'/g, "''")}'`;
@@ -177,33 +185,42 @@ const ensureStateFiles = async () => {
   });
 };
 
-const getScheduledTaskStatus = async () => {
+const readScheduledTaskStatus = async () => {
   const raw = await runPowerShell(`
-    try {
-      $task = Get-ScheduledTask -TaskName ${psQuote(TASK_NAME)} -ErrorAction Stop
+      $task = Get-ScheduledTask -ErrorAction Stop | Where-Object { $_.TaskName -eq ${psQuote(TASK_NAME)} } | Select-Object -First 1
       [pscustomobject]@{
-        exists = $true
-        enabled = ([string]$task.State -ne 'Disabled')
-        state = [string]$task.State
+        exists = ($null -ne $task)
+        enabled = ($null -ne $task -and [string]$task.State -ne 'Disabled')
+        state = $(if ($null -ne $task) { [string]$task.State } else { 'NotInstalled' })
       } | ConvertTo-Json -Compress
-    } catch {
-      [pscustomobject]@{
-        exists = $false
-        enabled = $false
-        state = 'NotInstalled'
-      } | ConvertTo-Json -Compress
-    }
   `);
 
   try {
     return JSON.parse(raw);
   } catch {
     return {
-      exists: false,
+      exists: null,
       enabled: false,
-      state: "Unknown",
+      state: "Unavailable",
+      error: "Windows returned an unreadable schedule status.",
     };
   }
+};
+
+const getScheduledTaskStatus = async (force = false) => {
+  if (scheduledTaskPromise) return scheduledTaskPromise;
+  if (!force && scheduledTaskCache && Date.now() - scheduledTaskCheckedAt < TASK_CACHE_MS) {
+    return scheduledTaskCache;
+  }
+  scheduledTaskPromise = readScheduledTaskStatus()
+    .catch((error) => ({ exists: null, enabled: false, state: "Unavailable", error: error.message }))
+    .then((task) => {
+      scheduledTaskCache = task;
+      scheduledTaskCheckedAt = Date.now();
+      return task;
+    })
+    .finally(() => { scheduledTaskPromise = null; });
+  return scheduledTaskPromise;
 };
 
 const setScheduledTaskEnabled = async (enabled, intervalMinutes) => {
@@ -224,39 +241,41 @@ const setScheduledTaskEnabled = async (enabled, intervalMinutes) => {
     );
   }
 
-  return getScheduledTaskStatus();
+  if (scheduledTaskPromise) await scheduledTaskPromise;
+  const task = await getScheduledTaskStatus(true);
+  if (task.error || task.enabled !== enabled) {
+    throw new Error(task.error || "Windows did not confirm the requested schedule change.");
+  }
+  return task;
 };
 
 const isObsRunning = async () => {
-  const raw = await runPowerShell(
-    `
-    $processes = @(Get-Process obs64,obs32 -ErrorAction SilentlyContinue)
-    [pscustomobject]@{
-      running = ($processes.Count -gt 0)
-    } | ConvertTo-Json -Compress
-    `,
-    8000
-  );
-
-  try {
-    return JSON.parse(raw)?.running === true;
-  } catch {
-    return false;
-  }
+  const raw = await new Promise((resolve, reject) => {
+    execFile("tasklist.exe", ["/FO", "CSV", "/NH", "/FI", "IMAGENAME eq obs*.exe"],
+      { windowsHide: true, timeout: 8000, maxBuffer: 256 * 1024 },
+      (error, stdout) => error ? reject(error) : resolve(String(stdout || "")));
+  });
+  return /^"obs(?:32|64)\.exe",/im.test(raw);
 };
 
-const buildAppState = async () => {
+const readAppState = async () => {
   try {
     const stateModule = await getSoftuchiveStateModule();
-    await ensureStateFiles();
+    if (!stateFilesReady) {
+      await ensureStateFiles();
+      stateFilesReady = true;
+    }
     const settings = await stateModule.readSoftuchiveSettings(resolveRepoRoot(), {
       archiveFolder: getArchiveFolderFallback(),
     });
-    const runtime = await stateModule.readSoftuchiveRuntime(resolveRepoRoot(), {
-      archiveFolder: settings.archiveFolder || getArchiveFolderFallback(),
-    });
-    const control = await stateModule.readSoftuchiveControl(resolveRepoRoot());
-    const task = await getScheduledTaskStatus();
+    const [runtime, control, task] = await Promise.all([
+      stateModule.readSoftuchiveRuntime(resolveRepoRoot(), {
+        archiveFolder: settings.archiveFolder || getArchiveFolderFallback(),
+      }),
+      stateModule.readSoftuchiveControl(resolveRepoRoot()),
+      getScheduledTaskStatus(),
+    ]);
+    latestRunActive = runtime.run?.active === true;
 
     return {
       ok: true,
@@ -287,9 +306,17 @@ const buildAppState = async () => {
   }
 };
 
+const buildAppState = () => {
+  if (!stateReadPromise) {
+    stateReadPromise = readAppState().finally(() => { stateReadPromise = null; });
+  }
+  return stateReadPromise;
+};
+
 const broadcastState = async (force = false) => {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   const state = await buildAppState();
+  if (!mainWindow || mainWindow.isDestroyed() || mainWindow.webContents.isDestroyed()) return;
   const nextKey = JSON.stringify(state);
   if (!force && nextKey === lastBroadcastKey) return;
   lastBroadcastKey = nextKey;
@@ -310,11 +337,11 @@ const spawnPipeline = async (trigger) => {
 
   pipelineChild = child;
   child.once("exit", async () => {
-    pipelineChild = null;
+    if (pipelineChild === child) pipelineChild = null;
     await broadcastState(true);
   });
   child.once("error", async () => {
-    pipelineChild = null;
+    if (pipelineChild === child) pipelineChild = null;
     await broadcastState(true);
   });
 
@@ -322,6 +349,11 @@ const spawnPipeline = async (trigger) => {
 };
 
 const launchPipelineRun = async (trigger) => {
+  if (pipelineLaunchInFlight || (pipelineChild && pipelineChild.exitCode == null)) {
+    return { ok: false, message: "An archive poll is already starting or running." };
+  }
+  pipelineLaunchInFlight = true;
+  try {
   const state = await buildAppState();
   if (!state.ok) return { ok: false, message: state.error || "Softuchive could not find the repo root." };
   if (state.control?.pauseRequested && trigger !== "resume") {
@@ -339,6 +371,9 @@ const launchPipelineRun = async (trigger) => {
     ok: true,
     message: trigger === "obs-close" ? "Started archive poll because OBS closed." : "Started archive poll.",
   };
+  } finally {
+    pipelineLaunchInFlight = false;
+  }
 };
 
 const openExistingPath = async (targetPath, fallbackDirectory = "") => {
@@ -346,8 +381,8 @@ const openExistingPath = async (targetPath, fallbackDirectory = "") => {
   if (!preferredPath) {
     return { ok: false, message: "Nothing to open yet." };
   }
-  await shell.openPath(preferredPath);
-  return { ok: true };
+  const error = await shell.openPath(preferredPath);
+  return error ? { ok: false, message: error } : { ok: true };
 };
 
 const restartInterruptedArchive = async () => {
@@ -385,173 +420,39 @@ const restartInterruptedArchive = async () => {
   };
 };
 
-const isProcessRunning = (pid) => {
-  const numericPid = Number(pid);
-  if (!Number.isInteger(numericPid) || numericPid <= 0) return false;
-  try {
-    process.kill(numericPid, 0);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-const terminateProcess = async (pid) => {
-  const numericPid = Number(pid);
-  if (!Number.isInteger(numericPid) || numericPid <= 0 || numericPid === process.pid) return false;
-  if (!isProcessRunning(numericPid)) return false;
-
-  if (process.platform === "win32") {
-    await runPowerShell(`Stop-Process -Id ${numericPid} -Force -ErrorAction SilentlyContinue`, 10000).catch(() => "");
-  } else {
-    try {
-      process.kill(numericPid, "SIGTERM");
-    } catch {}
-  }
-  return true;
-};
 
 const findCurrentSkippableUpload = (run) => {
   const terminalStates = new Set(["done", "error", "paused", "skipped"]);
-  const current = run?.current && typeof run.current === "object" ? run.current : null;
+  const current = run?.current;
   if (current?.sessionId && !terminalStates.has(String(current.state || "").toLowerCase())) return current;
-  const uploads = Array.isArray(run?.uploads) ? run.uploads : [];
-  return (
-    uploads.find((upload) => upload?.sessionId && !terminalStates.has(String(upload?.state || "").toLowerCase())) ||
-    null
-  );
+  return (Array.isArray(run?.uploads) ? run.uploads : [])
+    .find((upload) => upload?.sessionId && !terminalStates.has(String(upload.state || "").toLowerCase())) || null;
 };
 
-const markSkippedUploadAndRestart = async (upload) => {
-  const sessionId = String(upload?.sessionId || "").trim();
-  if (!sessionId) return { ok: false, message: "No current VOD is available to skip yet." };
-
-  const currentState = await readJsonFile(pipelineStatePath(), {
-    processedFiles: {},
-    processedVodIds: {},
-  });
-  const processedFiles =
-    currentState?.processedFiles && typeof currentState.processedFiles === "object" ? currentState.processedFiles : {};
-  let matchedPath = "";
-  let matchedEntry = null;
-
-  for (const [filePath, entry] of Object.entries(processedFiles)) {
-    if (String(entry?.uploadSessionId || "").trim() !== sessionId) continue;
-    matchedPath = filePath;
-    matchedEntry = entry && typeof entry === "object" ? entry : {};
-    break;
-  }
-
-  const ownerPid = Number(matchedEntry?.ownerPid || 0);
-  const killed = await terminateProcess(ownerPid);
-  await fsPromises.rm(pipelineRunLockPath(), { force: true }).catch(() => {});
-
-  const nowIso = new Date().toISOString();
-  if (matchedPath) {
-    processedFiles[matchedPath] = {
-      ...matchedEntry,
-      status: "skipped_manual",
-      twitchVodId: upload?.twitchVodId ? String(upload.twitchVodId) : matchedEntry?.twitchVodId,
-      part: Number.isFinite(Number(upload?.partNumber)) ? Math.max(1, Math.floor(Number(upload.partNumber))) : matchedEntry?.part,
-      updatedAt: nowIso,
-      skippedAt: nowIso,
-      reason: "Manually skipped in Softuchive.",
-    };
-    currentState.processedFiles = processedFiles;
-    await writeJsonFile(pipelineStatePath(), currentState);
-  }
-
+const updateSettings = async (partialSettings, { updateTask = true } = {}) => {
   const stateModule = await getSoftuchiveStateModule();
-  await stateModule.writeSoftuchiveControl(resolveRepoRoot(), {
-    skipRequestedUploadSessionId: "",
-    skipRequestedAt: null,
-  });
-
-  const runtime = await stateModule.readSoftuchiveRuntime(resolveRepoRoot(), {
+  const previousSettings = await stateModule.readSoftuchiveSettings(resolveRepoRoot(), {
     archiveFolder: getArchiveFolderFallback(),
   });
-  const uploads = Array.isArray(runtime.run?.uploads) ? runtime.run.uploads : [];
-  const nextUploads = uploads.map((item) =>
-    String(item?.sessionId || "").trim() === sessionId
-      ? {
-          ...item,
-          state: "skipped",
-          message: "VOD skipped from Softuchive",
-          updatedAtMs: Date.now(),
-        }
-      : item
-  );
-
-  await stateModule.writeSoftuchiveRuntime(
-    resolveRepoRoot(),
-    {
-      ...runtime,
-      run: {
-        ...(runtime.run || {}),
-        active: false,
-        status: "skipped",
-        stage: "idle",
-        message: "Current VOD skipped. Restarting archive poll for the next queued VOD.",
-        completedAt: nowIso,
-        lastPollCompletedAt: nowIso,
-        lastPollStatus: "skipped",
-        current: {
-          ...(runtime.run?.current || {}),
-          ...upload,
-          state: "skipped",
-          message: "VOD skipped from Softuchive",
-        },
-        uploads: nextUploads,
-      },
-    },
-    {
-      archiveFolder: runtime.app?.archiveFolder || getArchiveFolderFallback(),
-    }
-  );
-
-  const result = await launchPipelineRun("skip-current-vod");
-  return {
-    ok: result.ok,
-    message: result.ok
-      ? `${killed ? "Stopped" : "Marked"} ${upload?.recordingName || upload?.title || "the current VOD"} as skipped and started the next poll.`
-      : result.message,
-  };
-};
-
-const updateSettings = async (partialSettings) => {
-  const stateModule = await getSoftuchiveStateModule();
-  const normalizedArchiveFolder = normalizeArchiveFolder(partialSettings?.archiveFolder);
-  await fsPromises.mkdir(normalizedArchiveFolder, { recursive: true });
+  const patch = { ...(partialSettings && typeof partialSettings === "object" ? partialSettings : {}) };
+  if (Object.prototype.hasOwnProperty.call(patch, "archiveFolder")) {
+    patch.archiveFolder = normalizeArchiveFolder(patch.archiveFolder);
+    await fsPromises.mkdir(patch.archiveFolder, { recursive: true });
+  }
   const nextSettings = await stateModule.writeSoftuchiveSettings(
     resolveRepoRoot(),
-    {
-      ...(partialSettings && typeof partialSettings === "object" ? partialSettings : {}),
-      archiveFolder: normalizedArchiveFolder,
-    },
+    patch,
     {
       archiveFolder: getArchiveFolderFallback(),
     }
   );
 
-  const runtime = await stateModule.readSoftuchiveRuntime(resolveRepoRoot(), {
-    archiveFolder: nextSettings.archiveFolder || getArchiveFolderFallback(),
-  });
-  await stateModule.writeSoftuchiveRuntime(
-    resolveRepoRoot(),
-    {
-      ...runtime,
-      app: {
-        ...(runtime.app || {}),
-        archiveFolder: nextSettings.archiveFolder,
-      },
-    },
-    {
-      archiveFolder: nextSettings.archiveFolder || getArchiveFolderFallback(),
-    }
-  );
-
+  // The pipeline owns live runtime state; a settings save must not overwrite a newer upload update.
   const task = await getScheduledTaskStatus();
-  if (task.enabled && Number.isFinite(Number(nextSettings.pollingIntervalMinutes))) {
+  if (updateTask && task.error && nextSettings.pollingIntervalMinutes !== previousSettings.pollingIntervalMinutes) {
+    return { ok: false, message: `Preferences were saved, but the schedule could not be verified: ${task.error}` };
+  }
+  if (updateTask && task.enabled && nextSettings.pollingIntervalMinutes !== previousSettings.pollingIntervalMinutes) {
     await setScheduledTaskEnabled(true, nextSettings.pollingIntervalMinutes);
   }
 
@@ -571,6 +472,7 @@ const tickObsMonitor = async () => {
       ...obsMonitorState,
       running: obsRunning,
       lastCheckedAt: new Date().toISOString(),
+      error: null,
     };
 
     if (
@@ -588,7 +490,9 @@ const tickObsMonitor = async () => {
       }
     }
 
-    await broadcastState();
+    if (mainWindow && !mainWindow.isMinimized()) await broadcastState();
+  } catch (error) {
+    obsMonitorState = { ...obsMonitorState, error: error.message };
   } finally {
     obsPollInFlight = false;
   }
@@ -599,8 +503,8 @@ const createWindow = async () => {
     title: APP_NAME,
     width: 1280,
     height: 860,
-    minWidth: 940,
-    minHeight: 680,
+    minWidth: 780,
+    minHeight: 580,
     backgroundColor: "#0c0b0a",
     icon: iconAssetPath(),
     autoHideMenuBar: true,
@@ -631,21 +535,28 @@ const createWindow = async () => {
     if (url !== mainWindow?.webContents.getURL()) event.preventDefault();
   });
 
+  mainWindow.on("restore", () => { void broadcastState(true); });
   await mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
-  mainWindow.webContents.once("did-finish-load", async () => {
-    await broadcastState(true);
-  });
+  await broadcastState(true);
 };
+
+// Keep scheduler and archive mutations in order, including callers outside the current view.
+let mutationChain = Promise.resolve();
+const handleMutation = (channel, action) => ipcMain.handle(channel, (...args) => {
+  const result = mutationChain.then(() => action(...args));
+  mutationChain = result.catch(() => {});
+  return result;
+});
 
 ipcMain.handle("softuchive:get-state", async () => buildAppState());
 
-ipcMain.handle("softuchive:archive-now", async () => {
+handleMutation("softuchive:archive-now", async () => {
   const result = await launchPipelineRun("manual");
   await broadcastState(true);
   return result;
 });
 
-ipcMain.handle("softuchive:pause", async () => {
+handleMutation("softuchive:pause", async () => {
   const stateModule = await getSoftuchiveStateModule();
   await stateModule.writeSoftuchiveControl(resolveRepoRoot(), { pauseRequested: true });
   await broadcastState(true);
@@ -655,15 +566,18 @@ ipcMain.handle("softuchive:pause", async () => {
   };
 });
 
-ipcMain.handle("softuchive:resume", async () => {
+handleMutation("softuchive:resume", async () => {
   const stateModule = await getSoftuchiveStateModule();
   await stateModule.writeSoftuchiveControl(resolveRepoRoot(), { pauseRequested: false });
-  const result = await launchPipelineRun("resume");
+  const state = await buildAppState();
+  const result = state.ok && (state.runtime?.run?.active || state.pipelineChildActive)
+    ? { ok: true }
+    : await launchPipelineRun("resume");
   await broadcastState(true);
   return result.ok ? { ok: true, message: "Resumed archiving." } : result;
 });
 
-ipcMain.handle("softuchive:skip-current-vod", async () => {
+handleMutation("softuchive:skip-current-vod", async () => {
   try {
     const state = await buildAppState();
     if (!state.ok) return { ok: false, message: state.error || "Could not inspect archive state." };
@@ -678,14 +592,11 @@ ipcMain.handle("softuchive:skip-current-vod", async () => {
       skipRequestedUploadSessionId: sessionId,
       skipRequestedAt: new Date().toISOString(),
     });
-    const fallbackResult = await markSkippedUploadAndRestart(upload);
     await broadcastState(true);
-    return fallbackResult.ok
-      ? fallbackResult
-      : {
-          ok: true,
-          message: `Skip requested for ${upload?.recordingName || upload?.title || "the current VOD"}.`,
-        };
+    return {
+      ok: true,
+      message: `Skipping ${upload?.recordingName || upload?.title || "the current VOD"} at the next safe point.`,
+    };
   } catch (error) {
     return {
       ok: false,
@@ -694,13 +605,13 @@ ipcMain.handle("softuchive:skip-current-vod", async () => {
   }
 });
 
-ipcMain.handle("softuchive:restart", async () => {
+handleMutation("softuchive:restart", async () => {
   const result = await restartInterruptedArchive();
   await broadcastState(true);
   return result;
 });
 
-ipcMain.handle("softuchive:set-upload-control", async (_event, payload) => {
+handleMutation("softuchive:set-upload-control", async (_event, payload) => {
   try {
     const throttleEnabled = payload?.throttleEnabled === true;
     const parsedMbps = Number(payload?.uploadThrottleMbps);
@@ -710,7 +621,6 @@ ipcMain.handle("softuchive:set-upload-control", async (_event, payload) => {
         : null;
     const stateModule = await getSoftuchiveStateModule();
     const control = await stateModule.writeSoftuchiveControl(resolveRepoRoot(), {
-      uploadPaused: payload?.uploadPaused === true,
       uploadThrottleMbps,
     });
     await broadcastState(true);
@@ -727,11 +637,11 @@ ipcMain.handle("softuchive:set-upload-control", async (_event, payload) => {
   }
 });
 
-ipcMain.handle("softuchive:set-auto-polling", async (_event, payload) => {
+handleMutation("softuchive:set-auto-polling", async (_event, payload) => {
   try {
     const enabled = payload?.enabled === true;
     const intervalMinutes = Math.max(1, Math.min(720, Math.floor(Number(payload?.intervalMinutes) || 15)));
-    const settingsResult = await updateSettings({ pollingIntervalMinutes: intervalMinutes });
+    const settingsResult = await updateSettings({ pollingIntervalMinutes: intervalMinutes }, { updateTask: false });
     if (!settingsResult?.ok) return settingsResult;
     const task = await setScheduledTaskEnabled(enabled, intervalMinutes);
     await broadcastState(true);
@@ -751,7 +661,7 @@ ipcMain.handle("softuchive:set-auto-polling", async (_event, payload) => {
   }
 });
 
-ipcMain.handle("softuchive:save-settings", async (_event, payload) => {
+handleMutation("softuchive:save-settings", async (_event, payload) => {
   try {
     const nextSettings = {
       pollingIntervalMinutes: Math.max(1, Math.min(720, Math.floor(Number(payload?.pollingIntervalMinutes) || 15))),
@@ -794,6 +704,41 @@ ipcMain.handle("softuchive:open-archive-folder", async () => {
   return openExistingPath(archiveFolder, archiveFolder);
 });
 
+const findLocalAdmin = async () => {
+  ensureRepoEnvironmentLoaded();
+  const configuredPort = Number(process.env.ADMIN_API_PORT || 49731);
+  const ports = [...new Set([configuredPort, 49731, 49721])].filter((port) => Number.isInteger(port) && port > 0 && port <= 65535);
+  const results = await Promise.all(ports.map(async (port) => {
+    const origin = `http://127.0.0.1:${port}`;
+    try {
+      const response = await fetch(`${origin}/health`, { signal: AbortSignal.timeout(1500), redirect: "error" });
+      if (!response.ok) return null;
+      const health = await response.json();
+      return health.ok === true && health.service === "soft-admin-api" ? origin : null;
+    } catch { return null; }
+  }));
+  return results.find(Boolean) || null;
+};
+
+ipcMain.handle("softuchive:open-admin", async () => {
+  try {
+    let origin = await findLocalAdmin();
+    if (!origin) {
+      const wakeScript = path.join(resolveRepoRoot(), "scripts", "start_admin_api_once.ps1");
+      await runPowerShell(`& ${psQuote(wakeScript)}`, 30000);
+      for (let attempt = 0; attempt < 8 && !origin; attempt += 1) {
+        origin = await findLocalAdmin();
+        if (!origin) await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+    if (!origin) return { ok: false, message: "Local admin did not start. Open pipeline logs and check admin-api-stderr.log." };
+    await shell.openExternal(`${origin}/console/admin`);
+    return { ok: true, message: "Local admin opened in your browser." };
+  } catch (error) {
+    return { ok: false, message: error?.message || "Could not open the local admin." };
+  }
+});
+
 if (!hasSingleInstanceLock) {
   app.quit();
 } else {
@@ -809,12 +754,14 @@ if (!hasSingleInstanceLock) {
     app.setAppUserModelId(APP_ID);
     Menu.setApplicationMenu(null);
     await createWindow();
-    statePollHandle = setInterval(() => {
-      void broadcastState();
-    }, STATE_POLL_INTERVAL_MS);
-    obsPollHandle = setInterval(() => {
-      void tickObsMonitor();
-    }, OBS_POLL_INTERVAL_MS);
+    const refreshState = async () => {
+      await broadcastState();
+      if (appQuitting) return;
+      const delay = mainWindow?.isMinimized() ? 15000 : latestRunActive ? STATE_POLL_INTERVAL_MS : 5000;
+      statePollHandle = setTimeout(refreshState, delay);
+    };
+    statePollHandle = setTimeout(refreshState, STATE_POLL_INTERVAL_MS);
+    obsPollHandle = setInterval(() => { void tickObsMonitor(); }, OBS_POLL_INTERVAL_MS);
     void tickObsMonitor();
   });
 }
@@ -824,7 +771,8 @@ app.on("window-all-closed", () => {
 });
 
 app.on("before-quit", () => {
-  if (statePollHandle) clearInterval(statePollHandle);
+  appQuitting = true;
+  if (statePollHandle) clearTimeout(statePollHandle);
   if (obsPollHandle) clearInterval(obsPollHandle);
 });
 
