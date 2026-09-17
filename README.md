@@ -172,7 +172,7 @@ Each upload now sets and syncs:
 
 ```text
 streamed Feb. 26, 2024 ✦ Chat replay: https://softu.one/<twitchVodId>
-Watch live on Twitch! https://twitch.tv/softuwo
+Watch live on Twitch! https://twitch.tv/softxu
 
 Categories:
 <category chapter lines>

@@ -565,7 +565,7 @@ const buildYouTubeCategoryChapterLines = ({ chapters = [], partNumber, youtubePa
 
 const buildYouTubeDescription = ({ twitchVodId, streamTitle, streamDate, partNumber, totalParts, youtubeParts = [], chapters = [] }) => {
   const archiveVodUrl = buildArchiveVodUrl(twitchVodId);
-  const twitchChannelUrl = `https://twitch.tv/${config.twitchChannelLogin || "softuwo"}`;
+  const twitchChannelUrl = `https://twitch.tv/${config.twitchChannelLogin || "softxu"}`;
   const lines = [
     `streamed ${formatStreamedDateDescription(streamDate)} \u2726 Chat replay: ${archiveVodUrl || "unavailable"}`,
     `Watch live on Twitch! ${twitchChannelUrl}`,
