@@ -14,6 +14,7 @@ import { BTTV_EMOTE_CDN } from "../config/site";
 import { getBadges, getEmotes, getVodComments } from "../api/vodsApi";
 import ThemeModeToggle from "../utils/ThemeModeToggle";
 import { findReplayEnd, getPlaybackTime, indexEmotes } from "./replayUtils.mjs";
+import "./chat-viewer.css";
 
 const SEVENTV_API = "https://7tv.io/v3";
 const BASE_TWITCH_CDN = "https://static-cdn.jtvnw.net";
@@ -355,6 +356,7 @@ export default function Chat(props) {
           >
             <Box
               component="span"
+              className="soft-chat-badge-fallback"
               sx={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -365,9 +367,6 @@ export default function Chat(props) {
                 mr: 0.4,
                 mb: 0.1,
                 borderRadius: "999px",
-                background: "rgba(127, 153, 196, 0.2)",
-                border: "1px solid rgba(173, 197, 233, 0.28)",
-                color: "rgba(229, 239, 255, 0.92)",
                 fontSize: "0.52rem",
                 fontWeight: 700,
                 letterSpacing: "0.03em",
@@ -606,20 +605,20 @@ export default function Chat(props) {
       : comments.current.slice(firstIndex, lastIndex).filter((comment) => comment.message);
     for (const comment of commentsToRender) {
       messages.push(
-        <Box key={comment.id} ref={createRef()} sx={{ width: "100%" }}>
-          <Box sx={{ alignItems: "flex-start", display: "flex", flexWrap: "nowrap", width: "100%", pl: 0.5, pt: 0.5, pr: 0.5 }}>
-            <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+        <Box className="soft-chat-message" key={comment.id} ref={createRef()} sx={{ width: "100%" }}>
+          <Box sx={{ alignItems: "flex-start", display: "flex", flexWrap: "nowrap", width: "100%" }}>
+            <Box sx={{ display: "flex", alignItems: "flex-start", minWidth: 0 }}>
               {showTimestamp && (
-                <Box sx={{ display: "inline", pl: 1, pr: 1 }}>
-                  <Typography variant="caption" sx={{ color: "rgba(219,232,255,0.72)" }}>
+                <Box className="soft-chat-timestamp">
+                  <Typography variant="caption" sx={{ color: "inherit", font: "inherit" }}>
                     {toHHMMSS(comment.content_offset_seconds)}
                   </Typography>
                 </Box>
               )}
-              <Box sx={{ flexGrow: 1 }}>
+              <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                 {comment.user_badges && transformBadges(comment.user_badges)}
                 <Box sx={{ textDecoration: "none", display: "inline" }}>
-                  <span style={{ color: comment.user_color, fontWeight: 600 }}>{comment.display_name}</span>
+                  <span className="soft-chat-username" style={{ "--chat-user-color": comment.user_color || "var(--chat-ink)", fontWeight: 600 }}>{comment.display_name}</span>
                 </Box>
                 <Box sx={{ display: "inline" }}>
                   <span>: </span>
@@ -783,20 +782,18 @@ export default function Chat(props) {
 
   return (
     <Box
-      className="soft-chat-panel"
+      className="soft-chat-panel soft-chat-viewer"
+      data-chat-layout={sideLayout ? "side" : "stacked"}
+      data-mobile-controls={mobileControls ? "true" : "false"}
       sx={{
         height: fillAvailable ? "auto" : sideLayout ? "100%" : mobileControls ? "clamp(240px, 36dvh, 360px)" : "clamp(320px, 48dvh, 520px)",
         width: !sideLayout ? "100%" : showChat ? expandedPanelWidth : desktopCollapsedWidth,
         minWidth: !sideLayout ? 0 : showChat ? expandedPanelMinWidth : desktopCollapsedWidth,
         flex: fillAvailable ? "1 1 0" : "0 0 auto",
         transition: "none",
-        background: "#151619",
-        borderLeft: !sideLayout ? "none" : "1px solid rgba(255,255,255,0.08)",
-        color: "rgba(234,242,255,0.96)",
         display: "flex",
         flexDirection: "column",
         minHeight: fillAvailable ? 160 : 0,
-        borderRadius: "12px",
         overflow: "hidden",
         boxShadow: "none",
         position: "relative",
@@ -804,70 +801,60 @@ export default function Chat(props) {
     >
       {showChat ? (
         <>
-          <Box sx={{ display: "grid", alignItems: "center", minHeight: 52, p: 0.75, flexShrink: 0,
-            ...(mobileControls && { gridTemplateColumns: sideLayout ? "44px minmax(0, 1fr) auto" : "minmax(0, 1fr) auto", columnGap: 0.25,
-              "& button": { minWidth: 44, minHeight: 44 } }) }}>
+          <Box className="soft-chat-header" sx={{ gridTemplateColumns: sideLayout ? "var(--chat-control-size) minmax(0, 1fr) auto" : "minmax(0, 1fr) auto" }}>
             {sideLayout && (
-              <Box sx={{ justifySelf: "left", gridColumnStart: 1, gridRowStart: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
                 <Tooltip title="Hide chat">
-                  <IconButton onClick={handleExpandClick} aria-expanded={showChat} aria-label="Hide chat" sx={{ color: "inherit", width: 36, height: 36 }}>
+                  <IconButton onClick={handleExpandClick} aria-expanded={showChat} aria-label="Hide chat">
                     <KeyboardDoubleArrowRightRoundedIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </Box>
             )}
-            <Box sx={{ justifySelf: mobileControls ? "start" : "center", gridColumnStart: mobileControls && sideLayout ? 2 : 1, gridRowStart: 1, minWidth: 0 }}>
-              <Typography variant="body1" sx={{ color: "inherit", fontWeight: 700, ...(mobileControls && { fontSize: sideLayout ? "0.8rem" : "0.95rem" }) }} noWrap>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography className="soft-chat-title" variant="body1" noWrap>
                 Chat Replay
               </Typography>
             </Box>
-            <Box sx={{ justifySelf: "end", gridColumnStart: mobileControls ? sideLayout ? 3 : 2 : 1, gridRowStart: 1, display: "flex", alignItems: "center", gap: 0.35 }}>
+            <Box className="soft-chat-actions">
               <ThemeModeToggle
                 variant="inline"
                 size="small"
                 confirmLightMode={props.confirmLightMode}
                 onModeChange={props.onThemeModeChange}
                 announceKey={`viewer-${vodId}`}
-                sx={{
-                  width: 34,
-                  height: 34,
-                  color: "rgba(234,242,255,0.92)",
-                  borderColor: "rgba(255,255,255,0.10)",
-                  background: "rgba(255,255,255,0.04)",
-                  boxShadow: "none",
-                }}
               />
               {chatReplayAvailable && (
-                <IconButton title="Settings" aria-label="Chat settings" onClick={() => setShowModal(true)} sx={{ color: "rgba(234,242,255,0.9)" }}>
-                  <SettingsIcon />
+                <IconButton title="Settings" aria-label="Chat settings" onClick={() => setShowModal(true)}>
+                  <SettingsIcon fontSize="small" />
                 </IconButton>
               )}
             </Box>
           </Box>
-          <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+          <Divider className="soft-chat-divider" />
           <CustomCollapse in={showChat} timeout={!sideLayout ? "auto" : 0} unmountOnExit sx={{ minWidth: 0 }}>
             {!chatReplayAvailable ? (
-              <Box sx={{ p: 2 }}>
-                <Typography variant="body2" sx={{ color: "rgba(219,232,255,0.74)" }}>
+              <Box className="soft-chat-empty">
+                <Typography variant="body2" sx={{ color: "inherit" }}>
                   Chat replay is unavailable for this VOD.
                 </Typography>
               </Box>
             ) : !commentsLoaded || chatSyncing ? (
               <Loading />
             ) : commentsCount === 0 || shownMessages.length === 0 ? (
-              <Box sx={{ p: 2 }}>
-                <Typography variant="body2" sx={{ color: "rgba(219,232,255,0.74)" }}>
+              <Box className="soft-chat-empty">
+                <Typography variant="body2" sx={{ color: "inherit" }}>
                   No chat messages around this timestamp.
                 </Typography>
               </Box>
             ) : (
               <>
-                <SimpleBar scrollableNodeProps={{ ref: chatRef }} style={{ height: "100%", overflowX: "hidden", borderRadius: "0 0 18px 18px" }}>
+                <SimpleBar className="soft-chat-scroll" scrollableNodeProps={{ ref: chatRef }} style={{ height: "100%", overflowX: "hidden" }}>
                   {stoppedAtIndex.current > historyLimit && (
-                    <Button size="small" onClick={() => {
+                    <Button className="soft-chat-history" size="small" onClick={() => {
                       historyExpansionPending.current = true;
                       setHistoryLimit((limit) => limit + CHAT_VISIBLE_MESSAGE_LIMIT);
-                    }} sx={{ color: "inherit", width: "100%", my: 0.5 }}>
+                    }}>
                       Show earlier chat
                     </Button>
                   )}
@@ -877,8 +864,8 @@ export default function Chat(props) {
                 </SimpleBar>
                 {scrolling && (
                   <Box sx={{ position: "relative", display: "flex", justifyContent: "center" }}>
-                    <Box sx={{ background: "rgba(12,16,28,.74)", minHeight: 0, borderRadius: 1.5, mb: 1, bottom: 0, position: "absolute", border: "1px solid rgba(255,255,255,0.08)" }}>
-                      <Button size="small" onClick={scrollToBottom} sx={{ color: "rgba(234,242,255,.95)" }}>
+                    <Box className="soft-chat-resume" sx={{ minHeight: 0, mb: 1.5, bottom: 0, position: "absolute" }}>
+                      <Button size="small" onClick={scrollToBottom}>
                         Chat Paused
                       </Button>
                     </Box>

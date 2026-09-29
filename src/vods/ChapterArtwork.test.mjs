@@ -13,6 +13,7 @@ for (const menu of ['ChaptersMenu', 'VodChapters']) {
     const chapter = { gameId: 'game', name: 'Game', start: 0, end: 60, image: 'https://art.invalid/game-{width}x{height}.jpg' };
     const menuHarness = await createComponentHarness(new URL(`./${menu}.js`, import.meta.url), {
       '@mui/material': uiElements,
+      '@mui/icons-material/KeyboardArrowDownRounded': { default: 'ChapterChevronIcon' },
       'humanize-duration': { default: String },
       '../utils/CustomLink': { default: 'CustomLink' },
       '../utils/helpers': { toHMS: String },
@@ -25,7 +26,7 @@ for (const menu of ['ChaptersMenu', 'VodChapters']) {
       chapters: [chapter], chapter,
     });
     const artwork = findElements(menuTree, node => node.type === 'ChapterArtwork');
-    assert.equal(artwork.length, 2, 'both the trigger and menu row display chapter artwork');
+    assert.equal(artwork.length, menu === 'VodChapters' ? 1 : 2, 'chapter artwork remains in the menu and any artwork-based trigger');
     for (const [index, node] of artwork.entries()) {
       const harness = await createComponentHarness(new URL('./ChapterArtwork.js', import.meta.url), artworkDependencies);
       t.after(() => harness.dispose());

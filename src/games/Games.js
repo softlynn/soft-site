@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, InputLabel, Select, IconButton, Link, Collapse, Divider } from "@mui/material";
+import { Box, MenuItem, Tooltip, useMediaQuery, FormControl, Select, IconButton, Link, Collapse, Divider } from "@mui/material";
 import Loading from "../utils/Loading";
 import { useLocation, useParams } from "react-router";
 import YoutubePlayer from "./Youtube";
@@ -8,7 +8,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import NotFound from "../utils/NotFound";
 import Chat from "../vods/Chat";
 import ExpandMore from "../utils/CustomExpandMore";
-import CustomToolTip from "../utils/CustomToolTip";
+import ViewerHeader from "../vods/ViewerHeader";
 import { BRAND_NAME, DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "../vods/VodReactions";
@@ -38,6 +38,7 @@ export default function Games(props) {
   const location = useLocation();
   const isPortrait = useMediaQuery("(orientation: portrait)");
   const isMobile = useMediaQuery("(max-width:1024px), (hover: none) and (pointer: coarse)");
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const { vodId } = useParams();
   const [vod, setVod] = useState(undefined);
   const [games, setGames] = useState(undefined);
@@ -183,6 +184,9 @@ export default function Games(props) {
 
   return (
     <Box
+      className="soft-vod-watch-shell soft-game-watch-shell soft-viewer-page"
+      data-mobile={isMobile}
+      data-fullscreen={mobileViewerFullscreen}
       sx={{
         height: fullscreenViewportHeight,
         width: fullscreenViewportWidth,
@@ -198,9 +202,9 @@ export default function Games(props) {
         backdropFilter: mobileViewerFullscreen ? "blur(6px)" : "none",
       }}
     >
-      <Box sx={{ display: "flex", flexDirection: mobileFullscreenSideLayout ? "row" : isPortrait ? "column" : "row", height: "100%", width: "100%", gap: mobileFullscreenSideLayout ? 0.6 : 0 }}>
+      <Box className="soft-viewer-layout" sx={{ display: "flex", flexDirection: mobileFullscreenSideLayout ? "row" : isPortrait ? "column" : "row", height: "100%", width: "100%", gap: mobileFullscreenSideLayout ? 0.6 : 0 }}>
         <Box
-          className="soft-glass"
+          className="soft-vod-viewer-panel soft-viewer-player-column"
           sx={{
             display: "flex",
             height: "100%",
@@ -211,9 +215,6 @@ export default function Games(props) {
             minWidth: 0,
             overflow: "hidden",
             position: "relative",
-            borderRadius: "20px",
-            p: 0.6,
-            gap: 0.5,
           }}
         >
           <Box
@@ -225,20 +226,9 @@ export default function Games(props) {
               display: "grid",
               placeItems: "center",
               position: "relative",
-              borderRadius: "16px",
               overflow: "hidden",
             }}
           >
-            <Box
-              aria-hidden="true"
-              sx={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "radial-gradient(120% 90% at 8% 8%, rgba(255,255,255,0.16), transparent 58%), radial-gradient(110% 90% at 92% 92%, rgba(212,107,140,0.13), transparent 64%), linear-gradient(180deg, rgba(255,255,255,0.04), rgba(17,24,39,0.04))",
-                zIndex: 1,
-              }}
-            />
             <Box
               className="soft-player-frame"
               sx={{
@@ -249,11 +239,9 @@ export default function Games(props) {
                 },
                 maxHeight: "100%",
                 aspectRatio: "16 / 9",
-                borderRadius: "16px",
                 overflow: "hidden",
                 background: "transparent",
                 minHeight: 0,
-                boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
                 position: "relative",
                 zIndex: 2,
               }}
@@ -262,89 +250,46 @@ export default function Games(props) {
             </Box>
           </Box>
           <Box
+            className="soft-viewer-controls-toggle"
             sx={{
               position: "absolute",
               bottom: showMenu ? 8 : 10,
               left: "50%",
               transform: "translateX(-50%)",
               zIndex: 4,
-              borderRadius: "999px",
-              background: "var(--soft-control-strip-bg)",
-              border: "1px solid var(--soft-control-strip-border)",
-              boxShadow: "var(--soft-control-strip-inset), 0 6px 16px rgba(2,6,18,0.14)",
-              p: 0.25,
             }}
           >
             <Tooltip title={showMenu ? "Collapse" : "Expand"}>
-              <ExpandMore expand={showMenu} onClick={handleExpandClick} aria-expanded={showMenu} aria-label="show menu" sx={{ width: 34, height: 34 }}>
+              <ExpandMore expand={showMenu} disableRipple={reducedMotion} onClick={handleExpandClick} aria-expanded={showMenu} aria-label="show menu" sx={{ width: isMobile ? 44 : 34, height: isMobile ? 44 : 34 }}>
                 <ExpandMoreIcon />
               </ExpandMore>
             </Tooltip>
             {isMobile && (
               <Tooltip title={mobileViewerFullscreen ? "Exit Fullscreen + Chat" : "Open Fullscreen + Chat (Overlay)"}>
                 <IconButton
+                  className="soft-viewer-fullscreen"
+                  disableRipple={reducedMotion}
                   onClick={handleMobileFullscreenChatToggle}
                   aria-label={mobileViewerFullscreen ? "Exit fullscreen with chat" : "Open fullscreen with chat"}
-                  sx={{ width: 34, height: 34, color: "var(--soft-text-primary)", borderRadius: "999px", ml: 0.15 }}
+                  sx={{ width: 44, height: 44, ml: 0.15 }}
                 >
                   {mobileViewerFullscreen ? <CloseFullscreenIcon fontSize="small" /> : <OpenInFullIcon fontSize="small" />}
                 </IconButton>
               </Tooltip>
             )}
           </Box>
-          <Collapse in={showMenu} timeout="auto" unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
-            <Box
-              sx={{
-                display: "flex",
-                p: 1,
-                alignItems: "center",
-                borderRadius: "14px",
-                background: "var(--soft-control-strip-bg)",
-                border: "1px solid var(--soft-control-strip-border)",
-                boxShadow: "var(--soft-control-strip-inset)",
-                mx: 0.4,
-                mb: 0.2,
-              }}
-            >
-              <Box sx={{ minWidth: 0 }}>
-                <CustomToolTip title={vod.title}>
-                  <Typography fontWeight={550} variant="body1" noWrap={true}>{`${vod.title}`}</Typography>
-                </CustomToolTip>
-                {vod.vodNotice && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: "warning.main",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 0.4,
-                      px: 0.75,
-                      py: 0.3,
-                      mt: 0.2,
-                      borderRadius: "999px",
-                      background: "rgba(204,111,78,0.10)",
-                      border: "1px solid rgba(204,111,78,0.18)",
-                    }}
-                  >
-                    {vod.vodNotice}
-                  </Typography>
-                )}
-                {originalTwitchVodUrl && (
-                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mt: 0.25 }}>
-                    <Link href={originalTwitchVodUrl} target="_blank" rel="noopener noreferrer" underline="hover" color="secondary">
-                      [open twitch vod]
-                    </Link>
-                  </Typography>
-                )}
-              </Box>
-              <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
-                <Box sx={{ ml: 0.5 }}>
-                  <FormControl variant="outlined">
-                    <InputLabel id="select-label">Game</InputLabel>
-                    <Select labelId="select-label" label="Game" value={part.part - 1} onChange={handlePartChange} autoWidth>
+          <Collapse className="soft-viewer-shelf-collapse" in={showMenu} timeout={reducedMotion ? 0 : "auto"} unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
+            <Box className="soft-viewer-shelf">
+              <ViewerHeader vod={vod} game={games[part.part - 1]?.game_name} sourceUrl={originalTwitchVodUrl} isMobile={isMobile} />
+              <Box className="soft-vod-viewer-controls soft-viewer-controls">
+                <Box className="soft-viewer-controls-primary">
+                  <FormControl className="soft-viewer-part-control" variant="standard" size="small">
+                    <Select disableUnderline value={part.part - 1} onChange={handlePartChange} autoWidth
+                      inputProps={{ "aria-label": "Game" }}
+                      renderValue={(value) => `Game ${value + 1} / ${games.length}`}>
                       {games.map((data, i) => {
                         return (
-                          <MenuItem key={data.id} value={i}>
+                          <MenuItem key={data.id} value={i} disableRipple={reducedMotion}>
                             {data.game_name}
                           </MenuItem>
                         );
@@ -352,16 +297,16 @@ export default function Games(props) {
                     </Select>
                   </FormControl>
                 </Box>
-                <Box sx={{ ml: 0.5 }}>
+                <Box className="soft-viewer-controls-secondary">
                   {drive && drive[0] && (
                     <Tooltip title={`Download Vod`}>
-                      <IconButton component={Link} href={`https://drive.google.com/u/2/open?id=${drive[0].id}`} color="secondary" aria-label="Download Vod" rel="noopener noreferrer" target="_blank">
+                      <IconButton className="soft-viewer-download" disableRipple={reducedMotion} component={Link} href={`https://drive.google.com/u/2/open?id=${drive[0].id}`} color="secondary" aria-label="Download Vod" rel="noopener noreferrer" target="_blank">
                         <DownloadIcon />
                       </IconButton>
                     </Tooltip>
                   )}
+                  <Box className="soft-viewer-reactions"><VodReactions vodId={vod.id} compact viewerControls lazy={false} /></Box>
                 </Box>
-                <VodReactions vodId={vod.id} compact lazy={false} sx={{ ml: 0.7 }} />
               </Box>
             </Box>
           </Collapse>
@@ -379,6 +324,7 @@ export default function Games(props) {
           games={games}
           setUserChatDelay={setUserChatDelay}
           forceSideLayout={mobileFullscreenSideLayout}
+          mobileControls={isMobile}
         />
       </Box>
     </Box>

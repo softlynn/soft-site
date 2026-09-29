@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import dayjs from 'dayjs';
+import debounce from 'lodash.debounce';
 import { createComponentHarness, findElements, uiElements } from './componentTestHarness.mjs';
 import { startVisiblePolling } from './visiblePolling.mjs';
 
@@ -11,7 +12,7 @@ const deferred = () => {
   return { promise, resolve, reject };
 };
 
-const setup = async (t, { hidden = false, uploadPoll, readyPoll = async () => null } = {}) => {
+const setup = async (t, { hidden = false, uploadPoll, readyPoll = async () => null, initialLocation, debounceFactory, mobile = true, reduceMotion = true, resultTotal = 0, onRender } = {}) => {
   const listeners = new Set();
   const timers = new Map();
   let timerId = 0;
@@ -20,21 +21,24 @@ const setup = async (t, { hidden = false, uploadPoll, readyPoll = async () => nu
     addEventListener: (name, listener) => { if (name === 'visibilitychange') listeners.add(listener); },
     removeEventListener: (name, listener) => { if (name === 'visibilitychange') listeners.delete(listener); },
   };
-  const location = { pathname: '/', search: '' };
+  const location = { pathname: '/', search: '', ...initialLocation };
+  const navigations = [];
+  const queries = [];
+  const navigate = url => navigations.push(url);
   const clock = {
     setTimeout: callback => { timers.set(++timerId, callback); return timerId; },
     clearTimeout: id => timers.delete(id),
   };
   const harness = await createComponentHarness(new URL('./Vods.js', import.meta.url), {
-    '@mui/material': { ...uiElements, useMediaQuery: () => true },
+    '@mui/material': Object.assign(Object.create(uiElements), { useMediaQuery: () => mobile }),
     '../utils/ErrorBoundary': { default: 'ErrorBoundary' },
     '../utils/Footer': { default: 'Footer' },
     '../utils/Loading': { default: 'Loading' },
     './Vod': { default: 'Vod' },
-    'react-router': { Link: 'Link', useLocation: () => location, useNavigate: () => () => {} },
+    'react-router': { Link: 'Link', useLocation: () => location, useNavigate: () => navigate },
     dayjs: { default: dayjs },
-    'lodash.debounce': { default: callback => Object.assign(callback, { cancel() {} }) },
-    './client': { default: { service: () => ({ find: async () => ({ data: [], total: 0 }) }) } },
+    'lodash.debounce': { default: debounceFactory || (callback => Object.assign(callback, { cancel() {} })) },
+    './client': { default: { service: () => ({ find: async ({ query }) => { queries.push(query); return { data: [], total: resultTotal }; } }) } },
     '../config/site': { START_DATE: '2020-01-01', SOCIAL_LINKS: {}, ENABLE_ADSENSE: false, SITE_TITLE: 'Test' },
     '@mui/icons-material/OpenInNewRounded': { default: 'OpenIcon' },
     '@mui/icons-material/VideoLibraryRounded': { default: 'LibraryIcon' },
@@ -45,17 +49,17 @@ const setup = async (t, { hidden = false, uploadPoll, readyPoll = async () => nu
     './visiblePolling.mjs': { startVisiblePolling: options => startVisiblePolling(options, { document, ...clock }) },
   }, {
     document,
-    window: { ...clock, matchMedia: () => ({ matches: true }) },
+    window: { ...clock, matchMedia: () => ({ matches: reduceMotion }) },
     navigator: {},
     AbortController,
     URLSearchParams,
     ...clock,
     console: { ...console, error() {} },
-  });
+  }, onRender);
   t.after(() => harness.dispose());
   const flush = () => harness.settle();
   return {
-    harness, location, listeners, document, timers, flush,
+    harness, location, listeners, document, timers, flush, queries, navigations,
     async show(isVisible) {
       document.hidden = !isVisible;
       for (const listener of [...listeners]) listener();
@@ -101,6 +105,67 @@ test('archive polling waits for visibility and aborts work when hidden or unmoun
   assert.equal(state.listeners.size, 0);
   assert.equal(state.timers.size, 0);
 });
+
+test('clearing archive filters cancels pending searches and returns to the unfiltered first page', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: new Date('2026-09-29T12:00:00Z') });
+  const state = await setup(t, { uploadPoll: async () => [], initialLocation: { pathname: '/vods', search: '?page=4' }, debounceFactory: debounce });
+  const controls = tree => findElements(tree, node => typeof node.props.handleTitleChange === 'function')[0];
+  let tree = state.harness.render();
+  await state.flush();
+  controls(tree).props.changeFilter({ target: { value: 'Game' } });
+  controls(tree).props.handleTitleChange({ target: { value: 'pending title' } });
+  controls(tree).props.handleGameChange({ target: { value: 'pending game' } });
+  controls(tree).props.setFilterStartDate(dayjs('2021-05-01'));
+  tree = await state.flush();
+  assert.equal(typeof controls(tree).props.onResetFilters, 'function');
+  controls(tree).props.onResetFilters();
+  state.location.search = '?page=1';
+  tree = state.harness.render();
+  await state.flush();
+  const countAfterReset = state.queries.length;
+  t.mock.timers.tick(500);
+  tree = await state.flush();
+  assert.equal(state.queries.length, countAfterReset, 'canceled searches must not trigger a later stale query');
+  assert.equal(controls(tree).props.filter, 'Default');
+  assert.equal(controls(tree).props.filterTitle, '');
+  assert.equal(controls(tree).props.filterGame, '');
+  assert.equal(controls(tree).props.filterStartDate.format('YYYY-MM-DD'), '2020-01-01');
+  assert.equal(state.queries.at(-1).$skip, 0);
+  assert.equal(state.queries.at(-1).$and.length, 1);
+  assert.equal(state.navigations.at(-1), '/vods?page=1');
+});
+
+for (const mobile of [true, false]) {
+  test(`explicit archive pagination scrolls the ${mobile ? 'native' : 'SimpleBar'} container but filters and polls do not`, async (t) => {
+    const scrolls = [];
+    const scroller = { scrollTo: options => scrolls.push({ ...options }) };
+    const state = await setup(t, {
+      uploadPoll: async () => [], initialLocation: { pathname: '/vods' }, mobile, reduceMotion: mobile, resultTotal: 80,
+      onRender: tree => {
+        for (const node of findElements(tree, item => String(item.props.className || '').includes('soft-vods-scroll'))) {
+          const ref = mobile ? node.props.ref : node.props.scrollableNodeProps?.ref;
+          if (ref) ref.current = scroller;
+        }
+      },
+    });
+    state.harness.render();
+    let tree = await state.flush();
+    let pagination = findElements(tree, node => node.type === 'Pagination')[0];
+    pagination.props.onChange({}, 2);
+    assert.deepEqual(scrolls, [{ top: 0, behavior: mobile ? 'auto' : 'smooth' }]);
+    state.location.search = '?page=2';
+    tree = state.harness.render();
+    pagination = findElements(tree, node => node.type === 'Pagination')[0];
+    pagination.props.onChange({}, 2);
+    pagination.props.onChange({ ctrlKey: true }, 3);
+    findElements(tree, node => typeof node.props.changeFilter === 'function')[0].props.changeFilter({ target: { value: 'Game' } });
+    tree = await state.tick();
+    assert.equal(scrolls.length, 1, 'same-page, new-tab navigation, filters and upload polling do not move the page');
+    findElements(tree, node => node.type === 'TextField' && node.props.inputProps?.['aria-label'] === 'Go to page')[0].props.onKeyDown({ key: 'Enter', target: { value: '3' } });
+    assert.equal(scrolls.length, 2);
+    assert.equal(state.navigations.at(-1), '/vods?page=3');
+  });
+}
 
 test('archive retains upload placeholders during a failed status refresh', async (t) => {
   let calls = 0;

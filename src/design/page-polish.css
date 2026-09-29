@@ -1,0 +1,181 @@
+/* Public presentation only; the saved page design and editor remain authoritative. */
+.soft-public-page {
+  scrollbar-width: thin;
+  scrollbar-color: var(--soft-border-subtle) transparent;
+}
+
+.soft-public-page :is(a, button, summary):focus-visible {
+  outline: 2px solid var(--soft-focus);
+  outline-offset: 3px;
+}
+
+.soft-public-page .soft-home-hero a {
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
+}
+
+.soft-public-page .soft-recent-heading-row {
+  margin-bottom: 10px;
+}
+
+.soft-public-page .soft-recent-heading {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -.025em;
+}
+
+.soft-public-page .soft-recent-archive-link {
+  min-height: 44px;
+  padding: 7px 10px;
+  color: var(--soft-muted);
+  font-size: 12px;
+  font-weight: 500;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.soft-public-page .soft-recent-archive-link .MuiButton-startIcon {
+  margin-right: 7px;
+}
+
+.soft-public-page .soft-recent-archive-link .MuiButton-startIcon svg {
+  font-size: 17px;
+}
+
+.soft-public-page .soft-home-sponsor {
+  width: 100%;
+  max-width: 460px;
+  margin-inline: auto;
+  padding: 16px 16px 0;
+  text-align: center;
+}
+
+.soft-public-page .soft-home-sponsor__offer {
+  margin: 0 0 6px;
+  color: var(--soft-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.soft-public-page .soft-home-sponsor__offer strong {
+  color: var(--soft-text);
+  font-weight: 600;
+}
+
+.soft-public-page .soft-home-sponsor__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 4px;
+  color: var(--soft-text);
+  border: 0;
+  border-top: 1px solid var(--soft-border-subtle);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+}
+
+.soft-public-page .soft-home-sponsor__logo {
+  display: grid;
+  place-items: center;
+  flex: 0 0 66px;
+  width: 66px;
+  height: 32px;
+  border-radius: 5px;
+  background: #17151a;
+}
+
+.soft-public-page .soft-home-sponsor__logo img {
+  display: block;
+  width: 56px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.soft-public-page .soft-home-sponsor__identity {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.soft-public-page .soft-home-sponsor__name {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .015em;
+}
+
+.soft-public-page .soft-home-sponsor__domain {
+  overflow: hidden;
+  color: var(--soft-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.soft-public-page .soft-home-sponsor__external {
+  flex: 0 0 auto;
+  font-size: 16px;
+  color: var(--soft-muted);
+  transition: color 160ms ease, transform 160ms ease;
+}
+
+.soft-public-page .soft-site-footer button {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: .01em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .soft-public-page .soft-home-hero a:hover {
+    color: var(--soft-text);
+    text-decoration: underline !important;
+    text-decoration-color: var(--soft-salmon);
+  }
+
+  .soft-public-page .soft-recent-archive-link:hover {
+    color: var(--soft-text);
+    background: var(--soft-surface-soft);
+    box-shadow: none;
+    transform: none;
+  }
+
+  .soft-public-page .soft-home-sponsor__link:hover .soft-home-sponsor__external {
+    color: var(--soft-text);
+    transform: translate(1px, -1px);
+  }
+}
+
+@media (max-width: 599px) {
+  .soft-public-page .soft-recent-heading-row {
+    margin-bottom: 8px;
+  }
+
+  .soft-public-page .soft-recent-heading {
+    font-size: 19px;
+  }
+
+  .soft-public-page .soft-home-sponsor {
+    padding-top: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .soft-public-page .soft-home-hero a,
+  .soft-public-page .soft-recent-archive-link,
+  .soft-public-page .soft-home-sponsor__external,
+  .soft-public-page .soft-site-footer button {
+    transition: none;
+    animation: none;
+  }
+}

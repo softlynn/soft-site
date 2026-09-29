@@ -4,6 +4,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
 import { getChatDelayBounds } from "./chatDelayPreference";
 import MobileDialog from "./MobileDialog";
+import "./chat-viewer.css";
 
 const { min: CHAT_DELAY_MIN, max: CHAT_DELAY_MAX } = getChatDelayBounds();
 
@@ -42,12 +43,12 @@ export default function Settings(props) {
 
   return (
     <MobileDialog open={showModal} onClose={() => setShowModal(false)} fullWidth maxWidth="xs" aria-labelledby="playback-settings-title"
-      PaperProps={{ sx: { m: 2, width: "calc(100% - 32px)", maxHeight: "calc(100dvh - 32px)", borderRadius: "16px" } }}>
-      <DialogTitle id="playback-settings-title" sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, pl: 2, pr: 1, py: 1 }}>
+      PaperProps={{ className: "soft-chat-settings-paper", sx: { m: 2, width: "calc(100% - 32px)", maxHeight: "calc(100dvh - 32px)" } }}>
+      <DialogTitle className="soft-chat-settings-title" id="playback-settings-title" sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, pl: 2.5, pr: 1, py: 1 }}>
         Playback settings
         <IconButton onClick={() => setShowModal(false)} aria-label="Close playback settings" sx={{ width: 44, height: 44 }}><CloseIcon /></IconButton>
       </DialogTitle>
-      <DialogContent sx={{ px: 2, pb: 2 }}>
+      <DialogContent sx={{ px: 2.5, pb: 2.5 }}>
         <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
           <Box sx={{ mt: 1 }}>
             <TextField
@@ -81,7 +82,7 @@ export default function Settings(props) {
           </Box>
         </Box>
 
-        <FormGroup sx={{ mt: 2 }}>
+        <FormGroup className="soft-chat-settings-options" sx={{ mt: 2 }}>
           <FormControlLabel control={<Checkbox checked={showTimestamp} onChange={() => setShowTimestamp(!showTimestamp)} sx={{ width: 44, height: 44 }} />} label="Show timestamps" />
         </FormGroup>
       </DialogContent>

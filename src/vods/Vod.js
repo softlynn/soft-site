@@ -7,7 +7,6 @@ import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat.js";
 import VolumeOffRoundedIcon from "@mui/icons-material/VolumeOffRounded";
 import VolumeUpRoundedIcon from "@mui/icons-material/VolumeUpRounded";
-import SportsEsportsRoundedIcon from "@mui/icons-material/SportsEsportsRounded";
 import { Link } from "react-router";
 import VodReactions from "./VodReactions";
 import { useSiteDesign } from "../design/DesignContext";
@@ -275,9 +274,10 @@ export default function Vod(props) {
           {hasPlayableVod && (
             <Box
               component={Link}
+              className="soft-vod-card__watch-link"
               to={watchHref}
               aria-label={`Watch ${vod.title || "video"}`}
-              sx={{ position: "absolute", inset: 0, zIndex: 3, borderRadius: "inherit", "&:focus-visible": { outline: "2px solid var(--soft-text-primary)", outlineOffset: -3 } }}
+              sx={{ position: "absolute", inset: 0, zIndex: 3, borderRadius: "inherit" }}
             />
           )}
 
@@ -362,50 +362,49 @@ export default function Vod(props) {
           )}
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.5, minWidth: 0 }}>
-          {vod.chapters && vod.chapters.length > 0 && <Chapters vod={vod} />}
-
-          <Box sx={{ minWidth: 0, width: "100%", pr: 0.15 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.45, minWidth: 0 }}>
-              <CustomWidthTooltip title={vod.title} placement="top">
-                <Button
-                  className="soft-vod-card__titlebtn"
-                  component={hasPlayableVod ? Link : "button"}
-                  to={hasPlayableVod ? watchHref : undefined}
-                  sx={{
-                    width: "auto",
-                    flex: 1,
-                    minWidth: 0,
-                    justifyContent: "flex-start",
-                    textAlign: "left",
-                    px: 0.65,
-                    py: 0.45,
-                    borderRadius: "12px",
-                    "&:hover": {
-                      background: "var(--soft-surface)",
-                    },
-                  }}
-                  size="small"
-                  disabled={!hasPlayableVod}
-                >
-                  <Typography
-                    fontWeight={600}
-                    variant="body2"
-                    color="primary"
-                    sx={{ width: "100%", textAlign: "left", lineHeight: 1.45, letterSpacing: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: "2.9em" }}
-                  >
-                    {vod.title}
-                  </Typography>
-                </Button>
-              </CustomWidthTooltip>
-
-              <VodReactions vodId={vod.id} countOnlyLike readOnly compact sx={{ ml: "auto" }} />
-            </Box>
-
-            <Box
+        <Box className="soft-vod-card__content" sx={{ minWidth: 0 }}>
+          <CustomWidthTooltip title={vod.title} placement="top" disableInteractive>
+            <Button
+              className="soft-vod-card__titlebtn"
+              component={hasPlayableVod ? Link : "button"}
+              to={hasPlayableVod ? watchHref : undefined}
               sx={{
-                px: 0.7,
-                mt: 0.15,
+                width: "100%",
+                minWidth: 0,
+                justifyContent: "flex-start",
+                alignItems: "flex-start",
+                textAlign: "left",
+                px: 0.65,
+                py: 0.45,
+                borderRadius: "12px",
+                "&:hover": {
+                  background: "var(--soft-surface)",
+                },
+              }}
+              size="small"
+              disabled={!hasPlayableVod}
+            >
+              <Typography
+                fontWeight={600}
+                variant="body2"
+                color="primary"
+                sx={{ width: "100%", textAlign: "left", lineHeight: 1.4, letterSpacing: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: "2.8em", overflowWrap: "anywhere" }}
+              >
+                {vod.title}
+              </Typography>
+            </Button>
+          </CustomWidthTooltip>
+
+          <Box className="soft-vod-card__details" sx={{ display: "flex", alignItems: "center", gap: 0.5, minWidth: 0 }}>
+            {vod.chapters && vod.chapters.length > 0 && (
+              <Box className="soft-vod-card__chapters">
+                <Chapters vod={vod} />
+              </Box>
+            )}
+            <Box
+              className="soft-vod-card__metadata"
+              sx={{
+                flex: 1,
                 display: "flex",
                 alignItems: "center",
                 gap: 0.45,
@@ -415,7 +414,6 @@ export default function Vod(props) {
             >
               {settings.vodShowGame !== false && primaryGame && (
                 <>
-                  <SportsEsportsRoundedIcon sx={{ fontSize: 14, color: vodAccent, flexShrink: 0 }} />
                   <Typography variant="caption" noWrap sx={{ fontWeight: 500, letterSpacing: 0, minWidth: 0 }}>
                     {primaryGame}
                   </Typography>
@@ -436,6 +434,10 @@ export default function Vod(props) {
               >
                 {dayjs(vod.createdAt).format("MMM D, YYYY")}
               </Typography>
+            </Box>
+
+            <Box className="soft-vod-card__likes" sx={{ flexShrink: 0 }}>
+              <VodReactions vodId={vod.id} countOnlyLike readOnly compact />
             </Box>
           </Box>
         </Box>

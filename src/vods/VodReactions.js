@@ -183,7 +183,7 @@ export default function VodReactions({
     const accentColor = isLike ? "var(--soft-salmon)" : "var(--soft-blue)";
 
     return (
-      <Tooltip key={direction} title={compact ? (isLike ? "Like" : "Dislike") : `Global ${isLike ? "likes" : "dislikes"}`}>
+      <Tooltip key={direction} disableInteractive={viewerControls} title={compact ? (isLike ? "Like" : "Dislike") : `Global ${isLike ? "likes" : "dislikes"}`}>
         <Box
           component="button"
           type="button"

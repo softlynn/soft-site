@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Box, Typography, Tooltip, useMediaQuery, IconButton, Collapse, Divider, Button } from "@mui/material";
+import { Box, Tooltip, useMediaQuery, IconButton, Collapse } from "@mui/material";
 import Loading from "../utils/Loading";
 import { useLocation, useNavigate, useParams } from "react-router";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -8,7 +8,7 @@ import CustomPlayer from "./CustomPlayer";
 import Chat from "./Chat";
 import Chapters from "./VodChapters";
 import ExpandMore from "../utils/CustomExpandMore";
-import CustomWidthTooltip from "../utils/CustomToolTip";
+import ViewerHeader from "./ViewerHeader";
 import NotFound from "../utils/NotFound";
 import { toHMS, convertTimestamp } from "../utils/helpers";
 import CopyTimestampButton from "./CopyTimestampButton";
@@ -42,6 +42,7 @@ export default function Vod(props) {
   const navigate = useNavigate();
   const isPortrait = useMediaQuery("(orientation: portrait)");
   const isMobile = useMediaQuery("(max-width:1024px), (hover: none) and (pointer: coarse)");
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const params = useParams();
   const vodId = props.vodId || params.vodId || params.pageSlug;
   const { type } = props;
@@ -129,7 +130,9 @@ export default function Vod(props) {
 
   return (
     <Box
-      className="soft-vod-watch-shell soft-custom-watch-shell"
+      className="soft-vod-watch-shell soft-custom-watch-shell soft-viewer-page soft-viewer-content"
+      data-mobile={isMobile}
+      data-fullscreen={mobileViewerFullscreen}
       sx={{
         height: fullscreenViewportHeight,
         width: fullscreenViewportWidth,
@@ -146,9 +149,9 @@ export default function Vod(props) {
         backdropFilter: mobileViewerFullscreen ? "blur(6px)" : "none",
       }}
     >
-      <Box sx={{ display: "flex", flexDirection: useStackedMobileLayout ? "column" : "row", height: mobileViewerFullscreen || !useStackedMobileLayout ? "100%" : "auto", minHeight: mobileViewerFullscreen ? "100%" : 0, width: "100%", gap: mobileFullscreenSideLayout ? 0.6 : 0 }}>
+      <Box className="soft-viewer-layout" sx={{ display: "flex", flexDirection: useStackedMobileLayout ? "column" : "row", height: mobileViewerFullscreen || !useStackedMobileLayout ? "100%" : "auto", minHeight: mobileViewerFullscreen ? "100%" : 0, width: "100%", gap: mobileFullscreenSideLayout ? 0.6 : 0 }}>
         <Box
-          className="soft-glass soft-vod-viewer-panel"
+          className="soft-vod-viewer-panel soft-viewer-player-column"
           sx={{
             display: "flex",
             height: useStackedMobileLayout ? "auto" : "100%",
@@ -159,29 +162,21 @@ export default function Vod(props) {
             minWidth: 0,
             overflow: "hidden",
             position: "relative",
-            borderRadius: "20px",
-            p: 0.6,
-            gap: 0.5,
           }}
         >
-          {!isMobile && <Tooltip title="home">
+          {!isMobile && !showMenu && <Tooltip title="Back home">
             <IconButton
+              className="soft-viewer-home-overlay"
+              disableRipple={reducedMotion}
               onClick={() => navigate("/")}
-              aria-label="home"
+              aria-label="Back home"
               sx={{
                 position: "absolute",
                 top: { xs: 10, md: 12 },
                 left: { xs: 10, md: 12 },
                 zIndex: 6,
-                width: 36,
-                height: 36,
-                color: "var(--soft-text-primary)",
-                background: "var(--soft-control-strip-bg)",
-                border: "1px solid var(--soft-control-strip-border)",
-                boxShadow: "var(--soft-control-strip-inset), 0 6px 16px rgba(2,6,18,0.12)",
-                "&:hover": {
-                  background: "var(--soft-control-strip-bg)",
-                },
+                width: 44,
+                height: 44,
               }}
             >
               <HomeIcon fontSize="small" />
@@ -189,10 +184,10 @@ export default function Vod(props) {
           </Tooltip>}
           {isMobile && (
             <Tooltip title={mobileViewerFullscreen ? "Exit fullscreen viewer" : "Open fullscreen with chat"}>
-              <IconButton onClick={handleMobileFullscreenChatToggle} aria-label={mobileViewerFullscreen ? "Exit fullscreen viewer" : "Open fullscreen with chat"}
+              <IconButton className="soft-viewer-fullscreen" disableRipple={reducedMotion} onClick={handleMobileFullscreenChatToggle} aria-label={mobileViewerFullscreen ? "Exit fullscreen viewer" : "Open fullscreen with chat"}
                 sx={{ position: mobileViewerFullscreen ? "fixed" : "absolute", top: mobileViewerFullscreen ? "max(env(safe-area-inset-top), 10px)" : 10,
                   left: mobileViewerFullscreen ? "max(env(safe-area-inset-left), 10px)" : "auto", right: mobileViewerFullscreen ? "auto" : 10, zIndex: mobileViewerFullscreen ? 1201 : 6,
-                  width: 44, height: 44, color: "var(--soft-text-primary)", background: "var(--soft-control-strip-bg)", border: "1px solid var(--soft-control-strip-border)" }}>
+                  width: 44, height: 44 }}>
                 {mobileViewerFullscreen ? <CloseFullscreenIcon fontSize="small" /> : <OpenInFullIcon fontSize="small" />}
               </IconButton>
             </Tooltip>
@@ -207,20 +202,9 @@ export default function Vod(props) {
               display: "grid",
               placeItems: "center",
               position: "relative",
-              borderRadius: "16px",
               overflow: "hidden",
             }}
           >
-            <Box
-              aria-hidden="true"
-              sx={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "radial-gradient(120% 90% at 8% 8%, rgba(255,255,255,0.16), transparent 58%), radial-gradient(110% 90% at 92% 92%, rgba(121,163,230,0.15), transparent 64%), linear-gradient(180deg, rgba(255,255,255,0.04), rgba(17,24,39,0.04))",
-                zIndex: 1,
-              }}
-            />
             <Box
               className="soft-player-frame"
               sx={{
@@ -231,11 +215,9 @@ export default function Vod(props) {
                 },
                 maxHeight: "100%",
                 aspectRatio: "16 / 9",
-                borderRadius: "16px",
                 overflow: "hidden",
                 background: "transparent",
                 minHeight: 0,
-                boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
                 position: "relative",
                 zIndex: 2,
               }}
@@ -244,102 +226,44 @@ export default function Vod(props) {
             </Box>
           </Box>
           {!isMobile && <Box
+            className="soft-viewer-controls-toggle"
             sx={{
               position: "absolute",
               bottom: showMenu ? 8 : 10,
               left: "50%",
               transform: "translateX(-50%)",
               zIndex: 4,
-              borderRadius: "999px",
-              background: "var(--soft-control-strip-bg)",
-              border: "1px solid var(--soft-control-strip-border)",
-              boxShadow: "var(--soft-control-strip-inset), 0 6px 16px rgba(2,6,18,0.14)",
-              p: 0.25,
             }}
           >
             <Tooltip title={showMenu ? "Collapse" : "Expand"}>
-              <ExpandMore expand={showMenu} onClick={handleExpandClick} aria-expanded={showMenu} aria-label="show menu" sx={{ width: 34, height: 34 }}>
+              <ExpandMore expand={showMenu} disableRipple={reducedMotion} onClick={handleExpandClick} aria-expanded={showMenu} aria-label="show menu" sx={{ width: 34, height: 34 }}>
                 <ExpandMoreIcon />
               </ExpandMore>
             </Tooltip>
           </Box>}
-          <Collapse in={isMobile || showMenu} timeout="auto" unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
-            <Box
-              className="soft-vod-viewer-controls"
-              sx={{
-                display: "flex",
-                flexWrap: isMobile ? "wrap" : "nowrap",
-                gap: isMobile ? 0.5 : 0,
-                p: 1,
-                alignItems: "center",
-                borderRadius: "14px",
-                background: "var(--soft-control-strip-bg)",
-                border: "1px solid var(--soft-control-strip-border)",
-                boxShadow: "var(--soft-control-strip-inset)",
-                mx: 0.4,
-                mb: 0.2,
-                ...(isMobile && { "& button, & a.MuiIconButton-root": { minWidth: 44, minHeight: 44 } }),
-              }}
-            >
-              {isMobile && <Tooltip title="Back home"><IconButton onClick={() => navigate("/")} aria-label="Back home"><HomeIcon fontSize="small" /></IconButton></Tooltip>}
-              {chapter && <Chapters chapters={vod.chapters} chapter={chapter} setChapter={setChapter} setTimestamp={setTimestamp} />}
-              <Box sx={{ minWidth: 0, ...(isMobile && { flex: "1 0 100%", order: -1, pb: 0.4 }) }}>
-                <CustomWidthTooltip title={vod.title} disableInteractive={isMobile} disableHoverListener={isMobile}>
-                  <Typography fontWeight={550} variant="body1" noWrap={!isMobile} sx={isMobile ? { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere", lineHeight: 1.4 } : undefined}>{vod.title}</Typography>
-                </CustomWidthTooltip>
-                {vod.vodNotice && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: "warning.main",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 0.4,
-                      px: 0.75,
-                      py: 0.3,
-                      mt: 0.2,
-                      borderRadius: "999px",
-                      background: "rgba(204,111,78,0.10)",
-                      border: "1px solid rgba(204,111,78,0.18)",
-                    }}
-                  >
-                    {vod.vodNotice}
-                  </Typography>
-                )}
-                {originalTwitchVodUrl && (
-                  <Button
-                    component="a"
-                    href={originalTwitchVodUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    size="small"
-                    variant="text"
-                    sx={{ display: "inline-flex", minWidth: 0, mt: 0.2, px: 0, py: 0, color: "text.secondary", fontSize: "0.75rem", fontWeight: 600 }}
-                  >
-                    [open twitch vod]
-                  </Button>
-                )}
-              </Box>
-              <Box sx={{ marginLeft: "auto", display: isMobile ? "contents" : "flex", alignItems: "center" }}>
-                <Box sx={{ ml: 0.5 }}>
+          <Collapse className="soft-viewer-shelf-collapse" in={isMobile || showMenu} timeout={reducedMotion ? 0 : "auto"} unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
+            <Box className="soft-viewer-shelf">
+              <ViewerHeader vod={vod} game={chapter?.name} sourceUrl={originalTwitchVodUrl} isMobile={isMobile} />
+              <Box className="soft-vod-viewer-controls soft-viewer-controls">
+                <Box className="soft-viewer-controls-primary">
+                  {chapter && <Box className="soft-viewer-chapter-control"><Chapters chapters={vod.chapters} chapter={chapter} setChapter={setChapter} setTimestamp={setTimestamp} /></Box>}
+                </Box>
+                <Box className="soft-viewer-controls-secondary">
                   {drive && drive[0] && (
                     <Tooltip title={`Download Vod`}>
-                      <IconButton href={`https://drive.google.com/u/2/open?id=${drive[0].id}`} color="secondary" aria-label="Download Vod" rel="noopener noreferrer" target="_blank">
+                      <IconButton className="soft-viewer-download" disableRipple={reducedMotion} href={`https://drive.google.com/u/2/open?id=${drive[0].id}`} color="secondary" aria-label="Download Vod" rel="noopener noreferrer" target="_blank">
                         <DownloadIcon />
                       </IconButton>
                     </Tooltip>
                   )}
-                </Box>
-                <Box sx={{ ml: 0.5 }}>
                   <CopyTimestampButton disabled={!Number.isFinite(currentTime)}
                     url={Number.isFinite(currentTime) ? `${window.location.origin}${location.pathname}?t=${toHMS(currentTime)}` : ""} />
+                  <Box className="soft-viewer-reactions"><VodReactions vodId={vod.id} compact viewerControls lazy={false} /></Box>
                 </Box>
-                <VodReactions vodId={vod.id} compact lazy={false} sx={{ ml: 0.7 }} />
               </Box>
             </Box>
           </Collapse>
         </Box>
-        {useStackedMobileLayout && <Divider sx={{ my: 0.6, borderColor: "rgba(19,33,56,0.08)" }} />}
         {
           <Chat
             isPortrait={useStackedMobileLayout}
