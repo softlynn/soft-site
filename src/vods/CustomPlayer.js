@@ -7,6 +7,15 @@ import { toSeconds } from "../utils/helpers";
 import { CDN_BASE as CDN_BASE_URL } from "../config/site";
 
 const CDN_BASE = CDN_BASE_URL;
+const RECORDING_MIME_TYPES = {
+  mp4: "video/mp4",
+  m4v: "video/mp4",
+  mkv: "video/x-matroska",
+  mov: "video/quicktime",
+  webm: "video/webm",
+  avi: "video/x-msvideo",
+  ogv: "video/ogg",
+};
 
 export default function Player(props) {
   const { playerRef, setCurrentTime, setPlaying, type, vod, timestamp, delay, setDelay } = props;
@@ -136,13 +145,18 @@ export default function Player(props) {
     setFileError(false);
     const file = evt.target.files[0];
     if (!file) return;
-    if (file.type.split("/")[0] !== "video") {
+    const mimeType = String(file.type || "").toLowerCase();
+    const extension = String(file.name || "").match(/\.([^.]+)$/)?.[1].toLowerCase();
+    const inferredType = Object.hasOwn(RECORDING_MIME_TYPES, extension) ? RECORDING_MIME_TYPES[extension] : null;
+    const mayInferType = !mimeType || mimeType === "application/octet-stream";
+    const videoType = mimeType.startsWith("video/") ? mimeType : mayInferType ? inferredType : null;
+    if (!videoType) {
       return setFileError("It has to be a valid video file!");
     }
 
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
     objectUrlRef.current = URL.createObjectURL(file);
-    setSource({ src: objectUrlRef.current, type: file.type });
+    setSource({ src: objectUrlRef.current, type: videoType });
   };
 
   useEffect(() => {
@@ -187,7 +201,7 @@ export default function Player(props) {
           <Box sx={{ mt: 1 }}>
             <Button variant="contained" component="label">
               Select Video
-              <input type="file" hidden onChange={fileChange} accept="video/*,.mkv" />
+              <input type="file" hidden onChange={fileChange} accept="video/*,.mp4,.m4v,.mkv,.mov,.webm,.avi,.ogv" />
             </Button>
           </Box>
         </Paper>

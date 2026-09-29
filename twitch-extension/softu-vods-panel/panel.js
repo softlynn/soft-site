@@ -46,7 +46,7 @@
         renderVods(vods);
       })
       .catch(function (error) {
-        console.error("softu Twitch panel failed to load VODs:", error);
+        console.error("soft Twitch panel failed to load VODs:", error);
         setError(
           "Could not load recent VODs. Check extension allowlisted domains and that " +
             dataUrl +

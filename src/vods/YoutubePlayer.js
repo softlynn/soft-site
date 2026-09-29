@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import canAutoPlay from "can-autoplay";
 import Youtube from "react-youtube";
+import { getPlaybackTime } from "./replayUtils.mjs";
 
 export default function YoutubePlayer(props) {
-  const { youtube, playerRef, part, setPart, setCurrentTime, delay, setPlaying } = props;
+  const { youtube, playerRef, part, setPart, setCurrentTime, setPlaying } = props;
   const timeUpdateRef = useRef(null);
   const timeUpdateCallbackRef = useRef(null);
 
@@ -22,14 +23,7 @@ export default function YoutubePlayer(props) {
   const timeUpdate = () => {
     if (!playerRef.current) return;
     if (playerRef.current.getPlayerState() !== 1) return;
-    let currentTime = 0;
-    for (let video of youtube) {
-      if (video.part >= part.part) break;
-      currentTime += Number(video.duration) || 0;
-    }
-    currentTime += playerRef.current.getCurrentTime();
-    currentTime += delay;
-    setCurrentTime(currentTime);
+    setCurrentTime(getPlaybackTime(youtube, part.part, playerRef.current.getCurrentTime()));
   };
   timeUpdateCallbackRef.current = timeUpdate;
 

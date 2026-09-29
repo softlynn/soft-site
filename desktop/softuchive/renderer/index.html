@@ -2,297 +2,102 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
-    />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#11100f" />
+    <meta name="theme-color" content="#171819" />
     <title>Softuchive</title>
     <link rel="stylesheet" href="./app.css" />
   </head>
   <body>
     <div class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-mark">
-            <img src="../assets/icon.png" alt="" />
-          </div>
-          <div>
-            <strong>Softuchive</strong>
-            <span>Your stream archive</span>
-          </div>
+      <header class="toolbar">
+        <div class="brand" aria-label="Softuchive">
+          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8.5h14v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zM4 4.5h16v4H4zM9.5 12h5" /></svg></span>
+          <h1>soft<span>archive</span></h1>
         </div>
-
-        <section class="sidebar-status" aria-label="Archive status">
-          <div class="status-orbit" aria-hidden="true">
-            <span></span>
-          </div>
-          <div>
-            <strong id="poll-state-value">Checking…</strong>
-            <p id="poll-stage-value">Waiting for live pipeline state.</p>
-          </div>
-        </section>
-
-        <nav class="section-nav" aria-label="Dashboard sections">
-          <a href="#overview" class="active">
-            <span class="nav-icon" aria-hidden="true">⌂</span>
-            Archive
-          </a>
-          <a href="#automation">
-            <span class="nav-icon" aria-hidden="true">↻</span>
-            Settings
-            <span id="settings-dot" class="dirty-dot" hidden aria-label="Unsaved changes"></span>
-          </a>
-          <a href="#activity">
-            <span class="nav-icon" aria-hidden="true">≋</span>
-            Activity
-          </a>
-        </nav>
-
-        <div class="sidebar-tools">
-          <button id="open-admin-button" class="sidebar-button">
-            <span aria-hidden="true">↗</span>
-            Open admin
-          </button>
-          <button id="view-archive-folder-button" class="sidebar-button">
-            <span aria-hidden="true">⌑</span>
-            Archive folder
-          </button>
-          <button id="view-logs-button" class="sidebar-button">
-            <span aria-hidden="true">≡</span>
-            Pipeline logs
-          </button>
+        <div class="toolbar-actions">
+          <button id="archive-now-button" class="button button-primary" disabled>Check recordings</button>
+          <details class="tools-menu">
+            <summary aria-label="More actions" title="More actions"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /></svg></summary>
+            <div class="tools-popover">
+              <button id="open-admin-button">Open admin</button>
+              <button id="view-archive-folder-button">Recording folder</button>
+              <button id="view-logs-button">Pipeline logs</button>
+            </div>
+          </details>
         </div>
-
-        <p class="sidebar-foot">On this PC · Softu</p>
-      </aside>
-
+      </header>
+      <nav class="section-nav" aria-label="Archive sections">
+        <a href="#overview" class="active" aria-current="page">Uploads</a>
+        <a href="#automation">Settings<span id="settings-dot" class="dirty-dot" hidden aria-label="Unsaved changes"></span></a>
+        <a href="#activity">Activity</a>
+      </nav>
       <main class="workspace">
-        <header class="topbar">
-          <div>
-            <p class="overline" id="page-eyebrow">STREAM → ARCHIVE</p>
-            <h1 id="page-title">Archive</h1>
-          </div>
-          <button id="archive-now-button" class="button button-primary" disabled>
-            <span class="button-icon" aria-hidden="true">↥</span>
-            Check for recordings
-          </button>
-        </header>
-
-        <div id="notice-banner" class="notice" data-tone="info" role="status" aria-live="polite">
-          Loading Softuchive status…
-        </div>
-
-        <section id="overview" class="section-block" aria-labelledby="overview-title">
-          <div class="section-heading">
-            <div>
-              <h2 id="overview-title" class="sr-only">Archive overview</h2>
+        <div id="notice-banner" class="notice" data-tone="info" role="status" aria-live="polite">Loading archive status…</div>
+        <section id="overview" class="section-block" aria-label="Uploads">
+          <article class="current-card">
+            <div class="status-strip" data-status="idle">
+              <span class="status-dot" aria-hidden="true"></span>
+              <div class="status-copy"><h2 id="poll-state-value">Checking…</h2><p id="poll-stage-value">Getting your archive ready.</p></div>
+              <span class="state-pill" id="current-trigger-pill" hidden>Idle</span>
             </div>
-          </div>
-
-          <div class="stats-grid">
-            <article class="stat-card stat-card-featured">
-              <span class="stat-icon" aria-hidden="true">↻</span>
-              <div>
-                <span class="overline">Last check</span>
-                <strong id="last-poll-value">Never</strong>
-                <p id="last-poll-detail-value">No poll has started yet.</p>
-              </div>
-            </article>
-            <article class="stat-card">
-              <span class="stat-icon" aria-hidden="true">☰</span>
-              <div>
-                <span class="overline">Upload queue</span>
-                <strong id="queue-value">0 queued</strong>
-                <p id="queue-detail-value">No uploads are queued.</p>
-              </div>
-            </article>
-            <article class="stat-card">
-              <span class="stat-icon" aria-hidden="true">●</span>
-              <div>
-                <span class="overline">OBS monitor</span>
-                <strong id="obs-running-value">Checking…</strong>
-                <p>Last trigger <span id="obs-trigger-value">never</span></p>
-              </div>
-            </article>
-          </div>
-
-          <article class="card current-card">
-            <div class="card-heading">
-              <div>
-                <h2>Current archive</h2>
-              </div>
-              <span class="state-pill" id="current-trigger-pill">idle</span>
+            <div id="current-transfer" class="current-transfer" hidden>
+              <strong id="current-item-value"></strong>
+              <p id="current-item-detail-value" class="minor"></p>
+              <div class="transfer-numbers"><span id="progress-detail-value"></span><strong id="progress-value">—</strong></div>
+              <div class="progress-track" role="progressbar" aria-label="Current upload progress" aria-valuemin="0" aria-valuemax="100"><div class="progress-fill" id="progress-fill"></div></div>
+              <div class="transfer-footer"><span id="eta-value">—</span><span id="eta-detail-value"></span></div>
             </div>
-
-            <div class="run-layout">
-              <div class="current-copy">
-                <strong id="current-item-value">Ready when you are.</strong>
-                <p id="current-item-detail-value">Waiting for the next poll.</p>
-              </div>
-              <div class="progress-value">
-                <strong id="progress-value">—</strong>
-                <span id="progress-detail-value">No upload in progress.</span>
-              </div>
-            </div>
-
-            <div
-              class="progress-track"
-              role="progressbar"
-              aria-label="Current upload progress"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              <div class="progress-fill" id="progress-fill"></div>
-            </div>
-
-            <div class="run-footer">
-              <div>
-                <span class="overline">Estimated time</span>
-                <strong id="eta-value">—</strong>
-                <p id="eta-detail-value">ETA appears while bytes are moving.</p>
-              </div>
-              <div class="action-row">
-                <button id="pause-resume-button" class="button button-secondary" disabled>Pause</button>
-                <button id="skip-current-vod-button" class="button button-quiet" disabled>Skip VOD</button>
-              </div>
+            <div id="run-actions" class="action-row run-actions" hidden>
+              <button id="pause-resume-button" class="button button-secondary" disabled>Pause</button>
+              <button id="skip-current-vod-button" class="button button-quiet" disabled>Skip VOD</button>
             </div>
           </article>
-          <details class="recovery-panel">
-            <summary>Recover an interrupted archive</summary>
-            <div><p>Clear interrupted markers and start another check. Completed archives are kept.</p><button id="restart-button" class="button button-danger" disabled>Restart interrupted run</button></div>
-          </details>
+          <div class="queue-heading"><h2>Upload queue <span id="queue-value" class="count">0</span></h2><span id="queue-detail-value" class="minor"></span></div>
+          <div class="upload-list" id="upload-list"></div>
+          <footer class="status-footer">
+            <span id="last-poll-detail-value">Last check <strong id="last-poll-value">Never</strong></span>
+            <span>OBS <strong id="obs-running-value">Checking…</strong></span>
+          </footer>
         </section>
-
         <section id="automation" class="section-block" aria-labelledby="automation-title" hidden>
-          <div class="section-heading">
-            <div>
-              <h2 id="automation-title">Automation & storage</h2>
-            </div>
-            <button id="save-settings-button" class="button button-secondary" disabled>Save changes</button>
+          <div class="section-heading"><h2 id="automation-title">Settings</h2><button id="save-settings-button" class="button button-secondary" disabled>Save changes</button></div>
+          <div class="settings-list">
+            <section class="setting-row">
+              <div class="setting-copy"><h3>Automatic checks</h3><p>Check for recordings, even when this app is closed.</p><p class="setting-detail" id="auto-task-detail">Checking schedule…</p></div>
+              <div class="setting-controls">
+                <label class="number-field" for="poll-interval-input"><span>Every</span><input id="poll-interval-input" type="number" min="1" max="720" step="1" aria-label="Check interval in minutes" /><span>min</span></label>
+                <label class="switch"><input id="auto-poll-toggle" type="checkbox" /><span class="switch-track"></span><span class="sr-only">Enable automatic checks (applies immediately)</span></label>
+              </div>
+            </section>
+            <section class="setting-row">
+              <div class="setting-copy"><h3>Check when OBS closes</h3><p>Keep this app open to catch the final recording.</p><p class="setting-detail">Last triggered <span id="obs-trigger-value">Never</span></p></div>
+              <label class="switch"><input id="obs-close-toggle" type="checkbox" /><span class="switch-track"></span><span class="sr-only">Check when OBS closes</span></label>
+            </section>
+            <section class="setting-row storage-row">
+              <div class="setting-copy"><h3>Recording folder</h3><p>Where your finished recordings are saved.</p></div>
+              <button id="pick-folder-button" class="button button-quiet">Choose folder</button>
+              <label class="path-field" for="archive-folder-input"><span class="sr-only">Recording folder</span><input id="archive-folder-input" type="text" spellcheck="false" autocomplete="off" placeholder="D:\Stream Archives" /></label>
+            </section>
+            <section class="setting-row">
+              <div class="setting-copy"><h3>Upload speed limit</h3><p>Leave bandwidth free while you stream.</p><p class="setting-detail" id="upload-control-detail">No speed limit.</p></div>
+              <div class="setting-controls">
+                <label class="number-field" for="upload-throttle-input"><input id="upload-throttle-input" type="number" min="0.01" max="10000" step="any" aria-label="Upload speed limit in megabits per second" /><span>Mbps</span></label>
+                <label class="switch"><input id="upload-throttle-toggle" type="checkbox" /><span class="switch-track"></span><span class="sr-only">Enable upload speed limit</span></label>
+                <button id="apply-upload-control-button" class="button button-quiet" disabled>Apply</button>
+              </div>
+            </section>
           </div>
-
-          <div class="settings-grid">
-            <article class="card setting-card">
-              <div class="setting-topline">
-                <span class="setting-icon" aria-hidden="true">↻</span>
-                <label class="switch">
-                  <input id="auto-poll-toggle" type="checkbox" />
-                  <span class="switch-track"></span>
-                  <span class="sr-only">Enable automatic polling</span>
-                </label>
-              </div>
-              <div>
-                <h3>Automatic checks</h3>
-                <p class="card-copy">Check on a schedule, even when Softuchive is closed. This switch applies immediately.</p>
-              </div>
-              <label class="number-field" for="poll-interval-input">
-                <span>Every</span>
-                <input id="poll-interval-input" type="number" min="1" max="720" step="1" aria-label="Check interval in minutes" />
-                <span>minutes</span>
-              </label>
-              <p class="setting-detail" id="auto-task-detail">Task state unknown.</p>
-            </article>
-
-            <article class="card setting-card">
-              <div class="setting-topline">
-                <span class="setting-icon" aria-hidden="true">◉</span>
-                <label class="switch">
-                  <input id="obs-close-toggle" type="checkbox" />
-                  <span class="switch-track"></span>
-                  <span class="sr-only">Poll when OBS closes</span>
-                </label>
-              </div>
-              <div>
-                <h3>When OBS closes</h3>
-                <p class="card-copy">Check for the final recording when OBS closes. Keep Softuchive open for this to run.</p>
-              </div>
-              <div class="setting-callout">
-                <span class="callout-dot"></span>
-                Applies after saving changes
-              </div>
-            </article>
-
-            <article class="card setting-card">
-              <div class="setting-topline">
-                <span class="setting-icon" aria-hidden="true">⇅</span>
-                <label class="switch">
-                  <input id="upload-throttle-toggle" type="checkbox" />
-                  <span class="switch-track"></span>
-                  <span class="sr-only">Enable upload speed limit</span>
-                </label>
-              </div>
-              <div>
-                <h3>Upload speed limit</h3>
-                <p class="card-copy">Leave bandwidth available for streaming and everything else.</p>
-              </div>
-              <label class="number-field" for="upload-throttle-input">
-                <input id="upload-throttle-input" type="number" min="0.01" max="10000" step="any" aria-label="Upload speed limit in megabits per second" />
-                <span>Mbps</span>
-              </label>
-              <button id="apply-upload-control-button" class="button button-quiet button-small" disabled>Apply limit</button>
-              <p class="setting-detail" id="upload-control-detail">No upload speed limit is active.</p>
-            </article>
-
-            <article class="card setting-card storage-card">
-              <div class="setting-topline">
-                <span class="setting-icon" aria-hidden="true">⌑</span>
-                <button id="pick-folder-button" class="button button-quiet button-small">Choose folder</button>
-              </div>
-              <div>
-                <h3>Recording folder</h3>
-                <p class="card-copy">Where the pipeline looks for finished recordings.</p>
-              </div>
-              <label class="path-field" for="archive-folder-input">
-                <span class="sr-only">Archive folder</span>
-                <input
-                  id="archive-folder-input"
-                  type="text"
-                  spellcheck="false"
-                  autocomplete="off"
-                  placeholder="D:\Stream Archives"
-                />
-              </label>
-            </article>
-          </div>
+          <p class="settings-note">Automatic checks switch on or off immediately. Save changes to update the interval, OBS option, or folder.</p>
         </section>
-
         <section id="activity" class="section-block" aria-labelledby="activity-title" hidden>
-          <div class="section-heading">
-            <div>
-              <h2 id="activity-title" class="sr-only">Queue & activity</h2>
-            </div>
-          </div>
-
-          <div class="activity-grid">
-            <article class="card list-card">
-              <div class="card-heading">
-                <div>
-                  <h3>Upload queue</h3>
-                </div>
-              </div>
-              <div class="upload-list" id="upload-list"></div>
-            </article>
-
-            <article class="card list-card">
-              <div class="card-heading">
-                <div>
-                  <h3>Recent events</h3>
-                </div>
-              </div>
-              <div class="event-list" id="event-list"></div>
-            </article>
-          </div>
-
-          <details class="card summary-card">
-            <summary>Latest run summary</summary>
-            <pre id="summary-box">No archive summary yet.</pre>
-          </details>
+          <div class="section-heading"><h2 id="activity-title">Recent activity</h2></div>
+          <div class="event-list" id="event-list"></div>
+          <details class="disclosure"><summary>Latest run summary</summary><pre id="summary-box">No archive summary yet.</pre></details>
+          <details class="disclosure recovery-panel"><summary>Recover an interrupted archive</summary><div><p>Clear interrupted markers and check again. Completed archives are kept.</p><button id="restart-button" class="button button-danger" disabled>Restart interrupted run</button></div></details>
         </section>
       </main>
     </div>
-
     <script src="./app.js"></script>
   </body>
 </html>

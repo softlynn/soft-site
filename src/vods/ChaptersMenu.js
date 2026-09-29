@@ -3,6 +3,7 @@ import { Box, IconButton, Menu, MenuItem, Typography, Tooltip } from "@mui/mater
 import CustomLink from "../utils/CustomLink";
 import humanize from "humanize-duration";
 import { toHMS } from "../utils/helpers";
+import ChapterArtwork from "./ChapterArtwork";
 
 export default function Chapters(props) {
   const { vod } = props;
@@ -30,7 +31,7 @@ export default function Chapters(props) {
             "&:hover": { background: "rgba(255,255,255,0.7)" },
           }}
         >
-          <img alt="" src={getImage(vod.chapters[0].image)} style={{ width: "32px", height: "42px", borderRadius: "8px" }} />
+          <ChapterArtwork image={vod.chapters[0].image} width={32} height={42} borderRadius="8px" />
         </IconButton>
       </Tooltip>
       <Menu anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
@@ -40,7 +41,7 @@ export default function Chapters(props) {
               <MenuItem>
                 <Box sx={{ display: "flex" }}>
                   <Box sx={{ mr: 1 }}>
-                    <img alt="" src={getImage(data.image)} style={{ width: "40px", height: "53px" }} />
+                    <ChapterArtwork image={data.image} />
                   </Box>
                   <Box sx={{ display: "flex", flexDirection: "column" }}>
                     <Typography color="inherit" variant="body2">{`${data.name ?? "Chapter 1"}`}</Typography>
@@ -55,9 +56,3 @@ export default function Chapters(props) {
     </Box>
   );
 }
-
-//Support older vods that had {width}x{height} in the link
-const getImage = (link) => {
-  if (!link) return `https://static-cdn.jtvnw.net/ttv-static/404_boxart.jpg`;
-  return link.replace("{width}x{height}", "40x53");
-};

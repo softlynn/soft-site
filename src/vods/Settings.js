@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { Box, Modal, Typography, TextField, InputAdornment, FormGroup, FormControlLabel, Checkbox } from "@mui/material";
+import { Box, DialogContent, DialogTitle, IconButton, TextField, InputAdornment, FormGroup, FormControlLabel, Checkbox } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
 import { getChatDelayBounds } from "./chatDelayPreference";
+import MobileDialog from "./MobileDialog";
 
 const { min: CHAT_DELAY_MIN, max: CHAT_DELAY_MAX } = getChatDelayBounds();
 
@@ -39,15 +41,17 @@ export default function Settings(props) {
   };
 
   return (
-    <Modal open={showModal} onClose={() => setShowModal(false)}>
-      <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 350, bgcolor: "background.paper", border: "2px solid #000", boxShadow: 24, p: 4 }}>
-        <Box sx={{ mt: 2, display: "flex", flexDirection: "column", width: "100%" }}>
-          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <Typography variant="h6">Playback Settings</Typography>
-          </Box>
-          <Box sx={{ mt: 2 }}>
+    <MobileDialog open={showModal} onClose={() => setShowModal(false)} fullWidth maxWidth="xs" aria-labelledby="playback-settings-title"
+      PaperProps={{ sx: { m: 2, width: "calc(100% - 32px)", maxHeight: "calc(100dvh - 32px)", borderRadius: "16px" } }}>
+      <DialogTitle id="playback-settings-title" sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, pl: 2, pr: 1, py: 1 }}>
+        Playback settings
+        <IconButton onClick={() => setShowModal(false)} aria-label="Close playback settings" sx={{ width: 44, height: 44 }}><CloseIcon /></IconButton>
+      </DialogTitle>
+      <DialogContent sx={{ px: 2, pb: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
+          <Box sx={{ mt: 1 }}>
             <TextField
-              sx={{ "& input": { fontVariantNumeric: "tabular-nums" } }}
+              sx={{ "& input": { fontVariantNumeric: "tabular-nums", fontSize: 16, minHeight: 44, boxSizing: "border-box" } }}
               InputProps={{
                 endAdornment: <InputAdornment position="start">secs</InputAdornment>,
               }}
@@ -78,9 +82,9 @@ export default function Settings(props) {
         </Box>
 
         <FormGroup sx={{ mt: 2 }}>
-          <FormControlLabel control={<Checkbox checked={showTimestamp} onChange={() => setShowTimestamp(!showTimestamp)} />} label="Show Timestamps" />
+          <FormControlLabel control={<Checkbox checked={showTimestamp} onChange={() => setShowTimestamp(!showTimestamp)} sx={{ width: 44, height: 44 }} />} label="Show timestamps" />
         </FormGroup>
-      </Box>
-    </Modal>
+      </DialogContent>
+    </MobileDialog>
   );
 }

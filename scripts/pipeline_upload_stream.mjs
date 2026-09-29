@@ -1,5 +1,6 @@
 import { Transform } from "node:stream";
 import { setTimeout as delay } from "node:timers/promises";
+import { performance } from "node:perf_hooks";
 
 const SOFTUCHIVE_PAUSE_ERROR_CODE = "SOFTUCHIVE_PAUSED";
 const SOFTUCHIVE_SKIP_ERROR_CODE = "SOFTUCHIVE_SKIPPED";
@@ -23,8 +24,7 @@ export class DynamicUploadThrottleStream extends Transform {
     this.readControl = typeof readControl === "function" ? readControl : async () => ({});
     this.onChunkSent = typeof onChunkSent === "function" ? onChunkSent : null;
     this.activeLimitMbps = null;
-    this.limitStartedAtMs = Date.now();
-    this.bytesSentUnderLimit = 0;
+    this.nextSendAtMs = performance.now();
     this.waitController = new AbortController();
   }
 
@@ -73,8 +73,7 @@ export class DynamicUploadThrottleStream extends Transform {
   resetLimitWindow(limitMbps) {
     if (this.activeLimitMbps === limitMbps) return;
     this.activeLimitMbps = limitMbps;
-    this.limitStartedAtMs = Date.now();
-    this.bytesSentUnderLimit = 0;
+    this.nextSendAtMs = performance.now();
   }
 
   async waitForThrottle(byteLength, limitMbps) {
@@ -85,10 +84,11 @@ export class DynamicUploadThrottleStream extends Transform {
 
     this.resetLimitWindow(limitMbps);
     const bytesPerSecond = (limitMbps * 1_000_000) / 8;
-    this.bytesSentUnderLimit += byteLength;
-    const targetElapsedMs = (this.bytesSentUnderLimit / bytesPerSecond) * 1000;
-    const elapsedMs = Date.now() - this.limitStartedAtMs;
-    const waitForMs = Math.ceil(targetElapsedMs - elapsedMs);
+    const nowMs = performance.now();
+    // A pause or slow destination must not accrue bandwidth credit. Pace each
+    // slice from the current monotonic time instead of averaging over idle time.
+    this.nextSendAtMs = Math.max(nowMs, this.nextSendAtMs) + byteLength / bytesPerSecond * 1000;
+    const waitForMs = Math.ceil(this.nextSendAtMs - nowMs);
     if (waitForMs > 0) {
       await this.wait(waitForMs);
     }

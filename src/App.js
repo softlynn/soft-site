@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate, useParams } from "react-router";
 import { alpha, createTheme, ThemeProvider, responsiveFontSizes } from "@mui/material/styles";
 import { CssBaseline, styled } from "@mui/material";
@@ -226,6 +226,9 @@ export default function App() {
     if (typeof document === "undefined") return;
     document.documentElement.setAttribute("data-soft-theme", effectiveThemeMode);
     document.body.setAttribute("data-soft-theme", effectiveThemeMode);
+    const browserColor = effectiveThemeMode === "dark" ? "#101010" : "#ffe1ad";
+    document.documentElement.style.backgroundColor = browserColor;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", browserColor);
   }, [effectiveThemeMode]);
 
   useEffect(() => {
@@ -322,9 +325,12 @@ function DynamicPageOrVod() {
 
 function SpaRedirectHandler() {
   const navigate = useNavigate();
+  const handoffConsumed = useRef(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || handoffConsumed.current) return;
+    // Consume only the bootstrap handoff; a preserved #/ fragment is page state.
+    handoffConsumed.current = true;
     let target = "";
     try {
       target = window.sessionStorage.getItem("softu-spa-redirect") || "";
@@ -334,13 +340,13 @@ function SpaRedirectHandler() {
     } catch (error) {
       target = "";
     }
-    if (!target && window.location.hash && window.location.hash.startsWith("#/")) {
+    if (window.location.hash && window.location.hash.startsWith("#/")) {
       target = window.location.hash.slice(1);
     }
     if (!target) return;
 
     const parsed = new URL(target, window.location.origin);
-    const nextPath = `${parsed.pathname}${parsed.search}`;
+    const nextPath = `${parsed.pathname}${parsed.search}${parsed.hash}`;
     navigate(nextPath || "/", { replace: true });
   }, [navigate]);
 

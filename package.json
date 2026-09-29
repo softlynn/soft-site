@@ -1,7 +1,7 @@
 {
   "name": "soft-archive-site",
-  "version": "2.1.0",
-  "description": "Softu's VOD archive site, local pipeline, and Softuchive desktop controller.",
+  "version": "2.2.0",
+  "description": "soft's VOD archive site, local pipeline, and Softuchive desktop controller.",
   "author": "softlynn",
   "private": true,
   "homepage": ".",
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.4",
-    "electron": "^43.2.0",
+    "electron": "^43.7.6",
     "electron-builder": "^26.0.12",
     "vite": "^8.1.5"
   },
@@ -52,7 +52,7 @@
     "preview": "vite preview",
     "test": "node --test",
     "softuchive:start": "electron desktop/softuchive",
-    "softuchive:dist": "npm ci --prefix desktop/softuchive --omit=dev --no-audit --no-fund && electron-builder --win portable",
+    "softuchive:dist": "node -e \"require('electron')\" && npm ci --prefix desktop/softuchive --omit=dev --no-audit --no-fund && electron-builder --win portable",
     "youtube:auth": "node scripts/init_youtube_auth.mjs",
     "twitch:auth": "node scripts/init_twitch_user_auth.mjs",
     "archive:run": "node scripts/run_local_archive_pipeline.mjs",

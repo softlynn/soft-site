@@ -19,9 +19,39 @@ It also includes a **local admin bridge** for:
 3. toggling per-VOD Spotify muted notice,
 4. toggling per-VOD chat replay availability.
 
-The repo also ships **Softuchive**, a lightweight Electron dashboard for the local pipeline. It controls manual
+The repo also ships **Softuchive**, a compact Electron controller for the local pipeline. It controls manual
 polls, the scheduled task, OBS-close polling, archive storage, upload throttling, pause/resume, skip, recovery,
 queue progress, and local logs without moving those responsibilities into a second backend.
+
+Softuchive 2.2 keeps the upload queue on its first screen, with settings and activity one tab away.
+Hidden or minimized windows skip periodic view refreshes, and disabled OBS monitoring does not launch process checks.
+Enabled OBS-close monitoring continues while the app is running; closing the app stops that monitor.
+The pipeline and ffmpeg run below normal priority where the operating system allows it.
+
+Phone layouts provide direct archive navigation, search with optional filters, and a compact video/chat
+viewer designed around touch controls and iOS safe areas. Missing VOD thumbnails use soft's voxel image.
+See [the 2.2 release notes](docs/release-2.2.md) for recovery behavior, validation, and known limits.
+
+## Reliable local archiving
+
+- Completed recordings are matched to `softxu`. An unmatched file cannot block newer streams, temporary
+  probe failures are retried, and the currently live Twitch stream is deferred until it finishes.
+- ffmpeg copies the original video and first audio track without re-encoding. A completed preparation
+  copy is reused when its saved identity still matches, so resume does not need another full disk copy.
+- YouTube uploads use bounded resumable chunks and private local checkpoints. After interruption, the
+  worker asks YouTube which bytes it accepted and continues there. An uncertain final response is checked
+  against the existing session. If completion remains uncertain, the worker retains the session and
+  requires verification before creating another upload.
+- Returned video IDs are saved before metadata finalization. The archive index is saved before a recording
+  is marked complete, and pending site publication is retried even when there are no new recordings.
+- Chat export failures leave a retryable backfill while video preservation continues.
+- Pipeline and admin updates share a cross-process transaction store, preserving concurrent flags, parts,
+  and newly archived videos. Interrupted locks are recoverable without admitting two archive workers.
+
+Original recordings are retained. Prepared copies and upload checkpoints remain available while an upload
+is interrupted; preserve `scripts/.tmp` and `scripts/.state` (or your configured locations) for recovery.
+Reuse verifies saved file identity and timestamps without hashing the whole recording on each retry.
+Uploads still use disk and network bandwidth; the app's speed limit lets you reserve bandwidth for streaming.
 
 ## One-time setup
 
@@ -43,30 +73,23 @@ npm run youtube:auth
 Token is saved to:
 `./secrets/youtube_token.json`
 
-4. Generate Twitch user OAuth token (opens browser once):
-
-```bash
-npm run twitch:auth
-```
-
-Token is saved to:
-`./secrets/twitch_user_token.json`
-
-5. Set admin password locally in `.env.local` (gitignored):
+4. Set admin password locally in `.env.local` (gitignored):
 
 ```ini
 ADMIN_PANEL_PASSWORD=<your-private-admin-password>
 ```
 
-6. Configure your local `.env.local` values (`TWITCH_CHANNEL_LOGIN`, paths, site URL, etc.).
+5. Configure your local `.env.local` values (`TWITCH_CHANNEL_LOGIN=softxu`, Twitch app credentials,
+   recording paths, site URL, etc.). The current archive worker uses Twitch app authentication;
+   a Twitch user OAuth token is not required for these archive/admin flows.
 
-7. Install local pipeline scheduled task (every 15 minutes):
+6. Install local pipeline scheduled task (every 15 minutes):
 
 ```bash
 npm run archive:task:install
 ```
 
-8. Optional: install local admin API auto-start hook at login:
+7. Optional: install local admin API auto-start hook at login:
 
 ```bash
 npm run admin:task:install
@@ -78,7 +101,10 @@ If you prefer on-demand only (no login auto-start), remove the hook:
 npm run admin:task:remove
 ```
 
-## Manual run (for testing)
+## Manual archive run
+
+This command uses the configured Twitch, YouTube, and Git services and can upload recordings and publish
+archive data. Use the regression tests below for checks without running the real archive pipeline.
 
 ```bash
 npm run archive:run
@@ -142,25 +168,43 @@ Build the Windows portable app:
 npm run softuchive:dist
 ```
 
-The portable executable is written to `softuchive-dist/`. Softuchive locates the surrounding `soft-site`
-checkout automatically, or it can use `SOFTUCHIVE_REPO_ROOT` when launched from another location. Its icon
+The build prepares the pinned Electron runtime and installs the desktop app's production dependencies.
+The unsigned Windows executable is written to `softuchive-dist/`. It requires the configured `soft-site`
+checkout, its installed dependencies, credentials, and media tools; the archive pipeline is not bundled
+into the executable. Keep it within the checkout's folder tree, or set `SOFTUCHIVE_REPO_ROOT` when launching
+from another location. Its icon
 source is `desktop/softuchive/assets/icon.png`; regenerate the Windows `.ico` file after replacing that PNG:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/generate_softuchive_icon.ps1
 ```
 
-Archive shows the active upload and queue; Settings contains scheduling and storage; Activity contains
-logs and recovery tools. Open admin starts the local bridge on demand, verifies it is ready, and opens
+Uploads shows the active transfer and queue; Settings contains scheduling, storage and speed limits; Activity contains
+recent events and recovery tools. The More actions menu opens logs, the recording folder, and admin.
+Open admin starts the local bridge on demand, verifies it is ready, and opens
 the console. Run `npm run build` after website changes so the local console serves the current UI.
 
+For a paused run, choose **Resume**. After a stopped or failed run, choose **Check recordings**. If a stale
+processing marker keeps a recording out of the queue, open **Activity → Recover an interrupted archive**,
+then click **Restart interrupted run** and **Confirm restart**. Recovery refuses an active run and clears
+processing/paused markers while retaining completed entries and the separate upload-session/cache files.
+A missing cache or uncertain final upload still requires verification; this action cannot resolve it.
+**Pause** stops at the next safe point. **Skip VOD** excludes that recording version from future automatic
+attempts, so use Pause when you intend to continue later.
+
 ## Files produced by automation
+
+These are the default locations; `PIPELINE_STATE_PATH` and `PIPELINE_TMP_DIR` can move pipeline recovery files.
 
 - VOD index: `public/data/vods.json`
 - Chat replay per VOD: `public/data/comments/<twitchVodId>.json`
 - Emotes per VOD: `public/data/emotes/<twitchVodId>.json`
 - Static chat badges: `public/data/badges.json`
 - Pipeline state: `scripts/.state/pipeline-state.json`
+- Pending pipeline publication: `scripts/.state/pipeline-state.json.publish-pending.json`
+- Pending admin VOD publication changes: `scripts/.state/admin-publication.json`
+- Private resumable upload checkpoints: `scripts/.state/upload-sessions/*.json`
+- Prepared stream-copy uploads and manifests: `scripts/.tmp/youtube-upload-audio1/`
 
 ## YouTube metadata template
 
@@ -223,10 +267,12 @@ Use the local console if your browser blocks access from the public HTTPS site t
 and API then share the same origin. Additional public origins must be explicitly listed in
 `ADMIN_ALLOWED_ORIGINS` in `.env.local` (comma-separated). The default listener is loopback only.
 
-Publication writes are never automatically retried after an uncertain network response. Refresh the VOD
-before retrying, because YouTube or the local archive may already have accepted the change.
-Make admin metadata edits between archive runs: the separate pipeline still keeps an in-memory VOD
-snapshot during a run, so cross-process metadata edits are not yet merged safely.
+The browser does not replay admin requests after an uncertain network response. Refresh the VOD before
+retrying, because YouTube or the local archive may already have accepted the change. If a Git push fails,
+saved VOD publication changes remain queued locally and are retried with the next admin VOD change.
+Admin metadata edits and pipeline saves are serialized across processes and merge independent changes.
+Signing out revokes that session, and expired sessions return to sign-in without discarding an open design draft.
+The local design editor uses fallback fonts when external font services are unavailable.
 
 ## Deploy
 

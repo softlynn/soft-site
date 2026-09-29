@@ -1,4 +1,4 @@
-# Softu Twitch Panel Extension (Recent VODs)
+# soft Twitch Panel Extension (Recent VODs)
 
 This is a Twitch **Panel Extension** frontend that shows the 4 most recent published VODs from the archive and links to the site VOD pages.
 

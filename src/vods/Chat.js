@@ -13,7 +13,7 @@ import MessageTooltip from "./MessageTooltip";
 import { BTTV_EMOTE_CDN } from "../config/site";
 import { getBadges, getEmotes, getVodComments } from "../api/vodsApi";
 import ThemeModeToggle from "../utils/ThemeModeToggle";
-import { findReplayEnd, indexEmotes } from "./replayUtils.mjs";
+import { findReplayEnd, getPlaybackTime, indexEmotes } from "./replayUtils.mjs";
 
 const SEVENTV_API = "https://7tv.io/v3";
 const BASE_TWITCH_CDN = "https://static-cdn.jtvnw.net";
@@ -70,7 +70,7 @@ const getFallbackBadgeLabel = (badgeId) => {
 };
 
 export default function Chat(props) {
-  const { isPortrait, vodId, playerRef, playing, userChatDelay, delay, youtube, part, games, chatReplayAvailable = true, forceSideLayout = false, showChat: controlledShowChat, onShowChatChange } = props;
+  const { isPortrait, vodId, playerRef, playing, userChatDelay, delay, youtube, part, games, chatReplayAvailable = true, forceSideLayout = false, mobileControls = false, fillAvailable = false, showChat: controlledShowChat, onShowChatChange } = props;
   const desktopExpandedWidth = "clamp(300px, 22vw, 360px)";
   const desktopCollapsedWidth = "52px";
   const sideLayout = forceSideLayout || !isPortrait;
@@ -79,6 +79,8 @@ export default function Chat(props) {
   const [internalShowChat, setInternalShowChat] = useState(true);
   const showChat = typeof controlledShowChat === "boolean" ? controlledShowChat : internalShowChat;
   const [shownMessages, setShownMessages] = useState([]);
+  const shownCommentsRef = useRef([]);
+  const [chatAssetsRevision, setChatAssetsRevision] = useState(0);
   const comments = useRef([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [commentsCount, setCommentsCount] = useState(0);
@@ -100,6 +102,11 @@ export default function Chat(props) {
   const [showModal, setShowModal] = useState(false);
   const [chatSyncing, setChatSyncing] = useState(false);
   const [historyLimit, setHistoryLimit] = useState(CHAT_VISIBLE_MESSAGE_LIMIT);
+
+  const clearShownMessages = useCallback(() => {
+    shownCommentsRef.current = [];
+    setShownMessages([]);
+  }, []);
 
   const applyCommentsPage = useCallback((response) => {
     const nextComments = Array.isArray(response?.comments) ? response.comments : [];
@@ -140,7 +147,7 @@ export default function Chat(props) {
     comments.current = [];
     cursor.current = null;
     stoppedAtIndex.current = 0;
-    setShownMessages([]);
+    clearShownMessages();
     setCommentsCount(0);
     setCommentsLoaded(false);
     setChatSyncing(false);
@@ -155,7 +162,7 @@ export default function Chat(props) {
       clearInterval(loopRef.current);
       clearTimeout(playRef.current);
     };
-  }, [vodId, part?.part]);
+  }, [vodId, part?.part, clearShownMessages]);
 
   useEffect(() => {
     if (chatRef && chatRef.current) {
@@ -182,6 +189,7 @@ export default function Chat(props) {
         .then((data) => {
           if (disposed || data.error) return;
           badges.current = data;
+          setChatAssetsRevision((revision) => revision + 1);
         })
         .catch((e) => {
           console.error(e);
@@ -198,7 +206,11 @@ export default function Chat(props) {
         .then((response) => response.json())
         .then((data) => {
           if (disposed || !Array.isArray(data.emotes)) return;
-          emotes.current["7tv_emotes"] = (emotes.current["7tv_emotes"] || []).concat(data.emotes);
+          emotes.current = {
+            ...emotes.current,
+            "7tv_emotes": (emotes.current["7tv_emotes"] || []).concat(data.emotes),
+          };
+          if (data.emotes.length > 0) setChatAssetsRevision((revision) => revision + 1);
         })
         .catch((e) => {
           console.error(e);
@@ -210,6 +222,7 @@ export default function Chat(props) {
         .then((data) => {
           if (disposed || data.error) return;
           emotes.current = data.data?.[0] || emotes.current;
+          setChatAssetsRevision((revision) => revision + 1);
         })
         .catch((e) => {
           console.error(e);
@@ -226,12 +239,8 @@ export default function Chat(props) {
     if (!playerRef.current) return 0;
     let time = 0;
     if (youtube) {
-      for (let video of youtube) {
-        if (!video.part) break;
-        if (video.part >= part.part) break;
-        time += Number(video.duration) || 0;
-      }
-      time += playerRef.current.getCurrentTime();
+      time = getPlaybackTime(youtube, part.part, playerRef.current.getCurrentTime());
+      if (time === null) return NaN;
     } else if (games) {
       time += Number(games[part.part - 1]?.start_time) || 0;
       time += playerRef.current.getCurrentTime();
@@ -254,21 +263,27 @@ export default function Chat(props) {
 
   const buildComments = useCallback((options = {}) => {
     const force = Boolean(options?.force);
+    const rebuild = Boolean(options?.rebuild);
     if (!chatReplayAvailable || (!force && document.hidden)) return;
-    if (!playerRef.current || !comments.current || comments.current.length === 0 || stoppedAtIndex.current === null) return;
+    if (!playerRef.current || !comments.current || stoppedAtIndex.current === null) return;
+    if (rebuild ? shownCommentsRef.current.length === 0 : comments.current.length === 0) return;
+    // Keep the reader's visible history stable and bounded while scrolled up.
+    // Replay catches up from the playback clock when they return to the bottom.
+    if (!force && scrollingRef.current) return;
     if (!force && (youtube || games ? playerRef.current.getPlayerState() !== 1 : playerRef.current.paused())) return;
 
     const time = getCurrentTime();
+    if (!Number.isFinite(time)) return;
     const previousTime = lastPlaybackTimeRef.current;
     if (Number.isFinite(previousTime) && Number.isFinite(time) && time + 2 < previousTime) {
       stoppedAtIndex.current = 0;
-      setShownMessages([]);
+      clearShownMessages();
     }
     lastPlaybackTimeRef.current = time;
 
     const lastIndex = findReplayEnd(comments.current, time);
 
-    if (stoppedAtIndex.current === lastIndex) return;
+    if (stoppedAtIndex.current === lastIndex && !rebuild) return;
 
     const fetchNextComments = () => {
       if (!cursor.current) return;
@@ -586,9 +601,10 @@ export default function Chat(props) {
 
     const messages = [];
     const firstIndex = Math.max(stoppedAtIndex.current, lastIndex - historyLimit);
-    for (let i = firstIndex; i < lastIndex; i++) {
-      const comment = comments.current[i];
-      if (!comment.message) continue;
+    const commentsToRender = rebuild
+      ? shownCommentsRef.current
+      : comments.current.slice(firstIndex, lastIndex).filter((comment) => comment.message);
+    for (const comment of commentsToRender) {
       messages.push(
         <Box key={comment.id} ref={createRef()} sx={{ width: "100%" }}>
           <Box sx={{ alignItems: "flex-start", display: "flex", flexWrap: "nowrap", width: "100%", pl: 0.5, pt: 0.5, pr: 0.5 }}>
@@ -616,15 +632,26 @@ export default function Chat(props) {
       );
     }
 
-    newMessages.current = messages;
-
+    // Replacing row markup does not append messages or warrant scrolling.
+    newMessages.current = rebuild ? [] : messages;
+    if (rebuild) {
+      setShownMessages(messages);
+      return;
+    }
+    shownCommentsRef.current = shownCommentsRef.current.concat(commentsToRender).slice(-historyLimit);
     setShownMessages((shownMessages) => {
-      const nextMessages = shownMessages.concat(messages);
-      return scrollingRef.current ? nextMessages : nextMessages.slice(-historyLimit);
+      return shownMessages.concat(messages).slice(-historyLimit);
     });
     stoppedAtIndex.current = lastIndex;
     if (comments.current.length === lastIndex) fetchNextComments();
-  }, [chatReplayAvailable, getCurrentTime, playerRef, youtube, games, showTimestamp, requestComments, historyLimit]);
+  }, [chatReplayAvailable, getCurrentTime, playerRef, youtube, games, showTimestamp, requestComments, historyLimit, clearShownMessages]);
+
+  useEffect(() => {
+    if (chatAssetsRevision === 0) return;
+    // Messages may arrive before their badge/emote files. Refresh existing rows
+    // even while paused, without downloading chat again or duplicating history.
+    buildComments({ force: true, rebuild: true });
+  }, [chatAssetsRevision, buildComments]);
 
   const loop = useCallback(() => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
@@ -662,7 +689,7 @@ export default function Chat(props) {
       if (time - lastComment.content_offset_seconds <= 30 && time > firstComment.content_offset_seconds) {
         if (stoppedComment && stoppedComment.content_offset_seconds - time >= 4) {
           stoppedAtIndex.current = 0;
-          setShownMessages([]);
+          clearShownMessages();
         }
         loop();
         return;
@@ -674,7 +701,7 @@ export default function Chat(props) {
       stoppedAtIndex.current = 0;
       comments.current = [];
       cursor.current = null;
-      setShownMessages([]);
+      clearShownMessages();
       setCommentsCount(0);
       setCommentsLoaded(false);
       setChatSyncing(true);
@@ -684,7 +711,7 @@ export default function Chat(props) {
     return () => {
       stopLoop();
     };
-  }, [playing, vodId, getCurrentTime, loop, chatReplayAvailable, requestComments, getSeekFetchOffset, buildComments]);
+  }, [playing, vodId, getCurrentTime, loop, chatReplayAvailable, requestComments, getSeekFetchOffset, buildComments, clearShownMessages]);
 
   // Initial/setting-change sync: rebuild chat for current player time (works even while paused).
   useEffect(() => {
@@ -696,7 +723,7 @@ export default function Chat(props) {
         const videoTime = getCurrentTime();
         if (!Number.isFinite(videoTime)) return;
         stoppedAtIndex.current = 0;
-        setShownMessages([]);
+        clearShownMessages();
         setCommentsLoaded(false);
         setCommentsCount(0);
         setChatSyncing(true);
@@ -715,7 +742,7 @@ export default function Chat(props) {
     hasInitializedSyncRef.current = true;
     const timer = setTimeout(syncChat, isInitialSync ? 220 : 80);
     return () => clearTimeout(timer);
-  }, [vodId, part?.part, playerRef, getCurrentTime, loop, buildComments, chatReplayAvailable, requestComments, getSeekFetchOffset, playing?.playing, playing?.ready, delay, userChatDelay]);
+  }, [vodId, part?.part, playerRef, getCurrentTime, loop, buildComments, chatReplayAvailable, requestComments, getSeekFetchOffset, playing?.playing, playing?.ready, delay, userChatDelay, clearShownMessages]);
 
   const stopLoop = () => {
     if (loopRef.current !== null) clearInterval(loopRef.current);
@@ -758,17 +785,17 @@ export default function Chat(props) {
     <Box
       className="soft-chat-panel"
       sx={{
-        height: sideLayout ? "100%" : "clamp(320px, 48dvh, 520px)",
+        height: fillAvailable ? "auto" : sideLayout ? "100%" : mobileControls ? "clamp(240px, 36dvh, 360px)" : "clamp(320px, 48dvh, 520px)",
         width: !sideLayout ? "100%" : showChat ? expandedPanelWidth : desktopCollapsedWidth,
         minWidth: !sideLayout ? 0 : showChat ? expandedPanelMinWidth : desktopCollapsedWidth,
-        flex: "0 0 auto",
+        flex: fillAvailable ? "1 1 0" : "0 0 auto",
         transition: "none",
         background: "#151619",
         borderLeft: !sideLayout ? "none" : "1px solid rgba(255,255,255,0.08)",
         color: "rgba(234,242,255,0.96)",
         display: "flex",
         flexDirection: "column",
-        minHeight: 0,
+        minHeight: fillAvailable ? 160 : 0,
         borderRadius: "12px",
         overflow: "hidden",
         boxShadow: "none",
@@ -777,7 +804,9 @@ export default function Chat(props) {
     >
       {showChat ? (
         <>
-          <Box sx={{ display: "grid", alignItems: "center", minHeight: 52, p: 0.75 }}>
+          <Box sx={{ display: "grid", alignItems: "center", minHeight: 52, p: 0.75, flexShrink: 0,
+            ...(mobileControls && { gridTemplateColumns: sideLayout ? "44px minmax(0, 1fr) auto" : "minmax(0, 1fr) auto", columnGap: 0.25,
+              "& button": { minWidth: 44, minHeight: 44 } }) }}>
             {sideLayout && (
               <Box sx={{ justifySelf: "left", gridColumnStart: 1, gridRowStart: 1 }}>
                 <Tooltip title="Hide chat">
@@ -787,12 +816,12 @@ export default function Chat(props) {
                 </Tooltip>
               </Box>
             )}
-            <Box sx={{ justifySelf: "center", gridColumnStart: 1, gridRowStart: 1 }}>
-              <Typography variant="body1" sx={{ color: "inherit", fontWeight: 700 }}>
+            <Box sx={{ justifySelf: mobileControls ? "start" : "center", gridColumnStart: mobileControls && sideLayout ? 2 : 1, gridRowStart: 1, minWidth: 0 }}>
+              <Typography variant="body1" sx={{ color: "inherit", fontWeight: 700, ...(mobileControls && { fontSize: sideLayout ? "0.8rem" : "0.95rem" }) }} noWrap>
                 Chat Replay
               </Typography>
             </Box>
-            <Box sx={{ justifySelf: "end", gridColumnStart: 1, gridRowStart: 1, display: "flex", alignItems: "center", gap: 0.35 }}>
+            <Box sx={{ justifySelf: "end", gridColumnStart: mobileControls ? sideLayout ? 3 : 2 : 1, gridRowStart: 1, display: "flex", alignItems: "center", gap: 0.35 }}>
               <ThemeModeToggle
                 variant="inline"
                 size="small"

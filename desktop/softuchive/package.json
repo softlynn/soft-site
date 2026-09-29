@@ -1,7 +1,7 @@
 {
   "name": "softuchive",
-  "version": "2.1.0",
-  "description": "A lightweight local dashboard for the Softu archive pipeline.",
+  "version": "2.2.0",
+  "description": "A lightweight local dashboard for soft's archive pipeline.",
   "author": "softlynn",
   "private": true,
   "main": "main.cjs",

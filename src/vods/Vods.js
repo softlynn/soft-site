@@ -35,6 +35,7 @@ import Reveal from "../utils/Reveal";
 import { fetchActiveVodUploads } from "../api/uploadStatusApi";
 import { getVodById } from "../api/vodsApi";
 import UploadingVodPlaceholder from "./UploadingVodPlaceholder";
+import { startVisiblePolling } from "./visiblePolling.mjs";
 
 const FILTERS = ["Default", "Date", "Title", "Game"];
 const PLATFORMS = ["All", "Twitch", "Kick"];
@@ -87,11 +88,6 @@ const normalizeUploadVodId = (upload) => {
 
 const countPlayableVodParts = (vod) =>
   (Array.isArray(vod?.youtube) ? vod.youtube : []).filter((part) => String(part?.type || "vod") === "vod" && part?.id).length;
-
-const waitFor = (ms) =>
-  new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
 
 const isVodReadyForSession = (vod, expectedPartNumber) => {
   if (!vod || vod.unpublished) return false;
@@ -291,7 +287,7 @@ export default function Vods() {
   const navigate = useNavigate();
   const location = useLocation();
   const query = new URLSearchParams(location.search);
-  const isMobile = useMediaQuery("(max-width: 900px)");
+  const isMobile = useMediaQuery("(max-width: 899px)");
   const isHomeRoute = location.pathname === "/";
 
   const [vods, setVods] = useState(null);
@@ -307,6 +303,8 @@ export default function Vods() {
   const [filterEndDate, setFilterEndDate] = useState(dayjs());
   const [filterTitle, setFilterTitle] = useState("");
   const [filterGame, setFilterGame] = useState("");
+  const [titleInput, setTitleInput] = useState("");
+  const [gameInput, setGameInput] = useState("");
   const [platform] = useState(PLATFORMS[0]);
   const requestedPage = Number(query.get("page") || 1);
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
@@ -364,32 +362,26 @@ export default function Vods() {
   }, [isHomeRoute]);
 
   useEffect(() => {
-    let isDisposed = false;
-    let intervalId = null;
+    return startVisiblePolling({
+      poll: fetchActiveVodUploads,
+      intervalMs: 5000,
+      onResult: (uploads) => {
+        const nextUploads = Array.isArray(uploads) ? uploads : [];
+        setActiveUploads((previousUploads) => (areActiveUploadsEquivalent(previousUploads, nextUploads) ? previousUploads : nextUploads));
+      },
+      onError: (error) => {
+        console.error("Failed to load active upload placeholders:", error);
+      },
+    });
+  }, [location.pathname, location.search]);
 
-    const loadActiveUploads = async () => {
-      try {
-        const uploads = await fetchActiveVodUploads();
-        if (!isDisposed) {
-          const nextUploads = Array.isArray(uploads) ? uploads : [];
-          setActiveUploads((previousUploads) => (areActiveUploadsEquivalent(previousUploads, nextUploads) ? previousUploads : nextUploads));
-        }
-      } catch (error) {
-        if (!isDisposed) {
-          console.error("Failed to load active upload placeholders:", error);
-          setActiveUploads((previousUploads) => (previousUploads.length === 0 ? previousUploads : []));
-        }
-      }
-    };
-
-    void loadActiveUploads();
-    intervalId = setInterval(loadActiveUploads, 5000);
-
+  useEffect(() => {
+    const watchState = uploadReadyWatchStateRef.current;
     return () => {
-      isDisposed = true;
-      if (intervalId) clearInterval(intervalId);
+      for (const stop of watchState.activeWatchers.values()) stop();
+      watchState.activeWatchers.clear();
     };
-  }, []);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     (Array.isArray(activeUploads) ? activeUploads : []).forEach((upload) => {
@@ -412,53 +404,27 @@ export default function Vods() {
         return;
       }
 
-      const watchToken = { canceled: false };
-      stateRef.activeWatchers.set(sessionId, watchToken);
-
-      void (async () => {
-        try {
-          for (let attempt = 0; attempt < UPLOAD_READY_FETCH_ATTEMPTS; attempt += 1) {
-            if (watchToken.canceled) return;
-
-            try {
-              const vod = await getVodById(twitchVodId, { forceRefresh: true });
-              if (isVodReadyForSession(vod, partNumber)) {
-                if (watchToken.canceled) return;
-
-                stateRef.resolvedSessionIds.add(sessionId);
-                setReadyVodHighlights((previousHighlights) =>
-                  upsertReadyVodHighlight(previousHighlights, {
-                    sessionId,
-                    publishedAtMs: Number.isFinite(Number(upload?.updatedAtMs)) ? Number(upload.updatedAtMs) : Date.now(),
-                    vod,
-                  })
-                );
-                return;
-              }
-            } catch (_error) {
-              // The archive data may still be landing; retry a few times before giving up.
-            }
-
-            if (attempt < UPLOAD_READY_FETCH_ATTEMPTS - 1) {
-              await waitFor(UPLOAD_READY_FETCH_INTERVAL_MS);
-            }
-          }
-        } finally {
-          stateRef.activeWatchers.delete(sessionId);
-        }
-      })();
+      const stop = startVisiblePolling({
+        poll: ({ signal }) => getVodById(twitchVodId, { forceRefresh: true, signal }),
+        intervalMs: UPLOAD_READY_FETCH_INTERVAL_MS,
+        maxAttempts: UPLOAD_READY_FETCH_ATTEMPTS,
+        onResult: (vod) => {
+          if (!isVodReadyForSession(vod, partNumber)) return false;
+          stateRef.resolvedSessionIds.add(sessionId);
+          setReadyVodHighlights((previousHighlights) =>
+            upsertReadyVodHighlight(previousHighlights, {
+              sessionId,
+              publishedAtMs: Number.isFinite(Number(upload?.updatedAtMs)) ? Number(upload.updatedAtMs) : Date.now(),
+              vod,
+            })
+          );
+          return true;
+        },
+        onFinish: () => stateRef.activeWatchers.delete(sessionId),
+      });
+      stateRef.activeWatchers.set(sessionId, stop);
     });
-  }, [activeUploads]);
-
-  useEffect(() => {
-    const watchState = uploadReadyWatchStateRef.current;
-    return () => {
-      for (const watchToken of watchState.activeWatchers.values()) {
-        watchToken.canceled = true;
-      }
-      watchState.activeWatchers.clear();
-    };
-  }, []);
+  }, [activeUploads, location.pathname, location.search]);
 
   useEffect(() => {
     if (!isHomeRoute) return undefined;
@@ -625,6 +591,7 @@ export default function Vods() {
 
   const handleTitleChange = (evt) => {
     const value = evt.target.value;
+    setTitleInput(value);
     if (!value) {
       debouncedSetFilterTitle.cancel();
       setFilterTitle("");
@@ -636,6 +603,7 @@ export default function Vods() {
 
   const handleGameChange = (evt) => {
     const value = evt.target.value;
+    setGameInput(value);
     if (!value) {
       debouncedSetFilterGame.cancel();
       setFilterGame("");
@@ -718,7 +686,7 @@ export default function Vods() {
   const pageContent = (
     <>
       <Box sx={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
-      <Box sx={{ px: { xs: 1.25, sm: 2, md: 2.2 }, pb: 1, flexGrow: 1 }}>
+      <Box className="soft-vods-page-content" sx={{ px: { xs: 1.25, sm: 2, md: 2.2 }, pb: 1, flexGrow: 1 }}>
         {ENABLE_ADSENSE && ADSENSE_CLIENT && ADSENSE_SLOT && (
           <Box sx={{ mt: 1, textAlign: "center" }}>
             <ErrorBoundary>
@@ -985,9 +953,9 @@ export default function Vods() {
                   setFilterStartDate={setFilterStartDate}
                   setFilterEndDate={setFilterEndDate}
                   handleTitleChange={handleTitleChange}
-                  filterTitle={filterTitle}
+                  filterTitle={titleInput}
                   handleGameChange={handleGameChange}
-                  filterGame={filterGame}
+                  filterGame={gameInput}
                 />
               </Suspense>
             </Reveal>
@@ -1002,6 +970,8 @@ export default function Vods() {
                   <Pagination
                     shape="rounded"
                     variant="outlined"
+                    siblingCount={isMobile ? 0 : 1}
+                    boundaryCount={isMobile ? 0 : 1}
                     count={totalPages}
                     disabled={totalPages <= 1}
                     color="primary"
@@ -1032,7 +1002,7 @@ export default function Vods() {
     </>
   );
 
-  if (isHomeRoute) {
+  if (isHomeRoute || isMobile) {
     return (
       <Box className="soft-vods-scroll soft-vods-scroll--native" sx={{ minHeight: 0, height: "100%", overflowY: "auto" }}>
         {pageContent}

@@ -222,6 +222,7 @@ export default function Vod(props) {
             className="thumbnail"
             alt=""
             src={thumbnail}
+            style={thumbnail === Thumbnail ? { objectFit: "contain", backgroundColor: "#f4f3f2" } : undefined}
             onError={() => setThumbnailIndex((index) => Math.min(index + 1, thumbnailCandidates.length - 1))}
             loading={sheen ? "eager" : "lazy"}
             decoding="async"

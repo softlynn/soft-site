@@ -8,6 +8,7 @@ import { spawnSync } from "node:child_process";
 import dotenv from "dotenv";
 import { createAdminConsole, isAllowedAdminOrigin } from "./admin_console.mjs";
 import { serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
+import { mergeArchiveSnapshots, readArchiveDatabase, updateArchiveDatabase } from "./archive_database.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,11 +34,12 @@ const config = {
     String(process.env.GIT_COMMIT_AUTHOR_EMAIL || process.env.GIT_AUTHOR_EMAIL || DEFAULT_GIT_COMMIT_AUTHOR_EMAIL).trim() ||
     DEFAULT_GIT_COMMIT_AUTHOR_EMAIL,
   vodsDataPath: process.env.ARCHIVE_VODS_PATH || path.join(repoRoot, "public", "data", "vods.json"),
+  adminPublicationPath: path.join(repoRoot, "scripts", ".state", "admin-publication.json"),
   siteDesignPath: process.env.SITE_DESIGN_PATH || path.join(repoRoot, "public", "data", "site-design.json"),
   designAssetsPath: process.env.SITE_DESIGN_ASSETS_PATH || path.join(repoRoot, "public", "uploads", "design"),
   youtubeClientSecretPath: process.env.YOUTUBE_CLIENT_SECRET_PATH || path.join(repoRoot, "secrets", "youtube_client_secret.json"),
   youtubeTokenPath: process.env.YOUTUBE_TOKEN_PATH || path.join(repoRoot, "secrets", "youtube_token.json"),
-  adminIdleTimeoutMinutes: Number(process.env.ADMIN_API_IDLE_TIMEOUT_MINUTES || "240"),
+  adminIdleTimeoutMinutes: Number(process.env.ADMIN_API_IDLE_TIMEOUT_MINUTES || "30"),
   spotifyNoticeText: process.env.ADMIN_SPOTIFY_NOTICE_TEXT || "Spotify audio may be muted on this VOD.",
 };
 
@@ -223,14 +225,7 @@ const requireSession = (req) => {
   return token;
 };
 
-const loadVods = async () => {
-  const vods = await readJsonFile(config.vodsDataPath, []);
-  return Array.isArray(vods) ? vods : [];
-};
-
-const saveVods = async (vods) => {
-  await writeJsonFile(config.vodsDataPath, vods);
-};
+const loadVods = () => readArchiveDatabase(config.vodsDataPath);
 
 const loadSiteDesign = async () => {
   const design = await readJsonFile(config.siteDesignPath, {});
@@ -300,10 +295,10 @@ const toRepoRelativeGitPath = (filePath) => {
 };
 
 const commitPathsInWorktree = (worktreeRoot, gitPaths, commitMessage, label) => {
-  const stage = spawnSync("git", ["add", "--", ...gitPaths], { cwd: worktreeRoot, stdio: "inherit" });
+  const stage = spawnSync("git", ["add", "--", ...gitPaths], { cwd: worktreeRoot, stdio: "inherit", windowsHide: true });
   if (stage.status !== 0) fail(`git add failed for ${label}`);
 
-  const checkDiff = spawnSync("git", ["diff", "--cached", "--quiet", "--", ...gitPaths], { cwd: worktreeRoot });
+  const checkDiff = spawnSync("git", ["diff", "--cached", "--quiet", "--", ...gitPaths], { cwd: worktreeRoot, windowsHide: true });
   if (checkDiff.status === 0) {
     log(`No ${label} changes to commit.`);
     return false;
@@ -315,6 +310,7 @@ const commitPathsInWorktree = (worktreeRoot, gitPaths, commitMessage, label) => 
   const commit = spawnSync("git", [...gitCommitIdentityArgs(), "commit", "-m", commitMessage], {
     cwd: worktreeRoot,
     stdio: "inherit",
+    windowsHide: true,
   });
   if (commit.status !== 0) fail("git commit failed");
   return true;
@@ -331,29 +327,50 @@ const publishPathsFromFreshOrigin = async (paths, commitMessage, label) => {
 
   const branch = getPublishBranch();
   const publishRoot = path.join(os.tmpdir(), `soft-site-publish-${Date.now()}-${process.pid}`);
-  const fetch = spawnSync("git", ["fetch", "origin", branch], { cwd: repoRoot, stdio: "inherit" });
+  const fetch = spawnSync("git", ["fetch", "origin", branch], { cwd: repoRoot, stdio: "inherit", windowsHide: true });
   if (fetch.status !== 0) fail(`git fetch origin ${branch} failed`);
 
   const addWorktree = spawnSync("git", ["worktree", "add", "--detach", publishRoot, `origin/${branch}`], {
     cwd: repoRoot,
     stdio: "inherit",
+    windowsHide: true,
   });
   if (addWorktree.status !== 0) fail("git worktree add failed");
 
   try {
+    let vodPublication;
     for (let index = 0; index < sourcePaths.length; index += 1) {
       const targetPath = path.join(publishRoot, gitPaths[index]);
       await ensureDirectory(path.dirname(targetPath));
-      await fs.copyFile(sourcePaths[index], targetPath);
+      if (path.resolve(sourcePaths[index]) === path.resolve(config.vodsDataPath)) {
+        const pending = (await readArchiveDatabase(config.adminPublicationPath)).filter((entry) => entry.gitPath === gitPaths[index]);
+        if (!pending.length) fail("No saved admin change is available to publish. Refresh before trying again.");
+        const remoteVods = await readArchiveDatabase(targetPath);
+        const published = pending.reduce((latest, mutation) => mergeArchiveSnapshots(mutation.base, mutation.proposed, latest), remoteVods);
+        const localAtPublication = await loadVods();
+        await writeJsonFile(targetPath, published);
+        vodPublication = { pending, published, localAtPublication };
+      } else {
+        await fs.copyFile(sourcePaths[index], targetPath);
+      }
     }
 
     const hasCommit = commitPathsInWorktree(publishRoot, gitPaths, commitMessage, label);
-    if (!hasCommit) return;
-
-    const push = spawnSync("git", ["push", "origin", `HEAD:${branch}`], { cwd: publishRoot, stdio: "inherit" });
-    if (push.status !== 0) fail("git push failed");
+    if (hasCommit) {
+      const push = spawnSync("git", ["push", "origin", `HEAD:${branch}`], { cwd: publishRoot, stdio: "inherit", windowsHide: true });
+      if (push.status !== 0) fail("git push failed");
+    }
+    if (vodPublication) {
+      const { pending, published, localAtPublication } = vodPublication;
+      // Bring remote-only rows/parts home without removing local uploads that
+      // have not yet been published, or overwriting a newer local mutation.
+      const reconciled = mergeArchiveSnapshots([], published, localAtPublication);
+      await updateArchiveDatabase(config.vodsDataPath, (latest) => mergeArchiveSnapshots(localAtPublication, reconciled, latest));
+      const publishedIds = new Set(pending.map((entry) => entry.id));
+      await updateArchiveDatabase(config.adminPublicationPath, (entries) => entries.filter((entry) => !publishedIds.has(entry.id)));
+    }
   } finally {
-    spawnSync("git", ["worktree", "remove", "--force", publishRoot], { cwd: repoRoot, stdio: "ignore" });
+    spawnSync("git", ["worktree", "remove", "--force", publishRoot], { cwd: repoRoot, stdio: "ignore", windowsHide: true });
   }
 };
 
@@ -371,17 +388,24 @@ const stageAndPushSiteDesign = async (commitMessage) => {
 };
 
 const updateVod = async (vodId, updater, commitMessage) => {
-  const vods = await loadVods();
-  const index = vods.findIndex((vod) => String(vod.id) === String(vodId));
-  if (index < 0) fail(`VOD ${vodId} not found`);
-
-  const updatedVod = updater({ ...vods[index] });
-  updatedVod.updatedAt = new Date().toISOString();
-  vods[index] = updatedVod;
-
-  await saveVods(vods);
+  let updatedVod;
+  await updateArchiveDatabase(config.vodsDataPath, async (vods) => {
+    const index = vods.findIndex((vod) => String(vod.id) === String(vodId));
+    if (index < 0) throw createApiError(404, `VOD ${vodId} not found`);
+    const base = structuredClone(vods);
+    updatedVod = updater({ ...vods[index] });
+    updatedVod.updatedAt = new Date().toISOString();
+    vods[index] = updatedVod;
+    if (config.autoGitPush) {
+      // Persist the original delta before replacing local data. A failed push
+      // must remain retryable even when the user submits the same value again.
+      const mutation = { id: crypto.randomUUID(), gitPath: toRepoRelativeGitPath(config.vodsDataPath), base, proposed: structuredClone(vods) };
+      await updateArchiveDatabase(config.adminPublicationPath, (entries) => [...entries, mutation]);
+    }
+    return vods;
+  });
   await stageAndPushVodData(commitMessage);
-  return updatedVod;
+  return (await loadVods()).find((vod) => String(vod.id) === String(vodId)) || updatedVod;
 };
 
 const loadYoutubeClient = async () => {
@@ -552,6 +576,17 @@ const withReplacedYoutubeVodParts = (vod, nextVodParts) => {
   return [...nextVodParts, ...nonVodEntries];
 };
 
+const withVodPartVisibility = (vod, videoId, unpublished) => {
+  const currentParts = listOrderedYoutubeVodParts(vod);
+  if (!currentParts.some((part) => String(part.id) === String(videoId))) {
+    throw createApiError(409, "The VOD parts changed while YouTube was responding. Refresh the VOD before continuing.");
+  }
+  const nextParts = renumberVodPartsForSave(currentParts.map((part) =>
+    String(part.id) === String(videoId) ? { ...part, unpublished } : part
+  ));
+  return { ...vod, youtube: withReplacedYoutubeVodParts(vod, nextParts) };
+};
+
 const handleRequest = async (req, res) => {
   markActivity();
   const method = req.method || "GET";
@@ -590,6 +625,13 @@ const handleRequest = async (req, res) => {
 
   if (method === "GET" && pathname === "/session") {
     requireSession(req);
+    sendJson(req, res, 200, { ok: true });
+    return;
+  }
+
+  if (method === "POST" && pathname === "/logout") {
+    const token = requireSession(req);
+    sessions.delete(token);
     sendJson(req, res, 200, { ok: true });
     return;
   }
@@ -804,27 +846,12 @@ const handleRequest = async (req, res) => {
       const youtube = await loadYoutubeClient();
       const youtubeResult = await setYouTubeVideoPrivacy(youtube, targetPart.id, "private");
 
-      const updatedParts = partsWithNumbers.map((part) =>
-        String(part.id) === String(targetPart.id)
-          ? {
-              ...part,
-              unpublished: true,
-              part: toPositiveInt(part.part) || requestedPartNumber,
-            }
-          : part
-      );
-
-      const nextParts = renumberVodPartsForSave(updatedParts);
-      const remainingPublishedParts = nextParts.filter((part) => part.unpublished !== true);
-
       const updatedVod = await updateVod(
         vodPartRoute.vodId,
-        (entry) => ({
-          ...entry,
-          youtube: withReplacedYoutubeVodParts(entry, nextParts),
-        }),
+        (entry) => withVodPartVisibility(entry, targetPart.id, true),
         `chore: unpublish vod ${vodPartRoute.vodId} part ${requestedPartNumber}`
       );
+      const remainingPublishedParts = updatedVod.youtube.filter((part) => isYoutubeVodPart(part) && part.unpublished !== true);
 
       sendJson(req, res, 200, {
         vod: updatedVod,
@@ -882,26 +909,13 @@ const handleRequest = async (req, res) => {
       const youtube = await loadYoutubeClient();
       const youtubeResult = await setYouTubeVideoPrivacy(youtube, targetPart.id, "public");
 
-      const updatedParts = orderedParts.map((part) =>
-        String(part.id) === String(targetPart.id)
-          ? {
-              ...part,
-              unpublished: false,
-            }
-          : part
-      );
-      const nextParts = renumberVodPartsForSave(updatedParts);
-      const republishedPart = nextParts.find((part) => String(part.id) === String(targetPart.id)) || null;
-      const publishedParts = nextParts.filter((part) => part.unpublished !== true);
-
       const updatedVod = await updateVod(
         vodPartRoute.vodId,
-        (entry) => ({
-          ...entry,
-          youtube: withReplacedYoutubeVodParts(entry, nextParts),
-        }),
+        (entry) => withVodPartVisibility(entry, targetPart.id, false),
         `chore: republish vod ${vodPartRoute.vodId} part ${targetPart.id}`
       );
+      const republishedPart = updatedVod.youtube.find((part) => isYoutubeVodPart(part) && String(part.id) === String(targetPart.id));
+      const publishedParts = updatedVod.youtube.filter((part) => isYoutubeVodPart(part) && part.unpublished !== true);
 
       sendJson(req, res, 200, {
         vod: updatedVod,
