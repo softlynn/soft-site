@@ -15,6 +15,7 @@ export default function NotFound() {
 
   return (
     <Box
+      className="soft-not-found"
       sx={{
         minHeight: "100%",
         width: "100%",
@@ -57,11 +58,12 @@ export default function NotFound() {
         <Typography variant="body1" sx={{ color: "var(--soft-muted)", mt: 1, mb: 2 }}>
           {body}
         </Typography>
-        <CustomLink href="/">
-          <Button variant="outlined" sx={{ borderRadius: "999px", px: 2 }}>
+        <Box className="soft-not-found-actions">
+          <Button component={CustomLink} href="/" variant="outlined">
             {buttonLabel}
           </Button>
-        </CustomLink>
+          <Button component={CustomLink} href="/vods" variant="text">Browse archive</Button>
+        </Box>
       </Box>
     </Box>
   );

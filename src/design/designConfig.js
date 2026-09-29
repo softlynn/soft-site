@@ -654,9 +654,9 @@ function RecentVodsRenderer({ title, subtitle, count = 4, showButton = true, sur
         ...getBlockBackgroundSx(styleProps),
       }}
     >
-      <Stack direction={{ xs: "column", md: "row" }} spacing={1} alignItems={{ xs: "flex-start", md: "center" }} justifyContent="space-between" sx={{ mb: 1 }}>
+      <Stack className="soft-recent-heading-row" direction={{ xs: "column", md: "row" }} spacing={1} alignItems={{ xs: "flex-start", md: "center" }} justifyContent="space-between" sx={{ mb: 1 }}>
         <Box>
-          <Typography variant="h5" className="soft-section-heading" sx={{ color: "primary.main" }}>
+          <Typography variant="h5" className="soft-section-heading soft-recent-heading" sx={{ color: "primary.main" }}>
             {cleanText(title, "Recent VODs")}
           </Typography>
           {subtitle && (
@@ -666,7 +666,7 @@ function RecentVodsRenderer({ title, subtitle, count = 4, showButton = true, sur
           )}
         </Box>
         {showButton && (
-          <Button variant="outlined" startIcon={<VideoLibraryRoundedIcon />} onClick={() => navigate("/vods")}>
+          <Button className="soft-recent-archive-link" variant="outlined" startIcon={<VideoLibraryRoundedIcon />} onClick={() => navigate("/vods")}>
             Open VODs
           </Button>
         )}

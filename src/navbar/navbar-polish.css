@@ -1,0 +1,148 @@
+.soft-site-header {
+  --soft-navbar-accent: var(--soft-polish-accent, #92506f);
+}
+
+.soft-site-header .soft-site-logo-button {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+}
+
+.soft-site-header .soft-site-social-link {
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+.soft-site-header :is(.soft-site-logo-button, .soft-site-social-link, .soft-mobile-navigation a, .soft-mobile-header-tools button):focus-visible {
+  outline: 2px solid var(--soft-text);
+  outline-offset: 3px;
+}
+
+.soft-navbar-links-menu .MuiPaper-root {
+  color: var(--soft-text);
+  background: #fffaf4;
+  background-image: none;
+  border: 1px solid var(--soft-border-subtle);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(24, 18, 28, 0.15);
+}
+
+html[data-soft-theme="dark"] .soft-navbar-links-menu .MuiPaper-root {
+  background: #1c1a20;
+}
+
+.soft-navbar-links-menu .MuiMenu-list {
+  padding: 6px;
+}
+
+.soft-navbar-links-menu .MuiMenuItem-root {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.soft-navbar-links-menu .MuiListItemIcon-root {
+  min-width: 32px;
+  color: inherit;
+}
+
+.soft-navbar-links-menu .MuiListItemIcon-root svg {
+  width: 20px;
+  height: 20px;
+}
+
+.soft-navbar-links-menu .MuiMenuItem-root.Mui-focusVisible {
+  outline: 2px solid var(--soft-text);
+  outline-offset: -2px;
+}
+
+@media (max-width: 899px) {
+  .soft-site-header .soft-mobile-header-tools {
+    margin-left: auto;
+    gap: 4px;
+  }
+
+  .soft-site-header .soft-mobile-header-tools :is(.soft-theme-toggle, .soft-navbar-links-button) {
+    min-height: 44px;
+    border: 0;
+    border-radius: 10px;
+    color: var(--soft-text);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .soft-site-header .soft-navbar-links-button {
+    padding: 8px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    text-transform: none;
+  }
+
+  .soft-site-header .soft-navbar-links-button .MuiButton-endIcon {
+    margin-left: 4px;
+    margin-right: -2px;
+  }
+
+  .soft-site-header .soft-mobile-header-tools button:hover {
+    background: rgba(164, 132, 158, 0.1);
+  }
+
+  .soft-site-header .soft-mobile-navigation {
+    width: 100%;
+    gap: 14px;
+    margin-top: 2px;
+    padding: 0 0 2px;
+    border: 0;
+    border-bottom: 1px solid var(--soft-border-subtle);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .soft-site-header .soft-mobile-navigation a {
+    position: relative;
+    flex: 0 0 auto;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: var(--soft-muted);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    text-decoration: none;
+    transform: none;
+    filter: none;
+  }
+
+  .soft-site-header .soft-mobile-navigation a:hover {
+    background: rgba(164, 132, 158, 0.08);
+    opacity: 1;
+  }
+
+  .soft-site-header .soft-mobile-navigation a[aria-current="page"] {
+    color: var(--soft-text);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .soft-site-header .soft-mobile-navigation a[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    bottom: 0;
+    left: 10px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--soft-navbar-accent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .soft-site-header :is(.soft-site-logo-button, .soft-site-social-link, .soft-mobile-navigation a) {
+    transition: none;
+  }
+}

@@ -4,6 +4,7 @@ import CustomLink from "../utils/CustomLink";
 import humanize from "humanize-duration";
 import { toHMS } from "../utils/helpers";
 import ChapterArtwork from "./ChapterArtwork";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 
 export default function Chapters(props) {
   const { vod } = props;
@@ -20,8 +21,12 @@ export default function Chapters(props) {
 
   return (
     <Box>
-      <Tooltip title={vod.chapters[0].name ?? "Chapter 1"}>
+      <Tooltip title="Jump to a chapter" disableInteractive>
         <IconButton
+          className="soft-card-chapter-button"
+          aria-label="Jump to a chapter"
+          aria-haspopup="menu"
+          aria-expanded={Boolean(anchorEl)}
           onClick={handleClick}
           sx={{
             borderRadius: "12px",
@@ -32,13 +37,13 @@ export default function Chapters(props) {
           }}
         >
           <ChapterArtwork image={vod.chapters[0].image} width={32} height={42} borderRadius="8px" />
+          <KeyboardArrowDownRoundedIcon className="soft-card-chapter-chevron" />
         </IconButton>
       </Tooltip>
-      <Menu anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
+      <Menu className="soft-card-chapter-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
         {vod.chapters.map((data, _) => {
           return (
-            <CustomLink key={data.gameId + data.start} href={`${DEFAULT_VOD}?t=${toHMS(data?.start || 1)}`}>
-              <MenuItem>
+              <MenuItem component={CustomLink} key={data.gameId + data.start} href={`${DEFAULT_VOD}?t=${toHMS(data?.start || 1)}`}>
                 <Box sx={{ display: "flex" }}>
                   <Box sx={{ mr: 1 }}>
                     <ChapterArtwork image={data.image} />
@@ -49,7 +54,6 @@ export default function Chapters(props) {
                   </Box>
                 </Box>
               </MenuItem>
-            </CustomLink>
           );
         })}
       </Menu>

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState, useRef } from "react";
-import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, InputLabel, Select, IconButton, Collapse, Button, Grid, Stack } from "@mui/material";
+import { Box, Typography, MenuItem, Tooltip, useMediaQuery, FormControl, Select, IconButton, Collapse, Button, Grid } from "@mui/material";
 import Loading from "../utils/Loading";
 import { useLocation, useNavigate, useParams } from "react-router";
 import YoutubePlayer from "./YoutubePlayer";
@@ -7,13 +7,12 @@ import DownloadIcon from "@mui/icons-material/Download";
 import NotFound from "../utils/NotFound";
 import Chat from "./Chat";
 import Chapters from "./VodChapters";
-import CustomToolTip from "../utils/CustomToolTip";
+import ViewerHeader from "./ViewerHeader";
 import { toHMS, convertTimestamp } from "../utils/helpers";
 import CopyTimestampButton from "./CopyTimestampButton";
 import HomeIcon from "@mui/icons-material/Home";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
-import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import { BRAND_NAME, DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "./VodReactions";
@@ -78,18 +77,13 @@ const buildArchiveRecommendations = (vods, currentVodId, limit = 4) => {
   return recommendations.slice(0, limit);
 };
 
-const formatVodDate = (value) => {
-  const date = new Date(value || 0);
-  if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat(undefined, { month: "long", day: "numeric", year: "numeric" }).format(date);
-};
-
 export default function Vod(props) {
   const { themeMode, setThemeMode } = useContext(ThemeModeContext);
   const location = useLocation();
   const navigate = useNavigate();
   const isPortrait = useMediaQuery("(orientation: portrait)");
   const isMobile = useMediaQuery("(max-width:1024px), (hover: none) and (pointer: coarse)");
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const params = useParams();
   const vodId = props.vodId || params.vodId || params.pageSlug;
   const { type } = props;
@@ -221,19 +215,13 @@ export default function Vod(props) {
   const totalVodParts = youtube.filter((data) => String(data?.type || "vod") === "vod" && data?.id).length;
   const hasMultipleVodParts = totalVodParts > 1;
   const originalTwitchVodUrl = getOriginalTwitchVodUrl(vod);
-  const vodDate = formatVodDate(vod.createdAt);
-  const vodTopics = Array.from(
-    new Set(
-      (Array.isArray(vod.chapters) ? vod.chapters : [])
-        .map((item) => String(item?.name || "").trim())
-        .filter(Boolean)
-    )
-  ).slice(0, 3);
   const showViewerBar = useStackedMobileLayout || chatVisible;
 
   return (
     <Box
-      className="soft-vod-watch-shell"
+      className="soft-vod-watch-shell soft-viewer-page"
+      data-mobile={isMobile}
+      data-fullscreen={mobileViewerFullscreen}
       sx={{
         height: fullscreenViewportHeight,
         width: fullscreenViewportWidth,
@@ -250,6 +238,7 @@ export default function Vod(props) {
     >
       <SimpleBar className="soft-vod-watch-scroll" style={{ height: "100%", width: "100%" }} autoHide>
       <Box
+        className="soft-viewer-content"
         sx={{
           minHeight: "100%",
           height: mobileViewerFullscreen ? "100%" : undefined,
@@ -260,6 +249,7 @@ export default function Vod(props) {
         }}
       >
         <Box
+          className="soft-viewer-layout"
           sx={{
             display: "flex",
             flexDirection: mobileFullscreenSideLayout ? "row" : useStackedMobileLayout ? "column" : "row",
@@ -281,7 +271,7 @@ export default function Vod(props) {
           }}
         >
           <Box
-            className="soft-glass soft-vod-viewer-panel"
+            className="soft-vod-viewer-panel soft-viewer-player-column"
             sx={{
               display: "flex",
               height: useStackedMobileLayout ? "auto" : "100%",
@@ -292,14 +282,23 @@ export default function Vod(props) {
               minWidth: 0,
               overflow: "hidden",
               position: "relative",
-              borderRadius: { xs: "14px", md: "18px" },
-              p: 0.35,
-              gap: 0.3,
             }}
           >
+            {!showViewerBar && (
+              <Tooltip title="Back home">
+                <IconButton className="soft-viewer-home-overlay" onClick={() => navigate("/")} aria-label="Back home" disableRipple={reducedMotion}
+                  sx={{ position: "absolute", top: mobileViewerFullscreen ? "max(env(safe-area-inset-top), 10px)" : 10,
+                    left: mobileViewerFullscreen ? "calc(max(env(safe-area-inset-left), 10px) + 52px)" : 10,
+                    zIndex: 6, width: 44, height: 44 }}>
+                  <HomeIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
             {isMobile && (
               <Tooltip title={mobileViewerFullscreen ? "Exit fullscreen viewer" : "Open fullscreen with chat"}>
                 <IconButton
+                  className="soft-viewer-fullscreen"
+                  disableRipple={reducedMotion}
                   onClick={handleMobileFullscreenChatToggle}
                   aria-label={mobileViewerFullscreen ? "Exit fullscreen viewer" : "Open fullscreen with chat"}
                   sx={{
@@ -310,11 +309,6 @@ export default function Vod(props) {
                     zIndex: mobileViewerFullscreen ? 1201 : 6,
                     width: 44,
                     height: 44,
-                    color: "var(--soft-text-primary)",
-                    background: "var(--soft-control-strip-bg)",
-                    border: "1px solid var(--soft-control-strip-border)",
-                    boxShadow: "var(--soft-control-strip-inset), 0 8px 20px rgba(2,6,18,0.16)",
-                    "&:hover": { background: "var(--soft-control-strip-bg)" },
                   }}
                 >
                   {mobileViewerFullscreen ? <CloseFullscreenIcon fontSize="small" /> : <OpenInFullIcon fontSize="small" />}
@@ -332,20 +326,9 @@ export default function Vod(props) {
                 display: "grid",
                 placeItems: "center",
                 position: "relative",
-                borderRadius: { xs: "12px", md: "16px" },
                 overflow: "hidden",
               }}
             >
-              <Box
-                aria-hidden="true"
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "#111214",
-                  zIndex: 1,
-                }}
-              />
-
               <Box
                 className="soft-player-frame"
                 sx={{
@@ -354,11 +337,9 @@ export default function Vod(props) {
                   maxWidth: "100%",
                   maxHeight: "100%",
                   aspectRatio: "16 / 9",
-                  borderRadius: { xs: "12px", md: "16px" },
                   overflow: "hidden",
                   background: "#080b12",
                   minHeight: 0,
-                  boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), 0 18px 44px rgba(2,6,18,0.18)",
                   position: "relative",
                   zIndex: 2,
                 }}
@@ -367,83 +348,42 @@ export default function Vod(props) {
               </Box>
             </Box>
 
-            <Collapse in={showViewerBar} timeout={220} unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
-              <Box
-                className="soft-vod-viewer-controls"
-                sx={{
-                  display: "flex",
-                  flexWrap: isMobile ? "wrap" : "nowrap",
-                  gap: 0.6,
-                  p: { xs: 0.65, sm: 0.8 },
-                  alignItems: "center",
-                  borderRadius: "14px",
-                  background: "var(--soft-control-strip-bg)",
-                  border: "1px solid var(--soft-control-strip-border)",
-                  boxShadow: "var(--soft-control-strip-inset)",
-                  mx: 0.25,
-                  mb: 0.15,
-                  ...(isMobile && {
-                    "& button, & a.MuiIconButton-root, & .MuiSelect-select": { minWidth: 44, minHeight: 44, boxSizing: "border-box" },
-                    "& .MuiSelect-select": { display: "flex", alignItems: "center", py: 0 },
-                  }),
-                }}
-              >
-                <Tooltip title="Back home">
-                  <IconButton onClick={() => navigate("/")} aria-label="Back home" sx={{ flex: "0 0 auto" }}>
-                    <HomeIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-                {chapter && <Chapters chapters={vod.chapters} chapter={chapter} setPart={setPart} youtube={youtube} setChapter={setChapter} />}
-                <Box sx={{ minWidth: 0, flex: isMobile ? "1 0 100%" : "1 1 220px", order: isMobile ? -1 : 0, pb: isMobile ? 0.4 : 0 }}>
-                  <CustomToolTip title={vod.title} disableInteractive={isMobile} disableHoverListener={isMobile}>
-                    <Typography fontWeight={650} variant="body1" noWrap={!isMobile} sx={isMobile ? { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere", lineHeight: 1.4 } : undefined}>{vod.title}</Typography>
-                  </CustomToolTip>
-                  <Stack direction="row" spacing={0.8} alignItems="center">
-                    {vodDate && (
-                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                        {vodDate}
-                      </Typography>
-                    )}
-                    {vod.vodNotice && (
-                      <Typography variant="caption" sx={{ color: "warning.main", fontWeight: 650 }} noWrap>
-                        {vod.vodNotice}
-                      </Typography>
-                    )}
-                  </Stack>
-                </Box>
-
-                <Box sx={{ ml: "auto", display: isMobile ? "contents" : "flex", alignItems: "center", gap: 0.35 }}>
+            <Collapse className="soft-viewer-shelf-collapse" in={showViewerBar} timeout={reducedMotion ? 0 : 220} unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
+              <Box className="soft-viewer-shelf">
+                <ViewerHeader vod={vod} game={chapter?.name} sourceUrl={originalTwitchVodUrl} isMobile={isMobile} />
+                <Box className="soft-vod-viewer-controls soft-viewer-controls">
+                  <Box className="soft-viewer-controls-primary">
+                    {chapter && <Box className="soft-viewer-chapter-control"><Chapters chapters={vod.chapters} chapter={chapter} setPart={setPart} youtube={youtube} setChapter={setChapter} /></Box>}
                   {hasMultipleVodParts && (
                     <FormControl
-                      variant="outlined"
+                      className="soft-viewer-part-control"
+                      variant="standard"
                       size="small"
-                      sx={{
-                        minWidth: 82,
-                        "& .MuiOutlinedInput-root": {
-                          boxShadow: "0 0 0 1px rgba(212,107,140,0.18), 0 0 16px rgba(212,107,140,0.14)",
-                        },
-                      }}
                     >
-                      <InputLabel id="select-label">Part</InputLabel>
-                      <Select labelId="select-label" label="Part" value={part.part - 1} onChange={handlePartChange}>
+                      <Select disableUnderline value={part.part - 1} onChange={handlePartChange}
+                        inputProps={{ "aria-label": "Part" }}
+                        renderValue={(value) => `Part ${youtube[value]?.part || value + 1} / ${youtube.length}`}>
                         {youtube.map((data, index) => (
-                          <MenuItem key={data.id} value={index}>
+                          <MenuItem key={data.id} value={index} disableRipple={reducedMotion}>
                             {data?.part || index + 1}
                           </MenuItem>
                         ))}
                       </Select>
                     </FormControl>
                   )}
+                  </Box>
+                  <Box className="soft-viewer-controls-secondary">
                   {drive?.[0] && (
                     <Tooltip title="Download VOD">
-                      <IconButton href={`https://drive.google.com/u/2/open?id=${drive[0].id}`} color="secondary" aria-label="Download VOD" rel="noopener noreferrer" target="_blank">
+                      <IconButton className="soft-viewer-download" disableRipple={reducedMotion} href={`https://drive.google.com/u/2/open?id=${drive[0].id}`} color="secondary" aria-label="Download VOD" rel="noopener noreferrer" target="_blank">
                         <DownloadIcon />
                       </IconButton>
                     </Tooltip>
                   )}
                   <CopyTimestampButton disabled={!timelineAvailable || !Number.isFinite(currentTime)}
                     url={Number.isFinite(currentTime) ? `${window.location.origin}${location.pathname}?t=${toHMS(currentTime)}` : ""} />
-                  <VodReactions vodId={vod.id} compact viewerControls lazy={false} sx={{ ml: 0.25 }} />
+                  <Box className="soft-viewer-reactions"><VodReactions vodId={vod.id} compact viewerControls lazy={false} /></Box>
+                  </Box>
                 </Box>
               </Box>
             </Collapse>
@@ -472,72 +412,21 @@ export default function Vod(props) {
         </Box>
 
         {!mobileViewerFullscreen && (
-          <Box component="section" sx={{ width: "100%", maxWidth: 1760, mx: "auto", px: { xs: 0.15, sm: 0.5, md: 0.75 }, pt: { xs: 1.25, md: 1.75 }, pb: 4 }}>
-            <Box
-              className="soft-glass soft-vod-viewer-details"
-              sx={{
-                borderRadius: { xs: "18px", md: "24px" },
-                p: { xs: 1.5, sm: 2, md: 2.5 },
-                display: "flex",
-                alignItems: { xs: "flex-start", md: "center" },
-                flexDirection: { xs: "column", md: "row" },
-                gap: 2,
-              }}
-            >
-              <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Typography variant="overline" sx={{ color: "secondary.main", fontWeight: 800, letterSpacing: "0.12em" }}>
-                  Now watching
-                </Typography>
-                <Typography variant="h4" sx={{ mt: 0.25, lineHeight: 1.12, color: "primary.main" }}>
-                  {vod.title}
-                </Typography>
-                <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={{ mt: 1.25 }}>
-                  {[vodDate, vod.duration, `${totalVodParts} ${totalVodParts === 1 ? "part" : "parts"}`, ...vodTopics]
-                    .filter(Boolean)
-                    .map((label) => (
-                      <Box
-                        key={label}
-                        sx={{
-                          px: 1.05,
-                          py: 0.45,
-                          borderRadius: "999px",
-                          color: "text.secondary",
-                          background: "rgba(255,255,255,0.36)",
-                          border: "1px solid var(--soft-border)",
-                          fontSize: "0.75rem",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {label}
-                      </Box>
-                    ))}
-                </Stack>
-                {vod.description && (
-                  <Typography variant="body2" sx={{ mt: 1.25, maxWidth: 900, color: "text.secondary", whiteSpace: "pre-wrap" }}>
-                    {vod.description}
-                  </Typography>
-                )}
-              </Box>
-
-              <Stack direction={{ xs: "row", md: "column" }} spacing={0.8} useFlexGap flexWrap="wrap">
-                <Button variant="contained" startIcon={<VideoLibraryRoundedIcon />} onClick={() => navigate("/vods")}>
-                  Browse archive
-                </Button>
-                {originalTwitchVodUrl && (
-                  <Button component="a" href={originalTwitchVodUrl} target="_blank" rel="noopener noreferrer" variant="outlined">
-                    Open Twitch VOD
-                  </Button>
-                )}
-              </Stack>
-            </Box>
+          <Box component="section" className="soft-viewer-below" sx={{ width: "100%", maxWidth: 1760, mx: "auto", pb: 4 }}>
+            {vod.description && (
+              <details className="soft-viewer-description">
+                <summary>About this stream</summary>
+                <p>{vod.description}</p>
+              </details>
+            )}
 
             {recommendedVods.length > 0 && (
-              <Box className="soft-vod-recommendations" sx={{ mt: { xs: 2.5, md: 3.5 } }}>
-                <Box sx={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: 2, mb: 1.2, px: 0.5 }}>
-                  <Typography variant="h5" sx={{ color: "primary.main", lineHeight: 1.1 }}>
-                    Recommended
+              <Box className="soft-vod-recommendations soft-viewer-recommendations">
+                <Box className="soft-viewer-recommendations-heading">
+                  <Typography component="h2" variant="h5">
+                    More from {BRAND_NAME}
                   </Typography>
-                  <Button variant="text" onClick={() => navigate("/vods")}>
+                  <Button className="soft-viewer-archive-link" variant="text" disableRipple={reducedMotion} onClick={() => navigate("/vods")}>
                     View all
                   </Button>
                 </Box>

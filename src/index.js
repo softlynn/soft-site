@@ -1,6 +1,8 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import "./css/index.css";
+import "./css/public-polish.css";
+import "./vods/viewer.css";
 import App from "./App";
 import ErrorBoundary from "./utils/ErrorBoundary";
 import "simplebar-react/dist/simplebar.min.css";

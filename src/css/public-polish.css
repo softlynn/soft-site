@@ -1,0 +1,211 @@
+/* Shared details for public pages; the editor and viewer keep their own scope. */
+:root {
+  --soft-polish-ink: #382f35;
+  --soft-polish-muted: #706068;
+  --soft-polish-surface: #fff8ee;
+  --soft-polish-line: rgba(71, 44, 57, .17);
+  --soft-polish-accent: #92506f;
+  --soft-polish-hover: rgba(146, 80, 111, .07);
+}
+
+html[data-soft-theme="dark"] {
+  --soft-polish-ink: #f3ece6;
+  --soft-polish-muted: #b0a4a9;
+  --soft-polish-surface: #161317;
+  --soft-polish-line: rgba(243, 236, 230, .13);
+  --soft-polish-accent: #e9aac6;
+  --soft-polish-hover: rgba(233, 170, 198, .07);
+}
+
+:is(.soft-public-page, .soft-vods-scroll, .soft-site-header, .soft-not-found) {
+  --soft-text: var(--soft-polish-ink);
+  --soft-muted: var(--soft-polish-muted);
+  --soft-border-subtle: var(--soft-polish-line);
+  --soft-focus: var(--soft-polish-accent);
+}
+
+:is(.soft-public-page, .soft-vods-scroll, .soft-site-header, .soft-not-found) :is(a, button, input, summary, [role="combobox"]):focus-visible {
+  outline: 2px solid var(--soft-focus);
+  outline-offset: 3px;
+}
+
+html :is(.soft-public-page, .soft-vods-scroll) .soft-vod-card.soft-glass {
+  padding: 6px;
+  gap: 8px;
+  border: 1px solid var(--soft-polish-line);
+  border-radius: 12px;
+  color: var(--soft-polish-ink);
+  background: var(--soft-polish-surface);
+  box-shadow: none;
+  backdrop-filter: none;
+  transform: none;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+html :is(.soft-public-page, .soft-vods-scroll) .soft-vod-card .soft-vod-card__media {
+  border: 0 !important;
+  border-radius: 8px;
+  box-shadow: none !important;
+  transition: none;
+}
+
+html :is(.soft-public-page, .soft-vods-scroll) .soft-vod-card .soft-vod-card__titlebtn {
+  min-height: 44px;
+  padding: 2px 4px;
+  color: var(--soft-polish-ink);
+  border-radius: 6px;
+  text-transform: none;
+}
+
+html :is(.soft-public-page, .soft-vods-scroll) .soft-vod-card__titlebtn .MuiTypography-root {
+  min-height: 2.8em;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.soft-vod-card .soft-vod-card__details {
+  min-height: 44px;
+  padding-inline: 4px;
+  gap: 4px;
+}
+
+.soft-vod-card .soft-vod-card__chapters {
+  flex-shrink: 0;
+  margin-left: -4px;
+}
+
+.soft-vod-card .soft-vod-card__metadata {
+  color: var(--soft-polish-muted);
+}
+
+.soft-vod-card__metadata .MuiTypography-root {
+  color: inherit;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.soft-vod-card .soft-vod-card__likes {
+  padding-left: 3px;
+  color: var(--soft-polish-muted);
+}
+
+.soft-vod-card .soft-vod-card__likes .MuiBox-root {
+  color: inherit;
+}
+
+.soft-vod-card .soft-vod-card__likes .MuiSvgIcon-root {
+  color: inherit;
+  font-size: 14px;
+}
+
+.soft-vod-card .soft-vod-card__likes .MuiTypography-root {
+  color: inherit;
+  font-size: 11px;
+}
+
+html .soft-vod-card .soft-vod-card__likes .MuiBox-root:hover {
+  color: var(--soft-polish-accent);
+  transform: none;
+}
+
+html .soft-vod-card .soft-vod-card__watch-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -5px;
+  box-shadow: inset 0 0 0 7px rgba(0, 0, 0, .72);
+}
+
+html .soft-vod-card .soft-card-chapter-button {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+}
+
+.soft-card-chapter-button > span[aria-hidden] {
+  width: 24px;
+  height: 32px;
+  border-radius: 3px;
+}
+
+.soft-card-chapter-button .soft-card-chapter-chevron {
+  position: absolute;
+  right: 0;
+  bottom: 3px;
+  width: 13px;
+  height: 13px;
+  color: var(--soft-polish-ink);
+  background: var(--soft-polish-surface);
+  border-radius: 3px;
+}
+
+.soft-card-chapter-menu .MuiPaper-root {
+  color: var(--soft-polish-ink);
+  background: var(--soft-polish-surface);
+  background-image: none;
+  border: 1px solid var(--soft-polish-line);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(10, 6, 12, .18);
+  backdrop-filter: none;
+}
+
+.soft-card-chapter-menu .MuiMenuItem-root {
+  min-height: 44px;
+  padding-block: 8px;
+}
+
+.soft-card-chapter-menu .MuiTypography-caption {
+  color: var(--soft-polish-muted);
+}
+
+.soft-card-chapter-menu :is(a, [role="menuitem"]):focus-visible {
+  outline: 2px solid var(--soft-polish-accent);
+  outline-offset: -3px;
+}
+
+.soft-not-found .soft-not-found-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.soft-not-found-actions .MuiButton-root {
+  min-height: 44px;
+  padding-inline: 18px;
+  border-radius: 8px;
+  color: var(--soft-polish-ink);
+  border-color: var(--soft-polish-line);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html :is(.soft-public-page, .soft-vods-scroll) .soft-vod-card.soft-glass:hover {
+    border-color: var(--soft-polish-accent);
+    box-shadow: none;
+  }
+
+  .soft-vod-card .soft-card-chapter-button:hover {
+    background: var(--soft-polish-hover);
+  }
+}
+
+@media (max-width: 599px) {
+  html :is(.soft-public-page, .soft-vods-scroll) .soft-vod-card__titlebtn .MuiTypography-root {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.soft-public-page, .soft-vods-scroll, .soft-site-header, .soft-not-found) *,
+  :is(.soft-public-page, .soft-vods-scroll, .soft-site-header, .soft-not-found) *::before,
+  :is(.soft-public-page, .soft-vods-scroll, .soft-site-header, .soft-not-found) *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

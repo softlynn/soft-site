@@ -36,6 +36,7 @@ import { fetchActiveVodUploads } from "../api/uploadStatusApi";
 import { getVodById } from "../api/vodsApi";
 import UploadingVodPlaceholder from "./UploadingVodPlaceholder";
 import { startVisiblePolling } from "./visiblePolling.mjs";
+import "./archive-polish.css";
 
 const FILTERS = ["Default", "Date", "Title", "Game"];
 const PLATFORMS = ["All", "Twitch", "Kick"];
@@ -310,6 +311,7 @@ export default function Vods() {
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const limit = isMobile ? 10 : 20;
   const previewLimit = isMobile ? 4 : 8;
+  const archiveScrollRef = useRef(null);
   const uploadReadyWatchStateRef = useRef({
     activeWatchers: new Map(),
     resolvedSessionIds: new Set(),
@@ -560,7 +562,9 @@ export default function Vods() {
   const handleSubmit = (e) => {
     const value = e.target.value;
     if (e.key === "Enter" && Number.isSafeInteger(Number(value)) && Number(value) > 0) {
-      navigate(`${location.pathname}?page=${Math.min(Number(value), totalPages)}`);
+      const nextPage = Math.min(Number(value), totalPages);
+      scrollArchiveToTop(e, nextPage);
+      navigate(`${location.pathname}?page=${nextPage}`);
     }
   };
 
@@ -613,6 +617,28 @@ export default function Vods() {
     debouncedSetFilterGame(value);
   };
 
+  const resetArchiveFilters = () => {
+    debouncedSetFilterTitle.cancel();
+    debouncedSetFilterGame.cancel();
+    setFilter(FILTERS[0]);
+    setTitleInput("");
+    setGameInput("");
+    setFilterTitle("");
+    setFilterGame("");
+    setFilterStartDate(dayjs(START_DATE));
+    setFilterEndDate(dayjs());
+    navigate(`${location.pathname}?page=1`, { replace: true });
+  };
+
+  const scrollArchiveToTop = (event, nextPage) => {
+    if (nextPage === page || event?.ctrlKey || event?.metaKey || event?.altKey || event?.shiftKey || (event?.button != null && event.button !== 0)) return;
+    const node = archiveScrollRef.current;
+    if (!node) return;
+    const behavior = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ? "auto" : "smooth";
+    if (typeof node.scrollTo === "function") node.scrollTo({ top: 0, behavior });
+    else node.scrollTop = 0;
+  };
+
   const totalPages = Math.max(1, Math.ceil((totalVods || 0) / limit));
 
   const renderVodGrid = (list, cardSizes, { edgePad = { xs: 0.05, sm: 0.15, md: 0.25 }, cardWidth } = {}) => {
@@ -623,7 +649,7 @@ export default function Vods() {
     );
     if (list.length === 0) {
       return (
-        <Box className="soft-glass" sx={{ p: 2, borderRadius: "20px", textAlign: "center" }}>
+        <Box className="soft-glass soft-archive-empty" sx={{ p: 2, borderRadius: "20px", textAlign: "center" }}>
           <Typography variant="body1" sx={{ color: "text.secondary" }}>
             No videos found. Try another title, game, or date range.
           </Typography>
@@ -635,6 +661,7 @@ export default function Vods() {
     return (
       <Grid
         container
+        className={!isHomeRoute ? "soft-archive-grid" : undefined}
         spacing={{ xs: 1.2, sm: 1.6, md: 2 }}
         sx={{
           mt: 0.5,
@@ -686,7 +713,7 @@ export default function Vods() {
   const pageContent = (
     <>
       <Box sx={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
-      <Box className="soft-vods-page-content" sx={{ px: { xs: 1.25, sm: 2, md: 2.2 }, pb: 1, flexGrow: 1 }}>
+      <Box className={`soft-vods-page-content${isHomeRoute ? "" : " soft-archive-page"}`} sx={{ px: { xs: 1.25, sm: 2, md: 2.2 }, pb: 1, flexGrow: 1 }}>
         {ENABLE_ADSENSE && ADSENSE_CLIENT && ADSENSE_SLOT && (
           <Box sx={{ mt: 1, textAlign: "center" }}>
             <ErrorBoundary>
@@ -956,6 +983,7 @@ export default function Vods() {
                   filterTitle={titleInput}
                   handleGameChange={handleGameChange}
                   filterGame={gameInput}
+                  onResetFilters={resetArchiveFilters}
                 />
               </Suspense>
             </Reveal>
@@ -964,7 +992,7 @@ export default function Vods() {
               {archiveError ? <Box role="alert" sx={{ p: 3, textAlign: "center" }}><Typography color="text.secondary">{archiveError}</Typography><Button onClick={() => setRetryCount((count) => count + 1)} sx={{ mt: 1 }}>Try again</Button></Box> : renderVodGrid(archiveDisplayList, { xs: 12, sm: 6, lg: 3, xl: 3 })}
             </Box>
 
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 2.5, mb: 1.2, alignItems: "center", flexDirection: isMobile ? "column" : "row" }}>
+            <Box className="soft-archive-pagination" sx={{ display: "flex", justifyContent: "center", mt: 2.5, mb: 1.2, alignItems: "center", flexDirection: isMobile ? "column" : "row" }}>
               {totalPages !== null && (
                 <>
                   <Pagination
@@ -976,6 +1004,7 @@ export default function Vods() {
                     disabled={totalPages <= 1}
                     color="primary"
                     page={page}
+                    onChange={scrollArchiveToTop}
                     renderItem={(item) => <PaginationItem component={Link} to={`${location.pathname}${item.page === 1 ? "" : `?page=${item.page}`}`} {...item} />}
                   />
                   <TextField
@@ -1004,15 +1033,15 @@ export default function Vods() {
 
   if (isHomeRoute || isMobile) {
     return (
-      <Box className="soft-vods-scroll soft-vods-scroll--native" sx={{ minHeight: 0, height: "100%", overflowY: "auto" }}>
+      <Box ref={archiveScrollRef} className="soft-vods-scroll soft-vods-scroll--native" sx={{ minHeight: 0, height: "100%", overflowY: "auto" }}>
         {pageContent}
       </Box>
     );
   }
 
   return (
-    <Suspense fallback={<Box className="soft-vods-scroll soft-vods-scroll--native" sx={{ minHeight: 0, height: "100%", overflowY: "auto" }}>{pageContent}</Box>}>
-      <SimpleBar className="soft-vods-scroll" style={{ minHeight: 0, height: "100%" }}>
+    <Suspense fallback={<Box ref={archiveScrollRef} className="soft-vods-scroll soft-vods-scroll--native" sx={{ minHeight: 0, height: "100%", overflowY: "auto" }}>{pageContent}</Box>}>
+      <SimpleBar className="soft-vods-scroll" scrollableNodeProps={{ ref: archiveScrollRef }} style={{ minHeight: 0, height: "100%" }}>
         {pageContent}
       </SimpleBar>
     </Suspense>

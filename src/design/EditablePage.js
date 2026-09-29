@@ -9,6 +9,7 @@ import { SITE_TITLE } from "../config/site";
 import { useSiteDesign } from "./DesignContext";
 import { designConfig } from "./designConfig";
 import { findDesignPageByPath } from "./defaultDesign";
+import "./page-polish.css";
 
 export default function EditablePage({ path }) {
   const { design, loading } = useSiteDesign();
@@ -28,12 +29,12 @@ export default function EditablePage({ path }) {
 
   return (
     <Box
-      className={`soft-editable-page-scroll${isHomePage ? " soft-editable-page-scroll--home" : ""}`}
+      className={`soft-public-page soft-editable-page-scroll${isHomePage ? " soft-editable-page-scroll--home" : ""}`}
       sx={{
         minHeight: 0,
         height: "100%",
         overflowX: "hidden",
-        overflowY: isHomePage ? { xs: "auto", md: "hidden" } : "auto",
+        overflowY: "auto",
         WebkitOverflowScrolling: "touch",
         overscrollBehaviorY: "contain",
       }}

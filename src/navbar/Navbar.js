@@ -9,6 +9,7 @@ import CustomLink from "../utils/CustomLink";
 import { SOCIAL_LINKS } from "../config/site";
 import { useSiteDesign } from "../design/DesignContext";
 import ThemeModeToggle from "../utils/ThemeModeToggle";
+import "./navbar-polish.css";
 
 const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
 const LOGO_LOOP_SRC = publicAsset("/media/soft-logo-loop-web.webm");
@@ -121,8 +122,9 @@ export default function Navbar() {
         <Box
           component="button"
           type="button"
+          className="soft-site-logo-button"
           onClick={handleLogoClick}
-          aria-label={compact ? "soft home" : "Play soft logo transition and return home"}
+          aria-label="soft home"
           sx={{
             appearance: "none",
             display: "block",
@@ -178,7 +180,7 @@ export default function Navbar() {
         >
           {showVodsButton && (
             <Tooltip title="VODs">
-              <CustomLink href="/vods" aria-label="VODs">
+              <CustomLink className="soft-site-social-link" href="/vods" aria-label="VODs">
                 <Box sx={socialButtonSx}>
                   <VideoLibraryRoundedIcon />
                 </Box>
@@ -188,7 +190,7 @@ export default function Navbar() {
           {showSocials &&
             socials.map(({ path, icon, label }) => (
               <Tooltip key={path} title={label}>
-                <CustomLink href={path} rel="noopener noreferrer" target="_blank" aria-label={label}>
+                <CustomLink className="soft-site-social-link" href={path} rel="noopener noreferrer" target="_blank" aria-label={label}>
                   <Box sx={socialButtonSx}>{icon}</Box>
                 </CustomLink>
               </Tooltip>
@@ -200,6 +202,7 @@ export default function Navbar() {
           {showSocials && socials.length > 0 && (
             <Button
               id="soft-social-links-button"
+              className="soft-navbar-links-button"
               aria-controls={linksAnchor ? "soft-social-links-menu" : undefined}
               aria-haspopup="menu"
               aria-expanded={Boolean(linksAnchor)}
@@ -219,6 +222,7 @@ export default function Navbar() {
 
       <Menu
         id="soft-social-links-menu"
+        className="soft-navbar-links-menu"
         anchorEl={linksAnchor}
         open={Boolean(linksAnchor)}
         onClose={() => setLinksAnchor(null)}

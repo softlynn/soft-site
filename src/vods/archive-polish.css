@@ -1,0 +1,220 @@
+.soft-archive-page,
+.soft-archive-controls,
+.soft-archive-menu,
+.soft-archive-date-paper {
+  --archive-ink: var(--soft-polish-ink, #392f36);
+  --archive-muted: var(--soft-polish-muted, #776871);
+  --archive-line: var(--soft-polish-line, rgba(98, 66, 84, 0.16));
+  --archive-surface: var(--soft-polish-surface, rgba(255, 249, 241, 0.74));
+  --archive-popup-surface: #fff9f1;
+  --archive-accent: var(--soft-polish-accent, #a65d7d);
+  --archive-field-line: #a18b96;
+  color: var(--archive-ink);
+}
+
+html[data-soft-theme="dark"] .soft-archive-page,
+html[data-soft-theme="dark"] .soft-archive-controls,
+html[data-soft-theme="dark"] .soft-archive-menu,
+html[data-soft-theme="dark"] .soft-archive-date-paper {
+  --archive-ink: var(--soft-polish-ink, #f3ece6);
+  --archive-muted: var(--soft-polish-muted, #b4a4ad);
+  --archive-line: var(--soft-polish-line, rgba(231, 199, 216, 0.15));
+  --archive-surface: var(--soft-polish-surface, #211b20);
+  --archive-popup-surface: #211b20;
+  --archive-accent: var(--soft-polish-accent, #e4b5c9);
+  --archive-field-line: #88717f;
+}
+
+.soft-archive-controls {
+  padding: 8px 0 4px;
+  margin-bottom: 8px;
+}
+
+.soft-archive-heading {
+  margin-bottom: 24px;
+}
+
+.soft-archive-controls .soft-archive-title {
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 1.15;
+  color: var(--archive-ink);
+}
+
+.soft-archive-controls .soft-archive-description {
+  margin-top: 8px;
+  color: var(--archive-muted);
+  font-size: 0.85rem;
+}
+
+.soft-archive-search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  align-items: center;
+  gap: 12px;
+}
+
+.soft-archive-controls .MuiOutlinedInput-root {
+  min-height: 48px;
+  color: var(--archive-ink);
+  background: var(--archive-surface);
+  border-radius: 12px;
+}
+
+.soft-archive-controls .MuiInputBase-input {
+  font-size: 16px;
+}
+
+.soft-archive-controls .MuiInputLabel-root,
+.soft-archive-controls .MuiInputAdornment-root,
+.soft-archive-controls .MuiSelect-icon {
+  color: var(--archive-muted);
+}
+
+.soft-archive-controls .MuiOutlinedInput-notchedOutline {
+  border-color: var(--archive-field-line);
+}
+
+.soft-archive-controls .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--archive-accent);
+}
+
+.soft-archive-shortcut {
+  padding: 3px 6px;
+  border: 1px solid var(--archive-line);
+  border-radius: 5px;
+  color: var(--archive-muted);
+  font: 11px "Manrope", "Segoe UI", sans-serif;
+  white-space: nowrap;
+}
+
+.soft-archive-controls .soft-archive-filter-toggle {
+  min-height: 48px;
+  min-width: 44px;
+  padding-inline: 12px;
+  border-radius: 12px;
+  box-shadow: none;
+  color: var(--archive-ink);
+  background: var(--archive-surface);
+  border-color: var(--archive-field-line);
+}
+
+.soft-archive-controls .soft-archive-filter-toggle[aria-expanded="true"] {
+  color: var(--archive-accent);
+  border-color: var(--archive-accent);
+}
+
+.soft-archive-page .soft-archive-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding-inline: 0;
+}
+
+.soft-archive-grid > .MuiGrid-root {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  flex-basis: auto;
+}
+
+@media (min-width: 600px) {
+  .soft-archive-page .soft-archive-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .soft-archive-page .soft-archive-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.soft-archive-extra-fields {
+  padding-top: 16px;
+  max-width: 600px;
+}
+
+.soft-archive-results-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 20px;
+  min-height: 56px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--archive-line);
+}
+
+.soft-archive-results-summary > .MuiTypography-root,
+.soft-archive-active-filter > .MuiTypography-root {
+  color: var(--archive-muted);
+  font-size: 0.78rem;
+}
+
+.soft-archive-active-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.soft-archive-active-filter > .MuiTypography-root {
+  min-width: 0;
+  max-width: 34ch;
+}
+
+.soft-archive-active-filter .MuiButton-root {
+  flex-shrink: 0;
+  min-height: 36px;
+  color: var(--archive-accent);
+  font-size: 0.76rem;
+}
+
+html .soft-archive-menu.MuiPaper-root,
+html .soft-archive-date-paper.MuiPaper-root {
+  color: var(--archive-ink);
+  background-color: var(--archive-popup-surface);
+  background-image: none;
+  border: 1px solid var(--archive-line);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(25, 14, 23, 0.16);
+}
+
+.soft-archive-page .soft-archive-empty.soft-glass {
+  padding-block: 40px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.soft-archive-pagination .MuiPaginationItem-root {
+  border-color: var(--archive-line);
+  color: var(--archive-ink);
+  border-radius: 10px;
+}
+
+.soft-archive-controls button:focus-visible,
+.soft-archive-pagination a:focus-visible {
+  outline: 2px solid var(--archive-accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 899px) {
+  .soft-archive-heading { margin-bottom: 20px; }
+  .soft-archive-search-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+}
+
+@media (max-width: 599px) {
+  .soft-archive-heading { margin-bottom: 16px; }
+  .soft-archive-controls .soft-archive-description { display: none; }
+  .soft-archive-results-summary { min-height: 44px; }
+}
+
+@media (max-width: 899px), (pointer: coarse) {
+  .soft-archive-active-filter .MuiButton-root { min-height: 44px; }
+  .soft-archive-pagination .MuiPaginationItem-root { min-width: 44px; height: 44px; }
+}

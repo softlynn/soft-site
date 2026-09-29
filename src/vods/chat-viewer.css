@@ -1,0 +1,233 @@
+.soft-chat-viewer,
+.soft-chat-settings-paper {
+  --chat-surface: var(--viewer-chat-surface, rgba(255, 249, 240, 0.9));
+  --chat-dialog-surface: #fff9f0;
+  --chat-ink: var(--viewer-chat-text, #3c3037);
+  --chat-muted: var(--viewer-chat-muted, #7c6972);
+  --chat-line: var(--viewer-chat-line, rgba(109, 77, 89, 0.13));
+  --chat-field-line: #9d818d;
+  --chat-focus: #965170;
+  --chat-hover: rgba(152, 95, 119, 0.08);
+  --chat-accent: #a75e7c;
+  --chat-control-size: 36px;
+}
+
+html[data-soft-theme="dark"] .soft-chat-viewer,
+html[data-soft-theme="dark"] .soft-chat-settings-paper {
+  --chat-surface: var(--viewer-chat-surface, rgba(29, 26, 31, 0.92));
+  --chat-dialog-surface: #231f25;
+  --chat-ink: var(--viewer-chat-text, #ede3d8);
+  --chat-muted: var(--viewer-chat-muted, #b6a5ad);
+  --chat-line: var(--viewer-chat-line, rgba(237, 207, 221, 0.12));
+  --chat-field-line: #8d7884;
+  --chat-focus: #f0bfd3;
+  --chat-hover: rgba(228, 174, 196, 0.07);
+  --chat-accent: #e4b3c6;
+}
+
+html .soft-chat-panel.soft-chat-viewer {
+  color: var(--chat-ink);
+  background: var(--chat-surface);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html .soft-chat-panel.soft-chat-viewer[data-chat-layout="side"] {
+  border-inline-start: 1px solid var(--chat-line);
+}
+
+html .soft-chat-panel.soft-chat-viewer[data-chat-layout="stacked"] {
+  border-block-start: 1px solid var(--chat-line);
+}
+
+.soft-chat-viewer[data-mobile-controls="true"] {
+  --chat-control-size: 44px;
+}
+
+.soft-chat-viewer .soft-chat-header {
+  display: grid;
+  align-items: center;
+  column-gap: 4px;
+  min-height: 57px;
+  padding: 5px 10px;
+  flex-shrink: 0;
+}
+
+.soft-chat-viewer .soft-chat-title {
+  color: var(--chat-ink);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.soft-chat-actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 0;
+}
+
+.soft-chat-viewer .soft-chat-header .MuiIconButton-root {
+  width: var(--chat-control-size);
+  height: var(--chat-control-size);
+  min-width: var(--chat-control-size);
+  min-height: var(--chat-control-size);
+  padding: 8px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--chat-muted);
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .soft-chat-viewer .soft-chat-header .MuiIconButton-root:hover {
+    color: var(--chat-ink);
+    background: var(--chat-hover);
+  }
+}
+
+.soft-chat-viewer .soft-chat-header .MuiIconButton-root:focus-visible,
+.soft-chat-viewer .soft-chat-history:focus-visible,
+.soft-chat-resume .MuiButton-root:focus-visible,
+.soft-chat-settings-paper .MuiIconButton-root:focus-visible,
+.soft-chat-settings-paper .MuiCheckbox-root:has(input:focus-visible) {
+  outline: 2px solid var(--chat-focus);
+  outline-offset: 2px;
+}
+
+.soft-chat-viewer .soft-chat-divider {
+  border-color: var(--chat-line);
+  margin: 0 14px;
+}
+
+.soft-chat-viewer .soft-chat-message {
+  padding: 4px 14px;
+  font-family: "Manrope", "Segoe UI", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.62;
+  overflow-wrap: anywhere;
+}
+
+.soft-chat-viewer .soft-chat-username {
+  color: var(--chat-ink);
+  color: color-mix(in srgb, var(--chat-user-color, var(--chat-ink)) 25%, #32282f 75%);
+}
+
+html[data-soft-theme="dark"] .soft-chat-viewer .soft-chat-username {
+  color: var(--chat-user-color, var(--chat-ink));
+}
+
+.soft-chat-scroll .simplebar-content {
+  padding-block: 9px 14px;
+}
+
+.soft-chat-scroll .simplebar-scrollbar::before {
+  background: var(--chat-muted);
+}
+
+.soft-chat-timestamp {
+  flex: 0 0 auto;
+  padding-right: 9px;
+  padding-top: 3px;
+  color: var(--chat-muted);
+  font-size: 0.65rem;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.soft-chat-badge-fallback {
+  color: var(--chat-accent);
+  background: var(--chat-hover);
+  border: 1px solid var(--chat-line);
+}
+
+.soft-chat-empty {
+  padding: 24px 18px;
+  color: var(--chat-muted);
+}
+
+.soft-chat-viewer .soft-chat-history {
+  width: calc(100% - 28px);
+  min-height: 36px;
+  margin: 0 14px 7px;
+  color: var(--chat-muted);
+  font-size: 0.73rem;
+  font-weight: 500;
+  border-radius: 8px;
+}
+
+.soft-chat-viewer .soft-chat-resume {
+  border: 1px solid var(--chat-line);
+  border-radius: 999px;
+  background: var(--chat-dialog-surface);
+  box-shadow: 0 4px 18px rgba(14, 9, 17, 0.14);
+}
+
+.soft-chat-resume .MuiButton-root {
+  min-height: 36px;
+  padding-inline: 16px;
+  border-radius: inherit;
+  color: var(--chat-ink);
+  font-size: 0.75rem;
+}
+
+.soft-chat-viewer[data-mobile-controls="true"] .soft-chat-history,
+.soft-chat-viewer[data-mobile-controls="true"] .soft-chat-resume .MuiButton-root {
+  min-height: 44px;
+}
+
+html .MuiDialog-paper.soft-chat-settings-paper {
+  color: var(--chat-ink);
+  background-color: var(--chat-dialog-surface);
+  background-image: none;
+  border: 1px solid var(--chat-line);
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgba(19, 12, 23, 0.25);
+}
+
+.soft-chat-settings-paper .soft-chat-settings-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.soft-chat-settings-paper .MuiIconButton-root,
+.soft-chat-settings-paper .MuiFormHelperText-root,
+.soft-chat-settings-paper .MuiInputAdornment-root,
+.soft-chat-settings-paper .MuiInputLabel-root {
+  color: var(--chat-muted);
+}
+
+.soft-chat-settings-paper .MuiOutlinedInput-root {
+  color: var(--chat-ink);
+  border-radius: 10px;
+}
+
+.soft-chat-settings-paper .MuiOutlinedInput-notchedOutline {
+  border-color: var(--chat-field-line);
+}
+
+.soft-chat-settings-paper .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--chat-accent);
+}
+
+.soft-chat-settings-paper .soft-chat-settings-options {
+  padding-top: 12px;
+  border-top: 1px solid var(--chat-line);
+}
+
+.soft-chat-settings-options .MuiFormControlLabel-root {
+  margin-inline: -10px 0;
+}
+
+.soft-chat-settings-options .MuiFormControlLabel-label {
+  font-size: 0.85rem;
+}
+
+.soft-chat-settings-options .MuiCheckbox-root.Mui-checked {
+  color: var(--chat-accent);
+}
