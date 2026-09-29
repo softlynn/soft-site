@@ -6,7 +6,8 @@ import Footer from "../utils/Footer";
 import {
   authenticateAdmin,
   consumePendingAdminPassword,
-  clearAdminToken,
+  signOutAdmin,
+  subscribeToAdminSession,
   getAdminVods,
   getAdminToken,
   isLocalAdminConsole,
@@ -103,6 +104,12 @@ export default function AdminPage() {
   }, [vods, search, visibility]);
   const flagsChanged = selectedVod && (noticeEnabled !== Boolean(selectedVod.vodNotice) || chatReplayAvailable !== (selectedVod.chatReplayAvailable !== false));
 
+  useEffect(() => subscribeToAdminSession(({ authenticated, reason }) => {
+    if (authenticated) return;
+    setAuthorized(false);
+    if (reason === "expired") setMessage({ type: "warning", text: "Your admin session expired. Sign in again to continue." });
+  }), []);
+
   useEffect(() => {
     let active = true;
     const init = async () => {
@@ -188,10 +195,11 @@ export default function AdminPage() {
     }
   };
 
-  const handleLock = () => {
-    clearAdminToken();
+  const handleLock = async () => {
     setAuthorized(false);
     setMessage({ type: "info", text: "Admin panel locked." });
+    try { await signOutAdmin(); }
+    catch { setMessage({ type: "warning", text: "Signed out on this tab. The bridge could not confirm session revocation." }); }
   };
 
   const handleRefresh = async () => {

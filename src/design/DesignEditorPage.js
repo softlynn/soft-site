@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Puck } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 import {
@@ -26,7 +26,8 @@ import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import WidgetsRoundedIcon from "@mui/icons-material/WidgetsRounded";
 import SimpleBar from "simplebar-react";
 import {
-  clearAdminToken,
+  signOutAdmin,
+  subscribeToAdminSession,
   getAdminToken,
   getSiteDesignAdmin,
   primeAdminWake,
@@ -201,10 +202,26 @@ export default function DesignEditorPage() {
   const [newPageTemplate, setNewPageTemplate] = useState("starter");
   const [uploadingAsset, setUploadingAsset] = useState(false);
   const [message, setMessage] = useState({ type: "info", text: "Unlock admin to edit the live site design." });
+  const hasLoadedAdminDesign = useRef(false);
+
+  const hydrateDesignIfNeeded = useCallback(async () => {
+    if (hasLoadedAdminDesign.current) return;
+    const payload = await getSiteDesignAdmin();
+    const nextDesign = normalizeSiteDesign(payload.design);
+    hasLoadedAdminDesign.current = true;
+    setDraftDesign(nextDesign);
+    setDesign(nextDesign);
+  }, [setDesign]);
 
   useEffect(() => {
-    setDraftDesign(normalizeSiteDesign(design));
+    if (!hasLoadedAdminDesign.current) setDraftDesign(normalizeSiteDesign(design));
   }, [design]);
+
+  useEffect(() => subscribeToAdminSession(({ authenticated, reason }) => {
+    if (authenticated) return;
+    setAuthorized(false);
+    if (reason === "expired") setMessage({ type: "warning", text: "Your admin session expired. Unlock again before publishing. Your draft is still here." });
+  }), []);
 
   useEffect(() => {
     let active = true;
@@ -213,8 +230,12 @@ export default function DesignEditorPage() {
         const hasToken = Boolean(getAdminToken());
         const valid = hasToken ? await verifyAdminSession() : false;
         if (!active) return;
+        if (valid) await hydrateDesignIfNeeded();
+        if (!active) return;
         setAuthorized(valid);
         setMessage(valid ? { type: "success", text: "Design editor unlocked." } : { type: "info", text: "Unlock admin to edit the live site design." });
+      } catch (error) {
+        if (active) setMessage({ type: "warning", text: error.message });
       } finally {
         if (active) setReady(true);
       }
@@ -223,7 +244,7 @@ export default function DesignEditorPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [hydrateDesignIfNeeded]);
 
   useEffect(() => {
     if (!authorized) return undefined;
@@ -282,13 +303,8 @@ export default function DesignEditorPage() {
         setMessage({ type: "info", text: "Admin login canceled." });
         return;
       }
+      await hydrateDesignIfNeeded();
       setAuthorized(true);
-      const payload = await getSiteDesignAdmin().catch(() => null);
-      if (payload?.design) {
-        const nextDesign = normalizeSiteDesign(payload.design);
-        setDraftDesign(nextDesign);
-        setDesign(nextDesign);
-      }
       setMessage({ type: "success", text: "Design editor unlocked." });
     } catch (error) {
       setAuthorized(false);
@@ -299,10 +315,11 @@ export default function DesignEditorPage() {
     }
   };
 
-  const handleLock = () => {
-    clearAdminToken();
+  const handleLock = async () => {
     setAuthorized(false);
     setMessage({ type: "info", text: "Design editor locked." });
+    try { await signOutAdmin(); }
+    catch { setMessage({ type: "warning", text: "Signed out on this tab. The bridge could not confirm session revocation." }); }
   };
 
   const handleRefreshFromDisk = async () => {
@@ -357,7 +374,7 @@ export default function DesignEditorPage() {
   };
 
   const handlePuckChange = (data) => {
-    if (!selectedPage || selectedPage.type !== "puck") return;
+    if (!authorized || !selectedPage || selectedPage.type !== "puck") return;
     setDraftDesign((current) =>
       updatePageById(current, selectedPage.id, (page) => ({
         ...page,
@@ -1113,7 +1130,7 @@ export default function DesignEditorPage() {
             height="100%"
             iframe={{ enabled: false }}
           >
-            <Box className="soft-design-editor-puck-shell">
+            <Box className="soft-design-editor-puck-shell" inert={!authorized}>
               <Box className={`soft-design-editor-panel soft-design-editor-panel--left${componentsPanelOpen ? " is-open" : ""}`}>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 1.1, py: 0.8, borderBottom: "1px solid var(--soft-border)" }}>
                   <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>

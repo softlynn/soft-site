@@ -1,4 +1,5 @@
 import { USE_STATIC_ARCHIVE, VODS_API_BASE } from "../config/site";
+import { buildYouTubeTimeline } from "../vods/replayUtils.mjs";
 
 const STATIC_DATA_PATH = `${process.env.PUBLIC_URL || ""}/data/vods.json`;
 const STATIC_COMMENTS_BASE = `${process.env.PUBLIC_URL || ""}/data/comments`;
@@ -16,7 +17,9 @@ const STATIC_VODS_CACHE_MS = 15000;
 const staticCommentsCache = new Map();
 const staticCommentsRequests = new Map();
 const staticEmotesCache = new Map();
+const staticEmotesRequests = new Map();
 let staticBadgesCache = null;
+let staticBadgesRequest = null;
 let localVodOverridesCache = null;
 
 const DEFAULT_EMOTES = {
@@ -46,18 +49,15 @@ const chapterMatches = (chapters, game) => {
 };
 
 const readLocalVodOverrides = () => {
-  if (localVodOverridesCache) return localVodOverridesCache;
-  if (typeof window === "undefined") {
-    localVodOverridesCache = {};
-    return localVodOverridesCache;
-  }
   try {
-    const raw = window.localStorage.getItem(LOCAL_VOD_OVERRIDES_KEY);
-    const parsed = raw ? JSON.parse(raw) || {} : {};
+    if (!localVodOverridesCache) {
+      const raw = typeof window !== "undefined" ? window.localStorage.getItem(LOCAL_VOD_OVERRIDES_KEY) : null;
+      localVodOverridesCache = raw ? JSON.parse(raw) || {} : {};
+    }
     const now = Date.now();
     let changed = false;
     const next = {};
-    for (const [vodId, override] of Object.entries(parsed)) {
+    for (const [vodId, override] of Object.entries(localVodOverridesCache)) {
       if (!override || typeof override !== "object") {
         changed = true;
         continue;
@@ -129,27 +129,22 @@ export const cacheLocalVodOverrideFromVod = (vod) => {
   writeLocalVodOverrides(overrides);
 };
 
-const normalizeYouTubeEntriesForSite = (entries) => {
+const normalizeYouTubeEntriesForSite = (entries, archiveDuration) => {
   const source = Array.isArray(entries) ? entries : [];
   const visible = source.filter((entry) => entry?.unpublished !== true);
-  const vodEntries = visible
-    .map((entry, index) => ({ entry, index }))
-    .filter(({ entry }) => String(entry?.type || "vod") === "vod" && entry?.id)
-    .map(({ entry, index }, filteredIndex) => ({
-      ...entry,
-      part: Number.isFinite(Number(entry?.part)) ? Math.max(1, Math.floor(Number(entry.part))) : filteredIndex + 1,
-      __sourceIndex: index,
-    }))
-    .sort((a, b) => {
-      if (a.part !== b.part) return a.part - b.part;
-      return a.__sourceIndex - b.__sourceIndex;
-    })
-    .map(({ __sourceIndex, ...entry }, index) => ({
+  const timelineForType = (type) => buildYouTubeTimeline(
+    source.filter((entry) => String(entry?.type || "vod") === type && entry?.id), archiveDuration
+  );
+  const vodEntries = timelineForType("vod")
+    .filter((entry) => entry.unpublished !== true)
+    .map((entry, index) => ({
       ...entry,
       part: index + 1,
     }));
 
-  const nonVodEntries = visible.filter((entry) => !(String(entry?.type || "vod") === "vod" && entry?.id));
+  const liveEntries = new Map(timelineForType("live").map((entry) => [entry.id, entry]));
+  const nonVodEntries = visible.filter((entry) => !(String(entry?.type || "vod") === "vod" && entry?.id))
+    .map((entry) => entry?.type === "live" ? liveEntries.get(entry.id) || entry : entry);
   return [...vodEntries, ...nonVodEntries];
 };
 
@@ -163,35 +158,66 @@ const normalizeVod = (vod) => {
     unpublished: false,
     ...vod,
   };
-  normalized.youtube = normalizeYouTubeEntriesForSite(normalized.youtube);
-  return normalizeVodNoticeText(applyLocalVodOverride(normalized));
+  normalized.youtube = normalizeYouTubeEntriesForSite(normalized.youtube, normalized.duration);
+  // Cache server data independently so an expired local edit can be removed,
+  // including when the next metadata request fails and we use the cached copy.
+  return normalizeVodNoticeText(normalized);
 };
 
-const loadStaticVods = async ({ forceRefresh = false } = {}) => {
-  if (staticVodsRequest) return staticVodsRequest;
+const throwIfAborted = (signal) => {
+  if (signal?.aborted) throw signal.reason || new DOMException("The request was canceled.", "AbortError");
+};
+
+const consumeStaticVodsRequest = (request, signal) => new Promise((resolve, reject) => {
+  request.readers += 1;
+  let finished = false;
+  const finish = (callback, value) => {
+    if (finished) return;
+    finished = true;
+    signal?.removeEventListener("abort", onAbort);
+    request.readers -= 1;
+    if (!request.settled && request.readers === 0) {
+      if (staticVodsRequest === request) staticVodsRequest = null;
+      request.controller.abort();
+    }
+    callback(value);
+  };
+  const onAbort = () => finish(reject, signal.reason || new DOMException("The request was canceled.", "AbortError"));
+  signal?.addEventListener("abort", onAbort, { once: true });
+  request.promise.then(value => finish(resolve, value), error => finish(reject, error));
+  if (signal?.aborted) onAbort();
+});
+
+const loadStaticVods = async ({ forceRefresh = false, signal } = {}) => {
+  throwIfAborted(signal);
+  if (staticVodsRequest) return consumeStaticVodsRequest(staticVodsRequest, signal);
   if (!forceRefresh && staticVodsCache && Date.now() - staticVodsLoadedAt < STATIC_VODS_CACHE_MS) return staticVodsCache;
-  staticVodsRequest = (async () => {
-  try {
-    const response = await fetch(STATIC_DATA_PATH, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      cache: "no-cache",
-    });
-    if (!response.ok) throw new Error(`Failed to load static VOD data (${response.status})`);
-    const data = await response.json();
-    staticVodsCache = Array.isArray(data) ? data.map(normalizeVod) : [];
-    staticVodsLoadedAt = Date.now();
-    return staticVodsCache;
-  } catch (error) {
-    if (staticVodsCache) return staticVodsCache;
-    throw error;
-  }
+  const request = { controller: new AbortController(), readers: 0, settled: false, promise: null };
+  staticVodsRequest = request;
+  request.promise = (async () => {
+    try {
+      const response = await fetch(STATIC_DATA_PATH, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-cache",
+        signal: request.controller.signal,
+      });
+      if (!response.ok) throw new Error(`Failed to load static VOD data (${response.status})`);
+      const data = await response.json();
+      throwIfAborted(request.controller.signal);
+      staticVodsCache = Array.isArray(data) ? data.map(normalizeVod) : [];
+      staticVodsLoadedAt = Date.now();
+      return staticVodsCache;
+    } catch (error) {
+      throwIfAborted(request.controller.signal);
+      if (staticVodsCache) return staticVodsCache;
+      throw error;
+    } finally {
+      request.settled = true;
+      if (staticVodsRequest === request) staticVodsRequest = null;
+    }
   })();
-  try {
-    return await staticVodsRequest;
-  } finally {
-    staticVodsRequest = null;
-  }
+  return consumeStaticVodsRequest(request, signal);
 };
 
 const loadStaticComments = async (vodId) => {
@@ -247,58 +273,63 @@ const normalizeBadgesPayload = (payload) => ({
 const loadStaticEmotes = async (vodId) => {
   const key = String(vodId);
   if (staticEmotesCache.has(key)) return staticEmotesCache.get(key);
-
-  try {
-    const response = await fetch(`${STATIC_EMOTES_BASE}/${encodeURIComponent(key)}.json`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      staticEmotesCache.set(key, DEFAULT_EMOTES);
+  if (staticEmotesRequests.has(key)) return staticEmotesRequests.get(key);
+  const request = (async () => {
+    try {
+      const response = await fetch(`${STATIC_EMOTES_BASE}/${encodeURIComponent(key)}.json`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-cache",
+      });
+      if (!response.ok) return DEFAULT_EMOTES;
+      const data = await response.json();
+      const payload = Array.isArray(data?.data) ? data.data[0] : data;
+      const normalized = normalizeEmotesPayload(payload);
+      staticEmotesCache.set(key, normalized);
+      while (staticEmotesCache.size > 3) staticEmotesCache.delete(staticEmotesCache.keys().next().value);
+      return normalized;
+    } catch {
       return DEFAULT_EMOTES;
     }
-
-    const data = await response.json();
-    const payload = Array.isArray(data?.data) ? data.data[0] : data;
-    const normalized = normalizeEmotesPayload(payload);
-    staticEmotesCache.set(key, normalized);
-    return normalized;
-  } catch {
-    staticEmotesCache.set(key, DEFAULT_EMOTES);
-    return DEFAULT_EMOTES;
+  })();
+  staticEmotesRequests.set(key, request);
+  try {
+    return await request;
+  } finally {
+    staticEmotesRequests.delete(key);
   }
 };
 
 const loadStaticBadges = async () => {
   if (staticBadgesCache) return staticBadgesCache;
-
-  try {
-    const response = await fetch(STATIC_BADGES_PATH, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      staticBadgesCache = DEFAULT_BADGES;
+  if (staticBadgesRequest) return staticBadgesRequest;
+  staticBadgesRequest = (async () => {
+    try {
+      const response = await fetch(STATIC_BADGES_PATH, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-cache",
+      });
+      if (!response.ok) return DEFAULT_BADGES;
+      const data = await response.json();
+      staticBadgesCache = normalizeBadgesPayload(data);
+      return staticBadgesCache;
+    } catch {
       return DEFAULT_BADGES;
     }
-
-    const data = await response.json();
-    const normalized = normalizeBadgesPayload(data);
-    staticBadgesCache = normalized;
-    return normalized;
-  } catch {
-    staticBadgesCache = DEFAULT_BADGES;
-    return DEFAULT_BADGES;
+  })();
+  try {
+    return await staticBadgesRequest;
+  } finally {
+    staticBadgesRequest = null;
   }
 };
 
 export const getVodById = async (vodId, options = {}) => {
+  throwIfAborted(options.signal);
   if (USE_STATIC_ARCHIVE) {
     const vods = await loadStaticVods(options);
+    throwIfAborted(options.signal);
     const match = vods.find((vod) => String(vod.id) === String(vodId));
     const resolvedMatch = match ? normalizeVodNoticeText(applyLocalVodOverride(match)) : match;
     if (resolvedMatch?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
@@ -309,11 +340,13 @@ export const getVodById = async (vodId, options = {}) => {
   const response = await fetch(`${VODS_API_BASE}/vods/${vodId}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
+    signal: options.signal,
   });
   if (!response.ok) throw new Error(`Failed to load VOD (${response.status})`);
   const payload = await response.json();
+  throwIfAborted(options.signal);
   if (payload?.unpublished) throw new Error(`VOD ${vodId} is unpublished`);
-  return normalizeVod(payload);
+  return normalizeVodNoticeText(applyLocalVodOverride(normalizeVod(payload)));
 };
 
 export const getBadges = async () => {

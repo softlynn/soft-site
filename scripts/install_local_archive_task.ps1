@@ -1,6 +1,6 @@
 param(
   [string]$TaskName = "SoftArchivePipeline",
-  [int]$EveryMinutes = 5
+  [int]$EveryMinutes = 15
 )
 
 $ErrorActionPreference = "Stop"

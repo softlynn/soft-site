@@ -1,12 +1,19 @@
 import fs from "fs/promises";
-import { acquirePipelineRunLock, isCurrentProcessRunning } from "./pipeline_run_lock.mjs";
+import { acquirePipelineRunLock, isCurrentProcessRunning, runWithPipelineOwnership } from "./pipeline_run_lock.mjs";
 import { createSnapshotWriter, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
+import { createArchiveSnapshotStore } from "./archive_database.mjs";
+import { isRecordingPending, planRecordingUploads, recordingSourceIdentity, recordingSourceMatches } from "./pipeline_recordings.mjs";
+import { makeUploadedCheckpoint, recoverUploadedRecordings, finalizeRecoveredUpload, finalizeAndCompleteUploadedRecording } from "./pipeline_archive_journal.mjs";
+import { mergePublicationContents, queueArchivePublication, publishPendingArchive } from "./pipeline_publication.mjs";
 import fsSync from "fs";
 import os from "os";
 import path from "path";
-import { DynamicUploadThrottleStream, getUploadHealthState } from "./pipeline_upload_stream.mjs";
+import { uploadFileResumable } from "./pipeline_resumable_upload.mjs";
+import { createUploadSessionStore } from "./upload_session_store.mjs";
+import { buildTrack1UploadCopyPath as track1UploadCopyPath, ensureTrack1UploadCopy, cleanupStaleUploadCopyPartials, runTrack1Remux, removeUploadCopy } from "./pipeline_upload_copy.mjs";
+import { findVerifiedUploadCopy, releaseUploadArtifacts } from "./pipeline_upload_lifecycle.mjs";
 import { fileURLToPath } from "url";
-import { spawn, spawnSync } from "child_process";
+import { spawnSync } from "child_process";
 import dotenv from "dotenv";
 import { google } from "googleapis";
 import {
@@ -194,20 +201,12 @@ const config = {
 
 const VIDEO_EXTENSIONS = new Set([".mp4", ".mkv", ".mov", ".flv", ".m4v"]);
 const ACTIVE_PROCESSED_FILE_STATUSES = new Set(["processing"]);
-const TERMINAL_PROCESSED_FILE_STATUSES = new Set([
-  "completed",
-  "ignored_short",
-  "ignored_short_uploaded",
-  "ignored_unknown_duration",
-  "skipped_manual",
-]);
 const PROCESSING_RECORD_STALE_AFTER_MS =
   Math.max(5, Number(process.env.SOFTUCHIVE_PROCESSING_STALE_AFTER_MINUTES || "30")) * 60 * 1000;
 const YOUTUBE_VISIBILITY_SYNC_INTERVAL_MS =
   Math.max(15, Number(config.youtubeVisibilitySyncIntervalMinutes) || 180) * 60 * 1000;
 const SOFTUCHIVE_PAUSE_ERROR_CODE = "SOFTUCHIVE_PAUSED";
 const SOFTUCHIVE_SKIP_ERROR_CODE = "SOFTUCHIVE_SKIPPED";
-const SOFTUCHIVE_UPLOAD_STALL_ERROR_CODE = "SOFTUCHIVE_UPLOAD_STALLED";
 const SOFTUCHIVE_UPLOAD_STALL_TIMEOUT_MS = Math.max(
   45_000,
   Number(process.env.SOFTUCHIVE_UPLOAD_STALL_TIMEOUT_MS || "120000")
@@ -252,6 +251,7 @@ const runGitCommand = (args, { cwd = repoRoot, allowFailure = false } = {}) => {
   const result = spawnSync("git", args, {
     cwd,
     encoding: "utf8",
+    windowsHide: true,
     stdio: ["ignore", "pipe", "pipe"],
   });
 
@@ -288,7 +288,12 @@ const readJsonFile = async (filePath, fallback) => {
   return JSON.parse(contents);
 };
 
-const writeJsonFile = writeJsonFileAtomic;
+const writeJsonFile = (filePath, payload) => writeJsonFileAtomic(filePath, payload, { durable: true });
+
+const vodsDatabase = createArchiveSnapshotStore(config.vodsDataPath);
+const loadVodsDatabase = () => vodsDatabase.read();
+const writeVodsDatabase = (vods) => vodsDatabase.write(vods);
+const mutateVodsDatabase = (vods, updater) => vodsDatabase.mutate(vods, updater);
 
 const chunkArray = (items, size) => {
   const source = Array.isArray(items) ? items : [];
@@ -313,7 +318,7 @@ const parseTimestampMs = (value) => {
 };
 
 
-const persistObsDockStatus = createSnapshotWriter(({ outputPath, payload }) => writeJsonFile(outputPath, payload));
+const persistObsDockStatus = createSnapshotWriter(({ outputPath, payload }) => writeJsonFileAtomic(outputPath, payload));
 
 const writeObsDockUploadStatus = async (status = {}) => {
   const outputPath = String(config.obsDockUploadStatusPath || "").trim();
@@ -647,6 +652,19 @@ const fetchTwitchArchives = async (accessToken, userId) => {
   return data.data || [];
 };
 
+const fetchTwitchActiveStream = async (accessToken, userId) => {
+  const url = new URL("https://api.twitch.tv/helix/streams");
+  url.searchParams.set("user_id", userId);
+  const response = await fetch(url, {
+    headers: { "Client-Id": config.twitchClientId, Authorization: `Bearer ${accessToken}` },
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!response.ok) fail(`Unable to verify whether the Twitch stream has finished (${response.status})`);
+  const data = await response.json();
+  if (!Array.isArray(data.data)) fail("Twitch live-stream check returned an invalid response.");
+  return data.data[0] || null;
+};
+
 const fetchTwitchVodById = async (accessToken, vodId) => {
   const url = new URL("https://api.twitch.tv/helix/videos");
   url.searchParams.set("id", String(vodId));
@@ -762,7 +780,7 @@ const ensureTwitchDownloader = async () => {
   const install = spawnSync(
     "powershell",
     ["-ExecutionPolicy", "Bypass", "-File", installerPath, "-OutputPath", config.twitchDownloaderPath],
-    { stdio: "inherit" }
+    { stdio: "inherit", windowsHide: true }
   );
 
   if (install.status !== 0 || !(await fileExists(config.twitchDownloaderPath))) {
@@ -772,137 +790,37 @@ const ensureTwitchDownloader = async () => {
   return config.twitchDownloaderPath;
 };
 
-const sanitizeFilenamePart = (value) =>
-  String(value || "")
-    .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 100) || "recording";
-
-const buildTrack1UploadCopyPath = (recordingFile) => {
-  const parsed = path.parse(recordingFile.path);
-  const safeBase = sanitizeFilenamePart(parsed.name);
-  const stamp = new Date(recordingFile.modifiedAtMs || Date.now()).toISOString().replace(/[:.]/g, "-");
-  return path.join(config.tmpDir, "youtube-upload-audio1", `${safeBase}.${stamp}.track1.mkv`);
-};
+const buildTrack1UploadCopyPath = (recordingFile) => track1UploadCopyPath(recordingFile, config.tmpDir);
 
 const createYouTubeUploadCopyTrack1 = async (recordingFile) => {
-  const outputPath = buildTrack1UploadCopyPath(recordingFile);
-  await ensureDirectory(path.dirname(outputPath));
-  if (await fileExists(outputPath)) {
-    await fs.rm(outputPath, { force: true });
-  }
-
   if (softuchiveTracker) {
     await softuchiveTracker.throwIfPauseRequested("Pause requested before ffmpeg copy started.");
-    await softuchiveTracker.setStage("ffmpeg", `Preparing track 1 upload copy for ${recordingFile.name}.`);
   }
-  log(`Preparing YouTube upload copy (audio track 1 only): ${recordingFile.path}`);
-  const ffmpegArgs = [
-    "-y",
-    "-i",
-    recordingFile.path,
-    "-map",
-    "0:v?",
-    "-map",
-    "0:a:0?",
-    "-sn",
-    "-dn",
-    "-c",
-    "copy",
-    outputPath,
-  ];
-
-  await new Promise((resolve, reject) => {
-    const child = spawn(config.ffmpegPath, ffmpegArgs, {
-      stdio: "inherit",
-    });
-    let settled = false;
-    let pauseCheckInFlight = false;
-    const stopPauseTimer = () => {
-      if (pauseTimer) clearInterval(pauseTimer);
-    };
-    const finish = (error = null) => {
-      if (settled) return;
-      settled = true;
-      stopPauseTimer();
-      if (error) reject(error);
-      else resolve();
-    };
-
-    const pauseTimer = setInterval(() => {
-      if (!softuchiveTracker || pauseCheckInFlight || settled) return;
-      pauseCheckInFlight = true;
-      void (async () => {
-        try {
-          const pauseRequested = await softuchiveTracker.shouldPause();
-          if (!pauseRequested || settled) return;
-          try {
-            child.kill();
-          } catch {}
-          finish(createPipelineControlError("Pause requested while preparing the upload copy.", SOFTUCHIVE_PAUSE_ERROR_CODE));
-        } finally {
-          pauseCheckInFlight = false;
-        }
-      })();
-    }, 1000);
-    if (typeof pauseTimer?.unref === "function") pauseTimer.unref();
-
-    child.on("error", (error) => {
-      finish(new Error(`Failed to run ffmpeg (${config.ffmpegPath}): ${error.message}`));
-    });
-    child.on("exit", (code) => {
-      if (settled) return;
-      if (code !== 0) {
-        finish(
-          new Error(
-            `Failed to create YouTube upload copy (track 1 only) for ${recordingFile.name}` +
-              (Number.isFinite(code) ? ` (ffmpeg exit code ${code})` : "")
-          )
-        );
-        return;
+  const copy = await ensureTrack1UploadCopy(recordingFile, {
+    cacheRoot: config.tmpDir,
+    hasUploadSession: async (outputPath) => Boolean(await createUploadSessionStore(
+      path.join(path.dirname(config.statePath), "upload-sessions"), outputPath
+    ).load()),
+    prepare: async (partialPath) => {
+      if (softuchiveTracker) {
+        await softuchiveTracker.throwIfPauseRequested("Pause requested before ffmpeg copy started.");
+        await softuchiveTracker.setStage("ffmpeg", `Preparing track 1 upload copy for ${recordingFile.name}.`);
       }
-      finish();
-    });
+      log(`Preparing YouTube upload copy (audio track 1 only): ${recordingFile.path}`);
+      await runTrack1Remux({
+        sourcePath: recordingFile.path,
+        outputPath: partialPath,
+        ffmpegPath: config.ffmpegPath,
+        shouldPause: softuchiveTracker ? () => softuchiveTracker.shouldPause() : undefined,
+      });
+    },
   });
-
-  if (!(await fileExists(outputPath))) {
-    fail(`Failed to create YouTube upload copy (track 1 only) for ${recordingFile.name}`);
-  }
-
-  const stat = await fs.stat(outputPath);
-  return {
-    path: outputPath,
-    name: path.basename(outputPath),
-    size: stat.size,
-    modifiedAtMs: stat.mtimeMs,
-    originalPath: recordingFile.path,
-    generatedForYouTubeUploadOnly: true,
-  };
+  if (copy.cacheReused) log(`Reusing completed track 1 upload copy: ${copy.path}`);
+  return copy;
 };
 
 const cleanupStaleTrack1UploadCopies = async () => {
-  const tempDir = path.join(config.tmpDir, "youtube-upload-audio1");
-  if (!(await fileExists(tempDir))) return;
-
-  const entries = await fs.readdir(tempDir, { withFileTypes: true });
-  const nowMs = Date.now();
-  const staleAgeMs = 12 * 60 * 60 * 1000;
-
-  for (const entry of entries) {
-    if (!entry.isFile()) continue;
-    if (!entry.name.toLowerCase().endsWith(".track1.mkv")) continue;
-
-    const fullPath = path.join(tempDir, entry.name);
-    try {
-      const stat = await fs.stat(fullPath);
-      if (nowMs - stat.mtimeMs < staleAgeMs) continue;
-      await fs.rm(fullPath, { force: true });
-      log(`Removed stale temporary YouTube upload copy: ${fullPath}`);
-    } catch (error) {
-      log(`Failed to remove stale temp upload copy ${fullPath}: ${error.message}`);
-    }
-  }
+  await cleanupStaleUploadCopyPartials(config.tmpDir, { log });
 };
 
 const downloadTwitchChatJson = async (twitchVodId, outputPath) => {
@@ -912,7 +830,7 @@ const downloadTwitchChatJson = async (twitchVodId, outputPath) => {
   const command = spawnSync(
     exePath,
     ["chatdownload", "--id", String(twitchVodId), "--output", outputPath, "--embed-images", "false", "--threads", "8", "--collision", "overwrite"],
-    { stdio: "inherit" }
+    { stdio: "inherit", windowsHide: true }
   );
 
   if (command.status !== 0 || !(await fileExists(outputPath))) {
@@ -1021,6 +939,7 @@ const syncStaticBadges = async (accessToken, twitchUser, stagedPaths) => {
     return true;
   }
 
+  await queueArchiveDataForPublish([config.badgesPath]);
   await writeJsonFile(config.badgesPath, nextPayload);
   stagedPaths.push(config.badgesPath);
   log(`Updated static badge data (${channelBadges.length} channel badge sets, ${globalBadges.length} global badge sets).`);
@@ -1045,6 +964,7 @@ const prepareChatArchivePayloads = async (twitchVodId, channelEmoteSets) => {
   };
 };
 
+const youtubeUploadAuth = new WeakMap();
 const loadYoutubeClient = async () => {
   if (!(await fileExists(config.youtubeClientSecretPath))) {
     fail(`Missing YouTube OAuth client file at ${config.youtubeClientSecretPath}`);
@@ -1063,7 +983,9 @@ const loadYoutubeClient = async () => {
   const token = JSON.parse(await fs.readFile(config.youtubeTokenPath, "utf8"));
   const authClient = new google.auth.OAuth2(details.client_id, details.client_secret, details.redirect_uris[0]);
   authClient.setCredentials(token);
-  return google.youtube({ version: "v3", auth: authClient });
+  const youtube = google.youtube({ version: "v3", auth: authClient });
+  youtubeUploadAuth.set(youtube, authClient);
+  return youtube;
 };
 
 const ensureYouTubeCategoryExists = async (youtube) => {
@@ -1243,11 +1165,6 @@ const syncArchiveYouTubeVisibility = async (youtube, vods = []) => {
   return result;
 };
 
-const waitMs = (ms) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-
 const normalizeUploadThrottleMbps = (value) => {
   if (value === null || value === undefined || value === "") return null;
   const parsed = Number(value);
@@ -1288,332 +1205,33 @@ const createUploadControlReader = ({ uploadSessionId = "" } = {}) => {
 };
 
 
-const normalizeYouTubeLookupText = (value) =>
-  String(value || "")
-    .replace(/\r\n/g, "\n")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const getYouTubeUploadsPlaylistId = async (youtube) => {
-  const response = await youtube.channels.list({
-    part: ["contentDetails"],
-    mine: true,
-  });
-
-  const playlistId = response.data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
-  if (!playlistId) fail("Could not resolve YouTube uploads playlist for the authenticated channel");
-  return String(playlistId);
-};
-
-const findMatchingRecentYouTubeUpload = async ({ youtube, title, description, notBeforeMs }) => {
-  const uploadsPlaylistId = await getYouTubeUploadsPlaylistId(youtube);
-  const response = await youtube.playlistItems.list({
-    part: ["snippet", "contentDetails"],
-    playlistId: uploadsPlaylistId,
-    maxResults: 15,
-  });
-
-  const expectedTitle = normalizeYouTubeLookupText(title);
-  const expectedDescription = normalizeYouTubeLookupText(description);
-  const minimumPublishedAtMs = Number.isFinite(notBeforeMs) ? notBeforeMs : 0;
-
-  const candidates = Array.isArray(response.data.items) ? response.data.items : [];
-  for (const item of candidates) {
-    const videoId = String(item?.contentDetails?.videoId || "").trim();
-    if (!videoId) continue;
-
-    const publishedAtMs = new Date(item?.contentDetails?.videoPublishedAt || item?.snippet?.publishedAt || 0).getTime();
-    if (minimumPublishedAtMs > 0 && Number.isFinite(publishedAtMs) && publishedAtMs < minimumPublishedAtMs) continue;
-
-    const candidateTitle = normalizeYouTubeLookupText(item?.snippet?.title);
-    const candidateDescription = normalizeYouTubeLookupText(item?.snippet?.description);
-    if (candidateTitle !== expectedTitle || candidateDescription !== expectedDescription) continue;
-    return videoId;
-  }
-
-  return "";
-};
-
-const waitForMatchingRecentYouTubeUpload = async ({
-  youtube,
-  title,
-  description,
-  notBeforeMs,
-  timeoutMs = 8 * 60 * 1000,
-  pollIntervalMs = 15 * 1000,
-}) => {
-  const deadline = Date.now() + Math.max(5_000, Number(timeoutMs) || 0);
-  let lastError = null;
-
-  while (Date.now() <= deadline) {
-    try {
-      const matchedVideoId = await findMatchingRecentYouTubeUpload({
-        youtube,
-        title,
-        description,
-        notBeforeMs,
-      });
-      if (matchedVideoId) return matchedVideoId;
-      lastError = null;
-    } catch (error) {
-      lastError = error;
-    }
-
-    await waitMs(Math.max(1_000, Number(pollIntervalMs) || 0));
-  }
-
-  if (lastError) {
-    fail(`YouTube upload lookup fallback failed: ${lastError.message}`);
-  }
-  return "";
-};
-
 const uploadRecordingToYouTube = async ({
-  youtube,
-  recordingFile,
-  title,
-  description,
-  uploadSessionId = "",
-  onProgress,
-  attemptNumber = 1,
-  maxAttempts = 1,
+  youtube, recordingFile, title, description, uploadSessionId = "", onProgress,
   stallTimeoutMs = SOFTUCHIVE_UPLOAD_STALL_TIMEOUT_MS,
 }) => {
-  log(`Uploading to YouTube: ${recordingFile.path}`);
+  log(`Uploading to YouTube with resumable checkpoints: ${recordingFile.path}`);
   if (softuchiveTracker) {
     await softuchiveTracker.throwIfPauseRequested("Pause requested before YouTube upload started.");
-    await softuchiveTracker.setStage(
-      "uploading",
-      `Uploading ${recordingFile.name} to YouTube${maxAttempts > 1 ? ` (attempt ${attemptNumber}/${maxAttempts})` : ""}.`
-    );
+    await softuchiveTracker.setStage("uploading", `Uploading ${recordingFile.name} to YouTube.`);
   }
-  const totalBytes = Number(recordingFile.size || 0);
-  let uploadedBytes = 0;
-  let lastReportedPercent = -1;
-  let lastReportedAt = 0;
-  let uploadReadCompletedAtMs = null;
-  let lookupRecoveredUpload = false;
-  let lastByteProgressAtMs = Date.now();
-  let lastByteCount = 0;
-  let healthCheckInFlight = false;
-  let currentUploadMbps = 0;
-  let lastSpeedSampleAtMs = Date.now();
-  let lastSpeedSampleBytes = 0;
-  let lastControlReport = {
-    uploadPaused: false,
-    uploadThrottleMbps: null,
-  };
-
-  const reportUploadProgress = (byteLength = 0, controlPatch = {}) => {
-    const now = Date.now();
-    const sentBytes = Math.max(0, Number(byteLength) || 0);
-    if (sentBytes > 0) {
-      uploadedBytes += sentBytes;
-      if (uploadedBytes > lastByteCount) {
-        lastByteCount = uploadedBytes;
-        lastByteProgressAtMs = now;
-      }
-      if (uploadedBytes >= totalBytes && !uploadReadCompletedAtMs) {
-        uploadReadCompletedAtMs = now;
-      }
-
-      const speedElapsedMs = Math.max(1, now - lastSpeedSampleAtMs);
-      if (speedElapsedMs >= 500) {
-        currentUploadMbps = Math.max(0, ((uploadedBytes - lastSpeedSampleBytes) * 8) / (speedElapsedMs * 1000));
-        lastSpeedSampleAtMs = now;
-        lastSpeedSampleBytes = uploadedBytes;
-      }
-    } else if (Number.isFinite(Number(controlPatch.uploadMbps))) {
-      currentUploadMbps = Math.max(0, Number(controlPatch.uploadMbps));
-    }
-
-    lastControlReport = {
-      uploadPaused:
-        Object.prototype.hasOwnProperty.call(controlPatch, "uploadPaused")
-          ? controlPatch.uploadPaused === true
-          : lastControlReport.uploadPaused,
-      uploadThrottleMbps:
-        Object.prototype.hasOwnProperty.call(controlPatch, "uploadThrottleMbps")
-          ? normalizeUploadThrottleMbps(controlPatch.uploadThrottleMbps)
-          : lastControlReport.uploadThrottleMbps,
-    };
-
-    if (typeof onProgress !== "function" || totalBytes <= 0) return;
-
-    const percent = Math.max(0, Math.min(100, Math.floor((uploadedBytes / totalBytes) * 100)));
-    const controlChanged =
-      lastControlReport.uploadPaused === true ||
-      normalizeUploadThrottleMbps(controlPatch.uploadThrottleMbps) !== null ||
-      Object.prototype.hasOwnProperty.call(controlPatch, "uploadThrottleMbps");
-    if (sentBytes > 0) {
-      if (percent === lastReportedPercent && now - lastReportedAt < 800) return;
-      if (percent < 100 && lastReportedPercent >= 0 && percent < lastReportedPercent) return;
-    } else if (!controlChanged || now - lastReportedAt < 1000) {
-      return;
-    }
-
-    lastReportedPercent = percent;
-    lastReportedAt = now;
-    onProgress({
-      uploadedBytes,
-      totalBytes,
-      percent,
-      uploadMbps: currentUploadMbps,
-      uploadPaused: lastControlReport.uploadPaused,
-      uploadThrottleMbps: lastControlReport.uploadThrottleMbps,
-    });
-  };
-
-  const readUploadControl = createUploadControlReader({ uploadSessionId });
-  const sourceStream = fsSync.createReadStream(recordingFile.path);
-  const mediaBody = new DynamicUploadThrottleStream({
-    readControl: readUploadControl,
-    onChunkSent: reportUploadProgress,
-  });
-  sourceStream.on("error", (error) => mediaBody.destroy(error));
-  sourceStream.pipe(mediaBody);
-  const abortActiveUpload = (error) => {
-    if (mediaBody.destroyed) return;
-    try {
-      mediaBody.destroy(error);
-    } catch {}
-    try {
-      sourceStream.destroy(error);
-    } catch {}
-  };
-
-  const uploadStartedAtMs = Date.now();
-  let insertSettled = false;
-  const uploadHealthTimer = setInterval(() => {
-    if (insertSettled || healthCheckInFlight) return;
-    healthCheckInFlight = true;
-    void (async () => {
-      try {
-        const control = await readUploadControl({ force: true });
-        if (control.skipRequested) {
-          abortActiveUpload(createPipelineControlError("Skip requested for this VOD.", SOFTUCHIVE_SKIP_ERROR_CODE));
-          return;
-        }
-
-        if (control.pauseRequested || (softuchiveTracker && (await softuchiveTracker.shouldPause()))) {
-          abortActiveUpload(createPipelineControlError("Pause requested during YouTube upload.", SOFTUCHIVE_PAUSE_ERROR_CODE));
-          return;
-        }
-
-        if (uploadReadCompletedAtMs) return;
-
-        const nowMs = Date.now();
-        const health = getUploadHealthState({ nowMs, lastByteProgressAtMs, stallTimeoutMs, uploadPaused: control.uploadPaused });
-        lastByteProgressAtMs = health.lastByteProgressAtMs;
-        if (health.stalled) {
-          abortActiveUpload(
-            createPipelineControlError(
-              `Upload stalled for ${Math.ceil((nowMs - lastByteProgressAtMs) / 1000)} seconds.`,
-              SOFTUCHIVE_UPLOAD_STALL_ERROR_CODE
-            )
-          );
-        }
-      } finally {
-        healthCheckInFlight = false;
-      }
-    })();
-  }, 2000);
-  if (typeof uploadHealthTimer?.unref === "function") uploadHealthTimer.unref();
-
-  const insertPromise = youtube.videos.insert({
-    part: ["snippet", "status"],
-    notifySubscribers: true,
-    requestBody: {
-      snippet: {
-        title,
-        description,
-        categoryId: config.youtubeCategoryId,
-      },
-      status: {
-        privacyStatus: "private",
-      },
+  const authClient = youtubeUploadAuth.get(youtube);
+  if (!authClient) fail("YouTube upload client is not initialized.");
+  const sessions = createUploadSessionStore(path.join(path.dirname(config.statePath), "upload-sessions"), recordingFile.path);
+  const readControl = createUploadControlReader({ uploadSessionId });
+  return uploadFileResumable({
+    filePath: recordingFile.path,
+    request: (options) => authClient.request(options),
+    metadata: {
+      snippet: { title, description, categoryId: config.youtubeCategoryId },
+      status: { privacyStatus: "private" },
     },
-    media: {
-      body: mediaBody,
-    },
+    loadSession: sessions.load,
+    saveSession: sessions.save,
+    readControl,
+    onProgress,
+    stallTimeoutMs,
+    maxRetries: Math.max(1, SOFTUCHIVE_MAX_UPLOAD_ATTEMPTS),
   });
-  const trackedInsertPromise = insertPromise.then(
-    (response) => {
-      insertSettled = true;
-      return {
-        kind: "insert",
-        response,
-      };
-    },
-    (error) => {
-      insertSettled = true;
-      throw error;
-    }
-  );
-  void trackedInsertPromise.catch((error) => {
-    if (lookupRecoveredUpload) {
-      log(`YouTube insert call rejected after fallback recovery: ${error.message}`);
-    }
-    return null;
-  });
-
-  const lookupFallbackPromise = (async () => {
-    while (!uploadReadCompletedAtMs) {
-      if (insertSettled) return null;
-      await waitMs(1_000);
-    }
-
-    await waitMs(60_000);
-    if (insertSettled) return null;
-
-    const matchedVideoId = await waitForMatchingRecentYouTubeUpload({
-      youtube,
-      title,
-      description,
-      notBeforeMs: uploadStartedAtMs - 5 * 60 * 1000,
-    });
-    if (!matchedVideoId) {
-      fail("YouTube upload bytes finished sending, but no matching uploaded video was found.");
-    }
-
-    log(`Recovered YouTube upload from recent channel uploads: ${matchedVideoId}`);
-    lookupRecoveredUpload = true;
-    return {
-      kind: "lookup",
-      response: {
-        data: {
-          id: matchedVideoId,
-        },
-      },
-    };
-  })().catch((error) => {
-    if (insertSettled) return null;
-    throw error;
-  });
-
-  let settledUpload = null;
-  try {
-    settledUpload = await Promise.race([trackedInsertPromise, lookupFallbackPromise]);
-  } finally {
-    clearInterval(uploadHealthTimer);
-  }
-  const response = settledUpload?.response;
-  if (!response) {
-    const directResponse = await trackedInsertPromise;
-    return String(directResponse.response.data.id || "");
-  }
-
-  if (typeof onProgress === "function" && totalBytes > 0) {
-    onProgress({
-      uploadedBytes: totalBytes,
-      totalBytes,
-      percent: 100,
-    });
-  }
-
-  const videoId = response.data.id;
-  if (!videoId) fail("YouTube upload succeeded without a returned video ID");
-  return String(videoId);
 };
 
 const fetchYouTubeVideoDetails = async (youtube, videoId) => {
@@ -1759,20 +1377,53 @@ const commitArchiveDataLocally = (gitPaths, commitMessage) => {
     fail(`git diff --cached failed${details ? `: ${details}` : ""}`);
   }
 
-  runGitCommand([...gitCommitIdentityArgs(), "commit", "-m", commitMessage], { cwd: repoRoot });
+  runGitCommand([...gitCommitIdentityArgs(), "commit", "--only", "-m", commitMessage, "--", ...gitPaths], { cwd: repoRoot });
   return true;
 };
 
 const syncArchiveFilesToPublishWorktree = async (entries, worktreeDir) => {
-  for (const { sourcePath, gitPath } of entries) {
-    const destinationPath = path.join(worktreeDir, ...gitPath.split("/"));
-    if (await fileExists(sourcePath)) {
+  const blobId = (revision, gitPath, cwd = repoRoot) => {
+    const result = runGitCommand(["rev-parse", "--verify", `${revision}:${gitPath}`], { cwd, allowFailure: true });
+    return result.status === 0 ? result.stdout : null;
+  };
+  for (const { sourcePath, gitPath, baseRevision } of entries) {
+    const destinationPath = path.resolve(worktreeDir, ...gitPath.split("/"));
+    const relativeDestination = path.relative(path.resolve(worktreeDir), destinationPath);
+    if (!relativeDestination || relativeDestination === ".." || relativeDestination.startsWith(`..${path.sep}`) || path.isAbsolute(relativeDestination)) {
+      fail("Archive publish path escaped its temporary worktree.");
+    }
+    const baseBlob = blobId(baseRevision, gitPath);
+    const remoteBlob = blobId("HEAD", gitPath, worktreeDir);
+    const sourceExists = await fileExists(sourcePath);
+    const sourceBlob = sourceExists ? runGitCommand(["hash-object", "--", sourcePath]).stdout : null;
+    if (sourceBlob === remoteBlob || sourceBlob === baseBlob) continue;
+    if (remoteBlob !== baseBlob) {
+      if (path.resolve(sourcePath) !== path.resolve(config.vodsDataPath) || !sourceExists || !remoteBlob) {
+        fail(`Archive file ${gitPath} changed remotely; publication remains queued instead of overwriting it.`);
+      }
+      let base = null;
+      if (baseBlob) {
+        const result = spawnSync("git", ["cat-file", "blob", baseBlob], {
+          cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, windowsHide: true,
+        });
+        if (result.status !== 0) fail(`Unable to read the archive merge base for ${gitPath}.`);
+        base = result.stdout;
+      }
+      const merged = mergePublicationContents({
+        base, proposed: await fs.readFile(sourcePath, "utf8"),
+        latest: await fs.readFile(destinationPath, "utf8"), isVodIndex: true,
+      });
+      await ensureDirectory(path.dirname(destinationPath));
+      await fs.writeFile(destinationPath, merged, "utf8");
+      continue;
+    }
+    if (sourceExists) {
       await ensureDirectory(path.dirname(destinationPath));
       await fs.copyFile(sourcePath, destinationPath);
       continue;
     }
 
-    await fs.rm(destinationPath, { recursive: true, force: true });
+    await fs.rm(destinationPath, { force: true });
   }
 };
 
@@ -1828,30 +1479,48 @@ const publishArchiveDataToOrigin = async (entries, gitPaths, commitMessage) => {
           allowFailure: true,
         });
       }
-      await fs.rm(worktreeDir, { recursive: true, force: true }).catch(() => {});
+      const relativeTemporaryPath = path.relative(path.resolve(os.tmpdir()), path.resolve(worktreeDir));
+      if (!relativeTemporaryPath.startsWith("..") && !path.isAbsolute(relativeTemporaryPath) &&
+          path.basename(worktreeDir).startsWith("soft-site-archive-publish-")) {
+        await fs.rm(worktreeDir, { recursive: true, force: true }).catch(() => {});
+      }
     }
   }
 
   return false;
 };
 
-const stageAndPushArchiveData = async (filePaths, commitMessage) => {
+const queueArchiveDataForPublish = async (filePaths) => {
+  if (config.dryRun || !config.autoGitPush || filePaths.length === 0) return;
+  const baseRevision = runGitCommand(["rev-parse", "HEAD"]).stdout;
   const entries = Array.from(
     new Map(
       filePaths
         .map((filePath) => path.resolve(filePath))
-        .map((sourcePath) => [sourcePath, { sourcePath, gitPath: toGitRepoPath(sourcePath) }])
+        .map((sourcePath) => [sourcePath, { sourcePath, gitPath: toGitRepoPath(sourcePath), baseRevision }])
     ).values()
   ).filter((entry) => !entry.gitPath.startsWith(".."));
 
-  const gitPaths = entries.map((entry) => entry.gitPath);
-  if (gitPaths.length === 0) {
+  if (entries.length === 0) {
     log("No archive data paths were eligible for git publishing.");
     return;
   }
 
-  commitArchiveDataLocally(gitPaths, commitMessage);
-  await publishArchiveDataToOrigin(entries, gitPaths, commitMessage);
+  await queueArchivePublication(`${config.statePath}.publish-pending.json`, entries);
+};
+
+const retryPendingArchivePublication = async (commitMessage = "chore: publish pending archive data") => {
+  if (config.dryRun || !config.autoGitPush) return;
+  await publishPendingArchive(`${config.statePath}.publish-pending.json`, async (entries) => {
+    const gitPaths = entries.map((entry) => entry.gitPath);
+    commitArchiveDataLocally(gitPaths, commitMessage);
+    await publishArchiveDataToOrigin(entries, gitPaths, commitMessage);
+  });
+};
+
+const stageAndPushArchiveData = async (filePaths, commitMessage) => {
+  await queueArchiveDataForPublish(filePaths);
+  await retryPendingArchivePublication(commitMessage);
 };
 
 const MATCH_WINDOW_BEFORE_VOD_START_MS = 15 * 60 * 1000;
@@ -1861,7 +1530,7 @@ const probeMediaDurationSeconds = (filePath) => {
   const probe = spawnSync(
     config.ffprobePath,
     ["-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", filePath],
-    { encoding: "utf8" }
+    { encoding: "utf8", windowsHide: true, timeout: 30_000 }
   );
 
   if (probe.status !== 0) {
@@ -1885,6 +1554,16 @@ const enrichRecordingTiming = (recordingFile) => {
     startAtMs,
     endAtMs,
   };
+};
+
+const verifyRecordingSource = async (recording) => {
+  try {
+    const stat = await fs.stat(recording.path);
+    return stat.isFile() && recordingSourceMatches(recording, stat);
+  } catch (error) {
+    if (["ENOENT", "EACCES", "EPERM", "EBUSY"].includes(error.code)) return false;
+    throw error;
+  }
 };
 
 const selectMatchingVod = (recordingFile, twitchVods) => {
@@ -1965,7 +1644,7 @@ const ensureVodEntry = (existingVods, twitchVod, chatJson) => {
     thumbnail_url: base.thumbnail_url,
     stream_id: base.stream_id,
     platform: "twitch",
-    chapters: base.chapters,
+    chapters: Array.isArray(chatJson?.video?.chapters) ? base.chapters : (existing.chapters || base.chapters),
     youtube: Array.isArray(existing.youtube) ? existing.youtube : [],
     drive: Array.isArray(existing.drive) ? existing.drive : [],
     games: Array.isArray(existing.games) ? existing.games : [],
@@ -2204,7 +1883,6 @@ const cloneJson = (value) => {
 const createPipelineControlError = (message, code) => Object.assign(new Error(message), { code });
 const isSoftuchivePauseError = (error) => error?.code === SOFTUCHIVE_PAUSE_ERROR_CODE;
 const isSoftuchiveSkipError = (error) => error?.code === SOFTUCHIVE_SKIP_ERROR_CODE;
-const isSoftuchiveUploadStallError = (error) => error?.code === SOFTUCHIVE_UPLOAD_STALL_ERROR_CODE;
 
 const loadSoftuchiveSettingsIntoConfig = async () => {
   const { settings } = await ensureSoftuchiveStateFiles(repoRoot, { archiveFolder: config.recordingsDir });
@@ -2555,7 +2233,7 @@ const runYouTubeVisibilitySyncOnly = async () => {
   await validateConfiguration({ metadataOnly: true });
   await ensureDirectory(path.dirname(config.vodsDataPath));
 
-  const existingVods = await readJsonFile(config.vodsDataPath, []);
+  const existingVods = await loadVodsDatabase();
   const videoIds = collectArchiveYouTubeVideoIds(existingVods);
   if (videoIds.length === 0) {
     log("No archived YouTube VOD parts require visibility sync.");
@@ -2587,7 +2265,8 @@ const runYouTubeVisibilitySyncOnly = async () => {
     return;
   }
 
-  await writeJsonFile(config.vodsDataPath, existingVods);
+  await queueArchiveDataForPublish([config.vodsDataPath]);
+  await writeVodsDatabase(existingVods);
 
   if (config.autoGitPush) {
     await stageAndPushArchiveData([config.vodsDataPath], "chore: sync youtube vod visibility");
@@ -2618,7 +2297,7 @@ const runMetadataSyncOnly = async () => {
   if (!state.processedFiles || typeof state.processedFiles !== "object") state.processedFiles = {};
   if (!state.processedVodIds || typeof state.processedVodIds !== "object") state.processedVodIds = {};
 
-  const existingVods = await readJsonFile(config.vodsDataPath, []);
+  const existingVods = await loadVodsDatabase();
   const vodsNeedingMetadataSync = getVodsNeedingMetadataSync(existingVods, state);
   if (vodsNeedingMetadataSync.length === 0) {
     log("No existing YouTube VOD metadata requires syncing.");
@@ -2677,6 +2356,7 @@ const runPipeline = async () => {
   await ensureDirectory(config.tmpDir);
   await cleanupStaleTrack1UploadCopies();
   await softuchiveTracker.throwIfPauseRequested("Pause requested while preparing archive poll.");
+  await retryPendingArchivePublication();
 
   const state = await readJsonFile(config.statePath, {
     processedFiles: {},
@@ -2688,8 +2368,24 @@ const runPipeline = async () => {
     if (config.dryRun) return;
     await writeJsonFile(config.statePath, state);
   };
+  const cleanupTerminalArtifacts = async (recordingPath, uploadRecording = null, durableState = null) => {
+    try {
+      const savedState = durableState || await readJsonFile(config.statePath, { processedFiles: {} });
+      const checkpoint = savedState.processedFiles?.[recordingPath];
+      if (checkpoint?.uploadArtifactsClearedAt || !["completed", "ignored_short_uploaded", "skipped_manual"].includes(checkpoint?.status)) return;
+      const verifiedCopy = await findVerifiedUploadCopy(recordingPath, checkpoint, config.tmpDir);
+      if (!verifiedCopy || (uploadRecording && path.resolve(uploadRecording.path) !== path.resolve(verifiedCopy.path))) return;
+      const sessionStore = createUploadSessionStore(path.join(path.dirname(config.statePath), "upload-sessions"), verifiedCopy.path);
+      if (await releaseUploadArtifacts({ checkpoint, recording: verifiedCopy, sessionStore, removeCopy: removeUploadCopy })) {
+        state.processedFiles[recordingPath] = { ...state.processedFiles[recordingPath], uploadArtifactsClearedAt: new Date().toISOString() };
+        await persistState();
+      }
+    } catch (error) {
+      log(`Retained upload artifacts for ${path.basename(recordingPath)}: ${error.message}`);
+    }
+  };
 
-  const existingVods = await readJsonFile(config.vodsDataPath, []);
+  const existingVods = await loadVodsDatabase();
   const stagedPaths = [];
   let vodsUpdated = false;
   let youtube = null;
@@ -2703,15 +2399,58 @@ const runPipeline = async () => {
   const minimumArchiveVodDurationSeconds = Math.max(1, Math.floor(Number(config.minArchiveVodDurationSeconds) || 300));
   const archiveMergeGapMs = Math.max(0, Math.floor(Number(config.autoMergeVodGapSeconds) || 3600) * 1000);
 
-  const { vods: vodsWithoutShorts, removedVodIds: removedShortVodIds } = pruneShortArchiveVods(
-    existingVods,
-    minimumArchiveVodDurationSeconds
-  );
-  const { vods: mergedArchiveVods, mergedGroups } = mergeAdjacentArchiveVods(vodsWithoutShorts, archiveMergeGapMs);
+  if (!config.dryRun) {
+    const recovered = await recoverUploadedRecordings({
+      state,
+      vods: existingVods,
+      persistState,
+      persistVods: async () => {
+        await queueArchiveDataForPublish([config.vodsDataPath]);
+        await writeVodsDatabase(existingVods);
+        stagedPaths.push(config.vodsDataPath);
+        vodsUpdated = true;
+      },
+      finalizeUpload: (checkpoint) => finalizeRecoveredUpload({
+        checkpoint,
+        readLatestVods: loadVodsDatabase,
+        configuredPrivacy: config.youtubePrivacyStatus,
+        fetchDetails: async (videoId) => fetchYouTubeVideoDetails(await getPipelineYouTube(), videoId),
+        setPrivacy: async (videoId, privacy) => setYouTubeVideoPrivacyStatus(await getPipelineYouTube(), videoId, privacy),
+        syncMetadata: async (vodEntry) => syncYouTubeMetadataForVod(await getPipelineYouTube(), vodEntry),
+      }),
+    });
+    if (recovered > 0) log(`Recovered ${recovered} uploaded recording(s) without uploading their media again.`);
+    const durableState = await readJsonFile(config.statePath, { processedFiles: {} });
+    for (const [recordingPath, checkpoint] of Object.entries(durableState.processedFiles || {})) {
+      if (checkpoint?.source && !checkpoint.uploadArtifactsClearedAt &&
+          ["completed", "ignored_short_uploaded", "skipped_manual"].includes(checkpoint.status)) {
+        await cleanupTerminalArtifacts(recordingPath, null, durableState);
+      }
+    }
+  }
+
+  const planArchiveMaintenance = (vods) => {
+    const pruned = pruneShortArchiveVods(vods, minimumArchiveVodDurationSeconds);
+    const merged = mergeAdjacentArchiveVods(pruned.vods, archiveMergeGapMs);
+    return { ...merged, removedVodIds: pruned.removedVodIds };
+  };
+  let maintenance = planArchiveMaintenance(existingVods);
+  let maintenancePersisted = false;
+  if (!config.dryRun && (maintenance.removedVodIds.length > 0 || maintenance.mergedGroups.length > 0)) {
+    await queueArchiveDataForPublish([config.vodsDataPath]);
+    await mutateVodsDatabase(existingVods, (latestVods) => {
+      maintenance = planArchiveMaintenance(latestVods);
+      return maintenance.vods;
+    });
+    maintenancePersisted = true;
+    stagedPaths.push(config.vodsDataPath);
+    vodsUpdated = true;
+  }
+  const { vods: mergedArchiveVods, mergedGroups, removedVodIds: removedShortVodIds } = maintenance;
 
   const archiveMaintenanceChanged = removedShortVodIds.length > 0 || mergedGroups.length > 0;
   if (archiveMaintenanceChanged) {
-    existingVods.splice(0, existingVods.length, ...mergedArchiveVods);
+    if (!maintenancePersisted) existingVods.splice(0, existingVods.length, ...mergedArchiveVods);
     vodsUpdated = true;
 
     if (removedShortVodIds.length > 0) {
@@ -2730,20 +2469,13 @@ const runPipeline = async () => {
 
     if (!config.dryRun) {
       for (const vodId of removedShortVodIds) {
-        const commentsPath = path.join(config.commentsDir, `${vodId}.json`);
-        const emotesPath = path.join(config.emotesDir, `${vodId}.json`);
-        if (await fileExists(commentsPath)) {
-          await fs.rm(commentsPath, { force: true });
-          stagedPaths.push(commentsPath);
-        }
-        if (await fileExists(emotesPath)) {
-          await fs.rm(emotesPath, { force: true });
-          stagedPaths.push(emotesPath);
-        }
+        // Keep cached chat/emotes recoverable. Filtering the index does not
+        // authorize discarding the only saved replay data.
         if (state.processedVodIds && Object.prototype.hasOwnProperty.call(state.processedVodIds, vodId)) {
           delete state.processedVodIds[vodId];
         }
       }
+      await persistState();
     }
   }
 
@@ -2796,12 +2528,7 @@ const runPipeline = async () => {
   const minAgeMs = config.minRecordingAgeMinutes * 60 * 1000;
   const recordings = (await listRecordingFiles(config.recordingsDir))
     .filter((file) => now - file.modifiedAtMs >= minAgeMs)
-    .filter((file) => {
-      const status = String(state.processedFiles?.[file.path]?.status || "");
-      if (TERMINAL_PROCESSED_FILE_STATUSES.has(status)) return false;
-      if (ACTIVE_PROCESSED_FILE_STATUSES.has(status)) return false;
-      return true;
-    })
+    .filter((file) => isRecordingPending(file, state.processedFiles?.[file.path]))
     .sort((a, b) => a.modifiedAtMs - b.modifiedAtMs);
 
   const missingCommentVodIds = [];
@@ -2903,7 +2630,8 @@ const runPipeline = async () => {
       return;
     }
 
-    await writeJsonFile(config.vodsDataPath, existingVods);
+    await queueArchiveDataForPublish([config.vodsDataPath]);
+    await writeVodsDatabase(existingVods);
     stagedPaths.push(config.vodsDataPath);
     await writeJsonFile(config.statePath, state);
 
@@ -2929,6 +2657,7 @@ const runPipeline = async () => {
     await syncStaticBadges(twitchAccessToken, twitchUser, stagedPaths);
   }
   const twitchVods = recordings.length > 0 ? await fetchTwitchArchives(twitchAccessToken, twitchUser.id) : [];
+  const activeTwitchStream = recordings.length > 0 ? await fetchTwitchActiveStream(twitchAccessToken, twitchUser.id) : null;
   const channelEmoteSets = await fetchThirdPartyEmoteSets(twitchUser.id);
 
   if (recordings.length > 0 && twitchVods.length === 0) {
@@ -2945,66 +2674,43 @@ const runPipeline = async () => {
   const targetTwitchVods = latestTwitchVod ? [latestTwitchVod] : twitchVods;
   const targets = config.onlyUploadMostRecentVod
     ? recordings.slice().sort((a, b) => b.modifiedAtMs - a.modifiedAtMs)
-    : recordings.slice(0, maxRecordingsPerRun);
+    : recordings;
 
   if (latestTwitchVod) {
     log(`Only-upload-most-recent mode enabled; matching recordings against latest Twitch VOD ${latestTwitchVod.id}.`);
   }
 
-  const plannedUploads = [];
-  for (const recording of targets) {
-    if (plannedUploads.length >= maxRecordingsPerRun) break;
-
-    const enrichedRecording = enrichRecordingTiming(recording);
-    if (!Number.isFinite(enrichedRecording.durationSeconds) || enrichedRecording.durationSeconds <= 0) {
-      log(`Skipping recording "${recording.name}" because duration could not be determined.`);
-      await softuchiveTracker.noteSkippedRecording(recording.name, "Duration could not be determined.");
-
-      if (!config.dryRun) {
-        state.processedFiles[recording.path] = {
-          status: "ignored_unknown_duration",
-          processedAt: new Date().toISOString(),
-        };
-        await persistState();
-      }
-      continue;
+  const { uploads: plannedUploads, skipped: deferredRecordings } = await planRecordingUploads({
+    recordings: targets,
+    maxUploads: maxRecordingsPerRun,
+    minimumDurationSeconds: minimumArchiveVodDurationSeconds,
+    probeRecording: enrichRecordingTiming,
+    matchVod: (recording) => selectMatchingVod(recording, targetTwitchVods),
+    verifyRecording: verifyRecordingSource,
+    activeStream: activeTwitchStream,
+  });
+  const deferredReasons = {
+    duration_unavailable: "Duration could not be determined; retrying on the next poll.",
+    source_changed: "Recording changed during inspection; waiting until it is finished.",
+    short: "Below the minimum archive duration.",
+    unmatched: "No Twitch archive match was found.",
+    stream_live: "The Twitch stream is still live; waiting until it finishes.",
+  };
+  for (const { recording, reason, terminalStatus } of deferredRecordings) {
+    log(`Deferred recording "${recording.name}": ${deferredReasons[reason]}`);
+    await softuchiveTracker.noteSkippedRecording(recording.name, deferredReasons[reason]);
+    if (!config.dryRun && terminalStatus) {
+      state.processedFiles[recording.path] = {
+        status: terminalStatus,
+        source: recordingSourceIdentity(recording),
+        durationSeconds: Math.floor(recording.durationSeconds),
+        processedAt: new Date().toISOString(),
+      };
+      await persistState();
     }
-
-    if (
-      Number.isFinite(enrichedRecording.durationSeconds) &&
-      enrichedRecording.durationSeconds > 0 &&
-      enrichedRecording.durationSeconds < minimumArchiveVodDurationSeconds
-    ) {
-      const durationText = formatDuration(Math.max(0, Math.floor(enrichedRecording.durationSeconds)));
-      log(
-        `Skipping short recording "${recording.name}" (${durationText}) below minimum archive duration of ${Math.floor(
-          minimumArchiveVodDurationSeconds / 60
-        )} minute(s).`
-      );
-      await softuchiveTracker.noteSkippedRecording(
-        recording.name,
-        `Below minimum archive duration (${durationText} < ${Math.floor(minimumArchiveVodDurationSeconds / 60)}m).`
-      );
-
-      if (!config.dryRun) {
-        state.processedFiles[recording.path] = {
-          status: "ignored_short",
-          durationSeconds: Math.floor(enrichedRecording.durationSeconds),
-          processedAt: new Date().toISOString(),
-        };
-        await persistState();
-      }
-      continue;
-    }
-
-    const matchedVod = selectMatchingVod(enrichedRecording, targetTwitchVods);
-    if (!matchedVod) {
-      log(`No Twitch VOD match found for recording: ${recording.name}`);
-      await softuchiveTracker.noteSkippedRecording(recording.name, "No Twitch archive match was found.");
-      continue;
-    }
-    plannedUploads.push({ recording: enrichedRecording, twitchVod: matchedVod });
-    log(`Matched recording "${recording.name}" -> Twitch VOD ${matchedVod.id}`);
+  }
+  for (const { recording, twitchVod } of plannedUploads) {
+    log(`Matched recording "${recording.name}" -> Twitch VOD ${twitchVod.id}`);
   }
 
   await softuchiveTracker.updateQueueFromUploads(plannedUploads);
@@ -3052,6 +2758,7 @@ const runPipeline = async () => {
         continue;
       }
 
+      await queueArchiveDataForPublish([commentsPath, emotesPath]);
       await writeJsonFile(commentsPath, archiveData.commentsPayload);
       stagedPaths.push(commentsPath);
 
@@ -3083,6 +2790,7 @@ const runPipeline = async () => {
     for (const vodId of missingEmoteVodIds) {
       const emotesPath = path.join(config.emotesDir, `${vodId}.json`);
       if (await fileExists(emotesPath)) continue;
+      await queueArchiveDataForPublish([emotesPath]);
       await writeJsonFile(emotesPath, {
         source: "local-archive-pipeline",
         twitchVodId: vodId,
@@ -3124,7 +2832,22 @@ const runPipeline = async () => {
     }
     const commentsPath = path.join(config.commentsDir, `${vodId}.json`);
     const emotesPath = path.join(config.emotesDir, `${vodId}.json`);
-    const archiveData = await prepareChatArchivePayloads(vodId, channelEmoteSets);
+    let archiveData;
+    try {
+      archiveData = await prepareChatArchivePayloads(vodId, channelEmoteSets);
+    } catch (error) {
+      log(`Chat export for VOD ${vodId} is unavailable; preserving video now and retrying chat later: ${error.message}`);
+      state.processedVodIds[vodId] = {
+        ...(state.processedVodIds[vodId] || {}),
+        commentsBackfillLastFailedAt: new Date().toISOString(),
+        commentsBackfillLastError: String(error.message || error),
+      };
+      await persistState();
+      archiveData = {
+        rawChat: {}, comments: [], embeddedEmotes: [], commentsPayload: null,
+        emotePayload: buildEmotePayload(vodId, channelEmoteSets, []),
+      };
+    }
     const rawChat = archiveData.rawChat;
     const comments = archiveData.comments;
     const embeddedEmotes = archiveData.embeddedEmotes;
@@ -3135,12 +2858,15 @@ const runPipeline = async () => {
       continue;
     }
 
-    await writeJsonFile(commentsPath, archiveData.commentsPayload);
+    await queueArchiveDataForPublish([emotesPath, ...(archiveData.commentsPayload ? [commentsPath] : [])]);
+    if (archiveData.commentsPayload) {
+      await writeJsonFile(commentsPath, archiveData.commentsPayload);
+      stagedPaths.push(commentsPath);
+    }
     await writeJsonFile(emotesPath, emotePayload);
-    stagedPaths.push(commentsPath);
     stagedPaths.push(emotesPath);
 
-    const vodEntry = ensureVodEntry(existingVods, twitchVod, rawChat);
+    let vodEntry = ensureVodEntry(existingVods, twitchVod, rawChat);
     const existingParts = (Array.isArray(vodEntry.youtube) ? vodEntry.youtube : [])
       .filter((part) => part.type === "vod")
       .sort((a, b) => (a.part || 0) - (b.part || 0));
@@ -3209,6 +2935,7 @@ const runPipeline = async () => {
       let lastRealtimeUploadProgressAtMs = 0;
       let lastTwitchMetadataRefreshAtMs = 0;
       let twitchMetadataRefreshInFlight = false;
+      let twitchMetadataRefreshPromise = null;
 
       const maybeRefreshTwitchUploadMetadata = async (force = false) => {
         const nowMs = Date.now();
@@ -3253,6 +2980,7 @@ const runPipeline = async () => {
             streamDate: currentStreamDate || null,
             title: currentTitle,
             ownerPid: process.pid,
+            source: recordingSourceIdentity(recording),
             startedAt: nowIso,
             updatedAt: nowIso,
           };
@@ -3290,7 +3018,9 @@ const runPipeline = async () => {
           uploadedBytes: 0,
           totalBytes: recording.size || null,
         });
+        if (!(await verifyRecordingSource(recording))) fail(`Recording changed before preparation; deferring ${recording.name}.`);
         uploadRecording = await createYouTubeUploadCopyTrack1(recording);
+        if (!(await verifyRecordingSource(recording))) fail(`Recording changed during preparation; deferring ${recording.name}.`);
         latestProgress.totalBytes = Number(uploadRecording.size || 0);
         await softuchiveTracker.updateActiveUpload({
           ...buildUploadSessionBase(),
@@ -3305,171 +3035,121 @@ const runPipeline = async () => {
         await throwIfSkipRequested();
         const insertedTitle = currentTitle;
         const insertedDescription = currentDescription;
-        let youtubeVideoId = "";
-        for (let uploadAttempt = 1; uploadAttempt <= SOFTUCHIVE_MAX_UPLOAD_ATTEMPTS; uploadAttempt++) {
-          if (uploadAttempt > 1) {
+        const youtubeVideoId = await uploadRecordingToYouTube({
+          youtube,
+          recordingFile: uploadRecording,
+          title: insertedTitle,
+          description: insertedDescription,
+          uploadSessionId,
+          onProgress: ({ percent, uploadedBytes, totalBytes, uploadMbps, uploadPaused, uploadThrottleMbps }) => {
             latestProgress = {
-              percent: 0,
-              uploadedBytes: 0,
-              totalBytes: latestProgress.totalBytes,
+              percent: Number.isFinite(percent) ? percent : latestProgress.percent,
+              uploadedBytes: Number.isFinite(uploadedBytes) ? uploadedBytes : latestProgress.uploadedBytes,
+              totalBytes: Number.isFinite(totalBytes) ? totalBytes : latestProgress.totalBytes,
             };
-            lastRealtimeUploadProgressPercent = -1;
-            lastRealtimeUploadProgressAtMs = 0;
-            await softuchiveTracker.updateActiveUpload({
+            void writeObsDockUploadStatus({
+              visible: true,
+              state: "uploading",
+              message: "Uploading VOD",
+              percent: Number.isFinite(percent) ? percent : null,
+              uploaded_bytes: Number.isFinite(uploadedBytes) ? Math.max(0, Math.floor(uploadedBytes)) : null,
+              total_bytes: Number.isFinite(totalBytes) ? Math.max(0, Math.floor(totalBytes)) : null,
+            });
+
+            const nowMs = Date.now();
+            const safePercent = Number.isFinite(percent) ? Math.max(0, Math.min(100, Math.floor(percent))) : null;
+            const safeUploadedBytes = Number.isFinite(uploadedBytes) ? Math.floor(uploadedBytes) : null;
+            const safeTotalBytes = Number.isFinite(totalBytes) ? Math.floor(totalBytes) : null;
+            const bytesPerMs =
+              safeUploadedBytes && safeUploadedBytes > 0 ? safeUploadedBytes / Math.max(1, nowMs - uploadSessionCreatedAtMs) : 0;
+            const estimatedRemainingMs =
+              bytesPerMs > 0 && safeTotalBytes && safeTotalBytes > safeUploadedBytes
+                ? Math.ceil((safeTotalBytes - safeUploadedBytes) / bytesPerMs)
+                : null;
+            const normalizedUploadThrottleMbps =
+              Number.isFinite(Number(uploadThrottleMbps)) && Number(uploadThrottleMbps) > 0 ? Number(uploadThrottleMbps) : null;
+            const uploadMessage =
+              uploadPaused === true
+                ? "Upload speed control is paused"
+                : normalizedUploadThrottleMbps
+                  ? `Uploading VOD with ${normalizedUploadThrottleMbps} Mbps limit`
+                  : "Uploading VOD";
+
+            void softuchiveTracker.updateActiveUpload({
               ...buildUploadSessionBase(),
               state: "uploading",
-              message: `Stall detected - attempt ${uploadAttempt}/${SOFTUCHIVE_MAX_UPLOAD_ATTEMPTS}. Restarting upload.`,
-              percent: 0,
-              uploadedBytes: 0,
-              totalBytes: latestProgress.totalBytes || null,
-              stallAttempt: uploadAttempt - 1,
+              message: uploadMessage,
+              percent: safePercent,
+              uploadedBytes: safeUploadedBytes,
+              totalBytes: safeTotalBytes,
+              estimatedRemainingMs,
+              uploadMbps: Number.isFinite(Number(uploadMbps)) ? Math.max(0, Number(uploadMbps)) : null,
+              uploadPaused: uploadPaused === true,
+              uploadThrottleMbps: normalizedUploadThrottleMbps,
+              stallAttempt: 0,
             });
-            log(
-              `Restarting stalled upload for Twitch VOD ${vodId} part ${partNumber} (attempt ${uploadAttempt}/${SOFTUCHIVE_MAX_UPLOAD_ATTEMPTS}).`
-            );
-          }
 
-          try {
-            youtubeVideoId = await uploadRecordingToYouTube({
-              youtube,
-              recordingFile: uploadRecording,
-              title: insertedTitle,
-              description: insertedDescription,
-              uploadSessionId,
-              attemptNumber: uploadAttempt,
-              maxAttempts: SOFTUCHIVE_MAX_UPLOAD_ATTEMPTS,
-              onProgress: ({ percent, uploadedBytes, totalBytes, uploadMbps, uploadPaused, uploadThrottleMbps }) => {
-                latestProgress = {
-                  percent: Number.isFinite(percent) ? percent : latestProgress.percent,
-                  uploadedBytes: Number.isFinite(uploadedBytes) ? uploadedBytes : latestProgress.uploadedBytes,
-                  totalBytes: Number.isFinite(totalBytes) ? totalBytes : latestProgress.totalBytes,
-                };
-                void writeObsDockUploadStatus({
-                  visible: true,
-                  state: "uploading",
-                  message: "Uploading VOD",
-                  percent: Number.isFinite(percent) ? percent : null,
-                  uploaded_bytes: Number.isFinite(uploadedBytes) ? Math.max(0, Math.floor(uploadedBytes)) : null,
-                  total_bytes: Number.isFinite(totalBytes) ? Math.max(0, Math.floor(totalBytes)) : null,
-                });
+            if (
+              safePercent != null &&
+              (safePercent !== lastRealtimeUploadProgressPercent || nowMs - lastRealtimeUploadProgressAtMs >= 4000)
+            ) {
+              lastRealtimeUploadProgressPercent = safePercent;
+              lastRealtimeUploadProgressAtMs = nowMs;
+              void postRealtimeUploadStatus({
+                ...buildUploadSessionBase(),
+                state: "uploading",
+                message: "Uploading VOD",
+                percent: safePercent,
+                uploadedBytes: safeUploadedBytes,
+                totalBytes: safeTotalBytes,
+                uploadMbps: Number.isFinite(Number(uploadMbps)) ? Math.max(0, Number(uploadMbps)) : null,
+                uploadThrottleMbps: normalizedUploadThrottleMbps,
+              });
+            }
 
-                const nowMs = Date.now();
-                const safePercent = Number.isFinite(percent) ? Math.max(0, Math.min(100, Math.floor(percent))) : null;
-                const safeUploadedBytes = Number.isFinite(uploadedBytes) ? Math.floor(uploadedBytes) : null;
-                const safeTotalBytes = Number.isFinite(totalBytes) ? Math.floor(totalBytes) : null;
-                const bytesPerMs =
-                  safeUploadedBytes && safeUploadedBytes > 0 ? safeUploadedBytes / Math.max(1, nowMs - uploadSessionCreatedAtMs) : 0;
-                const estimatedRemainingMs =
-                  bytesPerMs > 0 && safeTotalBytes && safeTotalBytes > safeUploadedBytes
-                    ? Math.ceil((safeTotalBytes - safeUploadedBytes) / bytesPerMs)
-                    : null;
-                const normalizedUploadThrottleMbps =
-                  Number.isFinite(Number(uploadThrottleMbps)) && Number(uploadThrottleMbps) > 0 ? Number(uploadThrottleMbps) : null;
-                const uploadMessage =
-                  uploadPaused === true
-                    ? "Upload speed control is paused"
-                    : normalizedUploadThrottleMbps
-                      ? `Uploading VOD with ${normalizedUploadThrottleMbps} Mbps limit`
-                      : uploadAttempt > 1
-                        ? `Uploading VOD after stall recovery (attempt ${uploadAttempt}/${SOFTUCHIVE_MAX_UPLOAD_ATTEMPTS})`
-                        : "Uploading VOD";
+            if (!twitchMetadataRefreshInFlight && nowMs - lastTwitchMetadataRefreshAtMs >= 45_000) {
+              twitchMetadataRefreshInFlight = true;
+              twitchMetadataRefreshPromise = (async () => {
+                try {
+                  const changed = await maybeRefreshTwitchUploadMetadata(true);
+                  if (!changed) return;
 
-                void softuchiveTracker.updateActiveUpload({
-                  ...buildUploadSessionBase(),
-                  state: "uploading",
-                  message: uploadMessage,
-                  percent: safePercent,
-                  uploadedBytes: safeUploadedBytes,
-                  totalBytes: safeTotalBytes,
-                  estimatedRemainingMs,
-                  uploadMbps: Number.isFinite(Number(uploadMbps)) ? Math.max(0, Number(uploadMbps)) : null,
-                  uploadPaused: uploadPaused === true,
-                  uploadThrottleMbps: normalizedUploadThrottleMbps,
-                  stallAttempt: uploadAttempt - 1,
-                });
-
-                if (
-                  safePercent != null &&
-                  (safePercent !== lastRealtimeUploadProgressPercent || nowMs - lastRealtimeUploadProgressAtMs >= 4000)
-                ) {
-                  lastRealtimeUploadProgressPercent = safePercent;
-                  lastRealtimeUploadProgressAtMs = nowMs;
-                  void postRealtimeUploadStatus({
+                  await postRealtimeUploadStatus({
                     ...buildUploadSessionBase(),
                     state: "uploading",
                     message: "Uploading VOD",
-                    percent: safePercent,
-                    uploadedBytes: safeUploadedBytes,
-                    totalBytes: safeTotalBytes,
-                    uploadMbps: Number.isFinite(Number(uploadMbps)) ? Math.max(0, Number(uploadMbps)) : null,
-                    uploadThrottleMbps: normalizedUploadThrottleMbps,
+                    percent: Number.isFinite(latestProgress.percent)
+                      ? Math.max(0, Math.min(100, Math.floor(latestProgress.percent)))
+                      : null,
+                    uploadedBytes: Number.isFinite(latestProgress.uploadedBytes) ? Math.floor(latestProgress.uploadedBytes) : null,
+                    totalBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
                   });
+                } catch (error) {
+                  log(`Failed to refresh Twitch metadata for active upload ${vodId}: ${error.message}`);
+                } finally {
+                  twitchMetadataRefreshInFlight = false;
                 }
-
-                if (!twitchMetadataRefreshInFlight && nowMs - lastTwitchMetadataRefreshAtMs >= 45_000) {
-                  twitchMetadataRefreshInFlight = true;
-                  void (async () => {
-                    try {
-                      const changed = await maybeRefreshTwitchUploadMetadata(true);
-                      if (!changed) return;
-
-                      await postRealtimeUploadStatus({
-                        ...buildUploadSessionBase(),
-                        state: "uploading",
-                        message: "Uploading VOD",
-                        percent: Number.isFinite(latestProgress.percent)
-                          ? Math.max(0, Math.min(100, Math.floor(latestProgress.percent)))
-                          : null,
-                        uploadedBytes: Number.isFinite(latestProgress.uploadedBytes) ? Math.floor(latestProgress.uploadedBytes) : null,
-                        totalBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
-                      });
-                    } catch (error) {
-                      log(`Failed to refresh Twitch metadata for active upload ${vodId}: ${error.message}`);
-                    } finally {
-                      twitchMetadataRefreshInFlight = false;
-                    }
-                  })();
-                }
-              },
-            });
-            break;
-          } catch (error) {
-            if (isSoftuchiveSkipError(error)) {
-              throw error;
+              })();
             }
-            if (isSoftuchiveUploadStallError(error) && uploadAttempt < SOFTUCHIVE_MAX_UPLOAD_ATTEMPTS) {
-              await softuchiveTracker.updateActiveUpload({
-                ...buildUploadSessionBase(),
-                state: "uploading",
-                message: `Stall detected - attempt ${uploadAttempt}/${SOFTUCHIVE_MAX_UPLOAD_ATTEMPTS}. Restarting upload.`,
-                percent: Number.isFinite(latestProgress.percent) ? Math.max(0, Math.min(100, Math.floor(latestProgress.percent))) : 0,
-                uploadedBytes: 0,
-                totalBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
-                stallAttempt: uploadAttempt,
-              });
-              continue;
-            }
-            throw error;
-          }
-        }
+          },
+        });
+        state.processedFiles[recording.path] = {
+          ...state.processedFiles[recording.path],
+          ...makeUploadedCheckpoint({ recording, vodEntry, youtubeVideoId, partNumber }),
+        };
+        await persistState();
 
-        let refreshedAfterUpload = false;
+        if (twitchMetadataRefreshPromise) await twitchMetadataRefreshPromise;
         try {
-          refreshedAfterUpload = await maybeRefreshTwitchUploadMetadata(true);
+          await maybeRefreshTwitchUploadMetadata(true);
         } catch (error) {
           log(`Failed to refresh Twitch metadata after upload ${vodId} part ${partNumber}: ${error.message}`);
         }
 
-        if (refreshedAfterUpload && (currentTitle !== insertedTitle || currentDescription !== insertedDescription)) {
-          try {
-            await updateYouTubeVideoMetadata(youtube, youtubeVideoId, {
-              title: currentTitle,
-              description: currentDescription,
-            });
-          } catch (error) {
-            log(`Failed to update YouTube metadata after title refresh for ${youtubeVideoId}: ${error.message}`);
-          }
-        }
+        // Keep the checkpoint's metadata current, while final publication below
+        // rereads the archive so admin visibility and metadata remain authoritative.
+        state.processedFiles[recording.path].pendingVodEntry.title = currentStreamTitle;
+        if (currentStreamDate) state.processedFiles[recording.path].pendingVodEntry.createdAt = currentStreamDate;
 
         await softuchiveTracker.setStage("finalizing", `Finalizing archive metadata for Twitch VOD ${vodId} part ${partNumber}.`);
         await postRealtimeUploadStatus({
@@ -3503,6 +3183,7 @@ const runPipeline = async () => {
 
           state.processedFiles[recording.path] = {
             status: "ignored_short_uploaded",
+            source: recordingSourceIdentity(recording),
             twitchVodId: vodId,
             youtubeVideoId,
             part: partNumber,
@@ -3540,29 +3221,20 @@ const runPipeline = async () => {
           continue;
         }
 
-        const targetYouTubePrivacyStatus = String(config.youtubePrivacyStatus || "private").trim().toLowerCase() || "private";
-        if (targetYouTubePrivacyStatus !== "private") {
-          const privacyUpdated = await setYouTubeVideoPrivacyStatus(youtube, youtubeVideoId, targetYouTubePrivacyStatus);
-          if (!privacyUpdated) {
-            fail(`Unable to set YouTube privacy status for ${youtubeVideoId} to ${targetYouTubePrivacyStatus}`);
-          }
-        }
-
-        addOrUpdateYouTubePart(vodEntry, {
-          id: youtubeVideoId,
-          part: partNumber,
-          duration: details.durationSeconds || 0,
-          thumbnail_url: details.thumbnailUrl || vodEntry.thumbnail_url,
+        vodEntry = await finalizeAndCompleteUploadedRecording({
+          state, recordingPath: recording.path, vods: existingVods, persistState,
+          readLatestVods: loadVodsDatabase,
+          configuredPrivacy: config.youtubePrivacyStatus,
+          fetchDetails: async () => details,
+          setPrivacy: (videoId, privacy) => setYouTubeVideoPrivacyStatus(youtube, videoId, privacy),
+          syncMetadata: (entry) => syncYouTubeMetadataForVod(youtube, entry),
+          persistVods: async () => {
+            await queueArchiveDataForPublish([config.vodsDataPath]);
+            await writeVodsDatabase(existingVods);
+            stagedPaths.push(config.vodsDataPath);
+            vodsUpdated = true;
+          },
         });
-
-        state.processedFiles[recording.path] = {
-          status: "completed",
-          twitchVodId: vodId,
-          youtubeVideoId,
-          part: partNumber,
-          processedAt: new Date().toISOString(),
-        };
-        await persistState();
 
         await postRealtimeUploadStatus({
           ...buildUploadSessionBase(),
@@ -3632,7 +3304,9 @@ const runPipeline = async () => {
         if (!config.dryRun) {
           state.processedFiles[recording.path] = {
             ...state.processedFiles[recording.path],
-            status: paused ? "paused" : "error",
+            status: state.processedFiles[recording.path]?.status === "completed"
+              ? "completed"
+              : state.processedFiles[recording.path]?.pendingVodEntry ? "uploaded" : paused ? "paused" : "error",
             twitchVodId: vodId,
             part: partNumber,
             updatedAt: new Date().toISOString(),
@@ -3651,7 +3325,7 @@ const runPipeline = async () => {
         await softuchiveTracker.updateActiveUpload({
           ...buildUploadSessionBase(),
           state: paused ? "paused" : "error",
-          message: paused ? "Archive paused. Resume will restart the current part if needed." : `Upload failed: ${error.message}`,
+          message: paused ? "Archive paused. Resume will continue from the bytes confirmed by YouTube." : `Upload failed: ${error.message}`,
           percent: Number.isFinite(latestProgress.percent) ? Math.max(0, Math.min(100, Math.floor(latestProgress.percent))) : null,
           uploadedBytes: Number.isFinite(latestProgress.uploadedBytes) ? Math.floor(latestProgress.uploadedBytes) : null,
           totalBytes: Number.isFinite(latestProgress.totalBytes) ? Math.floor(latestProgress.totalBytes) : null,
@@ -3660,11 +3334,7 @@ const runPipeline = async () => {
         throw error;
       } finally {
         if (uploadRecording?.generatedForYouTubeUploadOnly && uploadRecording.path) {
-          try {
-            await fs.rm(uploadRecording.path, { force: true });
-          } catch (error) {
-            log(`Failed to remove temporary upload copy ${uploadRecording.path}: ${error.message}`);
-          }
+          await cleanupTerminalArtifacts(recording.path, uploadRecording);
         }
       }
     }
@@ -3686,21 +3356,8 @@ const runPipeline = async () => {
       continue;
     }
 
-    try {
-      const latestTwitchVod = await fetchTwitchVodById(twitchAccessToken, vodId);
-      if (latestTwitchVod) {
-        vodEntry.title = latestTwitchVod.title || vodEntry.title;
-        vodEntry.createdAt = latestTwitchVod.created_at || vodEntry.createdAt;
-        if (latestTwitchVod.stream_id) vodEntry.stream_id = latestTwitchVod.stream_id;
-      }
-    } catch (error) {
-      log(`Failed to refresh Twitch metadata before final sync for VOD ${vodId}: ${error.message}`);
-    }
-
-    await softuchiveTracker.setStage("metadata", `Syncing archive metadata for Twitch VOD ${vodId}.`);
-    await syncYouTubeMetadataForVod(youtube, vodEntry);
-    upsertVod(existingVods, vodEntry);
-    vodsUpdated = true;
+    // Each successful part was finalized against the current archive and saved
+    // above. Do not replay a batch-start snapshot over newer admin decisions.
 
     const existingState = state.processedVodIds?.[vodId] || {};
     state.processedVodIds[vodId] = {
@@ -3713,7 +3370,8 @@ const runPipeline = async () => {
 
   if (!config.dryRun && youtube) {
     await softuchiveTracker.setStage("metadata", "Syncing metadata templates for existing archive VODs.");
-    for (const vod of vodsNeedingMetadataSync) {
+    for (const requestedVod of vodsNeedingMetadataSync) {
+      const vod = (await loadVodsDatabase()).find((entry) => String(entry.id) === String(requestedVod.id));
       if (!vod?.id || !Array.isArray(vod.youtube) || vod.youtube.length === 0) continue;
       await syncYouTubeMetadataForVod(youtube, vod);
 
@@ -3730,7 +3388,8 @@ const runPipeline = async () => {
 
   if (!config.dryRun) {
     if (vodsUpdated) {
-      await writeJsonFile(config.vodsDataPath, existingVods);
+      await queueArchiveDataForPublish([config.vodsDataPath]);
+      await writeVodsDatabase(existingVods);
       stagedPaths.push(config.vodsDataPath);
     }
     await writeJsonFile(config.statePath, state);
@@ -3752,77 +3411,52 @@ const runPipeline = async () => {
   });
 };
 
+const reportPipelineFailure = async (error) => {
+  try {
+    if (softuchiveTracker) {
+      await softuchiveTracker.finish({
+        status: isSoftuchivePauseError(error) ? "paused" : "error",
+        message: isSoftuchivePauseError(error)
+          ? "Archive paused. Resume will continue from the bytes confirmed by YouTube."
+          : `Archive poll failed: ${error.message}`,
+        error,
+      });
+    }
+    await writeObsDockUploadStatus({
+      visible: true,
+      state: isSoftuchivePauseError(error) ? "paused" : "error",
+      message: isSoftuchivePauseError(error) ? "VOD upload paused" : `VOD upload error: ${error.message}`,
+      percent: null,
+      hide_after_ms: 0,
+    });
+  } catch {}
+};
+
 const run = async () => {
-  await loadSoftuchiveSettingsIntoConfig();
+  // Keep archive bookkeeping behind foreground streaming/gaming work.
+  try { os.setPriority(0, os.constants.priority.PRIORITY_BELOW_NORMAL); } catch {}
   const releaseRunLock = await acquirePipelineRunLock(config.runLockPath);
   if (!releaseRunLock) {
-    const runtime = await readSoftuchiveRuntime(repoRoot, { archiveFolder: config.recordingsDir });
-    if (runtime.run?.active) {
-      log("Another local archive pipeline run is already active. Skipping this invocation.");
-      return;
-    }
-
-    await writeSoftuchiveRuntime(
-      repoRoot,
-      {
-        ...runtime,
-        run: {
-          ...(runtime.run || {}),
-          active: false,
-          status: "skipped",
-          trigger: pipelineTrigger,
-          stage: "idle",
-          message: "Another local archive pipeline run is already active. Skipping this invocation.",
-          lastPollStatus: "skipped",
-          lastPollCompletedAt: new Date().toISOString(),
-        },
-      },
-      { archiveFolder: config.recordingsDir }
-    );
     log("Another local archive pipeline run is already active. Skipping this invocation.");
-    return;
   }
 
-  try {
-    if (syncMetadataOnlyMode) {
-      await runMetadataSyncOnly();
-      return;
-    }
-
-    if (syncYouTubeVisibilityOnlyMode) {
-      await runYouTubeVisibilitySyncOnly();
-      return;
-    }
-
-    await runPipeline();
-  } finally {
-    await releaseRunLock();
-  }
+  return runWithPipelineOwnership({
+    releaseRunLock,
+    onError: reportPipelineFailure,
+    operation: async () => {
+      await loadSoftuchiveSettingsIntoConfig();
+      if (syncMetadataOnlyMode) return runMetadataSyncOnly();
+      if (syncYouTubeVisibilityOnlyMode) return runYouTubeVisibilitySyncOnly();
+      return runPipeline();
+    },
+  });
 };
 
 run()
   .then(async () => {
     log("Local archive pipeline finished.");
   })
-  .catch(async (error) => {
-    try {
-      if (softuchiveTracker) {
-        await softuchiveTracker.finish({
-          status: isSoftuchivePauseError(error) ? "paused" : "error",
-          message: isSoftuchivePauseError(error)
-            ? "Archive paused. Resume will restart the current part if needed."
-            : `Archive poll failed: ${error.message}`,
-          error,
-        });
-      }
-      await writeObsDockUploadStatus({
-        visible: true,
-        state: isSoftuchivePauseError(error) ? "paused" : "error",
-        message: isSoftuchivePauseError(error) ? "VOD upload paused" : `VOD upload error: ${error.message}`,
-        percent: null,
-        hide_after_ms: 0,
-      });
-    } catch {}
+  .catch((error) => {
     console.error(error);
     process.exit(isSoftuchivePauseError(error) ? 0 : 1);
   });

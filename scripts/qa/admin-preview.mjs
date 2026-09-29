@@ -28,7 +28,7 @@ process.stdin.on("data", (data) => { if (String(data).includes("stop")) void fin
 
 try {
   await fs.mkdir(path.join(directory, "scripts"));
-  for (const name of ["run_local_admin_api.mjs", "admin_console.mjs", "pipeline_file_io.mjs"]) {
+  for (const name of ["run_local_admin_api.mjs", "admin_console.mjs", "pipeline_file_io.mjs", "archive_database.mjs"]) {
     await fs.copyFile(path.join(repo, "scripts", name), path.join(directory, "scripts", name));
   }
   for (const name of links) await fs.symlink(path.join(repo, name), path.join(directory, name), process.platform === "win32" ? "junction" : "dir");
@@ -39,6 +39,10 @@ try {
     { id: "qa-two", title: "Synthetic cozy stream", createdAt: "2026-09-11T12:00:00Z", youtube: [], chatReplayAvailable: false },
     { id: "qa-three", title: "Synthetic hidden archive", createdAt: "2026-09-10T12:00:00Z", youtube: [], unpublished: true },
   ]));
+  await fs.writeFile(path.join(directory, "design.json"), JSON.stringify({ version: 1,
+    pages: [{ id: "home", title: "Fixture local design", navLabel: "Home", path: "/", type: "puck", navVisible: true, puck: { content: [], root: { props: {} } } }],
+    settings: { headerBrandText: "Fixture" },
+  }));
   child = spawn(process.execPath, [path.join(directory, "scripts", "run_local_admin_api.mjs")], {
     windowsHide: true,
     env: { ...process.env, ADMIN_API_HOST: "127.0.0.1", ADMIN_API_PORT: "49813", ADMIN_PANEL_PASSWORD: "fixture-password",

@@ -1338,3 +1338,182 @@ html[data-soft-theme="dark"] .soft-chat-panel {
   border: 1px solid #343b49;
   box-shadow: none;
 }
+
+/* Phones use a compact, predictable header and a normal vertical archive. */
+@media (max-width: 899px) {
+  .soft-site-header {
+    padding: max(4px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left)) !important;
+    row-gap: 0 !important;
+  }
+
+  .soft-mobile-header-tools .soft-theme-toggle {
+    box-shadow: none;
+  }
+
+  body:has(.soft-mobile-navigation) .soft-theme-toggle--floating {
+    display: none;
+  }
+
+  .soft-mobile-navigation {
+    width: 100%;
+    gap: 4px;
+    padding: 3px;
+    border: 1px solid var(--soft-border-subtle);
+    border-radius: 14px;
+    background: var(--soft-surface-soft);
+  }
+
+  .soft-mobile-navigation a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px 12px;
+    color: var(--soft-muted);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .soft-mobile-navigation a[aria-current="page"] {
+    color: var(--soft-text);
+    background: var(--soft-surface-strong);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  .soft-editable-page-scroll .soft-design-page,
+  .soft-vods-page-content {
+    padding-left: max(16px, env(safe-area-inset-left)) !important;
+    padding-right: max(16px, env(safe-area-inset-right)) !important;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-hero {
+    margin: 8px auto 24px;
+    max-width: 560px;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-hero > .MuiStack-root {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-hero > .MuiStack-root > div:first-child {
+    width: min(36vw, 180px) !important;
+    max-width: 42%;
+    flex-shrink: 0;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-hero > .MuiStack-root > div:last-child {
+    margin: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-hero img {
+    transform: none;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-hero h4 {
+    margin-top: 0;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-vods > .MuiStack-root {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-vods > .MuiStack-root .MuiButton-root {
+    min-height: 44px;
+    flex-shrink: 0;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-vods .MuiGrid-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-vods .MuiGrid-container > .MuiGrid-root {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    flex-basis: auto;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-vods .soft-vod-card {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .soft-vod-card .soft-vod-card__titlebtn,
+  .soft-vod-card .MuiIconButton-root {
+    min-height: 44px;
+  }
+
+  .soft-vod-card .MuiIconButton-root {
+    min-width: 44px;
+  }
+
+  .soft-vod-card.soft-glass:hover {
+    transform: none;
+  }
+
+  #home-archive-section {
+    margin-top: 4px;
+  }
+
+  .soft-archive-controls .soft-section-heading {
+    font-size: 1.3rem;
+    line-height: 1.5;
+  }
+
+  .soft-archive-controls .MuiInputBase-root,
+  .soft-archive-controls .MuiPickersInputBase-root {
+    min-height: 48px;
+  }
+
+  .soft-archive-controls input,
+  .soft-archive-controls .MuiSelect-select,
+  .soft-archive-controls .MuiPickersSectionList-root,
+  .soft-vods-page-content input {
+    font-size: 16px;
+  }
+
+  .soft-archive-controls .MuiInputAdornment-root .MuiIconButton-root {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .soft-vods-page-content .MuiPagination-ul {
+    justify-content: center;
+    row-gap: 6px;
+  }
+
+  .soft-vods-page-content .MuiPaginationItem-root {
+    min-width: 44px;
+    height: 44px;
+    margin: 0 1px;
+  }
+
+  .soft-site-footer {
+    padding: 16px max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)) !important;
+  }
+
+  .soft-site-footer button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 599px) {
+  .soft-editable-page-scroll--home .soft-home-vods .MuiGrid-container {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -6,8 +6,14 @@
     <script>
       (function () {
         var path = window.location.pathname + window.location.search + window.location.hash;
-        sessionStorage.setItem("softu-spa-redirect", path);
-        window.location.replace(window.location.origin + "/");
+        var destination = window.location.origin + "/";
+        try {
+          window.sessionStorage.setItem("softu-spa-redirect", path);
+        } catch (error) {
+          // The app also accepts a URL handoff when browser storage is blocked.
+          destination += "#" + path;
+        }
+        window.location.replace(destination);
       })();
     </script>
     <title>soft</title>

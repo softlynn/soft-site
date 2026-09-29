@@ -25,6 +25,7 @@ let statePollHandle = null;
 let obsPollHandle = null;
 let lastBroadcastKey = "";
 let obsPollInFlight = false;
+let obsMonitorGeneration = 0;
 let obsMonitorState = {
   running: false,
   lastCheckedAt: null,
@@ -43,6 +44,7 @@ let latestRunActive = false;
 
 const pipelineStatePath = () => path.join(repoRoot, "scripts", ".state", "pipeline-state.json");
 const iconAssetPath = () => path.join(__dirname, "assets", "icon.png");
+const rendererUrl = pathToFileURL(path.join(__dirname, "renderer", "index.html")).href;
 
 const psQuote = (value) => `'${String(value || "").replace(/'/g, "''")}'`;
 
@@ -315,9 +317,15 @@ const buildAppState = () => {
 
 const broadcastState = async (force = false) => {
   if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (!force && (mainWindow.isMinimized() || !mainWindow.isVisible())) return;
   const state = await buildAppState();
   if (!mainWindow || mainWindow.isDestroyed() || mainWindow.webContents.isDestroyed()) return;
-  const nextKey = JSON.stringify(state);
+  if (!force && (mainWindow.isMinimized() || !mainWindow.isVisible())) return;
+  // A successful OBS sample updates its timestamp, but does not change the view.
+  const nextKey = JSON.stringify({
+    ...state,
+    obsMonitor: { ...state.obsMonitor, lastCheckedAt: Boolean(state.obsMonitor?.lastCheckedAt) },
+  });
   if (!force && nextKey === lastBroadcastKey) return;
   lastBroadcastKey = nextKey;
   mainWindow.webContents.send("softuchive:state", state);
@@ -429,6 +437,11 @@ const findCurrentSkippableUpload = (run) => {
     .find((upload) => upload?.sessionId && !terminalStates.has(String(upload.state || "").toLowerCase())) || null;
 };
 
+const resetObsMonitorSample = () => {
+  obsMonitorGeneration += 1;
+  obsMonitorState = { ...obsMonitorState, running: false, lastCheckedAt: null, error: null };
+};
+
 const updateSettings = async (partialSettings, { updateTask = true } = {}) => {
   const stateModule = await getSoftuchiveStateModule();
   const previousSettings = await stateModule.readSoftuchiveSettings(resolveRepoRoot(), {
@@ -446,6 +459,9 @@ const updateSettings = async (partialSettings, { updateTask = true } = {}) => {
       archiveFolder: getArchiveFolderFallback(),
     }
   );
+  if (nextSettings.pollOnObsCloseEnabled !== previousSettings.pollOnObsCloseEnabled) {
+    resetObsMonitorSample();
+  }
 
   // The pipeline owns live runtime state; a settings save must not overwrite a newer upload update.
   const task = await getScheduledTaskStatus();
@@ -461,11 +477,22 @@ const updateSettings = async (partialSettings, { updateTask = true } = {}) => {
 };
 
 const tickObsMonitor = async () => {
-  if (obsPollInFlight) return;
+  if (obsPollInFlight || appQuitting) return;
   obsPollInFlight = true;
+  const generation = obsMonitorGeneration;
   try {
+    const stateModule = await getSoftuchiveStateModule();
+    const settings = await stateModule.readSoftuchiveSettings(resolveRepoRoot(), {
+      archiveFolder: getArchiveFolderFallback(),
+    });
+    if (settings.pollOnObsCloseEnabled !== true) {
+      resetObsMonitorSample();
+      return;
+    }
     const state = await buildAppState();
+    if (!state.ok) throw new Error(state.error || "Could not inspect archive state.");
     const obsRunning = await isObsRunning();
+    if (generation !== obsMonitorGeneration || appQuitting) return;
     const previousRunning = obsMonitorState.running;
 
     obsMonitorState = {
@@ -490,9 +517,11 @@ const tickObsMonitor = async () => {
       }
     }
 
-    if (mainWindow && !mainWindow.isMinimized()) await broadcastState();
+    await broadcastState();
   } catch (error) {
-    obsMonitorState = { ...obsMonitorState, error: error.message };
+    if (generation === obsMonitorGeneration && !appQuitting) {
+      obsMonitorState = { ...obsMonitorState, error: error.message };
+    }
   } finally {
     obsPollInFlight = false;
   }
@@ -501,10 +530,10 @@ const tickObsMonitor = async () => {
 const createWindow = async () => {
   mainWindow = new BrowserWindow({
     title: APP_NAME,
-    width: 1280,
-    height: 860,
-    minWidth: 780,
-    minHeight: 580,
+    width: 860,
+    height: 650,
+    minWidth: 640,
+    minHeight: 520,
     backgroundColor: "#0c0b0a",
     icon: iconAssetPath(),
     autoHideMenuBar: true,
@@ -536,19 +565,31 @@ const createWindow = async () => {
   });
 
   mainWindow.on("restore", () => { void broadcastState(true); });
+  mainWindow.on("show", () => { void broadcastState(true); });
   await mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
   await broadcastState(true);
 };
 
 // Keep scheduler and archive mutations in order, including callers outside the current view.
 let mutationChain = Promise.resolve();
-const handleMutation = (channel, action) => ipcMain.handle(channel, (...args) => {
+const handleRequest = (channel, action) => ipcMain.handle(channel, async (event, ...args) => {
+  if (
+    !mainWindow || mainWindow.isDestroyed() ||
+    event?.sender !== mainWindow.webContents ||
+    event?.senderFrame !== mainWindow.webContents.mainFrame ||
+    event.senderFrame?.url.split("#", 1)[0] !== rendererUrl
+  ) {
+    throw new Error("This action requires the trusted Softuchive window.");
+  }
+  return action(event, ...args);
+});
+const handleMutation = (channel, action) => handleRequest(channel, (...args) => {
   const result = mutationChain.then(() => action(...args));
   mutationChain = result.catch(() => {});
   return result;
 });
 
-ipcMain.handle("softuchive:get-state", async () => buildAppState());
+handleRequest("softuchive:get-state", async () => buildAppState());
 
 handleMutation("softuchive:archive-now", async () => {
   const result = await launchPipelineRun("manual");
@@ -677,7 +718,7 @@ handleMutation("softuchive:save-settings", async (_event, payload) => {
   }
 });
 
-ipcMain.handle("softuchive:pick-archive-folder", async () => {
+handleRequest("softuchive:pick-archive-folder", async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ["openDirectory", "createDirectory"],
     title: "Choose Archive Folder",
@@ -688,7 +729,7 @@ ipcMain.handle("softuchive:pick-archive-folder", async () => {
   return { ok: true, folder: result.filePaths[0] };
 });
 
-ipcMain.handle("softuchive:open-logs", async () => {
+handleRequest("softuchive:open-logs", async () => {
   const state = await buildAppState();
   if (!state.ok) return { ok: false, message: state.error };
   const summaryLogPath = state.runtime?.app?.summaryLogPath || "";
@@ -696,7 +737,7 @@ ipcMain.handle("softuchive:open-logs", async () => {
   return openExistingPath(summaryLogPath, stateDir);
 });
 
-ipcMain.handle("softuchive:open-archive-folder", async () => {
+handleRequest("softuchive:open-archive-folder", async () => {
   const state = await buildAppState();
   if (!state.ok) return { ok: false, message: state.error };
   const archiveFolder = state.settings?.archiveFolder || state.runtime?.app?.archiveFolder || getArchiveFolderFallback();
@@ -720,7 +761,7 @@ const findLocalAdmin = async () => {
   return results.find(Boolean) || null;
 };
 
-ipcMain.handle("softuchive:open-admin", async () => {
+handleRequest("softuchive:open-admin", async () => {
   try {
     let origin = await findLocalAdmin();
     if (!origin) {

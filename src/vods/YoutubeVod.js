@@ -8,8 +8,8 @@ import NotFound from "../utils/NotFound";
 import Chat from "./Chat";
 import Chapters from "./VodChapters";
 import CustomToolTip from "../utils/CustomToolTip";
-import { toHMS, convertTimestamp, toSeconds } from "../utils/helpers";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { toHMS, convertTimestamp } from "../utils/helpers";
+import CopyTimestampButton from "./CopyTimestampButton";
 import HomeIcon from "@mui/icons-material/Home";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
@@ -18,7 +18,8 @@ import { BRAND_NAME, DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "./VodReactions";
 import { getStoredChatDelaySeconds, setStoredChatDelaySeconds } from "./chatDelayPreference";
-import { resolvePlaybackPosition } from "./replayUtils.mjs";
+import useMobileViewer from "./useMobileViewer";
+import { getPlaybackTime, resolvePlaybackPosition } from "./replayUtils.mjs";
 import vodsClient from "./client";
 import VodCard from "./Vod";
 import SimpleBar from "simplebar-react";
@@ -100,30 +101,12 @@ export default function Vod(props) {
   const [chatVisible, setChatVisible] = useState(true);
   const [currentTime, setCurrentTime] = useState(undefined);
   const [playing, setPlaying] = useState({ playing: false });
-  const [delay, setDelay] = useState(undefined);
   const [userChatDelay, setUserChatDelay] = useState(() => getStoredChatDelaySeconds() ?? DEFAULT_CHAT_DELAY_SECONDS);
-  const [mobileFullscreenChat, setMobileFullscreenChat] = useState(false);
-  const [mobileViewportSize, setMobileViewportSize] = useState({ width: 0, height: 0 });
   const [recommendedVods, setRecommendedVods] = useState([]);
   const playerRef = useRef(null);
   const themeBeforeViewerRef = useRef(themeMode);
-  const mobileViewerFullscreen = isMobile && mobileFullscreenChat;
-  const mobileViewportLooksLandscape =
-    mobileViewportSize.width > 0 &&
-    mobileViewportSize.height > 0 &&
-    mobileViewportSize.width > mobileViewportSize.height;
-  const mobileFullscreenSideLayout = mobileViewerFullscreen && (mobileViewportLooksLandscape || !isPortrait);
-  const useStackedMobileLayout = mobileViewerFullscreen ? !mobileFullscreenSideLayout : isPortrait;
-  const fullscreenViewportHeight = mobileViewerFullscreen
-    ? mobileViewportSize.height
-      ? `${mobileViewportSize.height}px`
-      : "100svh"
-    : "100%";
-  const fullscreenViewportWidth = mobileViewerFullscreen
-    ? mobileViewportSize.width
-      ? `${mobileViewportSize.width}px`
-      : "100vw"
-    : "100%";
+  const { mobileViewerFullscreen, mobileFullscreenSideLayout, useStackedMobileLayout,
+    fullscreenViewportHeight, fullscreenViewportWidth, toggleFullscreen: handleMobileFullscreenChatToggle } = useMobileViewer({ isMobile, isPortrait });
 
   useEffect(() => {
     const themeBeforeViewer = themeBeforeViewerRef.current;
@@ -212,83 +195,12 @@ export default function Vod(props) {
   }, [currentTime, vod, playerRef]);
 
   useEffect(() => {
-    if (!youtube || !vod) return;
-    const vodDuration = toSeconds(vod.duration);
-    const hasUnknownDurations = youtube.some((data) => !Number.isFinite(Number(data.duration)) || Number(data.duration) <= 0);
-    if (hasUnknownDurations) {
-      // Newly uploaded parts can have duration=0 until metadata sync; treat delay as unknown (0) instead
-      // of shifting chat to the end of the VOD.
-      setDelay(0);
-      return;
-    }
-    let totalYoutubeDuration = 0;
-    for (let data of youtube) {
-      totalYoutubeDuration += data.duration;
-    }
-    const tmpDelay = vodDuration - totalYoutubeDuration < 0 ? 0 : vodDuration - totalYoutubeDuration;
-    setDelay(tmpDelay);
-    return;
-  }, [youtube, vod]);
-
-  useEffect(() => {
-    if (!isMobile && mobileFullscreenChat) {
-      setMobileFullscreenChat(false);
-    }
-  }, [isMobile, mobileFullscreenChat]);
-
-  useEffect(() => {
-    if (!mobileViewerFullscreen) return;
-    const prevHtmlOverflow = document.documentElement.style.overflow;
-    const prevBodyOverflow = document.body.style.overflow;
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.documentElement.style.overflow = prevHtmlOverflow;
-      document.body.style.overflow = prevBodyOverflow;
-    };
-  }, [mobileViewerFullscreen]);
-
-  useEffect(() => {
-    if (!mobileViewerFullscreen) return;
-
-    let raf = null;
-    let settleTimer = null;
-    const applyViewportSize = () => {
-      const vv = window.visualViewport;
-      const width = Math.round(vv?.width || window.innerWidth || 0);
-      const height = Math.round(vv?.height || window.innerHeight || 0);
-      setMobileViewportSize((prev) => (prev.width === width && prev.height === height ? prev : { width, height }));
-    };
-
-    const queueApply = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(applyViewportSize);
-      if (settleTimer) clearTimeout(settleTimer);
-      settleTimer = setTimeout(applyViewportSize, 220);
-    };
-
-    queueApply();
-    window.addEventListener("resize", queueApply);
-    window.addEventListener("orientationchange", queueApply);
-    window.visualViewport?.addEventListener("resize", queueApply);
-
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      if (settleTimer) clearTimeout(settleTimer);
-      window.removeEventListener("resize", queueApply);
-      window.removeEventListener("orientationchange", queueApply);
-      window.visualViewport?.removeEventListener("resize", queueApply);
-    };
-  }, [mobileViewerFullscreen]);
+    setCurrentTime(undefined);
+  }, [part, youtube]);
 
   const handlePartChange = (evt) => {
     const tmpPart = evt.target.value + 1;
     setPart({ part: tmpPart, timestamp: 0 });
-  };
-
-  const handleMobileFullscreenChatToggle = () => {
-    if (!isMobile) return;
-    setMobileFullscreenChat((prev) => !prev);
   };
 
   const handleViewerThemeModeChange = (mode) => {
@@ -298,23 +210,14 @@ export default function Vod(props) {
   };
 
   useEffect(() => {
-    if (delay === undefined) return;
-    console.info(`Chat Delay (effective): ${delay - userChatDelay} seconds`);
-    return;
-  }, [userChatDelay, delay]);
-
-  useEffect(() => {
     setStoredChatDelaySeconds(userChatDelay);
   }, [userChatDelay]);
 
-  const copyTimestamp = () => {
-    navigator.clipboard.writeText(`${window.location.origin}${location.pathname}?t=${toHMS(currentTime)}`);
-  };
-
   if (vod === null) return <NotFound />;
-  if (vod === undefined || drive === undefined || part === undefined || delay === undefined || youtube === undefined) return <Loading />;
+  if (vod === undefined || drive === undefined || part === undefined || youtube === undefined) return <Loading />;
 
   if (youtube.length === 0) return <NotFound />;
+  const timelineAvailable = getPlaybackTime(youtube, part.part, 0) !== null;
   const totalVodParts = youtube.filter((data) => String(data?.type || "vod") === "vod" && data?.id).length;
   const hasMultipleVodParts = totalVodParts > 1;
   const originalTwitchVodUrl = getOriginalTwitchVodUrl(vod);
@@ -339,18 +242,20 @@ export default function Vod(props) {
         overflow: "hidden",
         position: mobileViewerFullscreen ? "fixed" : "relative",
         inset: mobileViewerFullscreen ? 0 : "auto",
-        zIndex: mobileViewerFullscreen ? 1400 : "auto",
+        zIndex: mobileViewerFullscreen ? 1200 : "auto",
         background: mobileViewerFullscreen ? "rgba(8, 12, 20, 0.84)" : "transparent",
         backdropFilter: mobileViewerFullscreen ? "blur(6px)" : "none",
+        ...(mobileViewerFullscreen && { "& .soft-vod-watch-scroll .simplebar-content": { height: "100%" } }),
       }}
     >
       <SimpleBar className="soft-vod-watch-scroll" style={{ height: "100%", width: "100%" }} autoHide>
       <Box
         sx={{
           minHeight: "100%",
+          height: mobileViewerFullscreen ? "100%" : undefined,
           p: mobileViewerFullscreen
             ? "max(env(safe-area-inset-top), 4px) max(env(safe-area-inset-right), 4px) max(env(safe-area-inset-bottom), 4px) max(env(safe-area-inset-left), 4px)"
-            : { xs: 0.35, md: 0.5 },
+            : isMobile ? "max(env(safe-area-inset-top), 4px) max(env(safe-area-inset-right), 4px) max(env(safe-area-inset-bottom), 4px) max(env(safe-area-inset-left), 4px)" : { xs: 0.35, md: 0.5 },
           boxSizing: "border-box",
         }}
       >
@@ -360,12 +265,14 @@ export default function Vod(props) {
             flexDirection: mobileFullscreenSideLayout ? "row" : useStackedMobileLayout ? "column" : "row",
             height: mobileViewerFullscreen
               ? "100%"
-              : useStackedMobileLayout
-                ? "auto"
-                : chatVisible
+                : useStackedMobileLayout
+                  ? "auto"
+                  : isMobile
+                    ? "max(280px, calc(100dvh - 8px))"
+                  : chatVisible
                   ? "clamp(520px, calc(56.25vw - 112px), calc(100dvh - 8px))"
                   : "clamp(520px, calc(56.25vw - 12px), calc(100dvh - 8px))",
-            minHeight: mobileViewerFullscreen || useStackedMobileLayout ? 0 : 520,
+            minHeight: mobileViewerFullscreen || useStackedMobileLayout || isMobile ? 0 : 520,
             width: "100%",
             maxWidth: 1920,
             mx: "auto",
@@ -379,7 +286,7 @@ export default function Vod(props) {
               display: "flex",
               height: useStackedMobileLayout ? "auto" : "100%",
               width: mobileFullscreenSideLayout ? "auto" : "100%",
-              flex: "1 1 auto",
+              flex: useStackedMobileLayout ? "0 0 auto" : "1 1 auto",
               flexDirection: "column",
               alignItems: "flex-start",
               minWidth: 0,
@@ -396,12 +303,13 @@ export default function Vod(props) {
                   onClick={handleMobileFullscreenChatToggle}
                   aria-label={mobileViewerFullscreen ? "Exit fullscreen viewer" : "Open fullscreen with chat"}
                   sx={{
-                    position: "absolute",
-                    top: 10,
-                    right: 10,
-                    zIndex: 6,
-                    width: 40,
-                    height: 40,
+                    position: mobileViewerFullscreen ? "fixed" : "absolute",
+                    top: mobileViewerFullscreen ? "max(env(safe-area-inset-top), 10px)" : 10,
+                    left: mobileViewerFullscreen ? "max(env(safe-area-inset-left), 10px)" : "auto",
+                    right: mobileViewerFullscreen ? "auto" : 10,
+                    zIndex: mobileViewerFullscreen ? 1201 : 6,
+                    width: 44,
+                    height: 44,
                     color: "var(--soft-text-primary)",
                     background: "var(--soft-control-strip-bg)",
                     border: "1px solid var(--soft-control-strip-border)",
@@ -455,15 +363,16 @@ export default function Vod(props) {
                   zIndex: 2,
                 }}
               >
-                <YoutubePlayer playerRef={playerRef} part={part} youtube={youtube} setCurrentTime={setCurrentTime} setPart={setPart} setPlaying={setPlaying} delay={delay} />
+                <YoutubePlayer playerRef={playerRef} part={part} youtube={youtube} setCurrentTime={setCurrentTime} setPart={setPart} setPlaying={setPlaying} />
               </Box>
             </Box>
 
             <Collapse in={showViewerBar} timeout={220} unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
               <Box
+                className="soft-vod-viewer-controls"
                 sx={{
                   display: "flex",
-                  flexWrap: { xs: "wrap", sm: "nowrap" },
+                  flexWrap: isMobile ? "wrap" : "nowrap",
                   gap: 0.6,
                   p: { xs: 0.65, sm: 0.8 },
                   alignItems: "center",
@@ -473,6 +382,10 @@ export default function Vod(props) {
                   boxShadow: "var(--soft-control-strip-inset)",
                   mx: 0.25,
                   mb: 0.15,
+                  ...(isMobile && {
+                    "& button, & a.MuiIconButton-root, & .MuiSelect-select": { minWidth: 44, minHeight: 44, boxSizing: "border-box" },
+                    "& .MuiSelect-select": { display: "flex", alignItems: "center", py: 0 },
+                  }),
                 }}
               >
                 <Tooltip title="Back home">
@@ -481,9 +394,9 @@ export default function Vod(props) {
                   </IconButton>
                 </Tooltip>
                 {chapter && <Chapters chapters={vod.chapters} chapter={chapter} setPart={setPart} youtube={youtube} setChapter={setChapter} />}
-                <Box sx={{ minWidth: 0, flex: "1 1 220px" }}>
-                  <CustomToolTip title={vod.title}>
-                    <Typography fontWeight={650} variant="body1" noWrap>{vod.title}</Typography>
+                <Box sx={{ minWidth: 0, flex: isMobile ? "1 0 100%" : "1 1 220px", order: isMobile ? -1 : 0, pb: isMobile ? 0.4 : 0 }}>
+                  <CustomToolTip title={vod.title} disableInteractive={isMobile} disableHoverListener={isMobile}>
+                    <Typography fontWeight={650} variant="body1" noWrap={!isMobile} sx={isMobile ? { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere", lineHeight: 1.4 } : undefined}>{vod.title}</Typography>
                   </CustomToolTip>
                   <Stack direction="row" spacing={0.8} alignItems="center">
                     {vodDate && (
@@ -499,7 +412,7 @@ export default function Vod(props) {
                   </Stack>
                 </Box>
 
-                <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 0.35 }}>
+                <Box sx={{ ml: "auto", display: isMobile ? "contents" : "flex", alignItems: "center", gap: 0.35 }}>
                   {hasMultipleVodParts && (
                     <FormControl
                       variant="outlined"
@@ -528,11 +441,8 @@ export default function Vod(props) {
                       </IconButton>
                     </Tooltip>
                   )}
-                  <Tooltip title="Copy current timestamp">
-                    <IconButton onClick={copyTimestamp} color="primary" aria-label="Copy current timestamp">
-                      <ContentCopyIcon />
-                    </IconButton>
-                  </Tooltip>
+                  <CopyTimestampButton disabled={!timelineAvailable || !Number.isFinite(currentTime)}
+                    url={Number.isFinite(currentTime) ? `${window.location.origin}${location.pathname}?t=${toHMS(currentTime)}` : ""} />
                   <VodReactions vodId={vod.id} compact viewerControls lazy={false} sx={{ ml: 0.25 }} />
                 </Box>
               </Box>
@@ -542,16 +452,18 @@ export default function Vod(props) {
           <Chat
             isPortrait={useStackedMobileLayout}
             vodId={vodId}
-            chatReplayAvailable={vod.chatReplayAvailable !== false}
+            chatReplayAvailable={vod.chatReplayAvailable !== false && timelineAvailable}
             playerRef={playerRef}
             playing={playing}
-            delay={delay}
+            delay={0}
             userChatDelay={userChatDelay}
             youtube={youtube}
             part={part}
             setPart={setPart}
             setUserChatDelay={setUserChatDelay}
             forceSideLayout={mobileFullscreenSideLayout}
+            mobileControls={isMobile}
+            fillAvailable={mobileViewerFullscreen && useStackedMobileLayout}
             showChat={useStackedMobileLayout ? true : chatVisible}
             onShowChatChange={setChatVisible}
             confirmLightMode

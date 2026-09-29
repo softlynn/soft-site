@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Box, SvgIcon, Tooltip, useMediaQuery } from "@mui/material";
+import { Box, Button, Menu, MenuItem, ListItemIcon, SvgIcon, Tooltip, useMediaQuery } from "@mui/material";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
-import { useNavigate } from "react-router";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
+import { useLocation, useNavigate } from "react-router";
 import CustomLink from "../utils/CustomLink";
 import { SOCIAL_LINKS } from "../config/site";
 import { useSiteDesign } from "../design/DesignContext";
+import ThemeModeToggle from "../utils/ThemeModeToggle";
 
 const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
 const LOGO_LOOP_SRC = publicAsset("/media/soft-logo-loop-web.webm");
@@ -58,13 +60,19 @@ const socialButtonSx = {
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [stingerActive, setStingerActive] = useState(false);
   const [logoFailed, setLogoFailed] = useState(false);
+  const [linksAnchor, setLinksAnchor] = useState(null);
+  const compact = useMediaQuery("(max-width: 899px)");
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const useStillLogo = compact || reducedMotion || logoFailed;
   const { design } = useSiteDesign();
   const settings = design.settings || {};
   const showSocials = settings.showSocials !== false;
   const showVodsButton = settings.headerShowVodsButton === true;
+
+  useEffect(() => { setLinksAnchor(null); }, [location.pathname, compact]);
 
   useEffect(() => {
     if (!stingerActive) return undefined;
@@ -75,7 +83,7 @@ export default function Navbar() {
 
   const handleLogoClick = () => {
     if (stingerActive) return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+    if (compact || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
       navigate("/");
       return;
     }
@@ -100,7 +108,7 @@ export default function Navbar() {
         sx={{
           flex: "0 0 auto",
           display: "flex",
-          flexWrap: { xs: "wrap", sm: "nowrap" },
+          flexWrap: { xs: "wrap", md: "nowrap" },
           alignItems: "center",
           justifyContent: "space-between",
           gap: { xs: 0.5, sm: 1.5 },
@@ -114,7 +122,7 @@ export default function Navbar() {
           component="button"
           type="button"
           onClick={handleLogoClick}
-          aria-label="Play soft logo transition and return home"
+          aria-label={compact ? "soft home" : "Play soft logo transition and return home"}
           sx={{
             appearance: "none",
             display: "block",
@@ -135,19 +143,19 @@ export default function Navbar() {
           }}
         >
           <Box
-            component={reducedMotion || logoFailed ? "img" : "video"}
+            component={useStillLogo ? "img" : "video"}
             className="soft-site-logo-video"
-            src={reducedMotion || logoFailed ? LOGO_STILL_SRC : LOGO_LOOP_SRC}
-            {...(reducedMotion || logoFailed ? { alt: "" } : {
+            src={useStillLogo ? LOGO_STILL_SRC : LOGO_LOOP_SRC}
+            {...(useStillLogo ? { alt: "" } : {
               autoPlay: true, loop: true, muted: true, playsInline: true,
               preload: "auto", poster: LOGO_STILL_SRC, onError: () => setLogoFailed(true),
             })}
             aria-hidden="true"
             sx={{
               display: "block",
-              width: { xs: 246, sm: 318, md: 354 },
+              width: { xs: 138, sm: 172, md: 354 },
               maxWidth: "100%",
-              height: { xs: 144, sm: 174, md: 192 },
+              height: { xs: 76, sm: 86, md: 192 },
               objectFit: "contain",
               mixBlendMode: "screen",
               pointerEvents: "none",
@@ -158,7 +166,7 @@ export default function Navbar() {
         <Box
           className="soft-site-socials"
           sx={{
-            display: "flex",
+            display: { xs: "none", md: "flex" },
             alignItems: "center",
             justifyContent: "flex-end",
             gap: { xs: 0.1, sm: 0.5, md: 0.7 },
@@ -186,7 +194,42 @@ export default function Navbar() {
               </Tooltip>
             ))}
         </Box>
+
+        <Box className="soft-mobile-header-tools" sx={{ display: { xs: "flex", md: "none" }, alignItems: "center", gap: 0.5 }}>
+          <ThemeModeToggle variant="inline" sx={{ width: 44, height: 44 }} />
+          {showSocials && socials.length > 0 && (
+            <Button
+              id="soft-social-links-button"
+              aria-controls={linksAnchor ? "soft-social-links-menu" : undefined}
+              aria-haspopup="menu"
+              aria-expanded={Boolean(linksAnchor)}
+              onClick={(event) => setLinksAnchor(event.currentTarget)}
+              endIcon={<KeyboardArrowDownRoundedIcon />}
+              sx={{ minHeight: 44, px: 1.25, borderRadius: "12px" }}
+            >
+              Links
+            </Button>
+          )}
+        </Box>
+        <Box component="nav" aria-label="Main navigation" className="soft-mobile-navigation" sx={{ display: { xs: "flex", md: "none" } }}>
+          <CustomLink href="/" aria-current={location.pathname === "/" ? "page" : undefined}>Home</CustomLink>
+          <CustomLink href="/vods" aria-current={location.pathname === "/vods" ? "page" : undefined}>VOD archive</CustomLink>
+        </Box>
       </Box>
+
+      <Menu
+        id="soft-social-links-menu"
+        anchorEl={linksAnchor}
+        open={Boolean(linksAnchor)}
+        onClose={() => setLinksAnchor(null)}
+        slotProps={{ list: { "aria-labelledby": "soft-social-links-button" }, paper: { sx: { minWidth: 180, borderRadius: "14px" } } }}
+      >
+        {socials.map(({ path, icon, label }) => (
+          <MenuItem key={path} component={CustomLink} href={path} rel="noopener noreferrer" target="_blank" onClick={() => setLinksAnchor(null)} sx={{ minHeight: 48 }}>
+            <ListItemIcon>{icon}</ListItemIcon>{label}
+          </MenuItem>
+        ))}
+      </Menu>
 
       {stingerActive && (
         <Box

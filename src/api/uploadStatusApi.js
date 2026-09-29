@@ -43,19 +43,17 @@ const normalizeUpload = (item) => {
 export const fetchActiveVodUploads = async ({ signal } = {}) => {
   if (!UPLOADS_API_BASE) return [];
 
-  const controller = signal ? null : new AbortController();
-  const activeSignal = signal || controller.signal;
-  let timeoutHandle = null;
-
-  if (!signal) {
-    timeoutHandle = setTimeout(() => controller.abort(), 5000);
-  }
+  const controller = new AbortController();
+  const abortFromCaller = () => controller.abort(signal.reason);
+  if (signal?.aborted) abortFromCaller();
+  else signal?.addEventListener("abort", abortFromCaller, { once: true });
+  const timeoutHandle = setTimeout(() => controller.abort(), 5000);
 
   try {
     const response = await fetch(`${UPLOADS_API_BASE}/active`, {
       method: "GET",
       headers: { Accept: "application/json" },
-      signal: activeSignal,
+      signal: controller.signal,
     });
 
     if (!response.ok) {
@@ -66,6 +64,7 @@ export const fetchActiveVodUploads = async ({ signal } = {}) => {
     const uploads = Array.isArray(body?.uploads) ? body.uploads : [];
     return uploads.map(normalizeUpload).filter(Boolean);
   } finally {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
+    clearTimeout(timeoutHandle);
+    signal?.removeEventListener("abort", abortFromCaller);
   }
 };

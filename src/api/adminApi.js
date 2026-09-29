@@ -1,5 +1,6 @@
 import { cacheLocalVodOverrideFromVod } from "./vodsApi";
 import { createAdminTransport } from "./adminTransport.mjs";
+import { createAdminSession } from "./adminSession.mjs";
 
 export const isLocalAdminConsole = typeof window !== "undefined" && window.location.pathname.startsWith("/console/");
 const ADMIN_API_BASE = (isLocalAdminConsole ? window.location.origin : process.env.REACT_APP_ADMIN_API_BASE || "http://127.0.0.1:49731").replace(/\/+$/, "");
@@ -16,12 +17,10 @@ const ADMIN_API_FALLBACK_BASES = Array.from(
       .filter(Boolean)
   )
 );
-const ADMIN_TOKEN_KEY = "soft_admin_token";
-const ADMIN_TOKEN_HANDOFF_KEY = "soft_admin_token_handoff";
 const ADMIN_PENDING_PASSWORD_KEY = "soft_admin_pending_password";
-let runtimeAdminToken = "";
 const ADMIN_API_WAKE_PROTOCOL = "soft-archive-admin://wake";
 const transport = createAdminTransport({ bases: ADMIN_API_FALLBACK_BASES });
+const session = createAdminSession({ request: transport.request, getSessionStorage: () => sessionStorage, getLocalStorage: () => localStorage });
 export const connectAdmin = () => transport.discover();
 export const getLocalAdminUrl = () => `${transport.getBase() || ADMIN_API_BASE}/console/admin`;
 
@@ -75,57 +74,11 @@ export const primeAdminWake = () => {
   tryWakeAdminApiFromGesture();
 };
 
-const readAdminToken = () => {
-  if (runtimeAdminToken) return runtimeAdminToken;
-  try {
-    const stored = sessionStorage.getItem(ADMIN_TOKEN_KEY) || "";
-    if (stored) {
-      runtimeAdminToken = stored;
-      return stored;
-    }
-  } catch {
-    // ignore
-  }
-
-  try {
-    const handoff = localStorage.getItem(ADMIN_TOKEN_HANDOFF_KEY) || "";
-    if (!handoff) return "";
-    runtimeAdminToken = handoff;
-    try {
-      sessionStorage.setItem(ADMIN_TOKEN_KEY, handoff);
-    } catch {
-      // no-op
-    }
-    localStorage.removeItem(ADMIN_TOKEN_HANDOFF_KEY);
-    return handoff;
-  } catch {
-    return "";
-  }
-};
-
-const writeAdminToken = (token) => {
-  runtimeAdminToken = String(token || "");
-  if (!runtimeAdminToken) return;
-  try {
-    sessionStorage.setItem(ADMIN_TOKEN_KEY, runtimeAdminToken);
-  } catch {
-    // Keep runtime fallback when storage is unavailable.
-  }
-};
-
-export const clearAdminToken = () => {
-  runtimeAdminToken = "";
-  try {
-    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
-  } catch {
-    // no-op
-  }
-  try {
-    localStorage.removeItem(ADMIN_TOKEN_HANDOFF_KEY);
-  } catch {
-    // no-op
-  }
-};
+const readAdminToken = session.getToken;
+const writeAdminToken = session.setToken;
+export const clearAdminToken = session.clearToken;
+export const signOutAdmin = session.signOut;
+export const subscribeToAdminSession = session.subscribe;
 
 export const setPendingAdminPassword = (password) => {
   const normalized = String(password || "").trim();
@@ -166,7 +119,7 @@ export const consumePendingAdminPassword = () => {
 
 export const getAdminToken = () => readAdminToken();
 
-const request = transport.request;
+const request = session.request;
 
 export const authenticateAdmin = async (password) => {
   const payload = await request("/auth", {
@@ -179,21 +132,7 @@ export const authenticateAdmin = async (password) => {
   return payload.token;
 };
 
-export const verifyAdminSession = async () => {
-  const token = readAdminToken();
-  if (!token) return false;
-
-  try {
-    await request("/session", { token });
-    return true;
-  } catch (error) {
-    if (error.status === 401) {
-      clearAdminToken();
-      return false;
-    }
-    throw error;
-  }
-};
+export const verifyAdminSession = session.verify;
 
 export const getAdminVods = async () => {
   const token = readAdminToken();

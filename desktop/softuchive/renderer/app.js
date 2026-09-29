@@ -55,6 +55,9 @@ const elements = {
   eventList: document.getElementById("event-list"),
   openAdminButton: document.getElementById("open-admin-button"),
   settingsDot: document.getElementById("settings-dot"),
+  currentTransfer: document.getElementById("current-transfer"),
+  runActions: document.getElementById("run-actions"),
+  statusStrip: document.querySelector(".status-strip"),
 };
 
 const mutationControls = [elements.archiveNowButton, elements.pauseResumeButton, elements.skipCurrentVodButton,
@@ -173,7 +176,9 @@ const renderUploads = (uploads = []) => {
     : [];
 
   if (items.length === 0) {
-    elements.uploadList.replaceChildren(createTextNode("div", "empty-state", "No uploads are queued right now."));
+    const empty = createTextNode("div", "empty-state", "Finished recordings will appear here when a check finds them.");
+    empty.prepend(createTextNode("strong", "", "Your queue is clear"));
+    elements.uploadList.replaceChildren(empty);
     return;
   }
 
@@ -181,36 +186,24 @@ const renderUploads = (uploads = []) => {
     const card = document.createElement("article");
     card.className = "upload-card";
 
-    const stateText = String(upload?.state || "idle").replace(/-/g, " ");
-    const percent = Number.isFinite(Number(upload?.percent)) ? `${Math.round(Number(upload.percent))}%` : "No progress yet";
-    const uploadBytes =
-      Number.isFinite(Number(upload?.uploadedBytes)) && Number.isFinite(Number(upload?.totalBytes))
-        ? `${formatBytes(upload.uploadedBytes)} / ${formatBytes(upload.totalBytes)}`
-        : "Waiting for byte data";
-    const etaText = Number.isFinite(Number(upload?.estimatedRemainingMs))
-      ? formatDurationMs(upload.estimatedRemainingMs)
-      : "Estimating";
-    const speedText =
-      Number.isFinite(Number(upload?.uploadMbps)) && Number(upload.uploadMbps) > 0
-        ? ` • ${formatMbps(upload.uploadMbps)}`
-        : "";
-    const throttleText =
-      Number.isFinite(Number(upload?.uploadThrottleMbps)) && Number(upload.uploadThrottleMbps) > 0
-        ? ` • Limit ${formatMbps(upload.uploadThrottleMbps)}`
-        : "";
-    const stallText = Number(upload?.stallAttempt) > 0 ? ` Stall recoveries: ${upload.stallAttempt}.` : "";
-
-    card.append(
-      createTextNode("strong", "", upload?.title || upload?.recordingName || "Queued archive part"),
-      createTextNode(
-        "span",
-        "minor",
-        `${upload?.recordingName || "No recording name"}${upload?.partNumber ? ` • Part ${upload.partNumber}` : ""}`
-      ),
-      createTextNode("span", "minor", `${upload?.message || "Queued for processing"}${stallText}`),
-      createTextNode("span", "minor", `${percent} • ${uploadBytes} • ETA ${etaText}${speedText}${throttleText}`),
-      createTextNode("span", "upload-state", stateText)
-    );
+    const uploadState = String(upload?.state || "queued");
+    const copy = document.createElement("div");
+    const title = createTextNode("strong", "", upload?.title || upload?.recordingName || "Queued archive part");
+    title.title = upload?.recordingName || title.textContent;
+    const details = [];
+    if (upload?.partNumber) details.push(`Part ${upload.partNumber}`);
+    if (["uploading", "finalizing", "paused"].includes(uploadState)) {
+      if (upload?.percent != null && Number.isFinite(Number(upload.percent))) details.push(`${Math.round(clampPercent(upload.percent))}%`);
+      if (Number(upload?.totalBytes) > 0) details.push(`${formatBytes(upload.uploadedBytes)} / ${formatBytes(upload.totalBytes)}`);
+      if (Number(upload?.uploadMbps) > 0) details.push(formatMbps(upload.uploadMbps));
+      if (Number(upload?.estimatedRemainingMs) > 0) details.push(`${formatDurationMs(upload.estimatedRemainingMs)} left`);
+    }
+    if (details.length === 0 || uploadState === "error") details.push(upload?.message || ({ queued: "Waiting to upload", done: "Archived", skipped: "Skipped" }[uploadState] || "Getting ready"));
+    if (Number(upload?.stallAttempt) > 0) details.push(`Retried ${upload.stallAttempt} time(s)`);
+    copy.append(title, createTextNode("span", "minor", details.join(" · ")));
+    const label = createTextNode("span", "upload-state", uploadState.replace(/-/g, " "));
+    label.dataset.state = uploadState;
+    card.append(copy, label);
     return card;
   });
 
@@ -285,7 +278,9 @@ const render = () => {
     setNotice("error", latest?.error || "Softuchive could not load the archive repo.");
     elements.pollStateValue.textContent = "Unavailable";
     elements.pollStageValue.textContent = latest?.error || "Repo not found.";
-    document.querySelector(".sidebar-status").dataset.status = "error";
+    elements.statusStrip.dataset.status = "error";
+    elements.currentTransfer.hidden = true;
+    elements.runActions.hidden = true;
     [elements.archiveNowButton, elements.pauseResumeButton, elements.skipCurrentVodButton, elements.restartButton,
       elements.saveSettingsButton, elements.applyUploadControlButton, elements.autoPollToggle].forEach((button) => { button.disabled = true; });
     return;
@@ -298,6 +293,7 @@ const render = () => {
   const settings = latest.settings || {};
   const control = latest.control || {};
   const pauseRequested = latest.control?.pauseRequested === true;
+  const paused = pauseRequested || run.status === "paused";
 
   if (state.notice.text === "Loading Softuchive status...") {
     state.notice = {
@@ -321,52 +317,55 @@ const render = () => {
   if (!state.busy.has(elements.autoPollToggle)) elements.autoPollToggle.checked = task.enabled === true;
   elements.autoPollToggle.disabled = Boolean(task.error);
   elements.autoTaskDetail.textContent = task.error ? `Schedule unavailable: ${task.error}` : task.exists
-    ? `Task state: ${task.state || "Unknown"} • Every ${settings.pollingIntervalMinutes || 15} minute(s).`
-    : "Scheduled task is not installed yet. Enabling auto-polling will install it.";
+    ? `${task.enabled ? "On" : "Off"} · Every ${settings.pollingIntervalMinutes || 15} minutes`
+    : "Turn on to set up automatic checks.";
   const archiveFolderValue = state.pendingArchiveFolder || latest.runtime?.app?.archiveFolder || "";
   if (elements.archiveFolderInput.value !== archiveFolderValue) {
     elements.archiveFolderInput.value = archiveFolderValue;
   }
   elements.archiveFolderInput.placeholder = "D:\\Stream Archives";
 
-  elements.pollStateValue.textContent = pauseRequested ? (run.active ? "Pausing…" : "Paused") : run.active ? "Archiving" : run.status === "error" ? "Needs attention" : "Ready";
-  elements.pollStageValue.textContent = run.message || "Waiting for the next poll.";
-  document.querySelector(".sidebar-status").dataset.status = pauseRequested ? "paused" : run.status === "error" ? "error" : "idle";
+  elements.pollStateValue.textContent = paused ? (pauseRequested && run.active && run.status !== "paused" ? "Pausing…" : "Paused") : run.active ? "Archiving" : run.status === "error" ? "Needs attention" : "Ready for the next stream";
+  elements.pollStageValue.textContent = run.message || (paused ? "Resume whenever you’re ready." : run.active ? "Checking your finished recordings." : task.enabled ? `Checking for recordings every ${settings.pollingIntervalMinutes || 15} minutes.` : "Check your recording folder to start an archive.");
+  elements.statusStrip.dataset.status = paused ? "paused" : run.status === "error" ? "error" : "idle";
 
   const lastPollAt = run.lastPollStartedAt || run.lastPollCompletedAt || null;
   elements.lastPollValue.textContent = formatRelativeTime(lastPollAt);
-  elements.lastPollDetailValue.textContent = lastPollAt
+  elements.lastPollDetailValue.title = lastPollAt
     ? `${formatTimestamp(lastPollAt)} • ${String(run.lastPollStatus || run.status || "idle")}`
     : "No poll has started yet.";
 
-  elements.queueValue.textContent = Number(queue.remaining) > 0 ? `${queue.remaining} remaining` : Number(queue.total) > 0 ? `${queue.total} completed` : "All clear";
+  elements.queueValue.textContent = Number(queue.remaining) > 0 ? `${queue.remaining} remaining` : Number(queue.total) > 0 ? `${queue.total} completed` : "0";
   elements.queueDetailValue.textContent =
-    Number(queue.total || 0) > 0
-      ? `${formatBytes(queue.remainingBytes || 0)} remaining • ETA ${formatDurationMs(queue.estimatedRemainingMs)}`
-      : "No uploads are queued.";
+    Number(queue.remainingBytes) > 0 ? `${formatBytes(queue.remainingBytes)} left` : "";
 
-  elements.currentTriggerPill.textContent = run.active ? String(run.stage || run.trigger || "working").replace(/-/g, " ") : pauseRequested ? "Paused" : "Idle";
-  elements.currentItemValue.textContent = current?.title || current?.recordingName || (run.active ? "Checking for recordings…" : "Ready when you are.");
-  elements.currentItemDetailValue.textContent = current?.message || run.message || "Waiting for the next poll.";
+  elements.currentTriggerPill.textContent = String(run.stage || "working").replace(/-/g, " ");
+  elements.currentTriggerPill.hidden = !run.active || paused;
+  elements.currentTransfer.hidden = !current || !(run.active || paused || run.status === "error");
+  elements.currentItemValue.textContent = current?.title || current?.recordingName || "Current recording";
+  elements.currentItemDetailValue.textContent = current?.message && current.message !== run.message ? current.message : "";
+  elements.currentItemDetailValue.hidden = !elements.currentItemDetailValue.textContent;
+  elements.runActions.hidden = !run.active && !paused;
 
   const currentPercent = clampPercent(current?.percent);
-  elements.progressValue.textContent = current ? `${Math.round(currentPercent)}%` : "—";
+  const hasProgress = current?.percent != null && Number.isFinite(Number(current.percent));
+  elements.progressValue.textContent = hasProgress ? `${Math.round(currentPercent)}%` : "—";
   elements.progressDetailValue.textContent =
-    Number.isFinite(Number(current?.uploadedBytes)) && Number.isFinite(Number(current?.totalBytes))
+    current?.uploadedBytes != null && Number(current?.totalBytes) > 0
       ? `${formatBytes(current.uploadedBytes)} / ${formatBytes(current.totalBytes)}`
-      : "No upload byte data yet.";
+      : "Waiting for upload progress";
   elements.progressFill.style.width = `${currentPercent}%`;
-  elements.progressFill.parentElement?.setAttribute("aria-valuenow", String(Math.round(currentPercent)));
+  if (hasProgress) elements.progressFill.parentElement.setAttribute("aria-valuenow", String(Math.round(currentPercent)));
+  else elements.progressFill.parentElement.removeAttribute("aria-valuenow");
 
-  elements.etaValue.textContent = current || run.active ? formatDurationMs(current?.estimatedRemainingMs || queue.estimatedRemainingMs) : "—";
-  elements.etaDetailValue.textContent =
-    Number(queue.remaining || 0) > 1
-      ? `${queue.remaining} uploads are still in the queue.`
-      : Number(queue.remaining || 0) === 1
-        ? "One upload is still in the queue."
-        : "ETA appears while bytes are moving.";
+  const remainingMs = Number(current?.estimatedRemainingMs || queue.estimatedRemainingMs);
+  elements.etaValue.textContent = paused ? "Paused" : run.status === "error" ? "Upload interrupted" : remainingMs > 0 ? `${formatDurationMs(remainingMs)} remaining` : "Estimating time remaining";
+  const transferInfo = [];
+  if (run.active && !paused && run.status !== "error" && Number(current?.uploadMbps) > 0) transferInfo.push(formatMbps(current.uploadMbps));
+  if (Number(control.uploadThrottleMbps) > 0) transferInfo.push(`Limit ${formatMbps(control.uploadThrottleMbps)}`);
+  elements.etaDetailValue.textContent = transferInfo.join(" · ");
 
-  elements.obsRunningValue.textContent = latest.obsMonitor?.error ? "Monitor unavailable" : !latest.obsMonitor?.lastCheckedAt ? "Checking…" : latest.obsMonitor?.running ? "Open" : "Closed";
+  elements.obsRunningValue.textContent = latest.obsMonitor?.enabled === false ? "Off" : latest.obsMonitor?.error ? "Unavailable" : !latest.obsMonitor?.lastCheckedAt ? "Checking…" : latest.obsMonitor?.running ? "Open" : "Closed";
   elements.obsRunningValue.title = latest.obsMonitor?.error || "";
   elements.obsTriggerValue.textContent = latest.obsMonitor?.lastTriggeredAt
     ? `${formatRelativeTime(latest.obsMonitor.lastTriggeredAt)}`
@@ -397,8 +396,13 @@ const render = () => {
       ? `No limit active. Current upload speed: ${formatMbps(currentUploadMbps)}.`
       : "No upload speed limit is active.";
 
+  if (state.activeSection === "overview") {
+    const uploads = Array.isArray(run.uploads) ? run.uploads : [];
+    renderUploads(uploads.map((upload) => upload.sessionId && upload.sessionId === current?.sessionId && (paused || run.status === "error")
+      ? { ...upload, state: paused ? "paused" : "error", message: run.message, uploadMbps: 0, estimatedRemainingMs: null }
+      : upload));
+  }
   if (state.activeSection === "activity") {
-    renderUploads(run.uploads);
     renderEvents(latest.runtime?.events);
     renderSummary(run.summary);
   }
@@ -455,12 +459,21 @@ const bindEvents = () => {
       link.classList.toggle("active", active);
       if (active) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current");
     });
-    document.getElementById("page-title").textContent = { overview: "Archive", automation: "Settings", activity: "Activity" }[state.activeSection];
-    document.getElementById("page-eyebrow").textContent = { overview: "STREAM → ARCHIVE", automation: "PREFERENCES", activity: "QUEUE & HISTORY" }[state.activeSection];
+    window.scrollTo(0, 0);
     if (state.latest) render();
   };
   window.addEventListener("hashchange", showSection);
   showSection();
+  const toolsMenu = document.querySelector(".tools-menu");
+  document.addEventListener("click", (event) => {
+    if (!toolsMenu.contains(event.target) || event.target.closest(".tools-popover button")) toolsMenu.open = false;
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && toolsMenu.open) {
+      toolsMenu.open = false;
+      toolsMenu.querySelector("summary").focus();
+    }
+  });
   elements.openAdminButton.addEventListener("click", () => withBusyButton(elements.openAdminButton, async () => {
     setNotice("info", "Opening your local admin…");
     const result = await window.softuchive.openAdmin();
@@ -504,7 +517,7 @@ const bindEvents = () => {
       const latest = state.latest;
       const paused = latest?.control?.pauseRequested === true || latest?.runtime?.run?.status === "paused";
       const result = paused ? await window.softuchive.resumeArchive() : await window.softuchive.pauseArchive();
-      setNotice(result.ok ? "success" : "warning", result.message || "Updated archive state.");
+      setNotice(result.ok ? "info" : "warning", result.ok ? "" : result.message || "Could not update archive state.");
     })
   );
 
@@ -587,7 +600,7 @@ const bindEvents = () => {
         state.pendingArchiveFolder = result.settings?.archiveFolder || payload.archiveFolder;
         elements.archiveFolderInput.value = state.pendingArchiveFolder;
         state.settingsDirty = computeSettingsDirty(result.settings || payload);
-        setNotice("success", `Settings saved. Archive folder: ${state.pendingArchiveFolder}.`);
+        setNotice("success", "Settings saved.");
       } else {
         setNotice("error", result.message || "Failed to save settings.");
       }

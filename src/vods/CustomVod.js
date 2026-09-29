@@ -11,7 +11,7 @@ import ExpandMore from "../utils/CustomExpandMore";
 import CustomWidthTooltip from "../utils/CustomToolTip";
 import NotFound from "../utils/NotFound";
 import { toHMS, convertTimestamp } from "../utils/helpers";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import CopyTimestampButton from "./CopyTimestampButton";
 import HomeIcon from "@mui/icons-material/Home";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
@@ -19,6 +19,7 @@ import { BRAND_NAME, DEFAULT_CHAT_DELAY_SECONDS } from "../config/site";
 import { getVodById } from "../api/vodsApi";
 import VodReactions from "./VodReactions";
 import { getStoredChatDelaySeconds, setStoredChatDelaySeconds } from "./chatDelayPreference";
+import useMobileViewer from "./useMobileViewer";
 
 const getOriginalTwitchVodUrl = (vod) => {
   if (!vod || String(vod.platform || "").toLowerCase() !== "twitch") return "";
@@ -54,26 +55,9 @@ export default function Vod(props) {
   const [timestamp, setTimestamp] = useState(search.get("t") !== null ? convertTimestamp(search.get("t")) : 0);
   const [delay, setDelay] = useState(0);
   const [userChatDelay, setUserChatDelay] = useState(() => getStoredChatDelaySeconds() ?? DEFAULT_CHAT_DELAY_SECONDS);
-  const [mobileFullscreenChat, setMobileFullscreenChat] = useState(false);
-  const [mobileViewportSize, setMobileViewportSize] = useState({ width: 0, height: 0 });
   const playerRef = useRef(null);
-  const mobileViewerFullscreen = isMobile && mobileFullscreenChat;
-  const mobileViewportLooksLandscape =
-    mobileViewportSize.width > 0 &&
-    mobileViewportSize.height > 0 &&
-    mobileViewportSize.width > mobileViewportSize.height;
-  const mobileFullscreenSideLayout = mobileViewerFullscreen && (mobileViewportLooksLandscape || !isPortrait);
-  const useStackedMobileLayout = mobileViewerFullscreen ? !mobileFullscreenSideLayout : isPortrait;
-  const fullscreenViewportHeight = mobileViewerFullscreen
-    ? mobileViewportSize.height
-      ? `${mobileViewportSize.height}px`
-      : "100svh"
-    : "100%";
-  const fullscreenViewportWidth = mobileViewerFullscreen
-    ? mobileViewportSize.width
-      ? `${mobileViewportSize.width}px`
-      : "100vw"
-    : "100%";
+  const { mobileViewerFullscreen, mobileFullscreenSideLayout, useStackedMobileLayout,
+    fullscreenViewportHeight, fullscreenViewportWidth, toggleFullscreen: handleMobileFullscreenChatToggle } = useMobileViewer({ isMobile, isPortrait });
 
   useEffect(() => {
     let disposed = false;
@@ -115,68 +99,8 @@ export default function Vod(props) {
     return;
   }, [currentTime, vod, playerRef]);
 
-  useEffect(() => {
-    if (!isMobile && mobileFullscreenChat) {
-      setMobileFullscreenChat(false);
-    }
-  }, [isMobile, mobileFullscreenChat]);
-
-  useEffect(() => {
-    if (!mobileViewerFullscreen) return;
-    const prevHtmlOverflow = document.documentElement.style.overflow;
-    const prevBodyOverflow = document.body.style.overflow;
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.documentElement.style.overflow = prevHtmlOverflow;
-      document.body.style.overflow = prevBodyOverflow;
-    };
-  }, [mobileViewerFullscreen]);
-
-  useEffect(() => {
-    if (!mobileViewerFullscreen) return;
-
-    let raf = null;
-    let settleTimer = null;
-    const applyViewportSize = () => {
-      const vv = window.visualViewport;
-      const width = Math.round((vv && vv.width) || window.innerWidth || 0);
-      const height = Math.round((vv && vv.height) || window.innerHeight || 0);
-      setMobileViewportSize((prev) => (prev.width === width && prev.height === height ? prev : { width, height }));
-    };
-
-    const queueApply = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(applyViewportSize);
-      if (settleTimer) clearTimeout(settleTimer);
-      settleTimer = setTimeout(applyViewportSize, 220);
-    };
-
-    queueApply();
-    window.addEventListener("resize", queueApply);
-    window.addEventListener("orientationchange", queueApply);
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", queueApply);
-    }
-
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      if (settleTimer) clearTimeout(settleTimer);
-      window.removeEventListener("resize", queueApply);
-      window.removeEventListener("orientationchange", queueApply);
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", queueApply);
-      }
-    };
-  }, [mobileViewerFullscreen]);
-
   const handleExpandClick = () => {
     setShowMenu(!showMenu);
-  };
-
-  const handleMobileFullscreenChatToggle = () => {
-    if (!isMobile) return;
-    setMobileFullscreenChat((prev) => !prev);
   };
 
   useEffect(() => {
@@ -199,39 +123,37 @@ export default function Vod(props) {
     }
   }, [timestamp, playerRef]);
 
-  const copyTimestamp = () => {
-    navigator.clipboard.writeText(`${window.location.origin}${location.pathname}?t=${toHMS(currentTime)}`);
-  };
-
   if (vod === null) return <NotFound />;
   if (vod === undefined || drive === undefined) return <Loading />;
   const originalTwitchVodUrl = getOriginalTwitchVodUrl(vod);
 
   return (
     <Box
+      className="soft-vod-watch-shell soft-custom-watch-shell"
       sx={{
         height: fullscreenViewportHeight,
         width: fullscreenViewportWidth,
         p: mobileViewerFullscreen
           ? "max(env(safe-area-inset-top), 6px) max(env(safe-area-inset-right), 6px) max(env(safe-area-inset-bottom), 6px) max(env(safe-area-inset-left), 6px)"
-          : { xs: 0.75, md: 1 },
+          : isMobile ? "max(env(safe-area-inset-top), 6px) max(env(safe-area-inset-right), 6px) max(env(safe-area-inset-bottom), 6px) max(env(safe-area-inset-left), 6px)" : { xs: 0.75, md: 1 },
         boxSizing: "border-box",
         minHeight: 0,
+        overflowY: isMobile ? "auto" : undefined,
         position: mobileViewerFullscreen ? "fixed" : "relative",
         inset: mobileViewerFullscreen ? 0 : "auto",
-        zIndex: mobileViewerFullscreen ? 1400 : "auto",
+        zIndex: mobileViewerFullscreen ? 1200 : "auto",
         background: mobileViewerFullscreen ? "rgba(8, 12, 20, 0.84)" : "transparent",
         backdropFilter: mobileViewerFullscreen ? "blur(6px)" : "none",
       }}
     >
-      <Box sx={{ display: "flex", flexDirection: mobileFullscreenSideLayout ? "row" : isPortrait ? "column" : "row", height: "100%", width: "100%", gap: mobileFullscreenSideLayout ? 0.6 : 0 }}>
+      <Box sx={{ display: "flex", flexDirection: useStackedMobileLayout ? "column" : "row", height: mobileViewerFullscreen || !useStackedMobileLayout ? "100%" : "auto", minHeight: mobileViewerFullscreen ? "100%" : 0, width: "100%", gap: mobileFullscreenSideLayout ? 0.6 : 0 }}>
         <Box
-          className="soft-glass"
+          className="soft-glass soft-vod-viewer-panel"
           sx={{
             display: "flex",
-            height: "100%",
+            height: useStackedMobileLayout ? "auto" : "100%",
             width: mobileFullscreenSideLayout ? "auto" : "100%",
-            flex: "1 1 auto",
+            flex: useStackedMobileLayout ? "0 0 auto" : "1 1 auto",
             flexDirection: "column",
             alignItems: "flex-start",
             minWidth: 0,
@@ -242,7 +164,7 @@ export default function Vod(props) {
             gap: 0.5,
           }}
         >
-          <Tooltip title="home">
+          {!isMobile && <Tooltip title="home">
             <IconButton
               onClick={() => navigate("/")}
               aria-label="home"
@@ -264,13 +186,24 @@ export default function Vod(props) {
             >
               <HomeIcon fontSize="small" />
             </IconButton>
-          </Tooltip>
+          </Tooltip>}
+          {isMobile && (
+            <Tooltip title={mobileViewerFullscreen ? "Exit fullscreen viewer" : "Open fullscreen with chat"}>
+              <IconButton onClick={handleMobileFullscreenChatToggle} aria-label={mobileViewerFullscreen ? "Exit fullscreen viewer" : "Open fullscreen with chat"}
+                sx={{ position: mobileViewerFullscreen ? "fixed" : "absolute", top: mobileViewerFullscreen ? "max(env(safe-area-inset-top), 10px)" : 10,
+                  left: mobileViewerFullscreen ? "max(env(safe-area-inset-left), 10px)" : "auto", right: mobileViewerFullscreen ? "auto" : 10, zIndex: mobileViewerFullscreen ? 1201 : 6,
+                  width: 44, height: 44, color: "var(--soft-text-primary)", background: "var(--soft-control-strip-bg)", border: "1px solid var(--soft-control-strip-border)" }}>
+                {mobileViewerFullscreen ? <CloseFullscreenIcon fontSize="small" /> : <OpenInFullIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
+          )}
           <Box
             className="soft-player-stage"
             sx={{
               width: "100%",
               minHeight: 0,
-              flex: 1,
+              flex: useStackedMobileLayout ? "0 0 auto" : 1,
+              aspectRatio: useStackedMobileLayout ? "16 / 9" : "auto",
               display: "grid",
               placeItems: "center",
               position: "relative",
@@ -310,7 +243,7 @@ export default function Vod(props) {
               <CustomPlayer playerRef={playerRef} setCurrentTime={setCurrentTime} setPlaying={setPlaying} delay={delay} setDelay={setDelay} type={type} vod={vod} timestamp={timestamp} />
             </Box>
           </Box>
-          <Box
+          {!isMobile && <Box
             sx={{
               position: "absolute",
               bottom: showMenu ? 8 : 10,
@@ -329,22 +262,14 @@ export default function Vod(props) {
                 <ExpandMoreIcon />
               </ExpandMore>
             </Tooltip>
-            {isMobile && (
-              <Tooltip title={mobileViewerFullscreen ? "Exit Fullscreen + Chat" : "Open Fullscreen + Chat (Overlay)"}>
-                <IconButton
-                  onClick={handleMobileFullscreenChatToggle}
-                  aria-label={mobileViewerFullscreen ? "Exit fullscreen with chat" : "Open fullscreen with chat"}
-                  sx={{ width: 34, height: 34, color: "var(--soft-text-primary)", borderRadius: "999px", ml: 0.15 }}
-                >
-                  {mobileViewerFullscreen ? <CloseFullscreenIcon fontSize="small" /> : <OpenInFullIcon fontSize="small" />}
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
-          <Collapse in={showMenu} timeout="auto" unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
+          </Box>}
+          <Collapse in={isMobile || showMenu} timeout="auto" unmountOnExit sx={{ minHeight: "auto !important", width: "100%" }}>
             <Box
+              className="soft-vod-viewer-controls"
               sx={{
                 display: "flex",
+                flexWrap: isMobile ? "wrap" : "nowrap",
+                gap: isMobile ? 0.5 : 0,
                 p: 1,
                 alignItems: "center",
                 borderRadius: "14px",
@@ -353,12 +278,14 @@ export default function Vod(props) {
                 boxShadow: "var(--soft-control-strip-inset)",
                 mx: 0.4,
                 mb: 0.2,
+                ...(isMobile && { "& button, & a.MuiIconButton-root": { minWidth: 44, minHeight: 44 } }),
               }}
             >
+              {isMobile && <Tooltip title="Back home"><IconButton onClick={() => navigate("/")} aria-label="Back home"><HomeIcon fontSize="small" /></IconButton></Tooltip>}
               {chapter && <Chapters chapters={vod.chapters} chapter={chapter} setChapter={setChapter} setTimestamp={setTimestamp} />}
-              <Box sx={{ minWidth: 0 }}>
-                <CustomWidthTooltip title={vod.title}>
-                  <Typography fontWeight={550} variant="body1" noWrap={true}>{`${vod.title}`}</Typography>
+              <Box sx={{ minWidth: 0, ...(isMobile && { flex: "1 0 100%", order: -1, pb: 0.4 }) }}>
+                <CustomWidthTooltip title={vod.title} disableInteractive={isMobile} disableHoverListener={isMobile}>
+                  <Typography fontWeight={550} variant="body1" noWrap={!isMobile} sx={isMobile ? { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere", lineHeight: 1.4 } : undefined}>{vod.title}</Typography>
                 </CustomWidthTooltip>
                 {vod.vodNotice && (
                   <Typography
@@ -393,7 +320,7 @@ export default function Vod(props) {
                   </Button>
                 )}
               </Box>
-              <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
+              <Box sx={{ marginLeft: "auto", display: isMobile ? "contents" : "flex", alignItems: "center" }}>
                 <Box sx={{ ml: 0.5 }}>
                   {drive && drive[0] && (
                     <Tooltip title={`Download Vod`}>
@@ -404,11 +331,8 @@ export default function Vod(props) {
                   )}
                 </Box>
                 <Box sx={{ ml: 0.5 }}>
-                  <Tooltip title={`Copy Current Timestamp`}>
-                    <IconButton onClick={copyTimestamp} color="primary" aria-label="Copy Current Timestamp" rel="noopener noreferrer" target="_blank">
-                      <ContentCopyIcon />
-                    </IconButton>
-                  </Tooltip>
+                  <CopyTimestampButton disabled={!Number.isFinite(currentTime)}
+                    url={Number.isFinite(currentTime) ? `${window.location.origin}${location.pathname}?t=${toHMS(currentTime)}` : ""} />
                 </Box>
                 <VodReactions vodId={vod.id} compact lazy={false} sx={{ ml: 0.7 }} />
               </Box>
@@ -427,6 +351,8 @@ export default function Vod(props) {
             userChatDelay={userChatDelay}
             setUserChatDelay={setUserChatDelay}
             forceSideLayout={mobileFullscreenSideLayout}
+            mobileControls={isMobile}
+            fillAvailable={mobileViewerFullscreen && useStackedMobileLayout}
           />
         }
       </Box>

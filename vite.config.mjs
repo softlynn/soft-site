@@ -20,6 +20,16 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       {
+        name: "soft-site-offline-editor",
+        enforce: "pre",
+        transform(code, id) {
+          if (!/[\\/]@puckeditor[\\/]core[\\/].*\.css(?:\?.*)?$/.test(id)) return null;
+          // The local editor must load when external font services are blocked.
+          // Puck already supplies a system-font fallback for Inter.
+          return code.replace(/@import\s+["']https:\/\/rsms\.me\/inter\/inter\.css["'];?\s*/g, "");
+        },
+      },
+      {
         name: "soft-site-jsx",
         enforce: "pre",
         async transform(code, id) {

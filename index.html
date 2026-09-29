@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="./favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#101010" />
     <script>
       (function () {
@@ -12,6 +12,7 @@
           var mode = saved === "light" || saved === "dark" ? saved : "dark";
           document.documentElement.setAttribute("data-soft-theme", mode);
           document.documentElement.style.backgroundColor = mode === "dark" ? "#101010" : "#ffe1ad";
+          document.querySelector('meta[name="theme-color"]').content = mode === "dark" ? "#101010" : "#ffe1ad";
         } catch (error) {}
       })();
     </script>
