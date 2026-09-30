@@ -39,8 +39,8 @@ export default function EditablePage({ path }) {
         overscrollBehaviorY: "contain",
       }}
     >
-      <Box sx={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
-        <Box sx={{ flex: "1 0 auto" }}>
+      <Box className="soft-page-layout" sx={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
+        <Box className="soft-page-content" sx={{ flex: "1 0 auto" }}>
           <Render config={designConfig} data={page.puck} metadata={{ page, design }} />
         </Box>
         {isHomePage && <HomeSponsor />}
