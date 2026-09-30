@@ -136,29 +136,64 @@
   letter-spacing: .01em;
 }
 
-/* Keep the complete home composition within ordinary laptop viewports. */
-@media (min-width: 901px) and (max-height: 1000px) {
+/* The artwork occupies real space; spare desktop height surrounds the composition. */
+@media (min-width: 900px) {
+  body:has(.soft-editable-page-scroll--home) {
+    --soft-home-header-height: clamp(104px, calc(30dvh - 138px), 192px);
+    --soft-home-art-height: clamp(156px, calc(100dvh - var(--soft-home-header-height) - 462px), 360px);
+  }
+
   body:has(.soft-editable-page-scroll--home) .soft-site-header {
-    padding-top: 0;
-    padding-bottom: 0;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   body:has(.soft-editable-page-scroll--home) .soft-site-logo-video {
-    width: 300px;
-    height: 132px;
+    width: clamp(248px, calc(var(--soft-home-header-height) * 2.27), 354px) !important;
+    height: var(--soft-home-header-height) !important;
   }
 
   body:has(.soft-editable-page-scroll--home) .soft-site-socials {
-    transform: translateY(-7px);
+    transform: translateY(-7px) !important;
+  }
+
+  .soft-editable-page-scroll--home .soft-page-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .soft-editable-page-scroll--home .soft-page-content > .soft-design-page {
+    width: 100%;
+    min-height: 0;
   }
 
   .soft-public-page.soft-editable-page-scroll--home .soft-home-hero {
-    margin-top: -44px;
-    margin-bottom: -100px;
+    margin: 0 auto 16px;
+  }
+
+  .soft-public-page.soft-editable-page-scroll--home .soft-home-hero > .MuiStack-root {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
   }
 
   .soft-public-page.soft-editable-page-scroll--home .soft-home-hero > .MuiStack-root > div:first-child {
-    width: min(270px, 25vw, max(160px, calc(80dvh - 350px))) !important;
+    width: calc(var(--soft-home-art-height) * 1.067) !important;
+    justify-self: center;
+  }
+
+  .soft-public-page.soft-editable-page-scroll--home .soft-home-hero > .MuiStack-root > div:first-child > div {
+    aspect-ratio: auto;
+    height: var(--soft-home-art-height);
+  }
+
+  .soft-public-page.soft-editable-page-scroll--home .soft-home-hero > .MuiStack-root > div:last-child {
+    margin: 0;
+  }
+
+  .soft-public-page.soft-editable-page-scroll--home .soft-home-hero img {
+    transform: none;
   }
 
   .soft-editable-page-scroll--home .soft-home-sponsor {
