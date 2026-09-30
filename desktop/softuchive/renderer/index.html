@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#171819" />
+    <meta name="theme-color" content="#111012" />
     <title>Softuchive</title>
     <link rel="stylesheet" href="./app.css" />
   </head>
@@ -12,8 +12,8 @@
     <div class="app-shell">
       <header class="toolbar">
         <div class="brand" aria-label="Softuchive">
-          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8.5h14v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zM4 4.5h16v4H4zM9.5 12h5" /></svg></span>
-          <h1>soft<span>archive</span></h1>
+          <img class="brand-wordmark" src="../assets/soft-wordmark.webp" width="112" height="63" alt="" />
+          <div class="brand-copy"><h1>softuchive</h1><p>Your stream archive</p></div>
         </div>
         <div class="toolbar-actions">
           <button id="archive-now-button" class="button button-primary" disabled>Check recordings</button>
@@ -28,14 +28,15 @@
         </div>
       </header>
       <nav class="section-nav" aria-label="Archive sections">
-        <a href="#overview" class="active" aria-current="page">Uploads</a>
-        <a href="#automation">Settings<span id="settings-dot" class="dirty-dot" hidden aria-label="Unsaved changes"></span></a>
-        <a href="#activity">Activity</a>
+        <a href="#overview" class="active" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4m-4 4 4-4 4 4M5 14v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5" /></svg>Uploads</a>
+        <a href="#automation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9m4 0h3M4 17h3m4 0h9" /><circle cx="15" cy="7" r="2" /><circle cx="9" cy="17" r="2" /></svg>Settings<span id="settings-dot" class="dirty-dot" hidden aria-label="Unsaved changes"></span></a>
+        <a href="#activity"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 7v5l3 2" /></svg>Activity</a>
       </nav>
       <main class="workspace">
         <div id="notice-banner" class="notice" data-tone="info" role="status" aria-live="polite">Loading archive status…</div>
         <section id="overview" class="section-block" aria-label="Uploads">
           <article class="current-card">
+            <p class="section-kicker">Archive status</p>
             <div class="status-strip" data-status="idle">
               <span class="status-dot" aria-hidden="true"></span>
               <div class="status-copy"><h2 id="poll-state-value">Checking…</h2><p id="poll-stage-value">Getting your archive ready.</p></div>
@@ -61,7 +62,7 @@
           </footer>
         </section>
         <section id="automation" class="section-block" aria-labelledby="automation-title" hidden>
-          <div class="section-heading"><h2 id="automation-title">Settings</h2><button id="save-settings-button" class="button button-secondary" disabled>Save changes</button></div>
+          <div class="section-heading"><div><h2 id="automation-title">Settings</h2><p>How your recordings are found and uploaded.</p></div><button id="save-settings-button" class="button button-secondary" disabled>Save changes</button></div>
           <div class="settings-list">
             <section class="setting-row">
               <div class="setting-copy"><h3>Automatic checks</h3><p>Check for recordings, even when this app is closed.</p><p class="setting-detail" id="auto-task-detail">Checking schedule…</p></div>
@@ -91,7 +92,7 @@
           <p class="settings-note">Automatic checks switch on or off immediately. Save changes to update the interval, OBS option, or folder.</p>
         </section>
         <section id="activity" class="section-block" aria-labelledby="activity-title" hidden>
-          <div class="section-heading"><h2 id="activity-title">Recent activity</h2></div>
+          <div class="section-heading"><div><h2 id="activity-title">Recent activity</h2><p>The latest from your archive.</p></div></div>
           <div class="event-list" id="event-list"></div>
           <details class="disclosure"><summary>Latest run summary</summary><pre id="summary-box">No archive summary yet.</pre></details>
           <details class="disclosure recovery-panel"><summary>Recover an interrupted archive</summary><div><p>Clear interrupted markers and check again. Completed archives are kept.</p><button id="restart-button" class="button button-danger" disabled>Restart interrupted run</button></div></details>
