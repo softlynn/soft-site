@@ -223,3 +223,120 @@ test('an empty lock left by a process exiting during release is reclaimed', asyn
     assert.deepEqual(await fs.readdir(dir), ['vods.json']);
   } finally { await fs.rm(dir, { recursive: true, force: true }); }
 });
+
+async function withEmptyLockContention(run) {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'soft-archive-reclaim-race-'));
+  const file = path.join(dir, 'vods.json');
+  const lock = `${file}.lock`;
+  const originalRename = fs.rename;
+  const originalRmdir = fs.rmdir;
+  try {
+    await fs.writeFile(file, '[{"id":"1","count":0}]');
+    await fs.mkdir(lock);
+    fs.rename = async (source, destination, ...options) => {
+      if (destination === lock) {
+        // Windows cannot rename over an existing empty directory. Model that
+        // collision on POSIX too, so the reclaim regressions run on both OSes.
+        try { await fs.stat(lock); }
+        catch (error) {
+          if (error.code === 'ENOENT') return originalRename(source, destination, ...options);
+          throw error;
+        }
+        throw Object.assign(new Error('fixture lock contention'), { code: 'EEXIST' });
+      }
+      return originalRename(source, destination, ...options);
+    };
+    await run({ dir, file, lock, originalRename, originalRmdir });
+  } finally {
+    fs.rename = originalRename;
+    fs.rmdir = originalRmdir;
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+}
+
+test('transient reclaim errors retry before entering the archive transaction', async () => {
+  await withEmptyLockContention(async ({ dir, file, lock, originalRmdir }) => {
+    const codes = ['EPERM', 'EACCES', 'EBUSY'];
+    let denied = 0;
+    fs.rmdir = async (target, ...options) => {
+      if (target === lock && denied < codes.length) {
+        throw Object.assign(new Error('fixture directory still in use'), { code: codes[denied++] });
+      }
+      return originalRmdir(target, ...options);
+    };
+    await updateArchiveDatabase(file, rows => {
+      assert.equal(denied, codes.length);
+      rows[0].count += 1;
+      return rows;
+    }, { timeoutMs: 1000 });
+    assert.equal(JSON.parse(await fs.readFile(file, 'utf8'))[0].count, 1);
+    assert.deepEqual(await fs.readdir(dir), ['vods.json']);
+  });
+});
+
+test('reclaim contention never removes a replacement live owner or enters its transaction', async () => {
+  await withEmptyLockContention(async ({ dir, file, lock, originalRename, originalRmdir }) => {
+    const ownerName = 'owner-live-successor.json';
+    const owner = JSON.stringify({ pid: process.pid, hostname: os.hostname(), token: 'live-successor' });
+    let replaced = false;
+    let entered = false;
+    fs.rmdir = async (target, ...options) => {
+      if (target === lock && !replaced) {
+        replaced = true;
+        await originalRmdir(lock);
+        const successor = path.join(dir, 'successor-candidate');
+        await fs.mkdir(successor);
+        await fs.writeFile(path.join(successor, ownerName), owner);
+        await originalRename(successor, lock);
+        throw Object.assign(new Error('fixture successor won the race'), { code: 'EPERM' });
+      }
+      return originalRmdir(target, ...options);
+    };
+    await assert.rejects(updateArchiveDatabase(file, rows => {
+      entered = true;
+      return rows;
+    }, { timeoutMs: 80 }), { code: 'ARCHIVE_LOCK_BUSY' });
+    assert.equal(entered, false);
+    assert.equal(await fs.readFile(path.join(lock, ownerName), 'utf8'), owner);
+    assert.equal(JSON.parse(await fs.readFile(file, 'utf8'))[0].count, 0);
+    assert.deepEqual((await fs.readdir(dir)).sort(), ['vods.json', 'vods.json.lock']);
+  });
+});
+
+test('persistent reclaim denial remains bounded and cannot grant archive ownership', async () => {
+  await withEmptyLockContention(async ({ file, lock, originalRmdir }) => {
+    let attempts = 0;
+    let entered = false;
+    fs.rmdir = async (target, ...options) => {
+      if (target === lock) {
+        attempts += 1;
+        throw Object.assign(new Error('fixture permission denied'), { code: 'EACCES' });
+      }
+      return originalRmdir(target, ...options);
+    };
+    await assert.rejects(updateArchiveDatabase(file, rows => {
+      entered = true;
+      return rows;
+    }, { timeoutMs: 80 }), { code: 'ARCHIVE_LOCK_BUSY' });
+    assert.ok(attempts >= 1);
+    assert.equal(entered, false);
+    assert.equal(JSON.parse(await fs.readFile(file, 'utf8'))[0].count, 0);
+  });
+});
+
+test('reclaim I/O failures still propagate without entering the archive transaction', async () => {
+  await withEmptyLockContention(async ({ file, lock, originalRmdir }) => {
+    const failure = Object.assign(new Error('fixture I/O failure'), { code: 'EIO' });
+    let entered = false;
+    fs.rmdir = async (target, ...options) => {
+      if (target === lock) throw failure;
+      return originalRmdir(target, ...options);
+    };
+    await assert.rejects(updateArchiveDatabase(file, rows => {
+      entered = true;
+      return rows;
+    }), error => error === failure);
+    assert.equal(entered, false);
+    assert.equal(JSON.parse(await fs.readFile(file, 'utf8'))[0].count, 0);
+  });
+});

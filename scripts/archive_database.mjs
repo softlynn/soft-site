@@ -71,7 +71,10 @@ async function reclaimDeadLocalOwner(lockPath) {
     const owner = JSON.parse(await fs.readFile(path.join(lockPath, files[0]), 'utf8'));
     if (owner.hostname === os.hostname() && !processIsAlive(owner.pid)) await removeOwner(lockPath, files[0]);
   } catch (error) {
-    if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error;
+    // Windows may deny inspection/removal while another process releases or
+    // replaces this directory. Retry acquisition under its existing deadline;
+    // only a successful candidate rename can grant ownership.
+    if (!['ENOENT', 'EPERM', 'EACCES', 'EBUSY'].includes(error.code) && !(error instanceof SyntaxError)) throw error;
   }
 }
 
