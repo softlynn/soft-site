@@ -136,6 +136,49 @@
   letter-spacing: .01em;
 }
 
+/* Keep the complete home composition within ordinary laptop viewports. */
+@media (min-width: 901px) and (max-height: 1000px) {
+  body:has(.soft-editable-page-scroll--home) .soft-site-header {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  body:has(.soft-editable-page-scroll--home) .soft-site-logo-video {
+    width: 300px;
+    height: 132px;
+  }
+
+  body:has(.soft-editable-page-scroll--home) .soft-site-socials {
+    transform: translateY(-7px);
+  }
+
+  .soft-public-page.soft-editable-page-scroll--home .soft-home-hero {
+    margin-top: -44px;
+    margin-bottom: -100px;
+  }
+
+  .soft-public-page.soft-editable-page-scroll--home .soft-home-hero > .MuiStack-root > div:first-child {
+    width: min(270px, 25vw, max(160px, calc(80dvh - 350px))) !important;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-sponsor {
+    padding-top: 4px;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-sponsor__offer {
+    margin-bottom: 4px;
+  }
+
+  .soft-editable-page-scroll--home .soft-home-sponsor__link {
+    padding-block: 5px;
+  }
+
+  .soft-public-page.soft-editable-page-scroll--home .soft-site-footer {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .soft-public-page .soft-home-hero a:hover {
     color: var(--soft-text);
