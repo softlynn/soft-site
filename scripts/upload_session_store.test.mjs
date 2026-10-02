@@ -54,3 +54,50 @@ test('a failed disk flush cannot acknowledge or replace a newer upload checkpoin
     await fs.rm(dir, { recursive: true, force: true });
   }
 });
+
+test('overlapping store instances preserve save order and capture the requested checkpoint', async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'soft-upload-session-order-'));
+  const originalRename = fs.rename;
+  let unblock, signalStarted;
+  const gate = new Promise(resolve => { unblock = resolve; });
+  const started = new Promise(resolve => { signalStarted = resolve; });
+  let held = false;
+  try {
+    const first = createUploadSessionStore(dir, '/recordings/one.mkv');
+    const second = createUploadSessionStore(dir, '/recordings/one.mkv');
+    fs.rename = async (...args) => {
+      if (path.dirname(args[1]) === dir && !held) { held = true; signalStarted(); await gate; }
+      return originalRename(...args);
+    };
+    const earlier = first.save({ version: 1, confirmedBytes: 8 });
+    await started;
+    const latest = { version: 1, confirmedBytes: 16, videoId: 'completed-id' };
+    const later = second.save(latest);
+    latest.confirmedBytes = 0;
+    unblock();
+    await Promise.all([earlier, later]);
+    assert.deepEqual(await first.load(), { version: 1, confirmedBytes: 16, videoId: 'completed-id' });
+  } finally { unblock(); fs.rename = originalRename; await fs.rm(dir, { recursive: true, force: true }); }
+});
+
+test('clearing a session waits for an outstanding save and cannot be undone by it', async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'soft-upload-session-clear-'));
+  const originalRename = fs.rename;
+  let unblock, signalStarted;
+  const gate = new Promise(resolve => { unblock = resolve; });
+  const started = new Promise(resolve => { signalStarted = resolve; });
+  try {
+    const store = createUploadSessionStore(dir, '/recordings/one.mkv');
+    fs.rename = async (...args) => {
+      if (path.dirname(args[1]) === dir) { signalStarted(); await gate; }
+      return originalRename(...args);
+    };
+    const save = store.save({ version: 1, videoId: 'completed-id' });
+    await started;
+    const clear = createUploadSessionStore(dir, '/recordings/one.mkv').save(null);
+    unblock();
+    await Promise.all([save, clear]);
+    assert.equal(await store.load(), null);
+    assert.deepEqual(await fs.readdir(dir), []);
+  } finally { unblock(); fs.rename = originalRename; await fs.rm(dir, { recursive: true, force: true }); }
+});

@@ -83,3 +83,57 @@ test("cleanup failures retain the session so a later poll can finish cleanup", a
     await fs.access(copy.path);
   });
 });
+
+test("session cleanup failure keeps the manifest so the next poll can finish after media deletion", async () => {
+  await withCopy(async ({ source, copy, dir, sessionStore }) => {
+    const checkpoint = { status: "completed", source: { size: source.size, modifiedAtMs: source.modifiedAtMs } };
+    const failingStore = { ...sessionStore, save: async () => { throw new Error("session busy"); } };
+    await assert.rejects(releaseUploadArtifacts({ checkpoint, recording: copy, sessionStore: failingStore, removeCopy: removeUploadCopy }), /session busy/);
+    await assert.rejects(fs.access(copy.path), { code: "ENOENT" });
+    await fs.access(copy.uploadCopyManifestPath);
+    assert.equal((await sessionStore.load()).confirmedBytes, 5);
+    const recovered = await findVerifiedUploadCopy(source.path, checkpoint, dir);
+    assert.equal(recovered.path, copy.path);
+    assert.equal(await releaseUploadArtifacts({ checkpoint, recording: recovered, sessionStore, removeCopy: removeUploadCopy }), true);
+    assert.equal(await sessionStore.load(), null);
+    await assert.rejects(fs.access(copy.uploadCopyManifestPath), { code: "ENOENT" });
+  });
+});
+
+test("cleanup recovery rejects a malformed output identity even after the media is gone", async () => {
+  await withCopy(async ({ source, copy, dir }) => {
+    const checkpoint = { status: "completed", source: { size: source.size, modifiedAtMs: source.modifiedAtMs } };
+    const manifest = JSON.parse(await fs.readFile(copy.uploadCopyManifestPath, "utf8"));
+    await fs.rm(copy.path);
+    delete manifest.output;
+    await fs.writeFile(copy.uploadCopyManifestPath, JSON.stringify(manifest));
+    assert.equal(await findVerifiedUploadCopy(source.path, checkpoint, dir), null);
+  });
+});
+
+test("cleanup recovery rejects a copy whose recorded output identity changed", async () => {
+  await withCopy(async ({ source, copy, dir }) => {
+    const checkpoint = { status: "completed", source: { size: source.size, modifiedAtMs: source.modifiedAtMs } };
+    const manifest = JSON.parse(await fs.readFile(copy.uploadCopyManifestPath, "utf8"));
+    manifest.output.changedAtMs -= 1;
+    await fs.writeFile(copy.uploadCopyManifestPath, JSON.stringify(manifest));
+    assert.equal(await findVerifiedUploadCopy(source.path, checkpoint, dir), null);
+  });
+});
+
+test("old terminal checkpoints cannot clean a newer source with the same size and modification time", async () => {
+  await withCopy(async ({ source, copy, dir }) => {
+    const originalIdentity = { size: source.size, modifiedAtMs: source.modifiedAtMs, changedAtMs: 1000, fileId: "123", deviceId: "456" };
+    const checkpoint = { status: "completed", source: originalIdentity };
+    const manifest = JSON.parse(await fs.readFile(copy.uploadCopyManifestPath, "utf8"));
+    for (const [key, replacement] of [["changedAtMs", 2000], ["fileId", "234"], ["deviceId", "567"]]) {
+      manifest.source = { ...source, ...originalIdentity, [key]: replacement };
+      await fs.writeFile(copy.uploadCopyManifestPath, JSON.stringify(manifest));
+      assert.equal(await findVerifiedUploadCopy(source.path, checkpoint, dir), null, `${key} mismatch allowed cleanup`);
+    }
+    manifest.source = { ...source, ...originalIdentity };
+    await fs.writeFile(copy.uploadCopyManifestPath, JSON.stringify(manifest));
+    assert.equal((await findVerifiedUploadCopy(source.path, checkpoint, dir)).path, copy.path);
+    await fs.access(copy.path);
+  });
+});

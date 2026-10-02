@@ -7,7 +7,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
 ];
 
 const UPLOAD_ACTIVE_STATES = new Set(["preparing", "uploading", "finalizing"]);
-const UPLOAD_TERMINAL_STATES = new Set(["done", "error", "paused"]);
+const UPLOAD_TERMINAL_STATES = new Set(["done", "error", "paused", "skipped"]);
 const UPLOAD_VISIBLE_STATES = new Set([...UPLOAD_ACTIVE_STATES, ...UPLOAD_TERMINAL_STATES]);
 
 const allowedOriginsFromEnv = (env) =>
@@ -138,13 +138,13 @@ const uploadSessionSnapshot = (row) => ({
   streamDate: row?.stream_date || null,
   state: row?.state || null,
   message: row?.message || null,
-  percent: Number.isFinite(Number(row?.percent)) ? Number(row.percent) : null,
-  uploadedBytes: Number.isFinite(Number(row?.uploaded_bytes)) ? Number(row.uploaded_bytes) : null,
-  totalBytes: Number.isFinite(Number(row?.total_bytes)) ? Number(row.total_bytes) : null,
+  percent: parseFiniteNumberOrNull(row?.percent),
+  uploadedBytes: parseFiniteNumberOrNull(row?.uploaded_bytes),
+  totalBytes: parseFiniteNumberOrNull(row?.total_bytes),
   youtubeVideoId: row?.youtube_video_id || null,
-  createdAtMs: Number.isFinite(Number(row?.created_at_ms)) ? Number(row.created_at_ms) : null,
-  updatedAtMs: Number.isFinite(Number(row?.updated_at_ms)) ? Number(row.updated_at_ms) : null,
-  expiresAtMs: Number.isFinite(Number(row?.expires_at_ms)) ? Number(row.expires_at_ms) : null,
+  createdAtMs: parseFiniteNumberOrNull(row?.created_at_ms),
+  updatedAtMs: parseFiniteNumberOrNull(row?.updated_at_ms),
+  expiresAtMs: parseFiniteNumberOrNull(row?.expires_at_ms),
 });
 
 const requireUploadWriteSecret = (request, env) => {
@@ -157,6 +157,7 @@ const requireUploadWriteSecret = (request, env) => {
 };
 
 const parseFiniteNumberOrNull = (value) => {
+  if (value == null || !["number", "string"].includes(typeof value) || String(value).trim() === "") return null;
   const num = Number(value);
   return Number.isFinite(num) ? num : null;
 };
@@ -172,11 +173,18 @@ const computeUploadSessionExpiry = (state, nowMs) => {
       return nowMs + 15 * 60 * 1000;
     case "error":
     case "paused":
+    case "skipped":
       return nowMs + 2 * 60 * 60 * 1000;
     default:
       return nowMs + 30 * 60 * 1000;
   }
 };
+
+// Apply ordering inside the upsert, not a read/check/write race. Aborting a
+// client request cannot recall an update already running at the server.
+const uploadStageSql = (column) => `CASE ${column}
+  WHEN 'preparing' THEN 0 WHEN 'uploading' THEN 1 WHEN 'finalizing' THEN 2
+  WHEN 'error' THEN 3 WHEN 'paused' THEN 3 WHEN 'skipped' THEN 3 WHEN 'done' THEN 4 ELSE 0 END`;
 
 const upsertUploadSession = async (env, payload) => {
   const sessionId = sanitizeUploadSessionId(payload?.sessionId);
@@ -217,7 +225,9 @@ const upsertUploadSession = async (env, payload) => {
       total_bytes = COALESCE(excluded.total_bytes, vod_upload_sessions.total_bytes),
       youtube_video_id = COALESCE(excluded.youtube_video_id, vod_upload_sessions.youtube_video_id),
       updated_at_ms = excluded.updated_at_ms,
-      expires_at_ms = excluded.expires_at_ms`
+      expires_at_ms = excluded.expires_at_ms
+    WHERE excluded.updated_at_ms >= vod_upload_sessions.updated_at_ms
+      AND (${uploadStageSql("excluded.state")}) >= (${uploadStageSql("vod_upload_sessions.state")})`
   )
     .bind(
       sessionId,

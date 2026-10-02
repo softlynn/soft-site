@@ -412,3 +412,188 @@ test("malformed saved checkpoints fail closed before reusing IDs or making reque
     assert.equal(requests, 0);
   } finally { await f.cleanup(); }
 });
+
+test("a chunk acknowledgement cannot skip source bytes beyond the request", async () => {
+  const upload = await loadUploader();
+  const f = await fixture(600_000);
+  let mediaRequests = 0;
+  try {
+    await assert.rejects(upload({ ...f, metadata, chunkSizeBytes: 262_144, request: async (options) => {
+      if (options.method === "POST") return response(200, { location });
+      mediaRequests++;
+      assert.equal((await consume(options.data)).length, 262_144);
+      return response(308, { range: "bytes=0-399999" });
+    } }), { code: "SOFTUCHIVE_UPLOAD_PROTOCOL_ERROR" });
+    assert.equal(mediaRequests, 1);
+    assert.equal(f.stored.confirmedBytes, 0);
+  } finally { await f.cleanup(); }
+});
+
+test("live and recovered acknowledgements cannot erase durable server progress", async (t) => {
+  const upload = await loadUploader();
+  for (const restart of [false, true]) {
+    for (const range of [undefined, "bytes=0-131071"]) {
+      await t.test(`${restart ? "recovered" : "live"} ${range ?? "missing range"}`, async () => {
+        const f = await fixture();
+        let mediaRequests = 0;
+        let paused = false;
+        const options = { ...f, metadata, chunkSizeBytes: 262_144,
+          readControl: async () => ({ pauseRequested: paused }), request: async (request) => {
+            if (request.method === "POST") return response(200, { location });
+            await consume(request.data);
+            if (++mediaRequests === 1) {
+              paused = restart;
+              return response(308, { range: "bytes=0-262143" });
+            }
+            return response(308, range ? { range } : {});
+          } };
+        try {
+          await assert.rejects(upload(options), { code: restart ? "SOFTUCHIVE_PAUSED" : "SOFTUCHIVE_UPLOAD_PROTOCOL_ERROR" });
+          if (restart) {
+            await assert.rejects(upload({ ...f, metadata, request: async (request) => {
+              assert.equal(request.headers["Content-Range"], "bytes */600000");
+              return response(308, range ? { range } : {});
+            } }), { code: "SOFTUCHIVE_UPLOAD_PROTOCOL_ERROR" });
+          }
+          assert.equal(f.stored.confirmedBytes, 262_144, "contradictory acknowledgement overwrote the checkpoint");
+        } finally { await f.cleanup(); }
+      });
+    }
+  }
+});
+
+test("complete-byte 308 status responses exhaust the retry budget without resending media", async () => {
+  const upload = await loadUploader();
+  const f = await fixture(100);
+  let probes = 0;
+  let mediaRequests = 0;
+  try {
+    await assert.rejects(upload({ ...f, metadata, retryBaseDelayMs: 0, maxRetries: 2, request: async (options) => {
+      if (options.method === "POST") return response(200, { location });
+      if (options.headers["Content-Length"] === "0") probes++;
+      else { mediaRequests++; await consume(options.data); }
+      return response(308, { range: "bytes=0-99" });
+    } }), { code: "SOFTUCHIVE_UPLOAD_RETRY_EXHAUSTED" });
+    assert.equal(probes, 3);
+    assert.equal(mediaRequests, 1);
+    assert.equal(f.stored.confirmedBytes, 100);
+    assert.equal(f.stored.finalAttempted, true);
+    assert.equal(f.stored.videoId, undefined);
+  } finally { await f.cleanup(); }
+});
+
+test("cancellation interrupts an unresolved control read before HTTP starts", { timeout: 1000 }, async () => {
+  const upload = await loadUploader();
+  const f = await fixture(100);
+  const controller = new AbortController();
+  const reading = Promise.withResolvers();
+  const reason = Object.assign(new Error("cancel while reading control"), { code: "ABORT_ERR" });
+  let requests = 0;
+  try {
+    const uploading = upload({ ...f, metadata, signal: controller.signal, readControl: () => {
+      reading.resolve();
+      return new Promise(() => {});
+    }, request: async () => { requests++; return response(500); } });
+    const rejected = assert.rejects(uploading, (error) => error === reason);
+    await reading.promise;
+    controller.abort(reason);
+    await rejected;
+    assert.equal(requests, 0);
+  } finally { controller.abort(); await f.cleanup(); }
+});
+
+test("cancellation delivered during a control read cannot start HTTP afterward", async () => {
+  const upload = await loadUploader();
+  const f = await fixture(100);
+  const controller = new AbortController();
+  let requests = 0;
+  try {
+    await assert.rejects(upload({ ...f, metadata, signal: controller.signal, readControl: async () => {
+      controller.abort(Object.assign(new Error("cancelled"), { code: "ABORT_ERR" }));
+      return {};
+    }, request: async () => { requests++; return response(403); } }), { code: "ABORT_ERR" });
+    assert.equal(requests, 0);
+  } finally { await f.cleanup(); }
+});
+
+test("an unresolved control read cannot disable the HTTP stall watchdog", { timeout: 1000 }, async () => {
+  const upload = await loadUploader();
+  const f = await fixture(100);
+  let awaitingResponse = false;
+  let pendingReads = 0;
+  let requestSignal;
+  try {
+    await assert.rejects(upload({ ...f, metadata, maxRetries: 0, stallTimeoutMs: 40, controlPollIntervalMs: 10,
+      readControl: async () => {
+        if (!awaitingResponse) return {};
+        pendingReads++;
+        return new Promise(() => {});
+      }, request: async (options) => {
+        if (options.method === "POST") return response(200, { location });
+        await consume(options.data);
+        requestSignal = options.signal;
+        awaitingResponse = true;
+        return new Promise(() => {});
+      } }), { code: "SOFTUCHIVE_UPLOAD_RETRY_EXHAUSTED" });
+    assert.equal(pendingReads, 1);
+    assert.equal(requestSignal.aborted, true);
+    assert.equal(f.stored.finalAttempted, true);
+  } finally { await f.cleanup(); }
+});
+
+test("real Gaxios oversized final responses retain the session and recover by status probe", async () => {
+  const upload = await loadUploader();
+  const f = await fixture(100);
+  let starts = 0;
+  let mediaRequests = 0;
+  let probes = 0;
+  const server = createServer(async (incoming, outgoing) => {
+    await consume(incoming);
+    if (incoming.method === "POST") {
+      starts++;
+      outgoing.writeHead(200, { Location: location }); outgoing.end();
+    } else if (incoming.headers["content-range"] === "bytes */100") {
+      probes++;
+      outgoing.writeHead(201, { "Content-Type": "application/json" });
+      outgoing.end(JSON.stringify({ id: "bounded-response-recovered" }));
+    } else {
+      mediaRequests++;
+      outgoing.writeHead(201, { "Content-Type": "application/json" });
+      outgoing.end(JSON.stringify({ id: "bounded-response-recovered", excessive: "x".repeat(2 * 1024 * 1024) }));
+    }
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const client = new Gaxios();
+  try {
+    const port = server.address().port;
+    assert.equal(await upload({ ...f, metadata, retryBaseDelayMs: 0,
+      request: (options) => client.request({ ...options, url: `http://127.0.0.1:${port}/offline` }) }), "bounded-response-recovered");
+    assert.equal(starts, 1);
+    assert.equal(mediaRequests, 1);
+    assert.equal(probes, 1);
+  } finally {
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+    await f.cleanup();
+  }
+});
+
+test("overflowing Retry-After headers cannot create an infinite retry deadline", { timeout: 1000 }, async () => {
+  const upload = await loadUploader();
+  const f = await fixture(100);
+  const controller = new AbortController();
+  let mediaRequests = 0;
+  let probes = 0;
+  try {
+    assert.equal(await upload({ ...f, metadata, signal: controller.signal, retryBaseDelayMs: 0, request: async (options) => {
+      if (options.method === "POST") return response(200, { location });
+      if (options.headers["Content-Length"] === "0") { probes++; return response(201, {}, { id: "retry-header-recovered" }); }
+      mediaRequests++;
+      await consume(options.data);
+      return response(503, { "retry-after": "9".repeat(307) });
+    } }), "retry-header-recovered");
+    assert.equal(mediaRequests, 1);
+    assert.equal(probes, 1);
+  } finally { controller.abort(); await f.cleanup(); }
+});

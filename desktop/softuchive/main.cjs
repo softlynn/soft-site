@@ -21,6 +21,8 @@ let mainWindow = null;
 let pipelineChild = null;
 let repoRoot = null;
 let softuchiveStateModulePromise = null;
+let pipelineFileIoModulePromise = null;
+let pipelineRunLockModulePromise = null;
 let statePollHandle = null;
 let obsPollHandle = null;
 let lastBroadcastKey = "";
@@ -162,6 +164,20 @@ const getSoftuchiveStateModule = async () => {
   const modulePath = pathToFileURL(path.join(root, "scripts", "softuchive_state.mjs")).href;
   softuchiveStateModulePromise = import(modulePath);
   return softuchiveStateModulePromise;
+};
+
+const getPipelineFileIoModule = async () => {
+  if (pipelineFileIoModulePromise) return pipelineFileIoModulePromise;
+  const modulePath = pathToFileURL(path.join(resolveRepoRoot(), "scripts", "pipeline_file_io.mjs")).href;
+  pipelineFileIoModulePromise = import(modulePath);
+  return pipelineFileIoModulePromise;
+};
+
+const getPipelineRunLockModule = async () => {
+  if (pipelineRunLockModulePromise) return pipelineRunLockModulePromise;
+  const modulePath = pathToFileURL(path.join(resolveRepoRoot(), "scripts", "pipeline_run_lock.mjs")).href;
+  pipelineRunLockModulePromise = import(modulePath);
+  return pipelineRunLockModulePromise;
 };
 
 const getArchiveFolderFallback = () => {
@@ -396,35 +412,80 @@ const openExistingPath = async (targetPath, fallbackDirectory = "") => {
 const restartInterruptedArchive = async () => {
   const state = await buildAppState();
   if (!state.ok) return { ok: false, message: state.error || "Could not inspect archive state." };
-  if (state.runtime?.run?.active) {
+  if (state.runtime?.run?.active || state.pipelineChildActive || pipelineLaunchInFlight) {
     return { ok: false, message: "An archive is still running. Pause or wait for it before forcing a restart." };
   }
 
-  const currentState = await readJsonFile(pipelineStatePath(), {
-    processedFiles: {},
-    processedVodIds: {},
-  });
-  const processedFiles = currentState?.processedFiles && typeof currentState.processedFiles === "object" ? currentState.processedFiles : {};
-  let cleared = 0;
+  // The scheduled worker shares this lock: an inactive UI snapshot alone does
+  // not authorize rewriting recovery state while another process starts a run.
+  const { acquirePipelineRunLock } = await getPipelineRunLockModule();
+  const configuredLockPath = String(process.env.PIPELINE_RUN_LOCK_PATH || "").trim();
+  const lockPath = path.resolve(resolveRepoRoot(), configuredLockPath || path.join("scripts", ".state", "pipeline-run.lock.json"));
+  const releaseRunLock = await acquirePipelineRunLock(lockPath);
+  if (!releaseRunLock) return { ok: false, message: "An archive worker is still running. Wait for it before restarting." };
+  let retried = 0;
+  try {
+    // Recovery evidence must never fall back to an empty history when the file
+    // exists but cannot be read or parsed. Only first-run absence permits defaults.
+    let rawState;
+    try {
+      rawState = await fsPromises.readFile(pipelineStatePath(), "utf8");
+    } catch (error) {
+      if (error.code !== "ENOENT") {
+        throw new Error("Cannot read pipeline-state.json. Check file permissions and disk access before restarting.");
+      }
+    }
+    let currentState = { processedFiles: {}, processedVodIds: {} };
+    if (rawState !== undefined) {
+      try { currentState = JSON.parse(rawState); }
+      catch { throw new Error("Invalid JSON in pipeline-state.json. Repair or restore recovery history before restarting."); }
+    }
+    const isRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+    if (!isRecord(currentState)) {
+      throw new Error("Archive recovery state must be a JSON object. Repair or restore pipeline-state.json before restarting.");
+    }
+    for (const key of ["processedFiles", "processedVodIds"]) {
+      if (!Object.hasOwn(currentState, key)) currentState[key] = {};
+      if (!isRecord(currentState[key]) || Object.values(currentState[key]).some((entry) => !isRecord(entry))) {
+        throw new Error(`Archive recovery state ${key} is invalid. Repair or restore pipeline-state.json before restarting.`);
+      }
+    }
+    const processedFiles = currentState.processedFiles;
 
-  for (const [filePath, entry] of Object.entries(processedFiles)) {
-    const status = String(entry?.status || "").toLowerCase();
-    if (!["processing", "paused"].includes(status)) continue;
-    delete processedFiles[filePath];
-    cleared += 1;
+    for (const [filePath, entry] of Object.entries(processedFiles)) {
+      const status = String(entry?.status || "").toLowerCase();
+      if (!["processing", "paused"].includes(status)) continue;
+      // Keep the source/copy binding and any completed upload evidence. Removing
+      // this marker could let a replaced recording start a duplicate upload.
+      processedFiles[filePath] = {
+        ...entry,
+        status: "error",
+        updatedAt: new Date().toISOString(),
+        error: "Restart requested; retained source and prepared upload identity for recovery.",
+      };
+      retried += 1;
+    }
+
+    currentState.processedFiles = processedFiles;
+    const { writeJsonFileAtomic } = await getPipelineFileIoModule();
+    try {
+      await writeJsonFileAtomic(pipelineStatePath(), currentState, { durable: true });
+    } catch {
+      throw new Error("Cannot save pipeline-state.json. Check disk space and file permissions before restarting.");
+    }
+
+    const stateModule = await getSoftuchiveStateModule();
+    await stateModule.writeSoftuchiveControl(resolveRepoRoot(), { pauseRequested: false });
+  } finally {
+    await releaseRunLock();
   }
 
-  currentState.processedFiles = processedFiles;
-  await writeJsonFile(pipelineStatePath(), currentState);
-
-  const stateModule = await getSoftuchiveStateModule();
-  await stateModule.writeSoftuchiveControl(resolveRepoRoot(), { pauseRequested: false });
   const result = await launchPipelineRun("restart");
   if (!result.ok) return result;
 
   return {
     ok: true,
-    message: cleared > 0 ? `Cleared ${cleared} interrupted archive marker(s) and restarted polling.` : "Restarted polling.",
+    message: retried > 0 ? `Queued ${retried} interrupted archive(s) for retry and restarted polling.` : "Restarted polling.",
   };
 };
 

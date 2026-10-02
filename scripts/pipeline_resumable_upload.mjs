@@ -2,12 +2,37 @@ import fs from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
+import { performance } from "node:perf_hooks";
 import { DynamicUploadThrottleStream } from "./pipeline_upload_stream.mjs";
 
 const START_URL = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status&notifySubscribers=true";
+const MAX_RESPONSE_BYTES = 1024 * 1024;
 const TRANSIENT_STATUS = new Set([408, 429, 500, 502, 503, 504]);
 const TRANSIENT_CODES = new Set(["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EAI_AGAIN", "ENOTFOUND", "EPIPE", "ERR_STREAM_PREMATURE_CLOSE", "UND_ERR_SOCKET", "UND_ERR_CONNECT_TIMEOUT", "SOFTUCHIVE_UPLOAD_STALLED"]);
+const transientTransportError = (error) => {
+  // Gaxios/fetch can wrap socket and response-body errors in `cause`.
+  // Bound traversal because injected clients may provide cyclic error objects.
+  for (let depth = 0; error && depth < 4; depth++, error = error.cause) {
+    if (TRANSIENT_CODES.has(error.code) || error.name === "FetchError" || error.name === "AbortError") return true;
+  }
+  return false;
+};
 const failure = (message, code, extras = {}) => Object.assign(new Error(message), { code, ...extras });
+const abortReason = (signal) => signal.reason instanceof Error ? signal.reason : failure("Upload cancelled.", "ABORT_ERR");
+// Control readers may be waiting on disk I/O. Cancellation must not wait for
+// that I/O, and a late result must not restart an already cancelled request.
+const readWithAbort = (read, signal) => {
+  if (!signal) return read();
+  if (signal.aborted) return Promise.reject(abortReason(signal));
+  return new Promise((resolve, reject) => {
+    const aborted = () => { signal.removeEventListener("abort", aborted); reject(abortReason(signal)); };
+    signal.addEventListener("abort", aborted, { once: true });
+    Promise.resolve().then(() => {
+      if (signal.aborted) throw abortReason(signal);
+      return read();
+    }).then(resolve, reject).finally(() => signal.removeEventListener("abort", aborted));
+  });
+};
 const validVideoId = (value) => typeof value === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const header = (headers, name) => typeof headers?.get === "function" ? headers.get(name) : Object.entries(headers || {}).find(([key]) => key.toLowerCase() === name.toLowerCase())?.[1];
 const fingerprintFile = async (filePath) => {
@@ -34,8 +59,10 @@ const acknowledgedBytes = (response, totalBytes) => {
 const retryAfterMs = (response) => {
   const value = header(response?.headers, "retry-after");
   if (!value) return 0;
-  const seconds = Number(value);
-  return Number.isFinite(seconds) ? Math.max(0, seconds * 1000) : Math.max(0, Date.parse(value) - Date.now()) || 0;
+  const text = String(value).trim();
+  const milliseconds = /^\d+$/.test(text) ? Number(text) * 1000 : Date.parse(text) - Date.now();
+  // Malformed or overflowing headers must not produce an infinite deadline.
+  return Number.isSafeInteger(milliseconds) ? Math.max(0, milliseconds) : 0;
 };
 
 // request is an authenticated Gaxios-compatible function. Session snapshots contain
@@ -76,14 +103,14 @@ export const uploadFileResumable = async ({
   let needProbe = Boolean(session);
   let lastReportAt = 0;
   let lastReportedPercent = -1;
-  let lastSpeedAt = Date.now();
+  let lastSpeedAt = performance.now();
   let lastSpeedBytes = confirmedBytes;
   let currentMbps = 0;
   let control = {};
 
   const report = (bytes = confirmedBytes, force = false, complete = false) => {
     if (typeof onProgress !== "function") return;
-    const now = Date.now();
+    const now = performance.now();
     const percent = complete ? 100 : Math.min(99, Math.floor(bytes / totalBytes * 100));
     if (!force && percent === lastReportedPercent && now - lastReportAt < 800) return;
     if (now - lastSpeedAt >= 500) {
@@ -97,20 +124,21 @@ export const uploadFileResumable = async ({
       uploadMbps: control.uploadPaused ? 0 : currentMbps, uploadPaused: control.uploadPaused === true,
       uploadThrottleMbps: control.uploadThrottleMbps ?? null });
   };
-  const checkControl = async () => {
-    if (signal?.aborted) throw signal.reason instanceof Error ? signal.reason : failure("Upload cancelled.", "ABORT_ERR");
-    control = await readControl();
+  const checkControl = async (activeSignal = signal) => {
+    const nextControl = await readWithAbort(readControl, activeSignal);
+    if (activeSignal?.aborted) throw abortReason(activeSignal);
+    control = nextControl;
     if (control.skipRequested) throw failure("Skip requested for this VOD.", "SOFTUCHIVE_SKIPPED");
     if (control.pauseRequested) throw failure("Archive paused; this upload can resume from YouTube's confirmed position.", "SOFTUCHIVE_PAUSED");
     return control;
   };
   const waitControlled = async (milliseconds = 0) => {
-    const deadline = Date.now() + milliseconds;
+    const deadline = performance.now() + milliseconds;
     do {
       await checkControl();
       if (control.uploadPaused) report(confirmedBytes);
-      if (!control.uploadPaused && Date.now() >= deadline) return;
-      await delay(control.uploadPaused ? controlPollIntervalMs : Math.min(controlPollIntervalMs, Math.max(1, deadline - Date.now())), undefined, { signal });
+      if (!control.uploadPaused && performance.now() >= deadline) return;
+      await delay(control.uploadPaused ? controlPollIntervalMs : Math.min(controlPollIntervalMs, Math.max(1, deadline - performance.now())), undefined, { signal });
     } while (true);
   };
   const persist = async (patch) => {
@@ -124,7 +152,7 @@ export const uploadFileResumable = async ({
     let source;
     let body;
     let sent = 0;
-    let lastProgressAt = Date.now();
+    let lastProgressAt = performance.now();
     let checking = false;
     let settled = false;
     let abortReject;
@@ -134,17 +162,25 @@ export const uploadFileResumable = async ({
       controller.abort(error);
       abortReject(error);
     };
-    const externalAbort = () => abort(signal.reason instanceof Error ? signal.reason : failure("Upload cancelled.", "ABORT_ERR"));
+    const externalAbort = () => abort(abortReason(signal));
     signal?.addEventListener("abort", externalAbort, { once: true });
+    if (signal?.aborted) externalAbort();
     const timer = setInterval(() => {
-      if (checking || settled) return;
+      if (settled || controller.signal.aborted) return;
+      // The watchdog cannot sit behind an asynchronous control read: a stuck
+      // reader would otherwise disable both request and response timeouts.
+      if (control.uploadPaused) lastProgressAt = performance.now();
+      else if (performance.now() - lastProgressAt >= stallTimeoutMs) {
+        abort(failure("YouTube upload stopped responding; its saved session can be resumed.", "SOFTUCHIVE_UPLOAD_STALLED"));
+        return;
+      }
+      if (checking) return;
       checking = true;
       void (async () => {
         try {
-          await checkControl();
+          await checkControl(controller.signal);
           if (settled) return;
-          if (control.uploadPaused) { lastProgressAt = Date.now(); report(range ? range.start + sent : confirmedBytes); }
-          else if (Date.now() - lastProgressAt >= stallTimeoutMs) abort(failure("YouTube upload stopped responding; its saved session can be resumed.", "SOFTUCHIVE_UPLOAD_STALLED"));
+          if (control.uploadPaused) { lastProgressAt = performance.now(); report(range ? range.start + sent : confirmedBytes); }
         } catch (error) { abort(error); }
         finally { checking = false; }
       })();
@@ -152,23 +188,27 @@ export const uploadFileResumable = async ({
     try {
       if (range) {
         source = createReadStream(filePath, { start: range.start, end: range.end, highWaterMark: 64 * 1024 });
-        body = new DynamicUploadThrottleStream({ readControl: checkControl, onChunkSent: (bytes, patch) => {
+        body = new DynamicUploadThrottleStream({ readControl: () => checkControl(controller.signal), onChunkSent: (bytes, patch) => {
           control = { ...control, ...patch };
           sent += bytes;
-          if (bytes > 0 || patch.uploadPaused) lastProgressAt = Date.now();
+          if (bytes > 0 || patch.uploadPaused) lastProgressAt = performance.now();
           report(range.start + sent);
         } });
         source.on("error", abort);
         body.on("error", abort);
         source.pipe(body);
       }
-      const response = await Promise.race([Promise.resolve().then(() => request({ ...options, ...(body ? { data: body } : {}),
-        signal: controller.signal, retry: false, maxRedirects: 0, timeout: 0, validateStatus: () => true })), aborted]);
+      const response = await Promise.race([Promise.resolve().then(() => {
+        if (controller.signal.aborted) throw controller.signal.reason;
+        return request({ ...options, ...(body ? { data: body } : {}),
+          signal: controller.signal, retry: false, maxRedirects: 0, timeout: 0,
+          maxContentLength: MAX_RESPONSE_BYTES, validateStatus: () => true });
+      }), aborted]);
       return response;
     } catch (error) {
       if (controller.signal.aborted) throw controller.signal.reason;
       if (error?.response) return error.response;
-      if (TRANSIENT_CODES.has(error?.code) || error?.name === "FetchError" || error?.name === "AbortError") throw failure("YouTube connection was interrupted; the saved upload will be resumed.", "SOFTUCHIVE_UPLOAD_NETWORK_ERROR", { transient: true });
+      if (transientTransportError(error)) throw failure("YouTube connection was interrupted; the saved upload will be resumed.", "SOFTUCHIVE_UPLOAD_NETWORK_ERROR", { transient: true });
       // Gaxios errors can embed authenticated URLs. Never propagate their message.
       throw failure("YouTube upload request failed. The saved session is retained.", "SOFTUCHIVE_UPLOAD_REQUEST_FAILED");
     } finally {
@@ -193,13 +233,16 @@ export const uploadFileResumable = async ({
     failures++;
     if (failures > maxRetries) throw failure("YouTube upload retries exhausted; the saved session will resume on the next run.", "SOFTUCHIVE_UPLOAD_RETRY_EXHAUSTED");
     needProbe = Boolean(session);
-    await waitControlled(Math.max(retryAfterMs(response), Math.min(60_000, retryBaseDelayMs * 2 ** (failures - 1))));
+    const backoffMs = retryBaseDelayMs === 0 ? 0 : Math.min(60_000, retryBaseDelayMs * 2 ** (failures - 1));
+    await waitControlled(Math.max(retryAfterMs(response), backoffMs));
   };
 
   while (true) {
     await waitControlled();
     if (!sameFingerprint(await fingerprintFile(filePath), fingerprint)) throw failure("Upload source changed while uploading. The saved session has been retained.", "SOFTUCHIVE_UPLOAD_SOURCE_CHANGED");
     let response;
+    let requestRange = null;
+    let probing = false;
     try {
       if (!session) {
         response = await performRequest({ method: "POST", url: START_URL, headers: {
@@ -214,15 +257,17 @@ export const uploadFileResumable = async ({
           continue;
         }
       } else if (needProbe || confirmedBytes >= totalBytes) {
+        probing = true;
         response = await performRequest({ method: "PUT", url: session.url,
           headers: { "Content-Length": "0", "Content-Range": `bytes */${totalBytes}` }, data: "" });
       } else {
         const end = Math.min(totalBytes - 1, confirmedBytes + activeChunkSize - 1);
+        requestRange = { start: confirmedBytes, end };
         if (end === totalBytes - 1) await persist({ finalAttempted: true });
         response = await performRequest({ method: "PUT", url: session.url, headers: {
           "Content-Type": "video/x-matroska", "Content-Length": String(end - confirmedBytes + 1),
           "Content-Range": `bytes ${confirmedBytes}-${end}/${totalBytes}`,
-        } }, { start: confirmedBytes, end });
+        } }, requestRange);
       }
     } catch (error) {
       if (error?.transient || error?.code === "SOFTUCHIVE_UPLOAD_STALLED") { await retry(); continue; }
@@ -231,10 +276,12 @@ export const uploadFileResumable = async ({
     if (session && response.status >= 200 && response.status < 300) return complete(response);
     if (session && response.status === 308) {
       const previousBytes = confirmedBytes;
-      confirmedBytes = acknowledgedBytes(response, totalBytes);
+      const nextBytes = acknowledgedBytes(response, requestRange ? requestRange.end + 1 : totalBytes);
+      if (nextBytes < previousBytes) throw failure("YouTube's confirmed upload range moved backwards; the saved checkpoint needs verification.", "SOFTUCHIVE_UPLOAD_PROTOCOL_ERROR");
+      confirmedBytes = nextBytes;
       await persist({ confirmedBytes, finalAttempted: confirmedBytes >= totalBytes });
       report(confirmedBytes, true);
-      if (confirmedBytes <= previousBytes && !needProbe) { await retry(response); continue; }
+      if (confirmedBytes === previousBytes && (!probing || confirmedBytes === totalBytes)) { await retry(response); continue; }
       if (confirmedBytes > previousBytes) failures = 0;
       needProbe = false;
       if (retryAfterMs(response)) await waitControlled(retryAfterMs(response));

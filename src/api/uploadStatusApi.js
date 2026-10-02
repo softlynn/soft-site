@@ -11,6 +11,7 @@ const deriveUploadsApiBase = () => {
 export const UPLOADS_API_BASE = deriveUploadsApiBase();
 
 const toFiniteNumberOrNull = (value) => {
+  if (value == null || !["number", "string"].includes(typeof value) || String(value).trim() === "") return null;
   const num = Number(value);
   return Number.isFinite(num) ? num : null;
 };

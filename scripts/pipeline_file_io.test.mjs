@@ -3,6 +3,7 @@ import test from "node:test";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { spawn } from "node:child_process";
 import { createSnapshotWriter, serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
 
 test("a burst of progress snapshots waits for the current write and persists only the latest pending state", async () => {
@@ -79,6 +80,48 @@ test("a durable flush failure preserves the previous file and removes its tempor
     assert.deepEqual(await fs.readdir(dir), ["checkpoint.json"]);
   } finally {
     fs.open = originalOpen;
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("killing a writer before atomic replacement leaves the last committed checkpoint readable", async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "softuchive-interrupted-write-"));
+  const file = path.join(dir, "checkpoint.json");
+  const moduleUrl = new URL("./pipeline_file_io.mjs", import.meta.url).href;
+  let child, exited, timeout;
+  try {
+    await writeJsonFileAtomic(file, { confirmedBytes: 8, finalAttempted: true }, { durable: true });
+    const script = `import fs from 'node:fs/promises';
+      import { writeJsonFileAtomic } from ${JSON.stringify(moduleUrl)};
+      fs.rename = async () => {
+        process.send({ ready: true });
+        await new Promise(resolve => process.once('message', resolve));
+        throw new Error('interrupted writer must never resume');
+      };
+      await writeJsonFileAtomic(process.argv[1], { confirmedBytes: 16, videoId: 'returned-id' }, { durable: true });`;
+    child = spawn(process.execPath, ["--input-type=module", "-e", script, file], {
+      windowsHide: true, stdio: ["ignore", "ignore", "pipe", "ipc"],
+    });
+    exited = new Promise(resolve => child.once("exit", resolve));
+    let stderr = "";
+    child.stderr.on("data", chunk => { stderr += chunk; });
+    await new Promise((resolve, reject) => {
+      timeout = setTimeout(() => reject(new Error(`Writer did not reach replacement: ${stderr}`)), 5000);
+      child.once("error", reject);
+      child.once("message", resolve);
+    });
+    clearTimeout(timeout);
+    child.kill();
+    await exited;
+    assert.deepEqual(JSON.parse(await fs.readFile(file, "utf8")), { confirmedBytes: 8, finalAttempted: true });
+    const abandoned = (await fs.readdir(dir)).filter(name => name.endsWith(".tmp"));
+    assert.equal(abandoned.length, 1, "fixture did not leave the interrupted replacement");
+    await writeJsonFileAtomic(file, { confirmedBytes: 16, videoId: "recovered-id" }, { durable: true });
+    assert.deepEqual(JSON.parse(await fs.readFile(file, "utf8")), { confirmedBytes: 16, videoId: "recovered-id" });
+  } finally {
+    clearTimeout(timeout);
+    if (child && child.exitCode === null && child.signalCode === null) child.kill();
+    if (exited) await exited;
     await fs.rm(dir, { recursive: true, force: true });
   }
 });

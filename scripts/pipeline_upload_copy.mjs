@@ -5,6 +5,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
 import { serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
 import { isCurrentProcessRunning } from "./pipeline_run_lock.mjs";
+import { recordingSourceIdentity, recordingSourceMatches } from "./pipeline_recordings.mjs";
 
 const cacheDirectory = (cacheRoot) => path.join(cacheRoot, "youtube-upload-audio1");
 const normalizedPath = (value) => {
@@ -13,25 +14,27 @@ const normalizedPath = (value) => {
 };
 const sourceIdentity = (recording) => ({
   path: path.resolve(recording.path),
-  size: Number(recording.size),
-  modifiedAtMs: Number(recording.modifiedAtMs),
+  ...recordingSourceIdentity(recording),
 });
 const sameSource = (left, right) => typeof right?.path === "string" && normalizedPath(left.path) === normalizedPath(right.path) &&
-  left.size === right.size && left.modifiedAtMs === right.modifiedAtMs;
+  recordingSourceMatches(left, right);
 const outputIdentity = (stat) => ({ size: stat.size, modifiedAtMs: stat.mtimeMs, changedAtMs: stat.ctimeMs });
 
 export const buildTrack1UploadCopyPath = (recording, cacheRoot) => {
   const source = sourceIdentity(recording);
-  const fingerprint = createHash("sha256").update(JSON.stringify({ ...source, path: normalizedPath(source.path) })).digest("hex").slice(0, 24);
+  // Keep the established cache/session key when adding stronger manifest identity
+  // fields; changing the key would orphan resumable uploads created before them.
+  const fingerprint = createHash("sha256").update(JSON.stringify({ path: normalizedPath(source.path), size: source.size, modifiedAtMs: source.modifiedAtMs })).digest("hex").slice(0, 24);
   const base = path.parse(recording.path).name.replace(/[<>:"/\\|?*\x00-\x1F]/g, "_").replace(/\s+/g, " ").trim().slice(0, 72) || "recording";
   return path.join(cacheDirectory(cacheRoot), `${base}.${fingerprint}.track1.mkv`);
 };
 
 const verifySource = async (source) => {
   const stat = await fs.stat(source.path);
-  if (!stat.isFile() || !sameSource(source, { path: source.path, size: stat.size, modifiedAtMs: stat.mtimeMs })) {
+  if (!stat.isFile() || !sameSource(source, { path: source.path, ...recordingSourceIdentity(stat) })) {
     throw Object.assign(new Error("Recording source changed; defer upload preparation until it is stable."), { code: "SOFTUCHIVE_UPLOAD_SOURCE_CHANGED" });
   }
+  return stat;
 };
 
 const readManifest = async (manifestPath) => {
@@ -50,18 +53,23 @@ const makeRecording = (outputPath, manifestPath, stat, source, cacheReused) => (
   cacheReused,
 });
 
-export const ensureTrack1UploadCopy = async (recording, { cacheRoot, prepare, hasUploadSession = async () => false }) => {
+export const ensureTrack1UploadCopy = async (recording, { cacheRoot, prepare, hasUploadSession = async () => false, signal }) => {
   const source = sourceIdentity(recording);
   const outputPath = buildTrack1UploadCopyPath(recording, cacheRoot);
   const manifestPath = `${outputPath}.json`;
   if (normalizedPath(outputPath) === normalizedPath(source.path)) throw new Error("Upload copy cannot replace its source.");
   return serializeFileUpdate(outputPath, async () => {
-    await verifySource(source);
+    signal?.throwIfAborted();
+    const sourceStat = await verifySource(source);
+    // New manifests always retain the strongest local identity, including when
+    // an older caller supplies only size and modification time.
+    Object.assign(source, recordingSourceIdentity(sourceStat));
     const manifest = await readManifest(manifestPath);
     if (manifest?.version === 1 && sameSource(source, manifest.source)) {
       const stat = await fs.stat(outputPath).catch((error) => { if (error.code === "ENOENT") return null; throw error; });
       if (stat?.isFile() && stat.size > 0 && JSON.stringify(outputIdentity(stat)) === JSON.stringify(manifest.output)) {
         await verifySource(source);
+        signal?.throwIfAborted();
         return makeRecording(outputPath, manifestPath, stat, source, true);
       }
     }
@@ -75,8 +83,11 @@ export const ensureTrack1UploadCopy = async (recording, { cacheRoot, prepare, ha
     }
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     const partialPath = `${outputPath}.${process.pid}.${randomUUID()}.partial.mkv`;
+    let preparationError;
     try {
+      signal?.throwIfAborted();
       await prepare(partialPath);
+      signal?.throwIfAborted();
       await verifySource(source);
       const partialStat = await fs.stat(partialPath);
       if (!partialStat.isFile() || partialStat.size <= 0) throw new Error("Prepared upload copy is empty or invalid.");
@@ -85,12 +96,23 @@ export const ensureTrack1UploadCopy = async (recording, { cacheRoot, prepare, ha
       const media = await fs.open(partialPath, "r+");
       try { await media.sync(); }
       finally { await media.close(); }
+      signal?.throwIfAborted();
+      await verifySource(source);
       await fs.rename(partialPath, outputPath);
       const stat = await fs.stat(outputPath);
       await writeJsonFileAtomic(manifestPath, { version: 1, source, output: outputIdentity(stat), completedAt: new Date().toISOString() }, { durable: true });
       return makeRecording(outputPath, manifestPath, stat, source, false);
+    } catch (error) {
+      preparationError = error;
+      throw error;
     } finally {
-      await fs.rm(partialPath, { force: true });
+      try { await fs.rm(partialPath, { force: true }); }
+      catch (cleanupError) {
+        // Keep the actionable ffmpeg/storage/abort failure when Windows still
+        // holds the partial open; orphan cleanup can retry the generated file.
+        if (!preparationError) throw cleanupError;
+        if (preparationError instanceof Error) preparationError.cleanupError = cleanupError;
+      }
     }
   });
 };
@@ -116,7 +138,7 @@ export const cleanupStaleUploadCopyPartials = async (cacheRoot, { staleAgeMs = 1
   }
 };
 
-export const removeUploadCopy = async (recording) => {
+export const removeUploadCopy = async (recording, { afterMediaRemoved } = {}) => {
   const outputPath = recording?.path;
   const originalPath = recording?.originalPath;
   const manifestPath = recording?.uploadCopyManifestPath;
@@ -127,13 +149,18 @@ export const removeUploadCopy = async (recording) => {
   }
   await serializeFileUpdate(outputPath, async () => {
     await fs.rm(outputPath, { force: true });
+    await afterMediaRemoved?.();
     await fs.rm(manifestPath, { force: true });
   });
 };
 
-export const runTrack1Remux = ({ sourcePath, outputPath, ffmpegPath, shouldPause, pauseIntervalMs = 1000,
+export const runTrack1Remux = ({ sourcePath, outputPath, ffmpegPath, shouldPause, pauseIntervalMs = 1000, signal,
   spawnProcess = spawn, setPriority = os.setPriority }) => new Promise((resolve, reject) => {
-  const args = ["-y", "-i", sourcePath, "-map", "0:v?", "-map", "0:a:0?", "-sn", "-dn", "-c", "copy", outputPath];
+  signal?.throwIfAborted();
+  if (normalizedPath(sourcePath) === normalizedPath(outputPath)) throw new Error("Upload copy cannot replace its source.");
+  // Require video, retain every video stream byte-for-byte, and keep only the
+  // first audio stream when present. No encoder or quality conversion is used.
+  const args = ["-nostdin", "-y", "-i", sourcePath, "-map", "0:v", "-map", "0:a:0?", "-sn", "-dn", "-c", "copy", outputPath];
   const child = spawnProcess(ffmpegPath, args, { stdio: "inherit", windowsHide: true });
   let failure = null;
   let settled = false;
@@ -144,20 +171,24 @@ export const runTrack1Remux = ({ sourcePath, outputPath, ffmpegPath, shouldPause
     failure = error;
     try { child.kill(); } catch {}
   };
+  const onAbort = () => requestStop(signal.reason || Object.assign(new Error("Upload copy preparation aborted."), { name: "AbortError" }));
   child.once("spawn", () => {
     try { setPriority(child.pid, os.constants.priority.PRIORITY_BELOW_NORMAL); } catch {}
   });
   child.once("error", (error) => {
-    failure ||= new Error(`Failed to run ffmpeg (${ffmpegPath}): ${error.message}`);
+    failure ||= Object.assign(new Error(`Failed to run ffmpeg (${ffmpegPath}): ${error.message}`, { cause: error }), { code: error.code });
   });
   child.once("close", (code) => {
     settled = true;
     if (pauseTimer) clearInterval(pauseTimer);
+    signal?.removeEventListener("abort", onAbort);
     if (failure) reject(failure);
     else if (code !== 0) reject(new Error(`Failed to create track 1 upload copy (ffmpeg exit code ${code}).`));
     else resolve();
   });
-  if (shouldPause) {
+  signal?.addEventListener("abort", onAbort, { once: true });
+  if (signal?.aborted) onAbort();
+  if (shouldPause && !settled) {
     pauseTimer = setInterval(() => {
       if (checking || settled || failure) return;
       checking = true;

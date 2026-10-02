@@ -4,14 +4,16 @@ import { randomUUID } from "node:crypto";
 import { acquireArchiveFileLock } from "./archive_database.mjs";
 
 const INCOMPLETE_LOCK_GRACE_MS = 30_000;
+const isValidProcessId = (pid) => (typeof pid === "number" || (typeof pid === "string" && /^[1-9]\d*$/.test(pid))) &&
+  Number.isSafeInteger(Number(pid)) && Number(pid) > 0;
 const readJsonFile = async (file, fallback) => {
   try { return JSON.parse(await fs.readFile(file, "utf8")); }
   catch (error) { if (error.code === "ENOENT" || error instanceof SyntaxError) return fallback; throw error; }
 };
 
 export const isCurrentProcessRunning = (pid) => {
+  if (!isValidProcessId(pid)) return false;
   const numericPid = Number(pid);
-  if (!Number.isInteger(numericPid) || numericPid <= 0) return false;
   try {
     process.kill(numericPid, 0);
     return true;
@@ -36,6 +38,9 @@ export const acquirePipelineRunLock = async (lockPath) => {
     const existing = await readJsonFile(lockPath, null);
     // Preserve compatibility with a pipeline already running the old version.
     if (existing?.hostname && existing.hostname !== os.hostname()) return null;
+    // Invalid ownership metadata is not proof that an owner exited. In
+    // particular, a truthy malformed PID must not bypass the incomplete grace.
+    if (existing && Object.hasOwn(existing, "pid") && !isValidProcessId(existing.pid)) return null;
     if (isCurrentProcessRunning(existing?.pid)) return null;
     if (!existing?.pid) {
       const stat = await fs.stat(lockPath).catch((error) => {

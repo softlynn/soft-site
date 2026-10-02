@@ -199,6 +199,55 @@ test('a rejected update releases ownership and corrupt data is never replaced', 
   } finally { await fs.rm(dir, { recursive: true, force: true }); }
 });
 
+test('a missing previously loaded database cannot be silently recreated by reads, saves or maintenance', async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'soft-archive-missing-'));
+  const file = path.join(dir, 'vods.json');
+  try {
+    const original = [{ id: '1', youtube: [{ id: 'existing-part' }] }];
+    await fs.writeFile(file, JSON.stringify(original));
+    const store = createArchiveSnapshotStore(file);
+    const rows = await store.read();
+    rows[0].youtube.push({ id: 'pending-part' });
+    await fs.unlink(file);
+    await assert.rejects(store.read(), { code: 'ARCHIVE_DATABASE_MISSING' });
+    await assert.rejects(store.write(rows), { code: 'ARCHIVE_DATABASE_MISSING' });
+    await assert.rejects(store.mutate(rows, () => assert.fail('missing archive reached updater')), { code: 'ARCHIVE_DATABASE_MISSING' });
+    assert.deepEqual(await fs.readdir(dir), []);
+    await fs.writeFile(file, JSON.stringify(original));
+    await store.write(rows);
+    assert.deepEqual(JSON.parse(await fs.readFile(file, 'utf8'))[0].youtube, [{ id: 'existing-part' }, { id: 'pending-part' }]);
+  } finally { await fs.rm(dir, { recursive: true, force: true }); }
+});
+
+test('a new archive can bootstrap once but its disappearance after saving is an error', async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'soft-archive-bootstrap-'));
+  const file = path.join(dir, 'vods.json');
+  try {
+    const store = createArchiveSnapshotStore(file);
+    const rows = await store.read();
+    assert.deepEqual(rows, []);
+    await store.write(rows);
+    await fs.unlink(file);
+    await assert.rejects(store.write(rows), { code: 'ARCHIVE_DATABASE_MISSING' });
+    assert.deepEqual(await fs.readdir(dir), []);
+  } finally { await fs.rm(dir, { recursive: true, force: true }); }
+});
+
+test('unreadable or malformed lock ownership fails closed without entering the updater', async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'soft-archive-unknown-owner-'));
+  const file = path.join(dir, 'vods.json');
+  const lock = `${file}.lock`;
+  try {
+    await fs.mkdir(lock);
+    const ownerPath = path.join(lock, 'owner-unknown.json');
+    for (const owner of ['null', '{broken', JSON.stringify({ hostname: os.hostname(), pid: 'not-a-pid' })]) {
+      await fs.writeFile(ownerPath, owner);
+      await assert.rejects(updateArchiveDatabase(file, () => assert.fail('unknown owner admitted a writer'), { timeoutMs: 0 }), { code: 'ARCHIVE_LOCK_BUSY' });
+      assert.equal(await fs.readFile(ownerPath, 'utf8'), owner);
+    }
+  } finally { await fs.rm(dir, { recursive: true, force: true }); }
+});
+
 test('an abandoned local owner is reclaimed without treating a foreign host as dead', async () => {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'soft-archive-stale-'));
   const file = path.join(dir, 'vods.json');
