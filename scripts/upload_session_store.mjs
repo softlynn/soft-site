@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { writeJsonFileAtomic } from './pipeline_file_io.mjs';
+import { serializeFileUpdate, writeJsonFileAtomic } from './pipeline_file_io.mjs';
 
 // Session URLs grant access to a pending upload. Keep them in private local
 // state, separate from the public progress payload and the recording's name.
@@ -23,8 +23,11 @@ export function createUploadSessionStore(directory, sourcePath) {
       }
     },
     async save(snapshot) {
-      if (snapshot === null) await fs.rm(filePath, { force: true });
-      else await writeJsonFileAtomic(filePath, snapshot, { durable: true });
+      const captured = structuredClone(snapshot);
+      await serializeFileUpdate(filePath, async () => {
+        if (captured === null) await fs.rm(filePath, { force: true });
+        else await writeJsonFileAtomic(filePath, captured, { durable: true });
+      });
     },
   };
 }

@@ -25,6 +25,8 @@ export class DynamicUploadThrottleStream extends Transform {
     this.onChunkSent = typeof onChunkSent === "function" ? onChunkSent : null;
     this.activeLimitMbps = null;
     this.nextSendAtMs = performance.now();
+    this.timerRoundingCreditMs = 0;
+    this.resumeReadable = null;
     this.waitController = new AbortController();
   }
 
@@ -38,13 +40,52 @@ export class DynamicUploadThrottleStream extends Transform {
 
   _destroy(error, callback) {
     this.waitController.abort();
+    this.resumeReadable?.();
+    this.resumeReadable = null;
     callback(error);
+  }
+
+  _read(size) {
+    const resume = this.resumeReadable;
+    this.resumeReadable = null;
+    resume?.();
+    super._read(size);
+  }
+
+  async waitForReadableDemand() {
+    this.assertActive();
+    if (this.readableLength < this.readableHighWaterMark) return;
+    const blockedAtMs = performance.now();
+    await new Promise((resolve) => { this.resumeReadable = resolve; });
+    this.assertActive();
+    // Preserve rounding compensation for an immediately draining consumer;
+    // actual destination delays must not earn credit toward a later burst.
+    const nowMs = performance.now();
+    if (nowMs - blockedAtMs > this.timerRoundingCreditMs) {
+      this.nextSendAtMs = nowMs;
+      this.timerRoundingCreditMs = 0;
+    }
+  }
+
+  async readActiveControl() {
+    this.assertActive();
+    const { signal } = this.waitController;
+    let onAbort;
+    const cancelled = new Promise((_resolve, reject) => {
+      onAbort = () => reject(createPipelineControlError("Upload stream was closed.", "ERR_STREAM_DESTROYED"));
+      signal.addEventListener("abort", onAbort, { once: true });
+    });
+    try {
+      return await Promise.race([this.readControl(), cancelled]);
+    } finally {
+      signal.removeEventListener("abort", onAbort);
+    }
   }
 
   async waitForControl() {
     while (true) {
       this.assertActive();
-      const control = await this.readControl();
+      const control = await this.readActiveControl();
       this.assertActive();
       if (control.pauseRequested) {
         throw createPipelineControlError("Pause requested during YouTube upload.", SOFTUCHIVE_PAUSE_ERROR_CODE);
@@ -66,6 +107,8 @@ export class DynamicUploadThrottleStream extends Transform {
           uploadMbps: 0,
         });
       }
+      this.nextSendAtMs = performance.now();
+      this.timerRoundingCreditMs = 0;
       await this.wait(500);
     }
   }
@@ -74,6 +117,7 @@ export class DynamicUploadThrottleStream extends Transform {
     if (this.activeLimitMbps === limitMbps) return;
     this.activeLimitMbps = limitMbps;
     this.nextSendAtMs = performance.now();
+    this.timerRoundingCreditMs = 0;
   }
 
   async waitForThrottle(byteLength, limitMbps) {
@@ -85,13 +129,15 @@ export class DynamicUploadThrottleStream extends Transform {
     this.resetLimitWindow(limitMbps);
     const bytesPerSecond = (limitMbps * 1_000_000) / 8;
     const nowMs = performance.now();
-    // A pause or slow destination must not accrue bandwidth credit. Pace each
-    // slice from the current monotonic time instead of averaging over idle time.
-    this.nextSendAtMs = Math.max(nowMs, this.nextSendAtMs) + byteLength / bytesPerSecond * 1000;
+    // Preserve at most the previous timer's rounding error. Without it, rounding
+    // every sub-millisecond slice up to 1 ms caps even a 10 Gbps limit near
+    // 524 Mbps. Idle time still cannot accumulate unbounded bandwidth credit.
+    this.nextSendAtMs = Math.max(nowMs - this.timerRoundingCreditMs, this.nextSendAtMs) + byteLength / bytesPerSecond * 1000;
     const waitForMs = Math.ceil(this.nextSendAtMs - nowMs);
     if (waitForMs > 0) {
       await this.wait(waitForMs);
     }
+    this.timerRoundingCreditMs = Math.min(1, Math.max(0, performance.now() - this.nextSendAtMs));
   }
 
   async sendChunk(chunk) {
@@ -100,13 +146,15 @@ export class DynamicUploadThrottleStream extends Transform {
       const control = await this.waitForControl();
       const limitMbps = normalizeUploadThrottleMbps(control.uploadThrottleMbps);
       const bytesPerSecond = limitMbps ? (limitMbps * 1_000_000) / 8 : chunk.length;
-      const sliceSize = limitMbps ? Math.max(1024, Math.min(64 * 1024, Math.ceil(bytesPerSecond / 8))) : chunk.length - offset;
+      // Keep control checks within roughly 125 ms even at the lowest limit and
+      // bound buffering when an upstream writer supplies a very large chunk.
+      const sliceSize = limitMbps ? Math.max(1, Math.min(64 * 1024, Math.floor(bytesPerSecond / 8))) : 64 * 1024;
       const end = Math.min(chunk.length, offset + sliceSize);
       const slice = chunk.subarray(offset, end);
 
       await this.waitForThrottle(slice.length, limitMbps);
       this.assertActive();
-      this.push(slice);
+      const hasCapacity = this.push(slice);
       if (this.onChunkSent) {
         this.onChunkSent(slice.length, {
           uploadPaused: false,
@@ -114,6 +162,7 @@ export class DynamicUploadThrottleStream extends Transform {
         });
       }
       offset = end;
+      if (!hasCapacity) await this.waitForReadableDemand();
     }
   }
 

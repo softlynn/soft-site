@@ -51,6 +51,17 @@ test("a newly created empty lock is treated as another owner still writing", asy
   });
 });
 
+test("malformed owner PIDs cannot be mistaken for proof that the owner exited", async () => {
+  await withLockPath(async (lockPath) => {
+    for (const pid of ["not-a-pid", -1, 1.5, {}, [], false, true, null, [2147483647]]) {
+      const original = JSON.stringify({ pid, hostname: os.hostname(), token: "unknown-owner" });
+      await fs.writeFile(lockPath, original);
+      assert.equal(await acquirePipelineRunLock(lockPath), null);
+      assert.equal(await fs.readFile(lockPath, "utf8"), original);
+    }
+  });
+});
+
 test("normal acquisition excludes another runner and release allows the next run", async () => {
   await withLockPath(async (lockPath) => {
     const release = await acquirePipelineRunLock(lockPath);

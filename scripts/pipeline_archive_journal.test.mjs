@@ -33,6 +33,7 @@ test("restarting after a remote upload recovers the part and saves the index bef
     persistVods: async (next) => {
       assert.equal(state.processedFiles[file.path].status, "uploaded");
       storedVods = structuredClone(next);
+      return storedVods;
     },
     persistState: async () => { storedState = structuredClone(state); },
   });
@@ -50,10 +51,67 @@ test("an index write failure leaves the uploaded checkpoint available for the ne
   assert.equal(state.processedFiles[file.path].pendingVodEntry.youtube[0].id, "youtube-1");
 });
 
+test("a completion state write failure retains replay evidence through later error persistence", async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "softuchive-completion-retry-"));
+  const statePath = path.join(dir, "state.json");
+  const state = { processedFiles: { [file.path]: checkpoint() } };
+  const uploaded = structuredClone(state.processedFiles[file.path]);
+  const vods = [];
+  let durableVods;
+  try {
+    await assert.rejects(recoverUploadedRecordings({ state, vods,
+      persistVods: async (rows) => { durableVods = structuredClone(rows); return durableVods; },
+      persistState: async () => { throw Object.assign(new Error("fixture state disk failure"), { code: "EIO" }); },
+    }), { code: "EIO" });
+    assert.deepEqual(state.processedFiles[file.path], uploaded);
+    // The outer run's failure handler persists the still-recoverable state.
+    state.processedFiles[file.path].error = "fixture state disk failure";
+    await fs.writeFile(statePath, JSON.stringify(state));
+    const restarted = JSON.parse(await fs.readFile(statePath, "utf8"));
+    assert.equal(await recoverUploadedRecordings({ state: restarted, vods: durableVods,
+      persistVods: async (rows) => rows, persistState: async () => { await fs.writeFile(statePath, JSON.stringify(restarted)); },
+    }), 1);
+    assert.equal(durableVods[0].youtube.length, 1);
+    const completed = JSON.parse(await fs.readFile(statePath, "utf8")).processedFiles[file.path];
+    assert.equal(completed.status, "completed");
+    assert.equal(completed.pendingVodEntry, undefined);
+    assert.equal(completed.error, undefined);
+  } finally { await fs.rm(dir, { recursive: true, force: true }); }
+});
+
+test("a successful archive merge that omits the uploaded ID must retain its recovery checkpoint", async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "softuchive-completion-merge-"));
+  const archivePath = path.join(dir, "vods.json");
+  const state = { processedFiles: { [file.path]: checkpoint() } };
+  const originalCheckpoint = structuredClone(state.processedFiles[file.path]);
+  try {
+    await fs.writeFile(archivePath, JSON.stringify([{ ...vod, youtube: [{ id: "older-part" }] }]));
+    const store = createArchiveSnapshotStore(archivePath);
+    const vods = await store.read();
+    await updateArchiveDatabase(archivePath, () => []);
+    await assert.rejects(completeUploadedRecording({ state, recordingPath: file.path,
+      vodEntry: state.processedFiles[file.path].pendingVodEntry, vods,
+      persistVods: (rows) => store.write(rows), persistState: async () => assert.fail("unindexed video cannot complete"),
+    }), { code: "ARCHIVE_UPLOAD_NOT_INDEXED" });
+    assert.deepEqual(await readArchiveDatabase(archivePath), []);
+    assert.deepEqual(state.processedFiles[file.path], originalCheckpoint);
+  } finally { await fs.rm(dir, { recursive: true, force: true }); }
+});
+
+test("completion requires the actual persistence result instead of assuming the submitted snapshot was saved", async () => {
+  const state = { processedFiles: { [file.path]: checkpoint() } };
+  await assert.rejects(completeUploadedRecording({ state, recordingPath: file.path,
+    vodEntry: state.processedFiles[file.path].pendingVodEntry, vods: [],
+    persistVods: async () => {}, persistState: async () => assert.fail("unverified write cannot complete"),
+  }), /must return the saved VOD array/);
+  assert.equal(state.processedFiles[file.path].status, "uploaded");
+  assert.equal(state.processedFiles[file.path].pendingVodEntry.youtube[0].id, "youtube-1");
+});
+
 test("replay after index save is idempotent and retains other archived parts", async () => {
   const state = { processedFiles: { [file.path]: checkpoint() } };
   const vods = [{ ...vod, youtube: [{ id: "youtube-1", part: 1, type: "vod" }, { id: "youtube-2", part: 2, type: "vod" }] }];
-  await recoverUploadedRecordings({ state, vods, persistVods: async () => {}, persistState: async () => {} });
+  await recoverUploadedRecordings({ state, vods, persistVods: async (rows) => rows, persistState: async () => {} });
   assert.deepEqual(vods[0].youtube.map(({ id }) => id), ["youtube-1", "youtube-2"]);
 });
 
@@ -63,7 +121,7 @@ test("a later part failure cannot erase an already persisted completed part", as
   let durableVods;
   await completeUploadedRecording({
     state, recordingPath: file.path, vodEntry: state.processedFiles[file.path].pendingVodEntry, vods,
-    persistVods: async (next) => { durableVods = structuredClone(next); }, persistState: async () => {},
+    persistVods: async (next) => { durableVods = structuredClone(next); return durableVods; }, persistState: async () => {},
   });
   const secondPath = "/recordings/part2.mkv";
   state.processedFiles[secondPath] = makeUploadedCheckpoint({ recording: { ...file, path: secondPath }, vodEntry: vods[0], youtubeVideoId: "youtube-2", partNumber: 2 });
@@ -87,7 +145,7 @@ const recoverWithPublication = async ({ latest, onDetails, onPrivacy, onMetadata
       setPrivacy: async (id, privacy) => { privacyCalls.push([id, privacy]); return onPrivacy ? onPrivacy(id, privacy) : true; },
       syncMetadata: async (entry) => { metadataCalls.push(structuredClone(entry)); await onMetadata?.(); },
     }),
-    persistVods: async (rows) => { durableVods = structuredClone(rows); }, persistState: async () => {},
+    persistVods: async (rows) => { durableVods = structuredClone(rows); return durableVods; }, persistState: async () => {},
   });
   return { run, state, storedVods, privacyCalls, metadataCalls, detailsCalls, get durableVods() { return durableVods; } };
 };
@@ -173,7 +231,7 @@ test("recovery replaces a stale registered snapshot without undoing later admin 
         syncMetadata: async () => assert.fail("indexed upload should retain metadata"), }),
       persistVods: async (rows) => {
         await updateArchiveDatabase(archivePath, (latest) => latest.map((entry) => entry.id === vod.id ? { ...entry, adminNote: "edited after finalization" } : entry));
-        await store.write(rows);
+        return store.write(rows);
       }, persistState: async () => {},
     });
     const saved = await readArchiveDatabase(archivePath);
@@ -249,4 +307,80 @@ test("normal finalization leaves the returned upload checkpoint pending if priva
   }), /privacy finalization/);
   assert.equal(state.processedFiles[file.path].status, "uploaded");
   assert.equal(state.processedFiles[file.path].youtubeVideoId, "youtube-1");
+});
+
+test("an acknowledged unavailable video retains its checkpoint while a later upload completes", async () => {
+  const secondPath = "/recordings/second.mkv";
+  const state = { processedFiles: {
+    [file.path]: checkpoint(),
+    [secondPath]: makeUploadedCheckpoint({ recording: { ...file, path: secondPath }, vodEntry: vod, youtubeVideoId: "youtube-2", partNumber: 2 }),
+  } };
+  const retained = structuredClone(state.processedFiles[file.path]);
+  const vods = [];
+  const failures = [];
+  const recovered = await recoverUploadedRecordings({ state, vods,
+    finalizeUpload: (entry) => journal.finalizeRecoveredUpload({ checkpoint: entry,
+      readLatestVods: async () => structuredClone(vods), fetchDetails: async () => ({ durationSeconds: 3600 }),
+      setPrivacy: async (id) => id !== "youtube-1", syncMetadata: async () => {},
+    }),
+    persistVods: async (rows) => structuredClone(rows), persistState: async () => {},
+    onRecoveryError: async (error, entry, recordingPath) => {
+      failures.push({ code: error.code, videoId: entry.youtubeVideoId, recordingPath });
+      return true;
+    },
+  });
+  assert.equal(recovered, 1);
+  assert.deepEqual(failures, [{ code: "SOFTUCHIVE_UPLOAD_FINALIZATION_PENDING", videoId: "youtube-1", recordingPath: file.path }]);
+  assert.deepEqual(state.processedFiles[file.path], retained);
+  assert.equal(state.processedFiles[secondPath].status, "completed");
+  assert.deepEqual(vods[0].youtube.map((part) => part.id), ["youtube-2"]);
+});
+
+test("recovery never defers storage failures, corrupt data or controls even with an acknowledgement hook", async () => {
+  const errors = [
+    Object.assign(new Error("disk unavailable"), { code: "EIO" }),
+    new SyntaxError("invalid persisted JSON"),
+    Object.assign(new Error("paused"), { code: "SOFTUCHIVE_PAUSED" }),
+    Object.assign(new Error("skipped"), { code: "SOFTUCHIVE_SKIPPED" }),
+    Object.assign(new Error("cancelled"), { code: "ABORT_ERR" }),
+    Object.assign(new Error("credentials expired"), { code: 401 }),
+  ];
+  for (const failure of errors) {
+    const state = { processedFiles: { [file.path]: checkpoint() } };
+    const retained = structuredClone(state.processedFiles[file.path]);
+    await assert.rejects(recoverUploadedRecordings({ state, vods: [],
+      finalizeUpload: async () => { throw failure; },
+      persistVods: async () => assert.fail("failed finalization cannot persist"), persistState: async () => {},
+      onRecoveryError: async () => assert.fail("unsafe errors must never reach the deferral callback"),
+    }), error => error === failure);
+    assert.deepEqual(state.processedFiles[file.path], retained);
+  }
+  for (const stage of ["archive", "state"]) {
+    const state = { processedFiles: { [file.path]: checkpoint() } };
+    const retained = structuredClone(state.processedFiles[file.path]);
+    const failure = Object.assign(new Error("disk unavailable"), { code: "EIO" });
+    await assert.rejects(recoverUploadedRecordings({ state, vods: [],
+      persistVods: async (rows) => { if (stage === "archive") throw failure; return rows; },
+      persistState: async () => { throw failure; },
+      onRecoveryError: async () => assert.fail("persistence errors cannot be deferred"),
+    }), error => error === failure);
+    assert.deepEqual(state.processedFiles[file.path], retained);
+  }
+});
+
+test("unavailable recovery requires explicit acknowledgement and callback failures propagate", async () => {
+  const unavailable = Object.assign(new Error("video unavailable"), { code: "SOFTUCHIVE_UPLOAD_FINALIZATION_PENDING" });
+  const callbackFailure = new Error("unable to record pending recovery");
+  for (const [onRecoveryError, expected] of [
+    [undefined, unavailable], [async () => false, unavailable], [async () => {}, unavailable],
+    [async () => { throw callbackFailure; }, callbackFailure],
+  ]) {
+    const state = { processedFiles: { [file.path]: checkpoint() } };
+    const retained = structuredClone(state.processedFiles[file.path]);
+    await assert.rejects(recoverUploadedRecordings({ state, vods: [],
+      finalizeUpload: async () => { throw unavailable; },
+      persistVods: async () => assert.fail("unavailable recovery cannot persist"), persistState: async () => {}, onRecoveryError,
+    }), error => error === expected);
+    assert.deepEqual(state.processedFiles[file.path], retained);
+  }
 });

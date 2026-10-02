@@ -2,6 +2,24 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
+test('upload API preserves unknown percentages and keeps a measured zero', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const source = (await readFile(new URL('../api/uploadStatusApi.js', import.meta.url), 'utf8'))
+    .replace('process.env.REACT_APP_UPLOADS_API_BASE', '"https://uploads.invalid"');
+  const { fetchActiveVodUploads } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+  const measurements = [null, '', '   ', false, [], 0, '0', 25.5, '25.5'];
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    uploads: measurements.map((percent, index) => ({
+      sessionId: `fixture-${index}`, state: 'uploading', percent,
+      uploadedBytes: null, totalBytes: null,
+    })),
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  const uploads = await fetchActiveVodUploads();
+  assert.deepEqual(uploads.map((upload) => upload.percent), [null, null, null, null, null, 0, 0, 25.5, 25.5]);
+  assert.ok(uploads.every((upload) => upload.uploadedBytes === null && upload.totalBytes === null));
+});
+
 test('upload polling keeps its timeout even when its caller supplies a cancellation signal', async (t) => {
   const originalFetch = globalThis.fetch;
   t.after(() => { globalThis.fetch = originalFetch; });

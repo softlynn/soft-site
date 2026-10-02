@@ -9,6 +9,7 @@ const DEFAULT_CARD_WIDTH = "20.75rem";
 dayjs.extend(localizedFormat);
 
 const clampPercent = (value) => {
+  if (value == null || !["number", "string"].includes(typeof value) || String(value).trim() === "") return null;
   const num = Number(value);
   if (!Number.isFinite(num)) return null;
   return Math.max(0, Math.min(100, num));

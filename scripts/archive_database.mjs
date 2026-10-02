@@ -69,7 +69,7 @@ async function reclaimDeadLocalOwner(lockPath) {
     }
     if (files.length !== 1 || !/^owner-[\w-]+\.json$/.test(files[0])) return;
     const owner = JSON.parse(await fs.readFile(path.join(lockPath, files[0]), 'utf8'));
-    if (owner.hostname === os.hostname() && !processIsAlive(owner.pid)) await removeOwner(lockPath, files[0]);
+    if (owner?.hostname === os.hostname() && !processIsAlive(owner.pid)) await removeOwner(lockPath, files[0]);
   } catch (error) {
     // Windows may deny inspection/removal while another process releases or
     // replaces this directory. Retry acquisition under its existing deadline;
@@ -106,13 +106,21 @@ export async function acquireArchiveFileLock(filePath, { timeoutMs = 15_000 } = 
   }
 }
 
-export async function readArchiveDatabase(filePath) {
+async function readArchiveDocument(filePath, { allowMissing = true } = {}) {
   let contents;
   try { contents = await fs.readFile(filePath, 'utf8'); }
-  catch (error) { if (error.code === 'ENOENT') return []; throw error; }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    if (allowMissing) return { rows: [], exists: false };
+    throw Object.assign(new Error('The archive database is missing after it was previously loaded. Restore it before retrying.'), { code: 'ARCHIVE_DATABASE_MISSING' });
+  }
   const rows = JSON.parse(contents);
   if (!Array.isArray(rows)) throw new Error('Archive database must contain a JSON array.');
-  return rows;
+  return { rows, exists: true };
+}
+
+export async function readArchiveDatabase(filePath, options) {
+  return (await readArchiveDocument(filePath, options)).rows;
 }
 
 // Keep external network operations outside this transaction. Readers always
@@ -120,7 +128,7 @@ export async function readArchiveDatabase(filePath) {
 export async function updateArchiveDatabase(filePath, updater, options) {
   const release = await acquireArchiveFileLock(filePath, options);
   try {
-    const rows = await readArchiveDatabase(filePath);
+    const rows = await readArchiveDatabase(filePath, options);
     const next = await updater(rows);
     if (!Array.isArray(next)) throw new TypeError('Archive updater must return an array.');
     await writeJsonFileAtomic(filePath, next, { durable: true });
@@ -130,6 +138,7 @@ export async function updateArchiveDatabase(filePath, updater, options) {
 
 export function createArchiveSnapshotStore(filePath) {
   const baselines = new WeakMap();
+  let observedExisting = false;
   let pending = Promise.resolve();
   const enqueue = operation => {
     const result = pending.then(operation);
@@ -139,7 +148,8 @@ export function createArchiveSnapshotStore(filePath) {
   };
   return {
     async read() {
-      const rows = await readArchiveDatabase(filePath);
+      const { rows, exists } = await readArchiveDocument(filePath, { allowMissing: !observedExisting });
+      observedExisting ||= exists;
       baselines.set(rows, clone(rows));
       return rows;
     },
@@ -150,7 +160,8 @@ export function createArchiveSnapshotStore(filePath) {
       return enqueue(async () => {
         // The previous queued save establishes the baseline for this save.
         const base = baselines.get(rows);
-        const saved = await updateArchiveDatabase(filePath, latest => mergeArchiveSnapshots(base, proposed, latest));
+        const saved = await updateArchiveDatabase(filePath, latest => mergeArchiveSnapshots(base, proposed, latest), { allowMissing: !observedExisting });
+        observedExisting = true;
         // Baseline tracks what THIS caller has seen, not newer admin values that
         // are absent from its still-live objects. Otherwise its next save reverts them.
         baselines.set(rows, proposed);
@@ -160,7 +171,8 @@ export function createArchiveSnapshotStore(filePath) {
     async mutate(rows, updater) {
       if (!baselines.has(rows)) throw new Error('Read an archive snapshot before updating it.');
       return enqueue(async () => {
-        const saved = await updateArchiveDatabase(filePath, updater);
+        const saved = await updateArchiveDatabase(filePath, updater, { allowMissing: !observedExisting });
+        observedExisting = true;
         rows.splice(0, rows.length, ...saved);
         baselines.set(rows, clone(saved));
         return rows;

@@ -64,7 +64,11 @@ export const finalizeRecoveredUpload = async ({
   retainUnpublished = context.unpublished;
   const privacy = context.unpublished ? "private" : String(configuredPrivacy || "private").trim().toLowerCase() || "private";
   const applyPrivacy = async (value) => {
-    if ((await setPrivacy(videoId, value)) !== true) throw new Error(`Uploaded video ${videoId} is not available for privacy finalization yet; it will be retried.`);
+    if ((await setPrivacy(videoId, value)) !== true) {
+      throw Object.assign(new Error(`Uploaded video ${videoId} is not available for privacy finalization yet; it will be retried.`), {
+        code: "SOFTUCHIVE_UPLOAD_FINALIZATION_PENDING",
+      });
+    }
   };
   await applyPrivacy(privacy);
   await syncMetadata(context.vodEntry);
@@ -83,25 +87,52 @@ export const finalizeRecoveredUpload = async ({
 };
 
 export const completeUploadedRecording = async ({ state, recordingPath, vodEntry, vods, persistVods, persistState }) => {
+  const uploadedCheckpoint = state.processedFiles[recordingPath];
   const index = vods.findIndex((vod) => String(vod.id) === String(vodEntry.id));
   if (index < 0) vods.push(vodEntry);
   else vods[index] = vodEntry;
   vods.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
   // The checkpoint remains recoverable if writing the index fails or the process exits.
-  await persistVods(vods);
-  const { pendingVodEntry: _pending, error: _error, ...checkpoint } = state.processedFiles[recordingPath];
-  state.processedFiles[recordingPath] = { ...checkpoint, status: "completed", processedAt: new Date().toISOString() };
-  await persistState();
+  const savedVods = await persistVods(vods);
+  // A concurrent deletion can legitimately win the archive's three-way merge.
+  // A successful write alone does not prove this remote video was indexed.
+  if (!Array.isArray(savedVods)) throw new Error("Archive persistence must return the saved VOD array before completing an upload.");
+  if (!uploadedCheckpoint?.youtubeVideoId || !savedVods.some((vod) =>
+    (vod.youtube || []).some((part) => String(part.id) === String(uploadedCheckpoint.youtubeVideoId)))) {
+    throw Object.assign(new Error("The uploaded video is absent from the saved archive. Its checkpoint is retained for recovery."), { code: "ARCHIVE_UPLOAD_NOT_INDEXED" });
+  }
+  const { pendingVodEntry: _pending, error: _error, ...checkpoint } = uploadedCheckpoint;
+  const completedCheckpoint = { ...checkpoint, status: "completed", processedAt: new Date().toISOString() };
+  state.processedFiles[recordingPath] = completedCheckpoint;
+  try {
+    await persistState();
+  } catch (error) {
+    // Error reporting may save this same in-memory state again. Retain the
+    // replayable checkpoint until completion was acknowledged by storage.
+    if (state.processedFiles[recordingPath] === completedCheckpoint) state.processedFiles[recordingPath] = uploadedCheckpoint;
+    throw error;
+  }
 };
 
-export const recoverUploadedRecordings = async ({ state, vods, finalizeUpload, persistVods, persistState }) => {
+export const recoverUploadedRecordings = async ({ state, vods, finalizeUpload, persistVods, persistState, onRecoveryError }) => {
   let recovered = 0;
   for (const [recordingPath, checkpoint] of Object.entries(state.processedFiles || {})) {
     if (!checkpoint?.youtubeVideoId || !checkpoint?.pendingVodEntry) continue;
     let vodEntry = mergeCheckpointVod(vods, { ...checkpoint.pendingVodEntry,
       youtube: (checkpoint.pendingVodEntry.youtube || []).filter((part) => String(part.id) === String(checkpoint.youtubeVideoId)),
     });
-    const finalized = finalizeUpload ? await finalizeUpload(checkpoint, vodEntry) : null;
+    let finalized;
+    try {
+      finalized = finalizeUpload ? await finalizeUpload(checkpoint, vodEntry) : null;
+    } catch (error) {
+      // Only a known unavailable video can be deferred, and only when the
+      // caller explicitly acknowledges it. Storage, corruption, controls and
+      // unknown network failures still stop recovery; completion runs outside
+      // this catch so no persistence error can be mistaken for remote delay.
+      if (error?.code !== "SOFTUCHIVE_UPLOAD_FINALIZATION_PENDING" || typeof onRecoveryError !== "function" ||
+          await onRecoveryError(error, checkpoint, recordingPath) !== true) throw error;
+      continue;
+    }
     if (finalized) {
       if (!Array.isArray(finalized.latestVods) || !finalized.vodEntry) throw new Error("Upload recovery must return the current archive and recovered VOD.");
       vods.splice(0, vods.length, ...finalized.latestVods);
