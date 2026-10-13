@@ -1,7 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
+import { ensureDirectory, fileExists, serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
 import { acquireArchiveFileLock } from "./archive_database.mjs";
+import { normalizeUploadThrottleMbps } from "./pipeline_control.mjs";
 
 export const SOFTUCHIVE_SCHEMA_VERSION = 1;
 
@@ -94,26 +95,17 @@ export const defaultSoftuchiveControl = () => ({
   updatedAt: new Date().toISOString(),
 });
 
-const ensureDirectory = async (dirPath) => {
-  await fs.mkdir(dirPath, { recursive: true });
-};
-
 const stateFileError = (filePath, code, detail) => Object.assign(
   new Error(`Cannot use ${path.basename(filePath)}: ${detail}`),
   { code }
 );
 
-const fileExists = async (filePath) => {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch (error) {
-    if (error.code === "ENOENT") return false;
-    throw stateFileError(filePath, "SOFTUCHIVE_STATE_READ_FAILED", "check file permissions and disk access, then retry.");
-  }
-};
+// An unreadable state file must never look absent, or defaults would replace it.
+const stateFileExists = (filePath) => fileExists(filePath, { strict: true }).catch(() => {
+  throw stateFileError(filePath, "SOFTUCHIVE_STATE_READ_FAILED", "check file permissions and disk access, then retry.");
+});
 
-const readJsonFile = async (filePath, fallback) => {
+const readStateFile = async (filePath, fallback) => {
   let handle;
   let failed = false;
   try {
@@ -167,14 +159,6 @@ const writeJsonFile = async (filePath, payload) => {
     throw stateFileError(filePath, "SOFTUCHIVE_STATE_TOO_LARGE", "state exceeds the 8 MiB limit. Reduce the snapshot size before retrying.");
   }
   await writeJsonFileAtomic(filePath, payload);
-};
-
-const normalizeUploadThrottleMbps = (value) => {
-  if (value === null || value === undefined || value === "") return null;
-  if (typeof value !== "number" && typeof value !== "string") return null;
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return null;
-  return Math.max(0.01, Math.min(10000, Math.round(parsed * 100) / 100));
 };
 
 const normalizeUpload = (value) => {
@@ -285,7 +269,7 @@ export const ensureSoftuchiveStateFiles = async (repoRoot, { archiveFolder } = {
   ]) {
     const serializeUpdate = filePath === paths.controlPath ? serializeControlUpdate : serializeFileUpdate;
     await serializeUpdate(filePath, async () => {
-      if (!(await fileExists(filePath))) await writeJsonFile(filePath, initial);
+      if (!(await stateFileExists(filePath))) await writeJsonFile(filePath, initial);
     });
   }
 
@@ -296,7 +280,7 @@ export const readSoftuchiveSettings = async (repoRoot, { archiveFolder } = {}) =
   const { settingsPath } = resolveSoftuchivePaths(repoRoot);
   const fallbackArchiveFolder = archiveFolder || "";
   const defaults = defaultSoftuchiveSettings({ archiveFolder: fallbackArchiveFolder });
-  const current = await readJsonFile(settingsPath, defaults);
+  const current = await readStateFile(settingsPath, defaults);
   validateSettingsFields(current, settingsPath);
   return {
     ...defaults,
@@ -338,7 +322,7 @@ export const readSoftuchiveRuntime = async (repoRoot, { archiveFolder } = {}) =>
     taskLogPath,
     summaryLogPath,
   });
-  const current = await readJsonFile(runtimePath, defaults);
+  const current = await readStateFile(runtimePath, defaults);
   const merged = {
     ...defaults,
     ...current,
@@ -398,7 +382,7 @@ export const writeSoftuchiveRuntime = async (repoRoot, nextRuntime, { archiveFol
 export const readSoftuchiveControl = async (repoRoot) => {
   const { controlPath } = resolveSoftuchivePaths(repoRoot);
   const defaults = defaultSoftuchiveControl();
-  const current = await readJsonFile(controlPath, defaults);
+  const current = await readStateFile(controlPath, defaults);
   validateControlFields(current, controlPath);
   return normalizeControl({
     ...defaults,

@@ -1,8 +1,21 @@
 import fs from "fs/promises";
 import { acquirePipelineRunLock, isCurrentProcessRunning, runWithPipelineOwnership } from "./pipeline_run_lock.mjs";
-import { createSnapshotWriter, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
-import { createArchiveSnapshotStore } from "./archive_database.mjs";
-import { isRecordingPending, planRecordingUploads, recordingSourceIdentity, recordingSourceMatches, selectMatchingTwitchVod } from "./pipeline_recordings.mjs";
+import { createSnapshotWriter, ensureDirectory, fileExists, readJsonFile, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
+import { createArchiveSnapshotStore, isYoutubeVodPart, listYoutubeVodParts, nextYoutubeVodPartNumber } from "./archive_database.mjs";
+import {
+  isRecordingPending,
+  parseTwitchDurationToSeconds,
+  planRecordingUploads,
+  recordingSourceIdentity,
+  recordingSourceMatches,
+  selectMatchingTwitchVod,
+} from "./pipeline_recordings.mjs";
+import {
+  SOFTUCHIVE_PAUSE_ERROR_CODE,
+  SOFTUCHIVE_SKIP_ERROR_CODE,
+  createPipelineControlError,
+  normalizeUploadThrottleMbps,
+} from "./pipeline_control.mjs";
 import { makeUploadedCheckpoint, recoverUploadedRecordings, finalizeRecoveredUpload, finalizeAndCompleteUploadedRecording } from "./pipeline_archive_journal.mjs";
 import { applyArchivePublicationToWorktree, queueArchivePublication, publishPendingArchive } from "./pipeline_publication.mjs";
 import { fetchPipelineJson } from "./pipeline_network.mjs";
@@ -212,8 +225,6 @@ const PROCESSING_RECORD_STALE_AFTER_MS =
   Math.max(5, Number(process.env.SOFTUCHIVE_PROCESSING_STALE_AFTER_MINUTES || "30")) * 60 * 1000;
 const YOUTUBE_VISIBILITY_SYNC_INTERVAL_MS =
   Math.max(15, Number(config.youtubeVisibilitySyncIntervalMinutes) || 180) * 60 * 1000;
-const SOFTUCHIVE_PAUSE_ERROR_CODE = "SOFTUCHIVE_PAUSED";
-const SOFTUCHIVE_SKIP_ERROR_CODE = "SOFTUCHIVE_SKIPPED";
 const SOFTUCHIVE_UPLOAD_STALL_TIMEOUT_MS = Math.max(
   45_000,
   Number(process.env.SOFTUCHIVE_UPLOAD_STALL_TIMEOUT_MS || "120000")
@@ -275,29 +286,6 @@ const runGitCommand = (args, { cwd = repoRoot, allowFailure = false } = {}) => {
     stdout,
     stderr,
   };
-};
-
-const ensureDirectory = async (dirPath) => {
-  await fs.mkdir(dirPath, { recursive: true });
-};
-
-const fileExists = async (filePath) => {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-const readJsonFile = async (filePath, fallback) => {
-  try {
-    return JSON.parse(await fs.readFile(filePath, "utf8"));
-  } catch (error) {
-    if (error.code === "ENOENT") return fallback;
-    if (error instanceof SyntaxError) throw new Error(`Invalid JSON in ${path.basename(filePath)}; repair this file before retrying.`);
-    throw error;
-  }
 };
 
 const writeJsonFile = (filePath, payload) => writeJsonFileAtomic(filePath, payload, { durable: true });
@@ -419,16 +407,6 @@ const listRecordingFiles = async (dirPath) => {
   }
 
   return files;
-};
-
-const parseTwitchDurationToSeconds = (durationText) => {
-  const match = String(durationText || "").match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i);
-  if (!match) return 0;
-
-  const hours = Number(match[1] || "0");
-  const minutes = Number(match[2] || "0");
-  const seconds = Number(match[3] || "0");
-  return hours * 3600 + minutes * 60 + seconds;
 };
 
 const formatDuration = (totalSeconds) => {
@@ -1015,13 +993,11 @@ const getArchiveVisibleYouTubePrivacyStatuses = () => {
   return new Set(statuses.length > 0 ? statuses : ["public"]);
 };
 
-const isYoutubeVodPartEntry = (entry) => String(entry?.type || "vod") === "vod" && Boolean(entry?.id);
-
 const collectArchiveYouTubeVideoIds = (vods = []) => [
   ...new Set(
     (Array.isArray(vods) ? vods : [])
       .flatMap((vod) => (Array.isArray(vod?.youtube) ? vod.youtube : []))
-      .filter(isYoutubeVodPartEntry)
+      .filter(isYoutubeVodPart)
       .map((entry) => String(entry.id).trim())
       .filter(Boolean)
   ),
@@ -1061,12 +1037,12 @@ const fetchYouTubeVideoStatusMap = async (youtube, videoIds = []) => {
 
 const renumberYouTubeVodEntriesForArchive = (entries = []) => {
   const source = Array.isArray(entries) ? entries : [];
-  const hasHiddenVodPart = source.some((entry) => isYoutubeVodPartEntry(entry) && entry?.unpublished === true);
+  const hasHiddenVodPart = source.some((entry) => isYoutubeVodPart(entry) && entry?.unpublished === true);
   let nextPublishedPart = 1;
   let nextAdminOrder = 1;
 
   return source.map((entry) => {
-    if (!isYoutubeVodPartEntry(entry)) return entry;
+    if (!isYoutubeVodPart(entry)) return entry;
 
     const next = {
       ...entry,
@@ -1114,7 +1090,7 @@ const syncArchiveYouTubeVisibility = async (youtube, vods = []) => {
 
     let youtubeChanged = false;
     const nextYoutube = vod.youtube.map((entry) => {
-      if (!isYoutubeVodPartEntry(entry)) return entry;
+      if (!isYoutubeVodPart(entry)) return entry;
 
       const videoId = String(entry.id).trim();
       const status = statusById.get(videoId) || { exists: false, privacyStatus: "missing" };
@@ -1145,7 +1121,7 @@ const syncArchiveYouTubeVisibility = async (youtube, vods = []) => {
       youtubeChanged = true;
     }
 
-    const vodParts = renumberedYoutube.filter(isYoutubeVodPartEntry);
+    const vodParts = renumberedYoutube.filter(isYoutubeVodPart);
     const visibleVodParts = vodParts.filter((entry) => entry?.unpublished !== true);
     const shouldHideVod = vodParts.length > 0 && visibleVodParts.length === 0;
     const isVodHidden = vod?.unpublished === true;
@@ -1172,13 +1148,6 @@ const syncArchiveYouTubeVisibility = async (youtube, vods = []) => {
   }
 
   return result;
-};
-
-const normalizeUploadThrottleMbps = (value) => {
-  if (value === null || value === undefined || value === "") return null;
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return null;
-  return Math.max(0.01, Math.min(10000, Math.round(parsed * 100) / 100));
 };
 
 const isSkipRequestedForUpload = (control, uploadSessionId) => {
@@ -1329,9 +1298,7 @@ const syncYouTubeMetadataForVod = async (youtube, vodEntry) => {
   const twitchVodId = String(vodEntry.id);
   const streamTitle = vodEntry.title || `Twitch VOD ${twitchVodId}`;
   const streamDate = vodEntry.createdAt;
-  const vodParts = (Array.isArray(vodEntry.youtube) ? vodEntry.youtube : [])
-    .filter((part) => part.type === "vod" && part.id)
-    .sort((a, b) => (a.part || 0) - (b.part || 0));
+  const vodParts = listYoutubeVodParts(vodEntry.youtube);
 
   if (vodParts.length === 0) return;
 
@@ -1670,13 +1637,7 @@ const mergeAdjacentArchiveVods = (vods, maxGapMs) => {
       0
     );
 
-    const youtubePartsInOrder = [];
-    for (const vod of orderedGroup) {
-      const parts = (Array.isArray(vod?.youtube) ? vod.youtube : [])
-        .filter((part) => String(part?.type || "vod") === "vod" && part?.id)
-        .sort((a, b) => (Number(a?.part) || 0) - (Number(b?.part) || 0));
-      youtubePartsInOrder.push(...parts);
-    }
+    const youtubePartsInOrder = orderedGroup.flatMap((vod) => listYoutubeVodParts(vod?.youtube));
 
     const normalizedYoutubeParts = youtubePartsInOrder.map((part, index) => ({
       ...part,
@@ -1739,25 +1700,6 @@ const mergeAdjacentArchiveVods = (vods, maxGapMs) => {
   return { vods: mergedVods, mergedGroups };
 };
 
-const addOrUpdateYouTubePart = (vodEntry, partData) => {
-  const youtubeParts = Array.isArray(vodEntry.youtube) ? [...vodEntry.youtube] : [];
-  const indexByPart = youtubeParts.findIndex((part) => part.type === "vod" && Number(part.part) === Number(partData.part));
-  const nextPart = {
-    id: partData.id,
-    type: "vod",
-    duration: Number(partData.duration || 0),
-    part: Number(partData.part),
-    thumbnail_url: partData.thumbnail_url || vodEntry.thumbnail_url,
-  };
-
-  if (indexByPart >= 0) youtubeParts[indexByPart] = nextPart;
-  else youtubeParts.push(nextPart);
-
-  youtubeParts.sort((a, b) => (a.part || 0) - (b.part || 0));
-  vodEntry.youtube = youtubeParts;
-  vodEntry.updatedAt = new Date().toISOString();
-};
-
 const fullPipelineRequiredConfig = [
   ["TWITCH_CLIENT_ID", config.twitchClientId],
   ["TWITCH_CLIENT_SECRET", config.twitchClientSecret],
@@ -1794,7 +1736,6 @@ const cloneJson = (value) => {
   return JSON.parse(JSON.stringify(value));
 };
 
-const createPipelineControlError = (message, code) => Object.assign(new Error(message), { code });
 const isSoftuchivePauseError = (error) => error?.code === SOFTUCHIVE_PAUSE_ERROR_CODE;
 const isSoftuchiveSkipError = (error) => error?.code === SOFTUCHIVE_SKIP_ERROR_CODE;
 
@@ -1859,8 +1800,9 @@ const buildSoftuchiveSummaryLines = (summary = {}) => {
 };
 
 const createSoftuchiveTracker = async ({ trigger = "manual", metadataOnly = false } = {}) => {
+  // The one state-file initialization per run: it also applies the saved
+  // archive folder before anything reads config.recordingsDir.
   const settings = await loadSoftuchiveSettingsIntoConfig();
-  const stateFiles = await ensureSoftuchiveStateFiles(repoRoot, { archiveFolder: config.recordingsDir });
   let runtime = await readSoftuchiveRuntime(repoRoot, { archiveFolder: config.recordingsDir });
   let events = Array.isArray(runtime.events) ? runtime.events.slice(-120) : [];
   let pauseCache = {
@@ -2041,8 +1983,8 @@ const createSoftuchiveTracker = async ({ trigger = "manual", metadataOnly = fals
       app: {
         ...(runtime.app || {}),
         archiveFolder: config.recordingsDir,
-        taskLogPath: stateFiles.paths.taskLogPath,
-        summaryLogPath: stateFiles.paths.summaryLogPath,
+        taskLogPath: softuchivePaths.taskLogPath,
+        summaryLogPath: softuchivePaths.summaryLogPath,
       },
       run: {
         ...(runtime.run || {}),
@@ -2104,7 +2046,7 @@ const createSoftuchiveTracker = async ({ trigger = "manual", metadataOnly = fals
   };
 
   return {
-    paths: stateFiles.paths,
+    paths: softuchivePaths,
     settings,
     start,
     setStage,
@@ -2834,11 +2776,8 @@ const runPipeline = async () => {
     stagedPaths.push(emotesPath);
 
     let vodEntry = ensureVodEntry(existingVods, twitchVod, rawChat);
-    const existingParts = (Array.isArray(vodEntry.youtube) ? vodEntry.youtube : [])
-      .filter((part) => part.type === "vod")
-      .sort((a, b) => (a.part || 0) - (b.part || 0));
-    const nextPartNumber = (existingParts[existingParts.length - 1]?.part || 0) + 1;
-    const totalPartsAfterUpload = existingParts.length + uploads.length;
+    const nextPartNumber = nextYoutubeVodPartNumber(vodEntry.youtube);
+    const totalPartsAfterUpload = listYoutubeVodParts(vodEntry.youtube).length + uploads.length;
 
     for (let index = 0; index < uploads.length; index++) {
       const { recording } = uploads[index];
@@ -3312,10 +3251,7 @@ const runPipeline = async () => {
       }
     }
 
-    const archivedYouTubeParts = (Array.isArray(vodEntry.youtube) ? vodEntry.youtube : []).filter(
-      (part) => String(part?.type || "vod") === "vod" && part?.id
-    );
-    if (archivedYouTubeParts.length === 0) {
+    if (listYoutubeVodParts(vodEntry.youtube).length === 0) {
       // Retain downloaded replay data even when every video part is skipped.
       log(`No YouTube parts were archived for Twitch VOD ${vodId}; skipping archive metadata sync.`);
       continue;
@@ -3409,7 +3345,6 @@ const run = async () => {
     releaseRunLock,
     onError: reportPipelineFailure,
     operation: async () => {
-      await loadSoftuchiveSettingsIntoConfig();
       if (syncMetadataOnlyMode) return runMetadataSyncOnly();
       if (syncYouTubeVisibilityOnlyMode) return runYouTubeVisibilitySyncOnly();
       return runPipeline();

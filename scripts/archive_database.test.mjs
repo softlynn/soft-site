@@ -4,7 +4,26 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
-import { createArchiveSnapshotStore, mergeArchiveSnapshots, updateArchiveDatabase } from './archive_database.mjs';
+import {
+  createArchiveSnapshotStore, isYoutubeVodPart, listYoutubeVodParts, mergeArchiveSnapshots, nextYoutubeVodPartNumber, updateArchiveDatabase,
+} from './archive_database.mjs';
+
+test('a legacy YouTube part without a type counts as a VOD part everywhere parts are listed or numbered', () => {
+  const legacy = { id: 'legacy-video', part: 2 };
+  assert.equal(isYoutubeVodPart(legacy), true);
+  assert.equal(isYoutubeVodPart({ id: 'typed-video', type: 'vod', part: 1 }), true);
+  assert.equal(isYoutubeVodPart({ id: 'clip-video', type: 'clip' }), false);
+  for (const invalid of [{ type: 'vod', part: 3 }, { id: '' }, null, undefined, 'legacy-video']) {
+    assert.equal(isYoutubeVodPart(invalid), false, `${JSON.stringify(invalid)} is not a VOD part`);
+  }
+  const youtube = [{ id: 'clip-video', type: 'clip', part: 9 }, legacy, { id: 'typed-video', type: 'vod', part: 1 }, { type: 'vod', part: 4 }, { id: 'unnumbered' }];
+  assert.deepEqual(listYoutubeVodParts(youtube).map(part => part.id), ['unnumbered', 'typed-video', 'legacy-video']);
+  assert.equal(nextYoutubeVodPartNumber(youtube), 3, 'the legacy part must advance the next part number');
+  assert.equal(nextYoutubeVodPartNumber([legacy]), 3);
+  assert.equal(nextYoutubeVodPartNumber([{ id: 'clip-video', type: 'clip', part: 7 }]), 1);
+  for (const empty of [[], undefined, null, 'not-a-list']) assert.equal(nextYoutubeVodPartNumber(empty), 1);
+  assert.deepEqual(youtube.map(part => part.id), ['clip-video', 'legacy-video', 'typed-video', undefined, 'unnumbered'], 'listing must not reorder the archive entry');
+});
 
 test('a stale pipeline snapshot preserves admin flags and concurrently appended parts', () => {
   const base = [{ id: '1', title: 'stream', hidden: false, youtube: [{ id: 'a', part: 1, unpublished: false }] }];

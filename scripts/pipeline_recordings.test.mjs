@@ -1,6 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isRecordingPending, planRecordingUploads, recordingSourceIdentity, recordingSourceMatches, selectMatchingTwitchVod } from "./pipeline_recordings.mjs";
+import { isRecordingPending, parseTwitchDurationToSeconds, planRecordingUploads, recordingSourceIdentity, recordingSourceMatches, selectMatchingTwitchVod } from "./pipeline_recordings.mjs";
+
+test("Twitch archive durations parse with any component omitted and unknown text reads as zero", () => {
+  assert.equal(parseTwitchDurationToSeconds("3h2m1s"), 10_921);
+  assert.equal(parseTwitchDurationToSeconds("2H"), 7200);
+  assert.equal(parseTwitchDurationToSeconds("90m"), 5400);
+  assert.equal(parseTwitchDurationToSeconds("45s"), 45);
+  assert.equal(parseTwitchDurationToSeconds("1h30s"), 3630);
+  for (const unknown of ["", null, undefined, "N/A", "1:30:00", "3h 2m", 90]) {
+    assert.equal(parseTwitchDurationToSeconds(unknown), 0, `${String(unknown)} is not a Twitch duration`);
+  }
+});
 
 const recording = (name, extra = {}) => ({ path: `/recordings/${name}.mkv`, name, size: 100, modifiedAtMs: 1000, ...extra });
 const plan = (recordings, extra = {}) => planRecordingUploads({

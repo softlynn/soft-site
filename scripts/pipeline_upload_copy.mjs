@@ -3,7 +3,7 @@ import path from "node:path";
 import os from "node:os";
 import { createHash, randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
-import { serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
+import { readJsonFile, serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
 import { isCurrentProcessRunning } from "./pipeline_run_lock.mjs";
 import { recordingSourceIdentity, recordingSourceMatches } from "./pipeline_recordings.mjs";
 
@@ -37,10 +37,8 @@ const verifySource = async (source) => {
   return stat;
 };
 
-const readManifest = async (manifestPath) => {
-  try { return JSON.parse(await fs.readFile(manifestPath, "utf8")); }
-  catch (error) { if (error.code === "ENOENT" || error instanceof SyntaxError) return null; throw error; }
-};
+// A missing or malformed manifest means the copy must be rebuilt.
+const readManifest = (manifestPath) => readJsonFile(manifestPath, null, { tolerateInvalidJson: true });
 
 const makeRecording = (outputPath, manifestPath, stat, source, cacheReused) => ({
   path: outputPath,

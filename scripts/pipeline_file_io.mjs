@@ -6,6 +6,38 @@ import { setTimeout as delay } from "node:timers/promises";
 const pendingWrites = new Map();
 const syncedDirectoryChains = new Set();
 
+export const ensureDirectory = async (dirPath) => {
+  await fs.mkdir(dirPath, { recursive: true });
+};
+
+// Missing paths read as absent. By default so does any other access failure;
+// callers guarding existing data pass `strict` so permission and I/O failures
+// surface instead of reading as "safe to create".
+export const fileExists = async (filePath, { strict = false } = {}) => {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch (error) {
+    if (!strict || error.code === "ENOENT") return false;
+    throw error;
+  }
+};
+
+// A missing file resolves to the fallback. Malformed JSON is an error naming
+// the file, unless the caller can safely rebuild it and opts into the fallback.
+export const readJsonFile = async (filePath, fallback, { tolerateInvalidJson = false } = {}) => {
+  try {
+    return JSON.parse(await fs.readFile(filePath, "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") return fallback;
+    if (error instanceof SyntaxError) {
+      if (tolerateInvalidJson) return fallback;
+      throw new Error(`Invalid JSON in ${path.basename(filePath)}; repair this file before retrying.`);
+    }
+    throw error;
+  }
+};
+
 // Progress can arrive faster than storage responds. Keep one active and one
 // latest pending snapshot; callers resolve only after that pending state is saved.
 export const createSnapshotWriter = (write) => {

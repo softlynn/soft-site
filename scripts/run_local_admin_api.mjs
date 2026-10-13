@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import dotenv from "dotenv";
 import { createAdminConsole, isAllowedAdminOrigin } from "./admin_console.mjs";
-import { serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
-import { mergeArchiveSnapshots, readArchiveDatabase, updateArchiveDatabase } from "./archive_database.mjs";
+import { ensureDirectory, fileExists, serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
+import { isYoutubeVodPart, mergeArchiveSnapshots, readArchiveDatabase, updateArchiveDatabase } from "./archive_database.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -87,19 +87,6 @@ const getGoogleApis = async () => {
   const module = await import("googleapis");
   googleApis = module.google;
   return googleApis;
-};
-
-const ensureDirectory = async (dirPath) => {
-  await fs.mkdir(dirPath, { recursive: true });
-};
-
-const fileExists = async (filePath) => {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
 };
 
 const readJsonFile = async (filePath, fallback) => {
@@ -489,8 +476,6 @@ const validateConfig = async () => {
 
 const sortVodsDesc = (vods) =>
   [...vods].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-
-const isYoutubeVodPart = (entry) => String(entry?.type || "vod") === "vod" && Boolean(entry?.id);
 
 const toPositiveInt = (value) => {
   const parsed = Number(value);

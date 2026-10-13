@@ -4,7 +4,51 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import { createSnapshotWriter, serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
+import { createSnapshotWriter, ensureDirectory, fileExists, readJsonFile, serializeFileUpdate, writeJsonFileAtomic } from "./pipeline_file_io.mjs";
+
+test("JSON readers fall back for missing files and name a malformed file unless the caller can rebuild it", async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "softuchive-json-read-"));
+  try {
+    const nested = path.join(dir, "nested", "deeper");
+    await ensureDirectory(nested);
+    await ensureDirectory(nested);
+    assert.ok((await fs.stat(nested)).isDirectory());
+    const missing = path.join(dir, "missing.json");
+    assert.equal(await fileExists(missing), false);
+    assert.equal(await fileExists(missing, { strict: true }), false);
+    assert.equal(await fileExists(dir), true);
+    assert.deepEqual(await readJsonFile(missing, { fallback: true }), { fallback: true });
+    const malformed = path.join(dir, "malformed.json");
+    await fs.writeFile(malformed, '{"secret": "sentinel-value", broken');
+    assert.equal(await fileExists(malformed), true);
+    await assert.rejects(readJsonFile(malformed, null), (error) => {
+      assert.equal(error.message, "Invalid JSON in malformed.json; repair this file before retrying.");
+      assert.ok(!String(error.stack).includes("sentinel-value"));
+      return true;
+    });
+    assert.equal(await readJsonFile(malformed, null, { tolerateInvalidJson: true }), null);
+    assert.equal(await readJsonFile(path.join(dir, "empty.json"), "fallback"), "fallback");
+    await fs.writeFile(path.join(dir, "valid.json"), '{"confirmedBytes": 8}');
+    assert.deepEqual(await readJsonFile(path.join(dir, "valid.json"), null), { confirmedBytes: 8 });
+    // Other I/O failures are never mistaken for a missing or malformed file,
+    // and only a strict existence check surfaces them.
+    const originalAccess = fs.access;
+    const originalReadFile = fs.readFile;
+    const denied = () => { throw Object.assign(new Error("fixture permission denied"), { code: "EACCES" }); };
+    fs.access = async () => denied();
+    fs.readFile = async () => denied();
+    try {
+      assert.equal(await fileExists(malformed), false);
+      await assert.rejects(fileExists(malformed, { strict: true }), { code: "EACCES" });
+      await assert.rejects(readJsonFile(malformed, null, { tolerateInvalidJson: true }), { code: "EACCES" });
+    } finally {
+      fs.access = originalAccess;
+      fs.readFile = originalReadFile;
+    }
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
 
 test("a burst of progress snapshots waits for the current write and persists only the latest pending state", async () => {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "softuchive-snapshots-"));

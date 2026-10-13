@@ -1,17 +1,12 @@
 import { Transform } from "node:stream";
 import { setTimeout as delay } from "node:timers/promises";
 import { performance } from "node:perf_hooks";
-
-const SOFTUCHIVE_PAUSE_ERROR_CODE = "SOFTUCHIVE_PAUSED";
-const SOFTUCHIVE_SKIP_ERROR_CODE = "SOFTUCHIVE_SKIPPED";
-const createPipelineControlError = (message, code) => Object.assign(new Error(message), { code });
-
-const normalizeUploadThrottleMbps = (value) => {
-  if (value === null || value === undefined || value === "") return null;
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return null;
-  return Math.max(0.01, Math.min(10000, Math.round(parsed * 100) / 100));
-};
+import {
+  SOFTUCHIVE_PAUSE_ERROR_CODE,
+  SOFTUCHIVE_SKIP_ERROR_CODE,
+  createPipelineControlError,
+  normalizeUploadThrottleMbps,
+} from "./pipeline_control.mjs";
 
 export const getUploadHealthState = ({ nowMs, lastByteProgressAtMs, stallTimeoutMs, uploadPaused = false }) => ({
   lastByteProgressAtMs: uploadPaused ? nowMs : lastByteProgressAtMs,

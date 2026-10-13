@@ -38,6 +38,17 @@ function mergeValue(base, proposed, latest, key = '') {
 
 export const mergeArchiveSnapshots = (base, proposed, latest) => mergeValue(base, proposed, latest, '$vods');
 
+// A YouTube entry is a VOD part unless it declares another type: parts saved
+// before `type` existed carry only an id. Admin ordering, visibility sync,
+// metadata sync, archive merges and part numbering must all agree on this.
+export const isYoutubeVodPart = entry => String(entry?.type || 'vod') === 'vod' && Boolean(entry?.id);
+
+export const listYoutubeVodParts = youtube => (Array.isArray(youtube) ? youtube : [])
+  .filter(isYoutubeVodPart)
+  .sort((a, b) => (Number(a.part) || 0) - (Number(b.part) || 0));
+
+export const nextYoutubeVodPartNumber = youtube => (Number(listYoutubeVodParts(youtube).at(-1)?.part) || 0) + 1;
+
 const processIsAlive = pid => {
   if (!Number.isInteger(pid) || pid <= 0) return true;
   try { process.kill(pid, 0); return true; }

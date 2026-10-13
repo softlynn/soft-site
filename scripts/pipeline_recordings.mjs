@@ -1,6 +1,15 @@
 const TERMINAL_STATUSES = new Set(["completed", "ignored_short", "ignored_short_uploaded", "skipped_manual"]);
 
 const numericIdentity = (value) => value == null || value === "" ? NaN : Number(value);
+
+// Twitch reports archive length as "1h2m3s" with any component omitted.
+// Anything else reads as zero seconds.
+export const parseTwitchDurationToSeconds = (durationText) => {
+  const match = String(durationText || "").match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i);
+  if (!match) return 0;
+  return Number(match[1] || 0) * 3600 + Number(match[2] || 0) * 60 + Number(match[3] || 0);
+};
+
 export const recordingSourceIdentity = (recording = {}) => {
   const identity = {
     size: numericIdentity(recording.size),
@@ -38,8 +47,7 @@ export const selectMatchingTwitchVod = (recording, vods, { expectedUserId, expec
     if (expectedUserId != null && String(vod.user_id || "") !== String(expectedUserId)) continue;
     if (expectedLogin && vod.user_login && String(vod.user_login).toLowerCase() !== String(expectedLogin).toLowerCase()) continue;
     const vodStart = Date.parse(vod.created_at);
-    const duration = String(vod.duration || "").match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i);
-    const seconds = duration ? Number(duration[1] || 0) * 3600 + Number(duration[2] || 0) * 60 + Number(duration[3] || 0) : 0;
+    const seconds = parseTwitchDurationToSeconds(vod.duration);
     if (!Number.isFinite(vodStart) || !Number.isFinite(seconds) || seconds <= 0) continue;
     const vodEnd = vodStart + seconds * 1000;
     const overlap = hasStart ? Math.min(end, vodEnd) - Math.max(start, vodStart) : 0;

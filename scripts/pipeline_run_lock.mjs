@@ -2,14 +2,14 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import { randomUUID } from "node:crypto";
 import { acquireArchiveFileLock } from "./archive_database.mjs";
+import { readJsonFile } from "./pipeline_file_io.mjs";
 
 const INCOMPLETE_LOCK_GRACE_MS = 30_000;
 const isValidProcessId = (pid) => (typeof pid === "number" || (typeof pid === "string" && /^[1-9]\d*$/.test(pid))) &&
   Number.isSafeInteger(Number(pid)) && Number(pid) > 0;
-const readJsonFile = async (file, fallback) => {
-  try { return JSON.parse(await fs.readFile(file, "utf8")); }
-  catch (error) { if (error.code === "ENOENT" || error instanceof SyntaxError) return fallback; throw error; }
-};
+// A lock still being written, or a malformed one, carries no owner. The
+// incomplete-lock grace below decides whether it may be replaced.
+const readLockFile = (lockPath) => readJsonFile(lockPath, null, { tolerateInvalidJson: true });
 
 export const isCurrentProcessRunning = (pid) => {
   if (!isValidProcessId(pid)) return false;
@@ -35,7 +35,7 @@ export const acquirePipelineRunLock = async (lockPath) => {
 
   let acquired = false;
   try {
-    const existing = await readJsonFile(lockPath, null);
+    const existing = await readLockFile(lockPath);
     // Preserve compatibility with a pipeline already running the old version.
     if (existing?.hostname && existing.hostname !== os.hostname()) return null;
     // Invalid ownership metadata is not proof that an owner exited. In
@@ -77,7 +77,7 @@ export const acquirePipelineRunLock = async (lockPath) => {
       if (released) return;
       released = true;
       try {
-        const current = await readJsonFile(lockPath, null);
+        const current = await readLockFile(lockPath);
         if (current?.token === token) await fs.rm(lockPath, { force: true });
       } finally {
         await releaseGuard();
