@@ -17,7 +17,6 @@ const ADMIN_API_FALLBACK_BASES = Array.from(
       .filter(Boolean)
   )
 );
-const ADMIN_PENDING_PASSWORD_KEY = "soft_admin_pending_password";
 const ADMIN_API_WAKE_PROTOCOL = "soft-archive-admin://wake";
 const transport = createAdminTransport({ bases: ADMIN_API_FALLBACK_BASES });
 const session = createAdminSession({ request: transport.request, getSessionStorage: () => sessionStorage, getLocalStorage: () => localStorage });
@@ -79,43 +78,6 @@ const writeAdminToken = session.setToken;
 export const clearAdminToken = session.clearToken;
 export const signOutAdmin = session.signOut;
 export const subscribeToAdminSession = session.subscribe;
-
-export const setPendingAdminPassword = (password) => {
-  const normalized = String(password || "").trim();
-  if (!normalized) return;
-  try {
-    sessionStorage.setItem(ADMIN_PENDING_PASSWORD_KEY, normalized);
-  } catch {
-    // no-op
-  }
-};
-
-export const consumePendingAdminPassword = () => {
-  let password = "";
-  try {
-    password = sessionStorage.getItem(ADMIN_PENDING_PASSWORD_KEY) || "";
-  } catch {
-    // no-op
-  }
-  if (!password) {
-    try {
-      password = localStorage.getItem(ADMIN_PENDING_PASSWORD_KEY) || "";
-    } catch {
-      // no-op
-    }
-  }
-  try {
-    sessionStorage.removeItem(ADMIN_PENDING_PASSWORD_KEY);
-  } catch {
-    // no-op
-  }
-  try {
-    localStorage.removeItem(ADMIN_PENDING_PASSWORD_KEY);
-  } catch {
-    // no-op
-  }
-  return String(password || "").trim();
-};
 
 export const getAdminToken = () => readAdminToken();
 

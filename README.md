@@ -258,7 +258,11 @@ npm run archive:sync-youtube-visibility
 Twitch note: Helix provides delete/list operations for videos, but no official per-VOD unpublish toggle. This admin flow does not delete Twitch VODs.
 
 The admin password is never committed to GitHub; it is read from local `.env.local`. New login sessions
-use tab-scoped storage. YouTube publication changes require YouTube credentials, not Twitch authorization.
+use tab-scoped storage. Sign-in locks for 30 seconds after five failed attempts and the lockout doubles with
+each further failure. The bridge only answers requests addressed to a loopback name, an IP literal, or a
+configured origin, so a web page that rebinds its DNS name to this PC cannot reach it. Uploaded design
+images must really be PNG, JPEG, WebP, or GIF data. YouTube publication changes require YouTube
+credentials, not Twitch authorization.
 The local admin API process is no longer watchdog-managed; it starts via a one-shot launcher and can auto-stop after inactivity (`ADMIN_API_IDLE_TIMEOUT_MINUTES` in `.env.local`, default `30`).
 Default local admin API port is `49731` (`ADMIN_API_PORT` in `.env.local`).
 The public site's footer copyright label opens `/admin` with one click.

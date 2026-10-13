@@ -12,5 +12,15 @@
       "database_name": "softu-reactions",
       "database_id": "b09177a0-961b-46c6-ba1a-82003c2555a3"
     }
+  ],
+  // Anonymous writes (reaction votes, rejected upload-report secrets) per client
+  // address. Reads and authenticated pipeline reports are never throttled. The
+  // Worker keeps working without this binding; it just stops limiting.
+  "ratelimits": [
+    {
+      "name": "REACTION_WRITE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 30, "period": 60 }
+    }
   ]
 }

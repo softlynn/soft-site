@@ -27,6 +27,7 @@ const run = async () => {
 };
 
 run().catch((error) => {
-  console.error(error);
+  // A failed token exchange error object carries the client secret and auth code.
+  console.error(String(error?.message || "YouTube authorization failed."));
   process.exit(1);
 });
