@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
+import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
@@ -99,6 +100,40 @@ test("real admin login, concurrent flags, and local console stay consistent", as
   assert.equal((await fetch(`${base}/session`, { headers })).status, 401, "signed out token was still accepted");
   assert.equal((await fetch(`${base}/vods/test-vod/notice`, { method: "POST", headers, body: JSON.stringify({ enabled: false }) })).status, 401);
   assert.equal((await fetch(`${base}/session`, { headers: { Authorization: `Bearer ${secondToken}` } })).status, 200, "sign out revoked another tab's session");
+});
+
+// fetch() cannot override Host, so rebinding attempts are sent with the raw client.
+const statusWithHost = (base, hostHeader) => new Promise((resolve, reject) => {
+  const url = new URL("/health", base);
+  http.get({ host: url.hostname, port: url.port, path: url.pathname, headers: { Host: hostHeader } }, (res) => {
+    res.resume();
+    res.on("end", () => resolve(res.statusCode));
+  }).on("error", reject);
+});
+
+test("rebound host names, repeated wrong passwords, and mislabeled images are refused", async (t) => {
+  const { base, headers } = await startFixture(t);
+  const port = new URL(base).port;
+  assert.equal(await statusWithHost(base, `evil.example:${port}`), 403);
+  assert.equal(await statusWithHost(base, `localhost:${port}`), 200);
+  assert.equal(await statusWithHost(base, `[::1]:${port}`), 200);
+
+  const signIn = (password) => fetch(`${base}/auth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) });
+  for (let attempt = 0; attempt < 5; attempt += 1) assert.equal((await signIn("wrong-password")).status, 401);
+  const locked = await signIn("fixture-password");
+  assert.equal(locked.status, 429);
+  assert.equal(locked.headers.get("retry-after"), "30");
+  assert.equal((await fetch(`${base}/session`, { headers })).status, 200, "the lockout revoked an existing session");
+
+  const upload = (bytes, contentType = "image/png") => fetch(`${base}/design-assets`, {
+    method: "POST", headers,
+    body: JSON.stringify({ fileName: "../../Logo Final.PNG", contentType, dataUrl: `data:${contentType};base64,${bytes.toString("base64")}` }),
+  });
+  assert.equal((await upload(Buffer.from("<html>not an image, whatever the label says</html>"))).status, 400);
+  const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(16)]);
+  const saved = await upload(png);
+  assert.equal(saved.status, 200, JSON.stringify(await saved.clone().json()));
+  assert.match((await saved.json()).url, /^\/uploads\/design\/logo-final-[a-z0-9]+\.png$/);
 });
 
 test("admin updates wait for a separate archive writer and preserve its new rows", async (t) => {

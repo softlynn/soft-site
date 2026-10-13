@@ -1,6 +1,7 @@
 import http from "node:http";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
+import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -46,13 +47,26 @@ const config = {
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 const MAX_BODY_BYTES = 8 * 1024 * 1024;
 const MAX_DESIGN_ASSET_BYTES = 5 * 1024 * 1024;
-const DESIGN_ASSET_EXTENSIONS = new Map([
-  ["image/png", ".png"],
-  ["image/jpeg", ".jpg"],
-  ["image/webp", ".webp"],
-  ["image/gif", ".gif"],
+const MIN_RECOMMENDED_PASSWORD_LENGTH = 12;
+// Sign-in is throttled after repeated failures. The lockout doubles with each
+// further failure so a guessing loop stalls while a mistyped password costs
+// the owner at most half a minute.
+const LOGIN_FAILURE_LIMIT = 5;
+const LOGIN_LOCKOUT_BASE_MS = 30 * 1000;
+const LOGIN_LOCKOUT_MAX_MS = 15 * 60 * 1000;
+// A hung credential prompt or network stall must not freeze the whole bridge.
+const GIT_COMMAND_TIMEOUT_MS = 2 * 60 * 1000;
+// Design uploads are published to the public site, so the bytes must really be
+// the declared image type, not just a matching data URL prefix.
+const DESIGN_ASSET_TYPES = new Map([
+  ["image/png", { extension: ".png", matches: (bytes) => bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) }],
+  ["image/jpeg", { extension: ".jpg", matches: (bytes) => bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff }],
+  ["image/webp", { extension: ".webp", matches: (bytes) => bytes.subarray(0, 4).toString("latin1") === "RIFF" && bytes.subarray(8, 12).toString("latin1") === "WEBP" }],
+  ["image/gif", { extension: ".gif", matches: (bytes) => ["GIF87a", "GIF89a"].includes(bytes.subarray(0, 6).toString("latin1")) }],
 ]);
+const LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "[::1]"]);
 const sessions = new Map();
+const loginThrottle = { failures: 0, lockedUntil: 0 };
 const requestBodies = new WeakMap();
 const queuedMutations = new WeakSet();
 let lastActivityAt = Date.now();
@@ -77,6 +91,29 @@ const gitCommitIdentityArgs = () => [
 ];
 
 const createApiError = (status, message, details = {}) => Object.assign(new Error(message), { status, ...details });
+
+// All git invocations share a deadline, never wait on a terminal prompt, and
+// commit as the configured archive identity even if the shell or .env.local
+// exports a personal GIT_AUTHOR_*/GIT_COMMITTER_* identity.
+const runGit = (label, args, { cwd = repoRoot, stdio = "inherit", allowFailure = false } = {}) => {
+  const result = spawnSync("git", args, {
+    cwd,
+    stdio,
+    windowsHide: true,
+    timeout: GIT_COMMAND_TIMEOUT_MS,
+    env: {
+      ...process.env,
+      GIT_TERMINAL_PROMPT: "0",
+      GIT_AUTHOR_NAME: config.gitCommitAuthorName,
+      GIT_AUTHOR_EMAIL: config.gitCommitAuthorEmail,
+      GIT_COMMITTER_NAME: config.gitCommitAuthorName,
+      GIT_COMMITTER_EMAIL: config.gitCommitAuthorEmail,
+    },
+  });
+  if (result.error) fail(`${label} failed: ${result.error.code === "ETIMEDOUT" ? "timed out" : result.error.message}`);
+  if (!allowFailure && result.status !== 0) fail(`${label} failed`);
+  return result;
+};
 
 const markActivity = () => {
   lastActivityAt = Date.now();
@@ -130,6 +167,37 @@ const getAllowedOrigins = () => {
 
 const allowedOrigins = getAllowedOrigins();
 
+// Host names that may address this server. Loopback names, the configured
+// listen host, and the hosts of allowed origins are trusted; any IP literal is
+// too, because DNS rebinding needs a name an attacker controls. A browser that
+// was rebound to this port therefore arrives with an unknown Host and is refused
+// before any route runs.
+const trustedHostnames = (() => {
+  const names = new Set(LOOPBACK_HOSTNAMES);
+  if (config.host) names.add(config.host.toLowerCase());
+  for (const origin of allowedOrigins) {
+    try {
+      names.add(new URL(origin).hostname.toLowerCase());
+    } catch {
+      // ADMIN_ALLOWED_ORIGINS entries are matched as exact origins elsewhere.
+    }
+  }
+  return names;
+})();
+
+const isTrustedHost = (req) => {
+  const header = String(req.headers.host || "").trim().toLowerCase();
+  if (!header) return true;
+  let hostname;
+  try {
+    hostname = new URL(`http://${header}`).hostname;
+  } catch {
+    return false;
+  }
+  if (trustedHostnames.has(hostname)) return true;
+  return net.isIP(hostname.replace(/^\[|\]$/g, "")) !== 0;
+};
+
 const setCorsHeaders = (req, res) => {
   const origin = String(req.headers.origin || "");
   if (origin && isAllowedAdminOrigin(origin, allowedOrigins)) {
@@ -143,11 +211,12 @@ const setCorsHeaders = (req, res) => {
   }
 };
 
-const sendJson = (req, res, statusCode, payload) => {
+const sendJson = (req, res, statusCode, payload, extraHeaders = {}) => {
   if (res.destroyed || res.writableEnded) return;
   setCorsHeaders(req, res);
   res.setHeader("Cache-Control", "no-store");
-  res.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8", ...extraHeaders });
   res.end(JSON.stringify(payload));
 };
 
@@ -199,6 +268,26 @@ const issueSession = () => {
   return { token, expiresAt };
 };
 
+const assertSignInAllowed = () => {
+  const remainingMs = loginThrottle.lockedUntil - Date.now();
+  if (remainingMs <= 0) return;
+  const retryAfterSeconds = Math.ceil(remainingMs / 1000);
+  throw createApiError(429, `Too many failed sign-in attempts. Try again in ${retryAfterSeconds} seconds.`, { retryAfterSeconds });
+};
+
+const recordSignInFailure = () => {
+  loginThrottle.failures += 1;
+  if (loginThrottle.failures < LOGIN_FAILURE_LIMIT) return;
+  const lockoutMs = Math.min(LOGIN_LOCKOUT_MAX_MS, LOGIN_LOCKOUT_BASE_MS * 2 ** (loginThrottle.failures - LOGIN_FAILURE_LIMIT));
+  loginThrottle.lockedUntil = Date.now() + lockoutMs;
+  log(`Admin sign-in locked for ${Math.round(lockoutMs / 1000)} seconds after ${loginThrottle.failures} failed attempts.`);
+};
+
+const recordSignInSuccess = () => {
+  loginThrottle.failures = 0;
+  loginThrottle.lockedUntil = 0;
+};
+
 const pruneSessions = () => {
   const now = Date.now();
   for (const [token, expiresAt] of sessions.entries()) {
@@ -227,6 +316,12 @@ const requireSession = (req) => {
 
 const loadVods = () => readArchiveDatabase(config.vodsDataPath);
 
+const findVodOrThrow = (vods, vodId) => {
+  const vod = vods.find((entry) => String(entry.id) === String(vodId));
+  if (!vod) throw createApiError(404, `VOD ${vodId} not found`);
+  return vod;
+};
+
 const loadSiteDesign = async () => {
   const design = await readJsonFile(config.siteDesignPath, {});
   return design && typeof design === "object" ? design : {};
@@ -253,16 +348,19 @@ const parseDesignAssetUpload = (body) => {
   if (!match) throw createApiError(400, "Upload must be a base64 image data URL.");
 
   const mimeType = String(body?.contentType || match[1] || "").toLowerCase();
-  const extension = DESIGN_ASSET_EXTENSIONS.get(mimeType);
-  if (!extension) throw createApiError(400, "Design images must be PNG, JPEG, WebP, or GIF.");
+  const assetType = DESIGN_ASSET_TYPES.get(mimeType);
+  if (!assetType) throw createApiError(400, "Design images must be PNG, JPEG, WebP, or GIF.");
 
   const buffer = Buffer.from(match[2], "base64");
   if (!buffer.length) throw createApiError(400, "Uploaded image is empty.");
   if (buffer.length > MAX_DESIGN_ASSET_BYTES) throw createApiError(413, "Uploaded image must be 5 MB or smaller.");
+  if (buffer.length < 12 || !assetType.matches(buffer)) {
+    throw createApiError(400, `The uploaded file is not a valid ${mimeType.slice("image/".length).toUpperCase()} image.`);
+  }
 
   return {
     buffer,
-    extension,
+    extension: assetType.extension,
     baseName: sanitizeAssetBaseName(body?.fileName),
   };
 };
@@ -295,24 +393,20 @@ const toRepoRelativeGitPath = (filePath) => {
 };
 
 const commitPathsInWorktree = (worktreeRoot, gitPaths, commitMessage, label) => {
-  const stage = spawnSync("git", ["add", "--", ...gitPaths], { cwd: worktreeRoot, stdio: "inherit", windowsHide: true });
-  if (stage.status !== 0) fail(`git add failed for ${label}`);
+  runGit(`git add for ${label}`, ["add", "--", ...gitPaths], { cwd: worktreeRoot });
 
-  const checkDiff = spawnSync("git", ["diff", "--cached", "--quiet", "--", ...gitPaths], { cwd: worktreeRoot, windowsHide: true });
+  const checkDiff = runGit(`git diff for ${label}`, ["diff", "--cached", "--quiet", "--", ...gitPaths], {
+    cwd: worktreeRoot,
+    stdio: "ignore",
+    allowFailure: true,
+  });
   if (checkDiff.status === 0) {
     log(`No ${label} changes to commit.`);
     return false;
   }
-  if (checkDiff.status !== 1) {
-    fail(`git diff failed for ${label}`);
-  }
+  if (checkDiff.status !== 1) fail(`git diff for ${label} failed`);
 
-  const commit = spawnSync("git", [...gitCommitIdentityArgs(), "commit", "-m", commitMessage], {
-    cwd: worktreeRoot,
-    stdio: "inherit",
-    windowsHide: true,
-  });
-  if (commit.status !== 0) fail("git commit failed");
+  runGit("git commit", [...gitCommitIdentityArgs(), "commit", "-m", commitMessage], { cwd: worktreeRoot });
   return true;
 };
 
@@ -327,15 +421,8 @@ const publishPathsFromFreshOrigin = async (paths, commitMessage, label) => {
 
   const branch = getPublishBranch();
   const publishRoot = path.join(os.tmpdir(), `soft-site-publish-${Date.now()}-${process.pid}`);
-  const fetch = spawnSync("git", ["fetch", "origin", branch], { cwd: repoRoot, stdio: "inherit", windowsHide: true });
-  if (fetch.status !== 0) fail(`git fetch origin ${branch} failed`);
-
-  const addWorktree = spawnSync("git", ["worktree", "add", "--detach", publishRoot, `origin/${branch}`], {
-    cwd: repoRoot,
-    stdio: "inherit",
-    windowsHide: true,
-  });
-  if (addWorktree.status !== 0) fail("git worktree add failed");
+  runGit(`git fetch origin ${branch}`, ["fetch", "origin", branch]);
+  runGit("git worktree add", ["worktree", "add", "--detach", publishRoot, `origin/${branch}`]);
 
   try {
     let vodPublication;
@@ -356,10 +443,7 @@ const publishPathsFromFreshOrigin = async (paths, commitMessage, label) => {
     }
 
     const hasCommit = commitPathsInWorktree(publishRoot, gitPaths, commitMessage, label);
-    if (hasCommit) {
-      const push = spawnSync("git", ["push", "origin", `HEAD:${branch}`], { cwd: publishRoot, stdio: "inherit", windowsHide: true });
-      if (push.status !== 0) fail("git push failed");
-    }
+    if (hasCommit) runGit("git push", ["push", "origin", `HEAD:${branch}`], { cwd: publishRoot });
     if (vodPublication) {
       const { pending, published, localAtPublication } = vodPublication;
       // Bring remote-only rows/parts home without removing local uploads that
@@ -370,7 +454,7 @@ const publishPathsFromFreshOrigin = async (paths, commitMessage, label) => {
       await updateArchiveDatabase(config.adminPublicationPath, (entries) => entries.filter((entry) => !publishedIds.has(entry.id)));
     }
   } finally {
-    spawnSync("git", ["worktree", "remove", "--force", publishRoot], { cwd: repoRoot, stdio: "ignore", windowsHide: true });
+    runGit("git worktree remove", ["worktree", "remove", "--force", publishRoot], { stdio: "ignore", allowFailure: true });
   }
 };
 
@@ -461,11 +545,19 @@ const setYouTubeVideoPrivacy = async (youtube, videoId, privacyStatus) => {
   return { id: videoId, privacyStatus: normalizedPrivacy, changed: true };
 };
 
+const decodeRouteSegment = (segment) => {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    throw createApiError(400, "The request path is not valid.");
+  }
+};
+
 const parseVodRoute = (pathname) => {
   const parts = pathname.split("/").filter(Boolean);
   if (parts.length !== 3 || parts[0] !== "vods") return null;
   return {
-    vodId: decodeURIComponent(parts[1]),
+    vodId: decodeRouteSegment(parts[1]),
     action: parts[2],
   };
 };
@@ -474,14 +566,19 @@ const parseVodPartRoute = (pathname) => {
   const parts = pathname.split("/").filter(Boolean);
   if (parts.length !== 5 || parts[0] !== "vods" || parts[2] !== "parts") return null;
   return {
-    vodId: decodeURIComponent(parts[1]),
-    partRef: decodeURIComponent(parts[3]),
+    vodId: decodeRouteSegment(parts[1]),
+    partRef: decodeRouteSegment(parts[3]),
     action: parts[4],
   };
 };
 
+const routeHandler = (routes, action) => (Object.hasOwn(routes, action) ? routes[action] : null);
+
 const validateConfig = async () => {
   if (!config.adminPassword) fail("ADMIN_PANEL_PASSWORD is required in .env.local");
+  if (config.adminPassword.length < MIN_RECOMMENDED_PASSWORD_LENGTH) {
+    log(`Warning: ADMIN_PANEL_PASSWORD is shorter than ${MIN_RECOMMENDED_PASSWORD_LENGTH} characters. Choose a longer passphrase in .env.local.`);
+  }
   await ensureDirectory(path.dirname(config.vodsDataPath));
   await ensureDirectory(path.dirname(config.siteDesignPath));
   await ensureDirectory(config.designAssetsPath);
@@ -587,11 +684,62 @@ const withVodPartVisibility = (vod, videoId, unpublished) => {
   return { ...vod, youtube: withReplacedYoutubeVodParts(vod, nextParts) };
 };
 
+const applySpotifyNotice = (vod, enabled) => {
+  if (enabled) vod.vodNotice = config.spotifyNoticeText;
+  else delete vod.vodNotice;
+  return vod;
+};
+
+// Per-VOD flag routes: each maps a request body to an updater and the commit
+// message that publishes it.
+const VOD_FLAG_ROUTES = {
+  notice: (body) => {
+    const enabled = Boolean(body.enabled);
+    return { update: (vod) => applySpotifyNotice(vod, enabled), message: `${enabled ? "enable" : "disable"} spotify notice` };
+  },
+  flags: (body) => {
+    const noticeEnabled = Boolean(body.noticeEnabled);
+    const chatReplayAvailable = Boolean(body.chatReplayAvailable);
+    return {
+      update: (vod) => {
+        applySpotifyNotice(vod, noticeEnabled);
+        vod.chatReplayAvailable = chatReplayAvailable;
+        return vod;
+      },
+      message: "update admin flags",
+    };
+  },
+  "chat-replay": (body) => {
+    const available = Boolean(body.available);
+    return {
+      update: (vod) => {
+        vod.chatReplayAvailable = available;
+        return vod;
+      },
+      message: `set chat replay ${available ? "available" : "unavailable"}`,
+    };
+  },
+};
+
+// Whole-VOD publication: YouTube parts change visibility first, then the
+// archive entry is flagged. Twitch VODs are never touched.
+const VOD_PUBLICATION_ROUTES = {
+  unpublish: { unpublished: true, privacyStatus: "private", selectParts: (parts) => parts },
+  republish: { unpublished: false, privacyStatus: "public", selectParts: (parts) => parts.filter((entry) => entry?.unpublished !== true) },
+};
+
+const twitchPreservedResult = (vodId) => ({ id: String(vodId), changed: false, deleted: false, reason: "Twitch VOD preserved unchanged." });
+
 const handleRequest = async (req, res) => {
   markActivity();
   const method = req.method || "GET";
   const requestUrl = new URL(req.url || "/", `http://${config.host}:${config.port}`);
   const pathname = requestUrl.pathname;
+
+  if (!isTrustedHost(req)) {
+    sendJson(req, res, 403, { error: "The local admin only answers requests addressed to this PC." });
+    return;
+  }
 
   if (!isAllowedAdminOrigin(String(req.headers.origin || ""), allowedOrigins)) {
     sendJson(req, res, 403, { error: "This site is not allowed to use the local admin. Open admin from Softuchive." });
@@ -613,11 +761,14 @@ const handleRequest = async (req, res) => {
   if (await serveConsole(req, res, pathname)) return;
 
   if (method === "POST" && pathname === "/auth") {
+    assertSignInAllowed();
     const body = await readBodyJson(req);
     if (!timingSafeEquals(body.password || "", config.adminPassword)) {
+      recordSignInFailure();
       sendJson(req, res, 401, { error: "Invalid admin password" });
       return;
     }
+    recordSignInSuccess();
     const session = issueSession();
     sendJson(req, res, 200, { token: session.token, expiresAt: session.expiresAt });
     return;
@@ -693,122 +844,33 @@ const handleRequest = async (req, res) => {
   if (vodRoute && method === "POST") {
     requireSession(req);
 
-    if (vodRoute.action === "notice") {
-      const body = await readBodyJson(req);
-      const enabled = Boolean(body.enabled);
-      const updatedVod = await updateVod(
-        vodRoute.vodId,
-        (vod) => {
-          if (enabled) vod.vodNotice = config.spotifyNoticeText;
-          else delete vod.vodNotice;
-          return vod;
-        },
-        `chore: ${enabled ? "enable" : "disable"} spotify notice for vod ${vodRoute.vodId}`
-      );
+    const flagRoute = routeHandler(VOD_FLAG_ROUTES, vodRoute.action);
+    if (flagRoute) {
+      const { update, message } = flagRoute(await readBodyJson(req));
+      const updatedVod = await updateVod(vodRoute.vodId, update, `chore: ${message} for vod ${vodRoute.vodId}`);
       sendJson(req, res, 200, { vod: updatedVod });
       return;
     }
 
-    if (vodRoute.action === "flags") {
-      const body = await readBodyJson(req);
-      const noticeEnabled = Boolean(body.noticeEnabled);
-      const chatReplayAvailable = Boolean(body.chatReplayAvailable);
-      const updatedVod = await updateVod(
-        vodRoute.vodId,
-        (vod) => {
-          if (noticeEnabled) vod.vodNotice = config.spotifyNoticeText;
-          else delete vod.vodNotice;
-          vod.chatReplayAvailable = chatReplayAvailable;
-          return vod;
-        },
-        `chore: update admin flags for vod ${vodRoute.vodId}`
-      );
-      sendJson(req, res, 200, { vod: updatedVod });
-      return;
-    }
-
-    if (vodRoute.action === "chat-replay") {
-      const body = await readBodyJson(req);
-      const available = Boolean(body.available);
-      const updatedVod = await updateVod(
-        vodRoute.vodId,
-        (vod) => {
-          vod.chatReplayAvailable = available;
-          return vod;
-        },
-        `chore: set chat replay ${available ? "available" : "unavailable"} for vod ${vodRoute.vodId}`
-      );
-      sendJson(req, res, 200, { vod: updatedVod });
-      return;
-    }
-
-    if (vodRoute.action === "unpublish") {
-      const vods = await loadVods();
-      const vod = vods.find((entry) => String(entry.id) === String(vodRoute.vodId));
-      if (!vod) fail(`VOD ${vodRoute.vodId} not found`);
-
-      const youtubeIds = (Array.isArray(vod.youtube) ? vod.youtube : []).map((entry) => entry?.id).filter(Boolean);
+    const publication = routeHandler(VOD_PUBLICATION_ROUTES, vodRoute.action);
+    if (publication) {
+      const vod = findVodOrThrow(await loadVods(), vodRoute.vodId);
+      const youtubeIds = publication.selectParts(Array.isArray(vod.youtube) ? vod.youtube : []).map((entry) => entry?.id).filter(Boolean);
       const youtube = youtubeIds.length ? await loadYoutubeClient() : null;
       const youtubeResults = [];
       for (const videoId of youtubeIds) {
-        youtubeResults.push(await setYouTubeVideoPrivacy(youtube, videoId, "private"));
+        youtubeResults.push(await setYouTubeVideoPrivacy(youtube, videoId, publication.privacyStatus));
       }
-
-      const twitchResult = {
-        id: String(vodRoute.vodId),
-        deleted: false,
-        changed: false,
-        reason: "Twitch VOD preserved unchanged.",
-      };
 
       const updatedVod = await updateVod(
         vodRoute.vodId,
-        (entry) => ({
-          ...entry,
-          unpublished: true,
-        }),
-        `chore: unpublish vod ${vodRoute.vodId}`
+        (entry) => ({ ...entry, unpublished: publication.unpublished }),
+        `chore: ${vodRoute.action} vod ${vodRoute.vodId}`
       );
 
       sendJson(req, res, 200, {
         vod: updatedVod,
-        result: {
-          youtube: youtubeResults,
-          twitch: twitchResult,
-        },
-      });
-      return;
-    }
-
-    if (vodRoute.action === "republish") {
-      const vods = await loadVods();
-      const vod = vods.find((entry) => String(entry.id) === String(vodRoute.vodId));
-      if (!vod) fail(`VOD ${vodRoute.vodId} not found`);
-
-      const youtubeIds = (Array.isArray(vod.youtube) ? vod.youtube : []).filter((entry) => entry?.unpublished !== true).map((entry) => entry?.id).filter(Boolean);
-      const youtube = youtubeIds.length ? await loadYoutubeClient() : null;
-      const youtubeResults = [];
-      for (const videoId of youtubeIds) {
-        youtubeResults.push(await setYouTubeVideoPrivacy(youtube, videoId, "public"));
-      }
-
-      const twitchResult = { id: String(vodRoute.vodId), changed: false, deleted: false, reason: "Twitch VOD preserved unchanged." };
-
-      const updatedVod = await updateVod(
-        vodRoute.vodId,
-        (entry) => ({
-          ...entry,
-          unpublished: false,
-        }),
-        `chore: republish vod ${vodRoute.vodId}`
-      );
-
-      sendJson(req, res, 200, {
-        vod: updatedVod,
-        result: {
-          youtube: youtubeResults,
-          twitch: twitchResult,
-        },
+        result: { youtube: youtubeResults, twitch: twitchPreservedResult(vodRoute.vodId) },
       });
       return;
     }
@@ -824,12 +886,7 @@ const handleRequest = async (req, res) => {
         throw createApiError(400, `Part number must be a positive integer: ${vodPartRoute.partRef}`);
       }
 
-      const vods = await loadVods();
-      const vod = vods.find((entry) => String(entry.id) === String(vodPartRoute.vodId));
-      if (!vod) {
-        throw createApiError(404, `VOD ${vodPartRoute.vodId} not found`);
-      }
-
+      const vod = findVodOrThrow(await loadVods(), vodPartRoute.vodId);
       const orderedParts = listOrderedYoutubeVodParts(vod);
       const partsWithNumbers = withPublishedPartNumbers(orderedParts);
       const publishedParts = partsWithNumbers.filter((part) => part.unpublished !== true);
@@ -870,12 +927,7 @@ const handleRequest = async (req, res) => {
     }
 
     if (vodPartRoute.action === "republish") {
-      const vods = await loadVods();
-      const vod = vods.find((entry) => String(entry.id) === String(vodPartRoute.vodId));
-      if (!vod) {
-        throw createApiError(404, `VOD ${vodPartRoute.vodId} not found`);
-      }
-
+      const vod = findVodOrThrow(await loadVods(), vodPartRoute.vodId);
       const orderedParts = listOrderedYoutubeVodParts(vod);
       if (orderedParts.length === 0) {
         throw createApiError(400, `VOD ${vodPartRoute.vodId} has no YouTube VOD parts.`);
@@ -949,7 +1001,8 @@ const server = http.createServer((req, res) => {
     if (error?.code) payload.code = error.code;
     if (error?.authUrl) payload.authUrl = error.authUrl;
     if (error?.userCode) payload.userCode = error.userCode;
-    sendJson(req, res, status, payload);
+    const headers = error?.retryAfterSeconds ? { "Retry-After": String(error.retryAfterSeconds) } : {};
+    sendJson(req, res, status, payload, headers);
   }).finally(() => { activeRequests -= 1; markActivity(); });
 });
 

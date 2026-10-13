@@ -5,7 +5,6 @@ import SimpleBar from "simplebar-react";
 import Footer from "../utils/Footer";
 import {
   authenticateAdmin,
-  consumePendingAdminPassword,
   signOutAdmin,
   subscribeToAdminSession,
   getAdminVods,
@@ -114,22 +113,7 @@ export default function AdminPage() {
     let active = true;
     const init = async () => {
       try {
-        const pendingPassword = consumePendingAdminPassword();
-        const existingToken = getAdminToken();
-        let isAuthorized = false;
-
-        if (pendingPassword) {
-          try {
-            await authenticateAdmin(pendingPassword);
-            isAuthorized = true;
-          } catch (error) {
-            if (!active || userUnlockInProgressRef.current) return;
-            setMessage({ type: "error", text: error.message });
-          }
-        } else if (existingToken) {
-          const valid = await verifyAdminSession();
-          isAuthorized = valid;
-        }
+        const isAuthorized = getAdminToken() ? await verifyAdminSession() : false;
 
         if (userUnlockInProgressRef.current || !active) return;
 
