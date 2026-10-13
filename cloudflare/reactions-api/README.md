@@ -2,7 +2,7 @@
 
 First-party backend for global VOD reactions (`like` / `dislike`) used by `softu.one`.
 
-The frontend is already configured to prefer `https://api.softu.one/v1/reactions` and fall back to CounterAPI until this Worker is live.
+This Worker is the only reactions backend. The frontend (`src/vods/vodReactionsApi.js`) reads and writes `REACT_APP_REACTIONS_API_BASE` (default `https://api.softu.one/v1/reactions`) and nothing else: while the Worker is unreachable it shows cached or zero counts, keeps each visitor's vote in their browser's localStorage, and reverts a vote whose save fails instead of sending it anywhere else.
 
 ## Endpoints
 

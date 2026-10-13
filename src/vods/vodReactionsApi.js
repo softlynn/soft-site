@@ -1,28 +1,16 @@
-const COUNTER_API_BASE = "https://api.counterapi.dev/v1";
-const COUNTER_NAMESPACE = "softu-vod-reactions-v1";
-const PRIMARY_REACTIONS_API_BASE = String(process.env.REACT_APP_REACTIONS_API_BASE || "https://api.softu.one/v1/reactions")
+const REACTIONS_API_BASE = String(process.env.REACT_APP_REACTIONS_API_BASE || "https://api.softu.one/v1/reactions")
   .trim()
   .replace(/\/+$/, "");
 const CACHE_TTL_MS = 2 * 60 * 1000;
-const REQUEST_GAP_MS = 550;
 const MAX_RETRIES = 2;
 const FETCH_TIMEOUT_MS = 8000;
-const PRIMARY_HEALTH_TIMEOUT_MS = 1800;
-const PRIMARY_MODE_CACHE_MS = 5 * 60 * 1000;
 const VOTE_STORAGE_KEY = "softu-vod-reaction-votes-v1";
 const MAX_STORED_VOTES = 2000;
 
 const snapshotCache = new Map();
 const inflightLoads = new Map();
 const subscribers = new Map();
-let requestChain = Promise.resolve();
-let nextRequestAt = 0;
-let writeRequestChain = Promise.resolve();
-let nextWriteRequestAt = 0;
 const sessionVoteMap = new Map();
-let backendModeCache = null;
-let backendModeCheckedAt = 0;
-let backendModeDiscovery = null;
 let votesLoadedFromStorage = false;
 
 const clampCount = (value) => {
@@ -72,15 +60,6 @@ const persistVotes = () => {
   }
 };
 
-const sanitizeKeyPart = (value) =>
-  String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "unknown";
-
-const counterKeyFor = (vodId, type) => `${sanitizeKeyPart(vodId)}-${type}`;
-
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const createHttpError = (message, status, code) => {
@@ -122,32 +101,6 @@ const isRetryableNetworkError = (error) => {
   return name === "aborterror" || message.includes("failed to fetch") || message.includes("networkerror");
 };
 
-const enqueueCounterRequest = (factory) => {
-  const run = async () => {
-    const wait = Math.max(0, nextRequestAt - Date.now());
-    if (wait > 0) await sleep(wait);
-    nextRequestAt = Date.now() + REQUEST_GAP_MS;
-    return factory();
-  };
-
-  const queued = requestChain.then(run, run);
-  requestChain = queued.catch(() => undefined);
-  return queued;
-};
-
-const enqueueCounterWriteRequest = (factory) => {
-  const run = async () => {
-    const wait = Math.max(0, nextWriteRequestAt - Date.now());
-    if (wait > 0) await sleep(wait);
-    nextWriteRequestAt = Date.now() + REQUEST_GAP_MS;
-    return factory();
-  };
-
-  const queued = writeRequestChain.then(run, run);
-  writeRequestChain = queued.catch(() => undefined);
-  return queued;
-};
-
 const retryableRequest = async (factory, attempt = 0) => {
   try {
     const response = await factory();
@@ -172,72 +125,11 @@ const retryableRequest = async (factory, attempt = 0) => {
   }
 };
 
-const hasPrimaryBackendConfigured = () => PRIMARY_REACTIONS_API_BASE.length > 0;
+const reactionUrl = (key) => `${REACTIONS_API_BASE}/${encodeURIComponent(key)}`;
 
-const markBackendMode = (mode) => {
-  backendModeCache = mode;
-  backendModeCheckedAt = Date.now();
-  return mode;
-};
-
-const shouldRefreshBackendMode = () => !backendModeCache || Date.now() - backendModeCheckedAt > PRIMARY_MODE_CACHE_MS;
-
-const discoverBackendMode = async () => {
-  try {
-    const response = await retryableRequest(() =>
-      fetchWithTimeout(
-        `${PRIMARY_REACTIONS_API_BASE}/_health`,
-        {
-          method: "GET",
-          mode: "cors",
-          credentials: "omit",
-          cache: "no-store",
-        },
-        PRIMARY_HEALTH_TIMEOUT_MS
-      )
-    );
-
-    if (!response.ok) {
-      return markBackendMode("counter");
-    }
-
-    const payload = await safeReadJson(response);
-    if (payload?.ok) {
-      return markBackendMode("primary");
-    }
-
-    return markBackendMode("counter");
-  } catch {
-    return markBackendMode("counter");
-  }
-};
-
-const getPreferredBackendMode = async () => {
-  if (!hasPrimaryBackendConfigured()) return "counter";
-  if (!shouldRefreshBackendMode()) return backendModeCache;
-  // Every visible card needs a count, but they can share one health probe and
-  // its retries. Release the promise so an expired fallback can recover later.
-  if (!backendModeDiscovery) {
-    backendModeDiscovery = discoverBackendMode().finally(() => {
-      backendModeDiscovery = null;
-    });
-  }
-  return backendModeDiscovery;
-};
-
-const isPrimaryUnavailableError = (error) => {
-  if (!error) return false;
-  if (isRetryableNetworkError(error)) return true;
-  const status = Number(error.status || 0);
-  return status === 404 || status === 405 || status === 501;
-};
-
-const readPrimarySnapshot = async (vodId) => {
-  const key = normalizeVodId(vodId);
-  if (!key) return { likes: 0, dislikes: 0 };
-
+const readSnapshot = async (key) => {
   const response = await retryableRequest(() =>
-    fetchWithTimeout(`${PRIMARY_REACTIONS_API_BASE}/${encodeURIComponent(key)}`, {
+    fetchWithTimeout(reactionUrl(key), {
       method: "GET",
       mode: "cors",
       credentials: "omit",
@@ -248,7 +140,7 @@ const readPrimarySnapshot = async (vodId) => {
   const payload = await safeReadJson(response);
   if (!response.ok) {
     if (response.status === 404) return { likes: 0, dislikes: 0 };
-    throw createHttpError(`Primary reactions read failed (${response.status})`, response.status, "PRIMARY_READ_HTTP");
+    throw createHttpError(`Reactions read failed (${response.status})`, response.status, "REACTIONS_READ_HTTP");
   }
 
   return {
@@ -257,12 +149,9 @@ const readPrimarySnapshot = async (vodId) => {
   };
 };
 
-const writePrimarySnapshot = async (vodId, nextVote, previousVote) => {
-  const key = normalizeVodId(vodId);
-  if (!key) return { likes: 0, dislikes: 0 };
-
+const writeSnapshot = async (key, nextVote, previousVote) => {
   const response = await retryableRequest(() =>
-    fetchWithTimeout(`${PRIMARY_REACTIONS_API_BASE}/${encodeURIComponent(key)}`, {
+    fetchWithTimeout(reactionUrl(key), {
       method: "POST",
       mode: "cors",
       credentials: "omit",
@@ -270,16 +159,13 @@ const writePrimarySnapshot = async (vodId, nextVote, previousVote) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        nextVote: normalizeVote(nextVote),
-        previousVote: normalizeVote(previousVote),
-      }),
+      body: JSON.stringify({ nextVote, previousVote }),
     })
   );
 
   const payload = await safeReadJson(response);
   if (!response.ok) {
-    throw createHttpError(`Primary reactions write failed (${response.status})`, response.status, "PRIMARY_WRITE_HTTP");
+    throw createHttpError(`Reactions write failed (${response.status})`, response.status, "REACTIONS_WRITE_HTTP");
   }
 
   return {
@@ -361,70 +247,6 @@ const getCachedSnapshot = (vodId) => {
   return snapshot;
 };
 
-const readCounter = async (key) => {
-  return enqueueCounterRequest(async () => {
-    const url = `${COUNTER_API_BASE}/${encodeURIComponent(COUNTER_NAMESPACE)}/${encodeURIComponent(key)}`;
-    const response = await retryableRequest(() =>
-      fetchWithTimeout(url, {
-        method: "GET",
-        mode: "cors",
-        credentials: "omit",
-        cache: "no-store",
-      })
-    );
-
-    const payload = await safeReadJson(response);
-    if (!response.ok) {
-      const message = String(payload?.message || "").toLowerCase();
-      if (response.status === 404 || (response.status === 400 && message.includes("record not found"))) {
-        return 0;
-      }
-      throw createHttpError(`Counter read failed (${response.status})`, response.status, "COUNTER_READ_HTTP");
-    }
-
-    return clampCount(payload?.count);
-  });
-};
-
-const mutateCounter = async (key, operation) => {
-  return enqueueCounterWriteRequest(async () => {
-    const url = `${COUNTER_API_BASE}/${encodeURIComponent(COUNTER_NAMESPACE)}/${encodeURIComponent(key)}/${operation}`;
-    const response = await retryableRequest(() =>
-      fetchWithTimeout(url, {
-        method: "GET",
-        mode: "cors",
-        credentials: "omit",
-        cache: "no-store",
-      })
-    );
-
-    if (!response.ok) {
-      throw createHttpError(`Counter ${operation} failed (${response.status})`, response.status, "COUNTER_WRITE_HTTP");
-    }
-    const payload = await safeReadJson(response);
-    return clampCount(payload?.count);
-  });
-};
-
-const readSnapshotByBackend = async (vodId) => {
-  const backendMode = await getPreferredBackendMode();
-  if (backendMode === "primary") {
-    try {
-      return await readPrimarySnapshot(vodId);
-    } catch (error) {
-      if (isPrimaryUnavailableError(error)) {
-        markBackendMode("counter");
-      } else {
-        throw error;
-      }
-    }
-  }
-
-  const key = normalizeVodId(vodId);
-  const [likes, dislikes] = await Promise.all([readCounter(counterKeyFor(key, "like")), readCounter(counterKeyFor(key, "dislike"))]);
-  return { likes, dislikes };
-};
-
 export const getVodReactionSnapshot = async (vodId, { force = false } = {}) => {
   const key = normalizeVodId(vodId);
   if (!key) return { likes: 0, dislikes: 0, fetchedAt: Date.now() };
@@ -436,7 +258,7 @@ export const getVodReactionSnapshot = async (vodId, { force = false } = {}) => {
 
   if (!force && inflightLoads.has(key)) return inflightLoads.get(key);
 
-  const promise = readSnapshotByBackend(key)
+  const promise = readSnapshot(key)
     .then((snapshot) => cacheSnapshot(key, snapshot))
     .finally(() => {
       inflightLoads.delete(key);
@@ -449,33 +271,8 @@ export const getVodReactionSnapshot = async (vodId, { force = false } = {}) => {
 export const getVodLikeCount = async (vodId, { force = false } = {}) => {
   const key = normalizeVodId(vodId);
   if (!key) return 0;
-  if (!force) {
-    const cached = getCachedSnapshot(key);
-    if (cached) return clampCount(cached.likes);
-  }
-
-  const backendMode = await getPreferredBackendMode();
-  if (backendMode === "primary") {
-    try {
-      const snapshot = await readPrimarySnapshot(key);
-      cacheSnapshot(key, snapshot);
-      return clampCount(snapshot.likes);
-    } catch (error) {
-      if (isPrimaryUnavailableError(error)) {
-        markBackendMode("counter");
-      } else {
-        throw error;
-      }
-    }
-  }
-
-  const likes = await readCounter(counterKeyFor(key, "like"));
-  const previous = snapshotCache.get(key);
-  cacheSnapshot(key, {
-    likes,
-    dislikes: previous?.dislikes ?? 0,
-  });
-  return likes;
+  const snapshot = await getVodReactionSnapshot(key, { force });
+  return clampCount(snapshot.likes);
 };
 
 const applyVoteDelta = (snapshot, previousVote, nextVote) => {
@@ -502,32 +299,11 @@ export const setVodReactionVote = async (vodId, nextVote, previousVote) => {
   setStoredVodReactionVote(key, normalizedNext);
 
   try {
-    const backendMode = await getPreferredBackendMode();
-    if (backendMode === "primary") {
-      const snapshot = await writePrimarySnapshot(key, normalizedNext, normalizedPrev);
-      return cacheSnapshot(key, snapshot);
-    }
-
-    let likes = clampCount(current.likes);
-    let dislikes = clampCount(current.dislikes);
-    if (normalizedPrev === "like" && normalizedNext !== "like" && likes > 0) {
-      likes = await mutateCounter(counterKeyFor(key, "like"), "down");
-    }
-    if (normalizedPrev === "dislike" && normalizedNext !== "dislike" && dislikes > 0) {
-      dislikes = await mutateCounter(counterKeyFor(key, "dislike"), "down");
-    }
-    if (normalizedNext === "like" && normalizedPrev !== "like") {
-      likes = await mutateCounter(counterKeyFor(key, "like"), "up");
-    }
-    if (normalizedNext === "dislike" && normalizedPrev !== "dislike") {
-      dislikes = await mutateCounter(counterKeyFor(key, "dislike"), "up");
-    }
-
-    return cacheSnapshot(key, { likes, dislikes });
+    const snapshot = await writeSnapshot(key, normalizedNext, normalizedPrev);
+    return cacheSnapshot(key, snapshot);
   } catch (error) {
-    if (isPrimaryUnavailableError(error)) {
-      markBackendMode("counter");
-    }
+    // The Worker is the only backend: when it is unreachable, restore the
+    // previous vote and counts and let the caller surface the failure.
     setStoredVodReactionVote(key, normalizedPrev);
     cacheSnapshot(key, current);
     throw error;
