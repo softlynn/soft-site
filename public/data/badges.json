@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-09-12T16:05:03.696Z",
+  "generatedAt": "2026-10-17T22:40:47.683Z",
   "channelLogin": "softxu",
   "channelId": "218908733",
   "global": [
@@ -185,6 +185,21 @@
       ]
     },
     {
+      "set_id": "ace-combat-8-nugget",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/8468fb6c-1d33-4482-85ef-fa1898288ee2/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/8468fb6c-1d33-4482-85ef-fa1898288ee2/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/8468fb6c-1d33-4482-85ef-fa1898288ee2/3",
+          "title": "ACE COMBAT 8 Nugget",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the ACE COMBAT 8 category during the game's launch!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "admin",
       "versions": [
         {
@@ -241,6 +256,21 @@
           "description": "Twitch Ambassador",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/team/ambassadors"
+        }
+      ]
+    },
+    {
+      "set_id": "ampersand",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/b17f6b68-4a2d-4d2a-9967-aa8ff26012a0/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/b17f6b68-4a2d-4d2a-9967-aa8ff26012a0/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/b17f6b68-4a2d-4d2a-9967-aa8ff26012a0/3",
+          "title": "Ampersand",
+          "description": "This badge was earned by subscribing to a streamer in the Dungeons & Dragons category.",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -466,6 +496,51 @@
           "description": "Battlerite",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/directory/game/Battlerite/details"
+        }
+      ]
+    },
+    {
+      "set_id": "beagoldfish",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/fa5a8b25-f4e4-443b-98c6-623c65a89296/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/fa5a8b25-f4e4-443b-98c6-623c65a89296/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/fa5a8b25-f4e4-443b-98c6-623c65a89296/3",
+          "title": "BeAGoldfish",
+          "description": "Subbed to a streamer and got 1 month of Apple TV!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "believeinrichmond",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/07374c1e-6858-443f-8f57-cfbbe38364ca/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/07374c1e-6858-443f-8f57-cfbbe38364ca/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/07374c1e-6858-443f-8f57-cfbbe38364ca/3",
+          "title": "BelieveInRichmond",
+          "description": "Subbed to a streamer and got 1 month of Apple TV!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "big-walk",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/3de5a89b-533b-483a-8db2-036f9f13b9bd/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/3de5a89b-533b-483a-8db2-036f9f13b9bd/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/3de5a89b-533b-483a-8db2-036f9f13b9bd/3",
+          "title": "Big Walk",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Big Walk category.",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -835,6 +910,36 @@
       ]
     },
     {
+      "set_id": "blastoise",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/2b975e12-fd49-4e54-85c4-6cc042453dbb/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/2b975e12-fd49-4e54-85c4-6cc042453dbb/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/2b975e12-fd49-4e54-85c4-6cc042453dbb/3",
+          "title": "Blastoise",
+          "description": "This badge was earned by evolving a badge from the Pokémon First Partners Collection campaign.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "bloody-finger-elden-ring",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/12266c73-c6bc-433a-ab66-dc021bb8159f/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/12266c73-c6bc-433a-ab66-dc021bb8159f/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/12266c73-c6bc-433a-ab66-dc021bb8159f/3",
+          "title": "Bloody Finger ELDEN RING",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the ELDEN RING category.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "bloom-badge",
       "versions": [
         {
@@ -921,6 +1026,21 @@
           "description": "Earn this badge for watching a clip, VOD or live stream 3 days a week. The badge upgrades weekly.",
           "click_action": "visit_url",
           "click_url": "https://help.twitch.tv/s/article/weekly-rewards"
+        }
+      ]
+    },
+    {
+      "set_id": "blue-creeper-boss",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/e349e84d-1d91-4086-afda-e0c946717878/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/e349e84d-1d91-4086-afda-e0c946717878/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/e349e84d-1d91-4086-afda-e0c946717878/3",
+          "title": "Blue Creeper Boss",
+          "description": "This badge was earned by subscribing to a streamer in the Minecraft category during TGS 2026!",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -1135,6 +1255,21 @@
       ]
     },
     {
+      "set_id": "castlevania-belmonts-curse",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/e073c4ac-2d87-4f4b-8239-a2081f4a06e1/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/e073c4ac-2d87-4f4b-8239-a2081f4a06e1/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/e073c4ac-2d87-4f4b-8239-a2081f4a06e1/3",
+          "title": "Castlevania Belmont's Curse",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Castlevania: Belmont's Curse category during the game launch!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "cdawg-cyclethon-5-badge",
       "versions": [
         {
@@ -1165,6 +1300,21 @@
       ]
     },
     {
+      "set_id": "charizard",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/ac097350-add0-44c4-b405-e70aa746389b/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/ac097350-add0-44c4-b405-e70aa746389b/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/ac097350-add0-44c4-b405-e70aa746389b/3",
+          "title": "Charizard",
+          "description": "This badge was earned by evolving a badge from the Pokémon First Partners Collection campaign.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "charmander",
       "versions": [
         {
@@ -1174,6 +1324,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/afe60f97-56d1-493d-a55c-2f1cec7aca7c/3",
           "title": "Charmander",
           "description": "This badge was earned during the Pokémon First Partners Collection campaign.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "charmeleon",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/d9698627-aff7-434c-8002-1351b2c59984/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/d9698627-aff7-434c-8002-1351b2c59984/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/d9698627-aff7-434c-8002-1351b2c59984/3",
+          "title": "Charmeleon",
+          "description": "This badge was earned by evolving a badge from the Pokémon First Partners Collection campaign.",
           "click_action": null,
           "click_url": null
         }
@@ -1251,6 +1416,21 @@
           "description": "For spreading the holiday cheer by sharing a clip to TikTok or YouTube during Twitch Holiday Hoopla 2024.",
           "click_action": "visit_url",
           "click_url": "https://blog.twitch.tv/en/2024/12/02/twitch-holiday-hoopla/"
+        }
+      ]
+    },
+    {
+      "set_id": "clipped-that",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/5b648ccf-dc37-4233-a96e-c6e5d693a0ae/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/5b648ccf-dc37-4233-a96e-c6e5d693a0ae/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/5b648ccf-dc37-4233-a96e-c6e5d693a0ae/3",
+          "title": "Clipped That",
+          "description": "This limited-time badge was earned by a DJ Program creator who clipped an epic mid-set moment and downloaded + shared it to social.",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -1365,6 +1545,21 @@
       ]
     },
     {
+      "set_id": "crossworlds-world-championship-2026",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/97062b99-1125-4f41-91df-b98687176d8e/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/97062b99-1125-4f41-91df-b98687176d8e/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/97062b99-1125-4f41-91df-b98687176d8e/3",
+          "title": "CrossWorlds World Championship 2026",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Sonic Racing: CrossWorlds category during the 2026 World Championship Finals and Club Chaos festivities.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "cryana",
       "versions": [
         {
@@ -1395,6 +1590,21 @@
       ]
     },
     {
+      "set_id": "d20",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/263a5bf1-c1ea-4f26-8bf8-db42ea2ebc7c/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/263a5bf1-c1ea-4f26-8bf8-db42ea2ebc7c/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/263a5bf1-c1ea-4f26-8bf8-db42ea2ebc7c/3",
+          "title": "d20",
+          "description": "This badge was earned by watching Dungeon Masters on Twitch.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "dallas",
       "versions": [
         {
@@ -1421,6 +1631,21 @@
           "description": "Darkest Dungeon",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/directory/game/Darkest%20Dungeon/details"
+        }
+      ]
+    },
+    {
+      "set_id": "dayz-yellow-king",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/739379da-c982-4294-9bfd-75c3cc4187d3/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/739379da-c982-4294-9bfd-75c3cc4187d3/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/739379da-c982-4294-9bfd-75c3cc4187d3/3",
+          "title": "DayZ Yellow King",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the DayZ category during the DayZ Badlands expansion launch!",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -1725,6 +1950,21 @@
       ]
     },
     {
+      "set_id": "dont-eat-the-mold",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/f1617a53-9e8f-4bd4-b440-ab44f6f8f650/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/f1617a53-9e8f-4bd4-b440-ab44f6f8f650/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/f1617a53-9e8f-4bd4-b440-ab44f6f8f650/3",
+          "title": "Don't Eat The Mold",
+          "description": "This badge was earned by watching a streamer in the CONTROL Resonant category for 1 hour",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "dragonscimmy",
       "versions": [
         {
@@ -1901,6 +2141,51 @@
           "description": "Duelyst",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/directory/game/Duelyst/details"
+        }
+      ]
+    },
+    {
+      "set_id": "edgerunners-d",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/99095484-4036-40e6-a1f6-c451e93abdeb/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/99095484-4036-40e6-a1f6-c451e93abdeb/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/99095484-4036-40e6-a1f6-c451e93abdeb/3",
+          "title": "Edgerunners D",
+          "description": "This badge was earned by watching a streamer in the Cyberpunk 2077 category during the Cyberpunk: Edgerunners 2: Twitch Co-Streaming",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "edgerunners-talia",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/37886d76-944e-46ed-81ee-348d43a17922/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/37886d76-944e-46ed-81ee-348d43a17922/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/37886d76-944e-46ed-81ee-348d43a17922/3",
+          "title": "Edgerunners Talia",
+          "description": "This badge was earned by watching a streamer in the Cyberpunk 2077 category during the Cyberpunk: Edgerunners 2: Twitch Co-Streaming",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "edgerunners-weak",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/053062de-0527-4263-a595-740dc0ec2674/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/053062de-0527-4263-a595-740dc0ec2674/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/053062de-0527-4263-a595-740dc0ec2674/3",
+          "title": "Edgerunners Weak",
+          "description": "This badge was earned by watching a streamer in the Cyberpunk 2077 category during the Cyberpunk: Edgerunners 2: Twitch Co-Streaming",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -2415,6 +2700,21 @@
       ]
     },
     {
+      "set_id": "flameborn-sigil",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/66ccfcbb-8b82-4746-8b61-2c38f69731c7/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/66ccfcbb-8b82-4746-8b61-2c38f69731c7/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/66ccfcbb-8b82-4746-8b61-2c38f69731c7/3",
+          "title": "Flameborn Sigil",
+          "description": "This badge was earned by watching a streamer in the Enshrouded category during the v1.0 game launch",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "football-fest-2026",
       "versions": [
         {
@@ -2441,6 +2741,21 @@
           "description": "Founder",
           "click_action": "visit_url",
           "click_url": "https://help.twitch.tv/s/article/founders-badge"
+        }
+      ]
+    },
+    {
+      "set_id": "frekifriend",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/2d1bfde9-94a9-4ed1-84a5-4aeb85911f1d/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/2d1bfde9-94a9-4ed1-84a5-4aeb85911f1d/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/2d1bfde9-94a9-4ed1-84a5-4aeb85911f1d/3",
+          "title": "FrekiFriend",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Dragon's Dogma II category during the launch of Dragon's Dogma 2: Dark Arisen!",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -2535,6 +2850,21 @@
       ]
     },
     {
+      "set_id": "gastly",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/602335f3-4d73-40f9-b8e2-5c5e25f32d62/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/602335f3-4d73-40f9-b8e2-5c5e25f32d62/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/602335f3-4d73-40f9-b8e2-5c5e25f32d62/3",
+          "title": "Gastly",
+          "description": "This badge was earned during Pokémon Night Out 2026.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "gears-of-war-superfan-badge",
       "versions": [
         {
@@ -2544,6 +2874,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/18b92728-aa7a-4e24-acb5-b14ea17c8b2b/3",
           "title": "Gears of War Superfan Badge",
           "description": "This user is a Gears of War: Reloaded Superfan.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "gengar",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/21c5d89c-bea4-4682-8080-96b22770d0f4/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/21c5d89c-bea4-4682-8080-96b22770d0f4/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/21c5d89c-bea4-4682-8080-96b22770d0f4/3",
+          "title": "Gengar",
+          "description": "This badge was earned by evolving the Night Out 2026 Haunter badge.",
           "click_action": null,
           "click_url": null
         }
@@ -2670,6 +3015,21 @@
       ]
     },
     {
+      "set_id": "gold-stamp",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/94f4c9cb-de1d-44a0-a3fd-5e0b205451c0/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/94f4c9cb-de1d-44a0-a3fd-5e0b205451c0/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/94f4c9cb-de1d-44a0-a3fd-5e0b205451c0/3",
+          "title": "Gold Stamp",
+          "description": "This badge was earned by watching a streamer in the Witchspire category for 240 minutes",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "gone-bananas",
       "versions": [
         {
@@ -2730,6 +3090,36 @@
       ]
     },
     {
+      "set_id": "haunter",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/ddfbf317-aa77-482e-a99d-eb975deb2fe7/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/ddfbf317-aa77-482e-a99d-eb975deb2fe7/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/ddfbf317-aa77-482e-a99d-eb975deb2fe7/3",
+          "title": "Haunter",
+          "description": "This badge was earned by evolving the Night Out 2026 Gastly badge.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "heartsteel-fan",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/e97f6718-9d36-4b35-8a6f-a36545ab81ff/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/e97f6718-9d36-4b35-8a6f-a36545ab81ff/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/e97f6718-9d36-4b35-8a6f-a36545ab81ff/3",
+          "title": "Heartsteel Fan",
+          "description": "This Chat Badge was earned by supporting the 2026 League of Legends World Championship!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "heavy-bullets_1",
       "versions": [
         {
@@ -2769,6 +3159,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/20098028-701d-49c5-a5b6-22763ce23dd9/3",
           "title": "Hime",
           "description": "This badge was earned by signing up for a Turbo free trial or purchasing a Turbo subscription during Ani-May with Crunchyroll on Twitch from May 14 - 20.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "homo-tenta",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/3ec6f155-ebc7-4624-89d9-ead63122dc52/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/3ec6f155-ebc7-4624-89d9-ead63122dc52/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/3ec6f155-ebc7-4624-89d9-ead63122dc52/3",
+          "title": "Homo Tenta",
+          "description": "This badge was earned by subscribing to a streamer in the Metaphor: ReFantazio category during the 2026 ATLUS celebration!",
           "click_action": null,
           "click_url": null
         }
@@ -2935,6 +3340,21 @@
       ]
     },
     {
+      "set_id": "ivysaur",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/6de326e8-643f-4043-beb6-3ad135385708/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/6de326e8-643f-4043-beb6-3ad135385708/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/6de326e8-643f-4043-beb6-3ad135385708/3",
+          "title": "Ivysaur",
+          "description": "This badge was earned by evolving a badge from the Pokémon First Partners Collection campaign.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "jackbox-party-pack_1",
       "versions": [
         {
@@ -3025,6 +3445,21 @@
       ]
     },
     {
+      "set_id": "kda-fan",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/cf6ff3ab-9153-483b-bdac-f07577e6e202/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/cf6ff3ab-9153-483b-bdac-f07577e6e202/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/cf6ff3ab-9153-483b-bdac-f07577e6e202/3",
+          "title": "K/DA Fan",
+          "description": "This Chat Badge was earned by supporting the 2026 League of Legends World Championship!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "killer-inn",
       "versions": [
         {
@@ -3064,6 +3499,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/374ef606-cf25-475e-994b-f7d36b8acd43/3",
           "title": "Kodama",
           "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Nioh 3 category",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "koromaru",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/d08bb5f3-7638-45c6-919a-9f2eb4ef505e/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/d08bb5f3-7638-45c6-919a-9f2eb4ef505e/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/d08bb5f3-7638-45c6-919a-9f2eb4ef505e/3",
+          "title": "Koromaru",
+          "description": "This badge was earned by subscribing to a streamer in the Persona 3 Reload category during the 2026 ATLUS celebration!",
           "click_action": null,
           "click_url": null
         }
@@ -3310,6 +3760,21 @@
       ]
     },
     {
+      "set_id": "marvels-wolverine",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/55090800-82e4-4d31-8b3c-f9feb5e25557/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/55090800-82e4-4d31-8b3c-f9feb5e25557/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/55090800-82e4-4d31-8b3c-f9feb5e25557/3",
+          "title": "Marvel's Wolverine",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Marvel's Wolverine category during the game launch.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "meccha-chameleon",
       "versions": [
         {
@@ -3409,6 +3874,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
           "title": "Moderator",
           "description": "Moderator",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "modern-warfare-4",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/41505da3-121e-4d81-985f-95185a79186c/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/41505da3-121e-4d81-985f-95185a79186c/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/41505da3-121e-4d81-985f-95185a79186c/3",
+          "title": "Modern Warfare 4",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Call of Duty Modern Warfare 4 category during the launch.",
           "click_action": null,
           "click_url": null
         }
@@ -3635,6 +4115,21 @@
       ]
     },
     {
+      "set_id": "morgana",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/a0c09111-b247-4b40-88a2-7ef1cfc60f65/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/a0c09111-b247-4b40-88a2-7ef1cfc60f65/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/a0c09111-b247-4b40-88a2-7ef1cfc60f65/3",
+          "title": "Morgana",
+          "description": "This badge was earned by subscribing to a streamer in the Persona 5 Royal category during the 2026 ATLUS celebration!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "mouseathon",
       "versions": [
         {
@@ -3674,6 +4169,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/8c36a423-f3f0-49c2-a886-ecec931b05cb/3",
           "title": "MSI 2026",
           "description": "This badge was earned by supporting MSI 2026 on Twitch!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "nahobiho",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/adc8a831-4884-471b-9723-aad8bf3e05b8/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/adc8a831-4884-471b-9723-aad8bf3e05b8/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/adc8a831-4884-471b-9723-aad8bf3e05b8/3",
+          "title": "Nahobiho",
+          "description": "This badge was earned by subscribing to a streamer in the Shin Megami Tensei V: Vengeance category during the 2026 ATLUS celebration!",
           "click_action": null,
           "click_url": null
         }
@@ -3940,6 +4450,21 @@
       ]
     },
     {
+      "set_id": "pentakill-fan",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/721fe947-d819-4b13-9b7a-92debcd9393b/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/721fe947-d819-4b13-9b7a-92debcd9393b/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/721fe947-d819-4b13-9b7a-92debcd9393b/3",
+          "title": "Pentakill Fan",
+          "description": "This Chat Badge was earned by supporting the 2026 League of Legends World Championship!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "perlica",
       "versions": [
         {
@@ -3964,6 +4489,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/20f214cf-36b0-4b42-8992-3b769bcb0461/3",
           "title": "Pichu",
           "description": "This badge was earned during the Pokémon First Partners Collection campaign.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "pikachu",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/b9dd6905-474f-45d1-a4ff-8ba138208afc/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/b9dd6905-474f-45d1-a4ff-8ba138208afc/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/b9dd6905-474f-45d1-a4ff-8ba138208afc/3",
+          "title": "Pikachu",
+          "description": "This badge was earned by evolving a badge from the Pokémon First Partners Collection campaign.",
           "click_action": null,
           "click_url": null
         }
@@ -4475,6 +5015,21 @@
       ]
     },
     {
+      "set_id": "rematch-blue-lock",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/13afe621-edd4-48b6-a09b-453a2dee52e9/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/13afe621-edd4-48b6-a09b-453a2dee52e9/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/13afe621-edd4-48b6-a09b-453a2dee52e9/3",
+          "title": "Rematch Blue Lock",
+          "description": "This badge was earned by watching a streamer in the Rematch category for 30 minutes",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "rematch-brazil",
       "versions": [
         {
@@ -4700,6 +5255,21 @@
       ]
     },
     {
+      "set_id": "runescape-shrimp",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/88a06333-48d6-43cd-ac7e-0b449b4a7b8a/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/88a06333-48d6-43cd-ac7e-0b449b4a7b8a/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/88a06333-48d6-43cd-ac7e-0b449b4a7b8a/3",
+          "title": "RuneScape Shrimp",
+          "description": "This badge was awarded to people who viewed any eligible channel co-streaming RuneFest 2026 in the Old School RuneScape category for one hour.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "runescape-skull",
       "versions": [
         {
@@ -4790,6 +5360,21 @@
       ]
     },
     {
+      "set_id": "seegson-synthetics",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/4709f62b-9cd9-4759-8953-c096527401c7/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/4709f62b-9cd9-4759-8953-c096527401c7/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/4709f62b-9cd9-4759-8953-c096527401c7/3",
+          "title": "SEEGSON Synthetics",
+          "description": "This badge was earned by watching the Alien Isolation category for 30 minutes",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "seeks-eye",
       "versions": [
         {
@@ -4799,6 +5384,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/2ff5095e-8b37-489c-9a53-336bf806dca2/3",
           "title": "Seek's Eye",
           "description": "This badge was earned by watching Roblox during the Bloxfest Qualifiers.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "sevastopol-station",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/a6a681a9-3253-42de-b09a-7bda7c05c342/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/a6a681a9-3253-42de-b09a-7bda7c05c342/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/a6a681a9-3253-42de-b09a-7bda7c05c342/3",
+          "title": "Sevastopol Station",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Alien Isolation category",
           "click_action": null,
           "click_url": null
         }
@@ -5061,6 +5661,21 @@
           "description": "You've completed all categories of the 2024 Twitch Predicts: The Streamer Awards extension!",
           "click_action": "visit_url",
           "click_url": "https://thestreamerawards.com/home"
+        }
+      ]
+    },
+    {
+      "set_id": "streamer-awards-2026-vote",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/941f3939-ae1c-4b47-a5fd-9adc53d3a4f4/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/941f3939-ae1c-4b47-a5fd-9adc53d3a4f4/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/941f3939-ae1c-4b47-a5fd-9adc53d3a4f4/3",
+          "title": "Streamer Awards 2026 Vote",
+          "description": "This badge was earned by watching and voting on the 2026 Streamer Awards!",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -5625,6 +6240,21 @@
       ]
     },
     {
+      "set_id": "teddie",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/80786dcb-bf5e-4069-ab13-32b4fa436c51/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/80786dcb-bf5e-4069-ab13-32b4fa436c51/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/80786dcb-bf5e-4069-ab13-32b4fa436c51/3",
+          "title": "Teddie",
+          "description": "This badge was earned by subscribing to a streamer in the Persona 4 Golden category during the 2026 ATLUS celebration!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "tft-paris-open",
       "versions": [
         {
@@ -5730,6 +6360,21 @@
       ]
     },
     {
+      "set_id": "the-inverted-man",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/755022bc-26e1-47a4-8d6f-961224713355/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/755022bc-26e1-47a4-8d6f-961224713355/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/755022bc-26e1-47a4-8d6f-961224713355/3",
+          "title": "The Inverted Man",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the CONTROL Resonant category during the game launch",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "the-man-without-fear",
       "versions": [
         {
@@ -5801,6 +6446,21 @@
           "description": "The Surge",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/directory/game/The%20Surge/details"
+        }
+      ]
+    },
+    {
+      "set_id": "thedragonsdogma",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/f699b4ab-8952-46a1-88ff-a5515406f0a5/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/f699b4ab-8952-46a1-88ff-a5515406f0a5/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/f699b4ab-8952-46a1-88ff-a5515406f0a5/3",
+          "title": "TheDragonsDogma",
+          "description": "This badge was earned by watching Dragon's Dogma 2: Dark Arisen for 1 hour",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -5951,6 +6611,21 @@
           "description": "Treasure Adventure World",
           "click_action": "visit_url",
           "click_url": "https://www.twitch.tv/directory/game/Treasure%20Adventure%20World/details"
+        }
+      ]
+    },
+    {
+      "set_id": "true-damage-fan",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/06c27674-9c56-479d-8acf-a3dfd5680425/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/06c27674-9c56-479d-8acf-a3dfd5680425/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/06c27674-9c56-479d-8acf-a3dfd5680425/3",
+          "title": "True Damage Fan",
+          "description": "This Chat Badge was earned by supporting the 2026 League of Legends World Championship!",
+          "click_action": null,
+          "click_url": null
         }
       ]
     },
@@ -6445,6 +7120,21 @@
       ]
     },
     {
+      "set_id": "ultramarine",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/12cb6b16-063b-4fcf-b312-c5c8f01e49ac/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/12cb6b16-063b-4fcf-b312-c5c8f01e49ac/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/12cb6b16-063b-4fcf-b312-c5c8f01e49ac/3",
+          "title": "Ultramarine",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Space Marine 2 category during the anniversary campaign!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "umbrella-corporation",
       "versions": [
         {
@@ -6490,6 +7180,36 @@
       ]
     },
     {
+      "set_id": "vaultbreakers",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/cce20332-b825-4008-8a8c-9b75e7a67e79/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/cce20332-b825-4008-8a8c-9b75e7a67e79/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/cce20332-b825-4008-8a8c-9b75e7a67e79/3",
+          "title": "Vaultbreakers",
+          "description": "This badge was earned by watching a streamer in the Vaultbreakers category for 60 minutes",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "vaultbreakers-golden",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/29e7e185-e4c3-4cd4-ac5b-63e16c90d401/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/29e7e185-e4c3-4cd4-ac5b-63e16c90d401/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/29e7e185-e4c3-4cd4-ac5b-63e16c90d401/3",
+          "title": "Vaultbreakers Golden",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Vaultbreakers category",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "vct-paris-2025",
       "versions": [
         {
@@ -6499,6 +7219,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/63c91cf1-53d1-4ee9-821f-b4d6e4144e8e/3",
           "title": "VCT Paris 2025",
           "description": "This badge was earned by subscribing to a VALORANT streamer while watching VALORANT Champions 2025!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "venusaur",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/ad14f7e4-1ca6-476b-acaf-250da22388ec/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/ad14f7e4-1ca6-476b-acaf-250da22388ec/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/ad14f7e4-1ca6-476b-acaf-250da22388ec/3",
+          "title": "Venusaur",
+          "description": "This badge was earned by evolving a badge from the Pokémon First Partners Collection campaign.",
           "click_action": null,
           "click_url": null
         }
@@ -6620,6 +7355,21 @@
       ]
     },
     {
+      "set_id": "wartortle",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/15a0db5d-bef1-49bb-8594-e3925e1ec248/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/15a0db5d-bef1-49bb-8594-e3925e1ec248/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/15a0db5d-bef1-49bb-8594-e3925e1ec248/3",
+          "title": "Wartortle",
+          "description": "This badge was earned by evolving a badge from the Pokémon First Partners Collection campaign.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "waterslug",
       "versions": [
         {
@@ -6680,6 +7430,36 @@
       ]
     },
     {
+      "set_id": "witch-hat",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/52fc3c6b-f177-4f68-8334-4172d0555923/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/52fc3c6b-f177-4f68-8334-4172d0555923/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/52fc3c6b-f177-4f68-8334-4172d0555923/3",
+          "title": "Witch Hat",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Witchspire category",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "witchspire-logo",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/9be56234-70e5-414f-a6a0-78ec9cbb08f7/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/9be56234-70e5-414f-a6a0-78ec9cbb08f7/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/9be56234-70e5-414f-a6a0-78ec9cbb08f7/3",
+          "title": "Witchspire Logo",
+          "description": "This badge was earned by watching a streamer in the Witchspire category for 60 minutes",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
       "set_id": "wolf",
       "versions": [
         {
@@ -6688,7 +7468,37 @@
           "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/714081b8-aded-46d7-a6c3-14b2d79f19be/2",
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/714081b8-aded-46d7-a6c3-14b2d79f19be/3",
           "title": "Wolf",
-          "description": "This badge was earned by watching a streamer in the PAYDAY 3 category for 90 minutes ",
+          "description": "This badge was earned by watching a streamer in the PAYDAY 3 category for 90 minutes",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "wolf-medallion",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/3e008d8a-4a24-4858-9e8f-74e8a3808955/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/3e008d8a-4a24-4858-9e8f-74e8a3808955/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/3e008d8a-4a24-4858-9e8f-74e8a3808955/3",
+          "title": "Wolf Medallion",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in The Witcher 3: Wild Hunt category during launch of The Witcher 3: Wild Hunt – Remastered",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "worlds-2026-supporter",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/031a4882-d8e6-4dd6-97d8-40620f59d288/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/031a4882-d8e6-4dd6-97d8-40620f59d288/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/031a4882-d8e6-4dd6-97d8-40620f59d288/3",
+          "title": "Worlds 2026 Supporter",
+          "description": "This Chat Badge was earned by supporting the 2026 League of Legends World Championship!",
           "click_action": null,
           "click_url": null
         }
@@ -6719,6 +7529,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/d87a78f5-76d9-451f-8f31-752a369e6045/3",
           "title": "Yellow Noob",
           "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Roblox category during Bloxfest.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "yellow-party-hat",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/6325b96b-0187-4a60-90d0-8bb45efa3fff/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/6325b96b-0187-4a60-90d0-8bb45efa3fff/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/6325b96b-0187-4a60-90d0-8bb45efa3fff/3",
+          "title": "Yellow Party Hat",
+          "description": "This badge was awarded to people who viewed the official 2026 RuneFest livestream for one hour.",
           "click_action": null,
           "click_url": null
         }
