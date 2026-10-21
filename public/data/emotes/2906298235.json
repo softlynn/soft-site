@@ -1,8 +1,10 @@
 {
   "source": "local-archive-pipeline",
   "twitchVodId": "2906298235",
-  "generatedAt": "2026-10-21T02:31:32.677Z",
-  "unavailableProviders": [],
+  "generatedAt": "2026-10-21T11:54:17.324Z",
+  "unavailableProviders": [
+    "ffz_emotes"
+  ],
   "ffz_emotes": [],
   "bttv_emotes": [
     {
