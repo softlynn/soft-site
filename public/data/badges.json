@@ -1,6 +1,6 @@
 {
   "source": "local-archive-pipeline",
-  "generatedAt": "2026-10-17T22:40:47.683Z",
+  "generatedAt": "2026-10-21T02:31:21.610Z",
   "channelLogin": "softxu",
   "channelId": "218908733",
   "global": [
@@ -3054,6 +3054,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/1e3b6965-2224-44d1-a67a-6d186c1fb17d/3",
           "title": "GP Explorer 3",
           "description": "This badge was earned by watching 15 minutes of GP Explorer 3 on any of the broadcasting channels.",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "gray-zone-warfare-gold",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/29bd60c0-72a3-4151-8bb8-73153add8f85/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/29bd60c0-72a3-4151-8bb8-73153add8f85/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/29bd60c0-72a3-4151-8bb8-73153add8f85/3",
+          "title": "Gray Zone Warfare (Gold)",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Gray Zone Warfare category",
           "click_action": null,
           "click_url": null
         }
@@ -6384,6 +6399,21 @@
           "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/4ca893e7-6ee3-4437-acdd-071340913d3c/3",
           "title": "The Man Without Fear",
           "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Marvel Rivals category for the start of Season 4.5!",
+          "click_action": null,
+          "click_url": null
+        }
+      ]
+    },
+    {
+      "set_id": "the-mox",
+      "versions": [
+        {
+          "id": "1",
+          "image_url_1x": "https://static-cdn.jtvnw.net/badges/v1/1b9b6fbf-9100-4b2c-9bdf-8be0f1456ff9/1",
+          "image_url_2x": "https://static-cdn.jtvnw.net/badges/v1/1b9b6fbf-9100-4b2c-9bdf-8be0f1456ff9/2",
+          "image_url_4x": "https://static-cdn.jtvnw.net/badges/v1/1b9b6fbf-9100-4b2c-9bdf-8be0f1456ff9/3",
+          "title": "The Mox",
+          "description": "This badge was earned by subscribing or gifting a sub to a streamer in the Cyberpunk 2077 category",
           "click_action": null,
           "click_url": null
         }
